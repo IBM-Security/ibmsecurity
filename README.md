@@ -15,6 +15,13 @@ The following Python Packages are required:
 Appliances need to have an ip address defined for their LMI. This may mean that appliances have had their initial setup 
 done with license acceptance.
 
+## Versioning
+
+This package uses a date for versioning. For example: "2017.03.18.0"
+
+It is the date when the package is released with a sequence number at the end to handle when there are 
+multiple releases in one day (expected to be uncommon).
+
 ## Features
 
 This python package provides the following features:
@@ -35,7 +42,9 @@ Then call the functions needed. Run the code like you would any other Python scr
 
 e.g.: `python testisam.py`
 
-Function Data Return Format
+Note: the code requires PyYAML (for printing output in YAML) and importlib (dynamically load all packages) packages to work.
+
+### Function Data Return Format
 ~~~~
 {
     rc:       <0 for success, higher for errors>
@@ -108,17 +117,19 @@ are unique to each appliance (e.g. UUID values). The deleted_keys value returned
 ## Function Parameters
 
 ### Appliance object
-Create an appliance object and pass it to the function.
+Create an appliance object and pass it to the function. Appliance and the User object needed are classes to allow for
+future extensions like authentication using certificate instead of username/password.
 ### `check_mode`
-This defaults to False, pass True to return and not make a change. The "changed" flag will be set to True if changes are detected. 
-This maps to Ansible check mode execution.
+This defaults to False, pass True to return and not make a change. The "changed" flag will be set to True if changes are detected.
 ### `force`
 This defaults to False, pass True to override the idempotency logic.
 ### Other Parameters
 The other parameters will match the REST API documentation verbatim. The intention was to reference the REST API documentation
-and not have to repeat it.
+and not have to repeat it. Please reference REST API documentation for details.
 
 ## Adding and Making Changes
+Please raise an issue in github when a bug is discovered or there are REST APIs not covered by this package.
+Provide detailed notes along with trace logs when a bug is reported.
 
 # License
 

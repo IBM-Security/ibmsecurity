@@ -4,7 +4,7 @@ import ibmsecurity.isam.base.management_authorization.role
 logger = logging.getLogger(__name__)
 
 
-def add(isamAppliance, name, user_name, type='embedded_ldap', check_mode=False, force=False):
+def set(isamAppliance, name, user_name, type='embedded_ldap', check_mode=False, force=False):
     """
     Add a user to management authorization role
     """

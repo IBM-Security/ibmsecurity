@@ -4,7 +4,7 @@ import ibmsecurity.isam.base.management_authorization.role
 logger = logging.getLogger(__name__)
 
 
-def add(isamAppliance, name, feature_name, access=None, check_mode=False, force=False):
+def set(isamAppliance, name, feature_name, access=None, check_mode=False, force=False):
     """
     Set feature with access in management authorization role
     """
