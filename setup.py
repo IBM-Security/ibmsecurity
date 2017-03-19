@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name = 'ibmsecurity',
     packages = find_packages(),
-    version = '0.60',
+    version = '2017.03.18.0',
     description = 'Idempotent functions for IBM Security Appliance REST APIs',
     author='IBM',
     author_email='ISAMDEV@au1.ibm.com',
