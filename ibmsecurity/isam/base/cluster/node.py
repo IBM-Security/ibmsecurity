@@ -60,7 +60,7 @@ def _check(isamAppliance, id):
     ret_obj = get_all(isamAppliance)
 
     for node in ret_obj['data']:
-        if node['value'] == id:
+        if node['address'] == id:
             return True
 
     return False
