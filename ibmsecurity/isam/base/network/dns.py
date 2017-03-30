@@ -15,7 +15,7 @@ def get(isamAppliance, check_mode=False, force=False):
 def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=None, searchDomains=None, auto=True,
         autoFromInterface=None, check_mode=False, force=False):
     """
-    Update date/time settings (set NTP server and timezone)
+    Update dns settings ( manually set dns servers & search domains or set via DHCP of an Interface)
     """
     if isinstance(auto, basestring):
         if auto.lower() == 'true':
