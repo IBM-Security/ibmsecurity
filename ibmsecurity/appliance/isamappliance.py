@@ -125,7 +125,7 @@ class ISAMAppliance(IBMAppliance):
         return warnings, return_call
 
     def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
-                          requires_version=None, warnings=[]):
+                          requires_version=None, warnings=[], acceptHeader=True, shortName=False):
         """
         Send multipart/form-data upload file request to the appliance.
         """
@@ -139,15 +139,27 @@ class ISAMAppliance(IBMAppliance):
             return return_obj
 
         # Build up the URL and header information.
-        headers = {
-            'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
-        }
+        headers = {}
+        if acceptHeader:
+            headers = {
+                'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
+            }
+
         self.logger.debug("Headers are: {0}".format(headers))
 
         files = list()
         for file2post in fileinfo:
+            filename = file2post['filename']
+
+            # Short filename is needed for some endpoints( ie /isam/management_ssl_certificate)
+            if shortName:
+                # Grab the filename from the path
+                import os.path
+                filename = os.path.basename(filename)
+                filename = os.path.splitext(filename)[0]
+
             files.append((file2post['file_formfield'],
-                          (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
+                          (filename, open(file2post['filename'], 'rb'), file2post['mimetype'])))
 
         self._suppress_ssl_warning()
 
