@@ -320,9 +320,11 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         server_json['server_uuid'] = server_uid
                     else:
                         # Server UUID gets generated if not specified
-                        del srv['server_uuid']
+                        if 'server_uuid' in srv:
+                            del srv['server_uuid']
                     if virtual_hostname is None:
-                        del srv['virtual_junction_hostname']
+                        if 'virtual_junction_hostname' in srv:
+                            del srv['virtual_junction_hostname']
                     else:
                         server_json['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
@@ -330,12 +332,17 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     else:
                         server_json['windows_style_url'] = windows_style_url
                     # Delete dynamic data shown when we get junctions details
-                    del srv['current_requests']
-                    del srv['total_requests']
-                    del srv['operation_state']
-                    del srv['server_state']
+                    if 'current_requests' in srv:
+                        del srv['current_requests']
+                    if 'total_requests' in srv:
+                        del srv['total_requests']
+                    if 'operation_state' in srv:
+                        del srv['operation_state']
+                    if 'server_state' in srv:
+                        del srv['server_state']
                     # Not sure what this attribute is supposed to contain?
-                    del srv['query_contents']
+                    if 'query_contents' in srv:
+                        del srv['query_contents']
                     if tools.json_sort(server_json) != tools.json_sort(srv):
                         logger.debug("Servers are found to be different. See following JSON for difference.")
                         logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))

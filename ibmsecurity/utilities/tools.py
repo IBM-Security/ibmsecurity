@@ -77,6 +77,7 @@ def create_query_string(**kwargs):
 
     return query_str
 
+
 def files_same(original_file, new_file):
     """
     Compare two files
@@ -93,3 +94,13 @@ def files_same(original_file, new_file):
         return True
     else:
         return False
+
+
+def get_random_temp_dir():
+    import os
+    import tempfile
+    tmpdir = tempfile.gettempdir()
+    random_str = random_password(10, allow_special=False)
+    tmpdir += '/%s' % random_str
+    os.mkdir(tmpdir)
+    return tmpdir

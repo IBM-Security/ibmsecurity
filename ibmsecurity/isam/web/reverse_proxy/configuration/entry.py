@@ -42,20 +42,22 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
         import ast
         entries = ast.literal_eval(entries)
 
-    exists = False
+    add_required = False
 
     if force is False:
+        add_entries = []
         for entry in entries:
             exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry[0], entry[1])
             if exists is True:
-                logger.info(
-                    'One of the entries being added exists already {0}/{1}/{2}/{3}!'.format(reverseproxy_id,
-                                                                                            stanza_id,
-                                                                                            entry[0],
-                                                                                            entry[1]))
-                break
+                logger.debug(
+                    'Entries exists {0}/{1}/{2}/{3}! Will be ignored.'.format(reverseproxy_id, stanza_id, entry[0],
+                                                                              entry[1]))
+            else:
+                add_entries.append(entry)
+                add_required = True
+        entries = add_entries
 
-    if force is True or exists is False:
+    if force is True or add_required is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

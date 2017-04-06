@@ -20,15 +20,21 @@ def execute(isamAppliance, operation="restart", check_mode=False, force=False):
     """
     Execute an operation (start, stop or restart) on runtime
     """
+    warnings = []
+    # Reload function is new to ISAM v9.0.2.0
+    if operation == "reload" and isamAppliance.facts["version"] < "9.0.2.0":
+        warnings.append("Appliance is at version {0}, reload requires atleast v9.0.2.0".format(isamAppliance.facts['version']))
+        return isamAppliance.create_return_object(warnings=warnings)
+
     if force is True or _check(isamAppliance, operation) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
                 "Executing an operation on runtime", uri,
                 {
                     'operation': operation
-                }, requires_modules=requires_modules, requires_version=requires_version)
+                }, requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
