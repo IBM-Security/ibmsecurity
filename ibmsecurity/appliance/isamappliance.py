@@ -100,6 +100,9 @@ class ISAMAppliance(IBMAppliance):
             if uri.startswith("/wga"):
                 requires_modules = ['wga']
                 self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
+            elif uri.startswith("/mga/runtime_tuning") or uri.startswith("/mga/runtime_profile"):
+                requires_modules = ['mga','federation']
+                self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
             elif uri.startswith("/mga"):
                 requires_modules = ['mga']
                 self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
