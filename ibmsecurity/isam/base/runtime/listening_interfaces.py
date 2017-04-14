@@ -1,4 +1,5 @@
 import logging
+import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,77 @@ def get(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving runtime listening interfaces",
                                     "/mga/runtime_tuning/v1")
 
+def set_by_label(isamAppliance, interface_label, interface_address, port, secure, check_mode=False, force=False):
+    """
+    Set a runtime listening interface by interface label and ip address
+    """
+
+    ret_obj = isamAppliance.create_return_object()
+    exists = False
+    secure_existing = None
+
+    logger.info("Getting interface uuid from label {0}".format(interface_label))
+
+    #get interface uuid
+    ifaces = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
+    iface = [i for i in ifaces['data']['interfaces'] if i['label'] == interface_label]
+
+    #throw error if no interface is found
+    if len(iface) == 0:
+        ret_obj['changed'] = False
+        ret_obj['rc'] = 1
+        ret_obj['warnings'] = "No interface with this label found."
+        return ret_obj
+
+    iface = iface[0]
+
+
+    #check for dhcp
+    if iface['ipv4']['dhcp']['enabled']:
+        interface = "{0}.dhcp.ipv4".format(iface['uuid'])
+    else:
+        #get address uuid
+        address = [a for a in iface['ipv4']['addresses'] if a['address'] == interface_address]
+
+        #throw error if no address is found
+        if len(address) == 0:
+            ret_obj['changed'] = False
+            ret_obj['rc'] = 1
+            ret_obj['warnings'] = "No IP-Address found"
+            return ret_obj
+
+        address = address[0]
+        interface = "{0}.{1}".format(iface['uuid'], address['uuid'])
+
+
+    logger.info("Found interface uuid from label: {0}".format(interface))
+
+
+    if force is False:
+        exists, secure_existing, id = _check(isamAppliance, interface, port)
+
+    # Delete if interface has different secure setting
+    if exists is True and secure_existing != secure:
+        if check_mode is True:
+            ret_obj['changed'] = True
+        else:
+            delete(isamAppliance, interface, port, check_mode, force)
+        exists = False
+
+    if force or exists is False:
+        if check_mode is True:
+            ret_obj['changed'] = True
+        else:
+            return isamAppliance.invoke_post(
+                "Setting a runtime listening interface",
+                "/mga/runtime_tuning/endpoints/v1",
+                {
+                    'interface': interface,
+                    'port': port,
+                    'secure': secure
+                })
+
+    return ret_obj
 
 def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
     """
