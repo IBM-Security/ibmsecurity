@@ -4,8 +4,6 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
-import re
-import urllib
 
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
@@ -19,12 +17,8 @@ class ISAMAppliance(IBMAppliance):
         IBMAppliance.__init__(self, hostname, user)
 
     def _url(self, uri):
-        # Replace % with %25 if it is not encoded already
-        ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", uri)
-        # URL encode
-        euri = urllib.quote(ruri)
         # Build up the URL
-        url = "https://" + self.hostname + ":" + str(self.lmi_port) + euri
+        url = "https://" + self.hostname + ":" + str(self.lmi_port) + uri
         self.logger.debug("Issuing request to: " + url)
 
         return url

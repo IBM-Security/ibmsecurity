@@ -233,7 +233,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 "Creating a standard or virtual junction",
                 "{0}/{1}/junctions".format(uri, reverseproxy_id), jct_json,
                 requires_modules=requires_modules,
-                requires_version=requires_version,warnings=warnings)
+                requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -443,7 +443,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if add_required is True and srvs_len > 1:
                 warnings.append(
                     "Junction will replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
-                        len(ret_obj['data']['servers'])))
+                        srvs_len))
         else:
             add_required = True
 

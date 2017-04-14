@@ -158,13 +158,17 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            # URL being encoded primarily to handle request-log-format that has "%" values in them
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, reverseproxy_id,
+                                                                                          stanza_id, entry_id, value_id)
+            # Replace % with %25 if it is not encoded already
+            import re
+            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
+            # URL encode
+            import urllib
+            full_uri = urllib.quote(ruri)
             return isamAppliance.invoke_delete(
-                "Deleting a value from a configuration entry - Reverse Proxy",
-                "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri,
-                                                                                   reverseproxy_id,
-                                                                                   stanza_id,
-                                                                                   entry_id,
-                                                                                   value_id))
+                "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 
     return isamAppliance.create_return_object()
 
