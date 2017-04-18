@@ -1,6 +1,8 @@
 import logging
 import os.path
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import files_same, get_random_temp_dir, json_compare
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -112,16 +114,27 @@ def export_bundle(isamAppliance, filename, extract_filename, check_mode=False, f
 def import_bundle(isamAppliance, filename, check_mode=False, force=False):
     """
     Import the bundle file for a bundle
+
+    ret_obj used in the code below looks like this:
+        { 'changed': False,
+          'data': [ { u'extensions': [ { u'id': u'NewAuthMech',
+                                         u'name': u'NewAuthMech',
+                                         u'type': u'Authentication Mechanism'}],
+                      u'filename': u'newauth.jar',
+                      u'id': u'2'}],
+          'rc': 0,
+          'warnings': []}
+
     """
-    (d, f) = os.path.split(filename)
-    ret_obj = get(isamAppliance, f)
-    if force is True or (ret_obj['data'] != {} and ret_obj['data']['extensions'] == []):
+    f = os.path.basename(filename)
+    bundle_id = _check_import(isamAppliance, filename, check_mode=check_mode)
+    if force is True or bundle_id:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
                 "Import the bundle file for a bundle",
-                "{0}/{1}/file".format(uri, ret_obj['data']['id']),
+                "{0}/{1}/file".format(uri, bundle_id),
                 [
                     {
                         'file_formfield': 'file',
@@ -136,71 +149,37 @@ def import_bundle(isamAppliance, filename, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-######
-# The idempotent import had some issues that need to be troubleshooted.
-######
-# def import_bundle(isamAppliance, filename, check_mode=False, force=False):
-#     """
-#     Import the bundle file for a bundle
-#
-#     ret_obj used in the code below looks like this:
-#         { 'changed': False,
-#           'data': [ { u'extensions': [ { u'id': u'NewAuthMech',
-#                                          u'name': u'NewAuthMech',
-#                                          u'type': u'Authentication Mechanism'}],
-#                       u'filename': u'newauth.jar',
-#                       u'id': u'2'}],
-#           'rc': 0,
-#           'warnings': []}
-#
-#     """
-#     f = os.path.basename(filename)
-#     bundle_id = _check_import(isamAppliance, filename, check_mode=check_mode)
-#     if force is True or bundle_id:
-#         if check_mode is True:
-#             return isamAppliance.create_return_object(changed=True)
-#         else:
-#             return isamAppliance.invoke_post_files(
-#                 "Import the bundle file for a bundle",
-#                 "{0}/{1}/file".format(uri, bundle_id),
-#                 [
-#                     {
-#                         'file_formfield': 'file',
-#                         'filename': filename,
-#                         'mimetype': 'application/jar'
-#                     }
-#                 ],
-#                 {
-#                     "import_file": f
-#                 })
-#
-#     return isamAppliance.create_return_object()
-#
-#
-# def _check_import(isamAppliance, filename, check_mode=False):
-#     """
-#     Checks if file on the Appliance exists and if so, whether it is different from filename
-#     """
-#     (d, f) = os.path.split(filename)  # this means the name of the bundle has to match name of file to import
-#     ret_obj = get(isamAppliance, f)
-#     tmpdir = tempfile.gettempdir()
-#     if ret_obj['data']:
-#         tmp_original_file = os.path.join(tmpdir, ret_obj['data']['filename'])
-#         export_bundle(isamAppliance, ret_obj['data']['filename'], tmp_original_file, check_mode=False, force=True)
-#         logger.debug("file already exists on appliance")
-#         if files_same(tmp_original_file, filename):
-#             logger.debug("files are the same, so we don't want to do anything")
-#             return False
-#         else:
-#             logger.debug("files are different, so we replace existing file")
-#             bundle_id = ret_obj['data']['id']
-#             return bundle_id
-#     else:
-#         logger.debug("file does not exist on appliance, so we'll want to create a bundle and then import")
-#         create_ret_obj = create(isamAppliance, filename, check_mode, force=True)
-#         if create_ret_obj:
-#             bundle_id = get(isamAppliance, f)['data']['id']
-#             return bundle_id
+def _check_import(isamAppliance, filename, check_mode=False):
+    """
+    Checks if file on the Appliance exists and if so, whether it is different from filename
+    """
+    (d, f) = os.path.split(filename)  # this means the name of the bundle has to match name of file to import
+    ret_obj = get(isamAppliance, f)
+    tmpdir = get_random_temp_dir()
+    if ret_obj['data'] != {} and ret_obj['data']['extensions'] != []:
+        tmp_original_file = os.path.join(tmpdir, ret_obj['data']['filename'])
+        export_bundle(isamAppliance, ret_obj['data']['filename'], tmp_original_file, check_mode=False, force=True)
+        logger.debug("file already exists on appliance")
+        if files_same(tmp_original_file, filename):
+            logger.debug("files are the same, so we don't want to do anything")
+            shutil.rmtree(tmpdir)
+            return False
+        else:
+            logger.debug("files are different, so we replace existing file")
+            bundle_id = ret_obj['data']['id']
+            shutil.rmtree(tmpdir)
+            return bundle_id
+    elif ret_obj['data'] != {} and ret_obj['data']['extensions'] == []:
+        bundle_id = ret_obj['data']['id']
+        return bundle_id
+
+    else:
+        logger.debug("file does not exist on appliance, so we'll want to create a bundle and then import")
+        create_ret_obj = create(isamAppliance, filename, check_mode, force=True)
+        if create_ret_obj:
+            bundle_id = get(isamAppliance, f)['data']['id']
+            shutil.rmtree(tmpdir)
+            return bundle_id
 
 
 def _check(isamAppliance, id):

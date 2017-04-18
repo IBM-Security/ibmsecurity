@@ -12,6 +12,14 @@ def get(isamAppliance, check_mode=False, force=False):
                                     "/time_cfg")
 
 
+def get_timezones(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving the list of valid timezones
+    """
+    return isamAppliance.invoke_get("Retrieving the list of valid timezones",
+                                    "/time_cfg/I18nTimezone")
+
+
 def set(isamAppliance, ntpServers, timeZone="America/New_York", check_mode=False, force=False):
     """
     Update date/time settings (set NTP server and timezone)
