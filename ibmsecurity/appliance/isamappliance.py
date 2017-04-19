@@ -356,13 +356,18 @@ class ISAMAppliance(IBMAppliance):
         """
         Get facts about the appliance
         """
-        self.get_version()
+        # Fact collection will abort on any exception
+        try:
+            self.get_version()
 
-        # Check if appliance is setup before collecting Activation information
-        import ibmsecurity.isam.base.setup_complete
-        ret_obj = ibmsecurity.isam.base.setup_complete.get(self)
-        if ret_obj['data'].get('configured') is True:
-            self.get_activations()
+            # Check if appliance is setup before collecting Activation information
+            import ibmsecurity.isam.base.setup_complete
+            ret_obj = ibmsecurity.isam.base.setup_complete.get(self)
+            if ret_obj['data'].get('configured') is True:
+                self.get_activations()
+        # Exceptions like those connection related will be ignored
+        except:
+            pass
 
     def get_version(self):
         """

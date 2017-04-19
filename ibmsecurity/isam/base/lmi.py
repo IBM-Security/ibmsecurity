@@ -36,6 +36,8 @@ def await_startup(isamAppliance, wait_time=300, check_freq=5, start_time=None, c
 
     # Time to wait for appliance/lmi to respond and have a different start time
     # wait_time (seconds)
+
+    # Note: This function will not work unless first steps are completed.
     """
     # Get the current start_time if not provided
     if start_time is None:
@@ -49,15 +51,17 @@ def await_startup(isamAppliance, wait_time=300, check_freq=5, start_time=None, c
     while 1:
         ret_obj = get(isamAppliance)
 
-        if ret_obj['rc'] == 0 and isinstance(ret_obj['data'], list) and ret_obj['data'][0]['start_time'] != start_time:
+        if ret_obj['rc'] == 0 and isinstance(ret_obj['data'], list) and len(ret_obj['data']) > 0 and 'start_time' in \
+                ret_obj['data'][0] and ret_obj['data'][0]['start_time'] != start_time:
             logger.info("Server is responding and has a different start time!")
-            return isamAppliance.create_return_object()
+            return isamAppliance.create_return_object(warnings=warnings)
         else:
             time.sleep(check_freq)
             sec += check_freq
+            logger.debug("Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec, check_freq))
 
         if sec >= wait_time:
-            warnings.append("The LMI restart not detected or completed, exiting... after {0} seconds".format(wait_time))
+            warnings.append("The LMI restart not detected or completed, exiting... after {0} seconds".format(sec))
             break
 
     return isamAppliance.create_return_object(warnings=warnings)

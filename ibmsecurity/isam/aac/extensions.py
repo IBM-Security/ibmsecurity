@@ -101,7 +101,7 @@ def export_bundle(isamAppliance, filename, extract_filename, check_mode=False, f
         -extract_filename is file system location to export the file (e.g. /tmp/mybundle.jar)
     """
     ret_obj = search(isamAppliance, filename)
-    if force is True or ret_obj['data'] != {} : # ret_obj['data'] is the numeric id assigned by the system
+    if force is True or ret_obj['data'] != {}:  # ret_obj['data'] is the numeric id assigned by the system
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a specific bundle",
@@ -127,10 +127,10 @@ def import_bundle(isamAppliance, filename, check_mode=False, force=False):
 
     """
     f = os.path.basename(filename)
-    bundle_id = _check_import(isamAppliance, filename, check_mode=check_mode)
+    warnings, bundle_id = _check_import(isamAppliance, filename)
     if force is True or bundle_id:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(
                 "Import the bundle file for a bundle",
@@ -144,15 +144,16 @@ def import_bundle(isamAppliance, filename, check_mode=False, force=False):
                 ],
                 {
                     "import_file": f
-                })
+                }, warnings=warnings)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
-def _check_import(isamAppliance, filename, check_mode=False):
+def _check_import(isamAppliance, filename):
     """
     Checks if file on the Appliance exists and if so, whether it is different from filename
     """
+    warnings = []
     (d, f) = os.path.split(filename)  # this means the name of the bundle has to match name of file to import
     ret_obj = get(isamAppliance, f)
     tmpdir = get_random_temp_dir()
@@ -163,23 +164,18 @@ def _check_import(isamAppliance, filename, check_mode=False):
         if files_same(tmp_original_file, filename):
             logger.debug("files are the same, so we don't want to do anything")
             shutil.rmtree(tmpdir)
-            return False
+            return warnings, False
         else:
             logger.debug("files are different, so we replace existing file")
             bundle_id = ret_obj['data']['id']
             shutil.rmtree(tmpdir)
-            return bundle_id
+            return warnings, bundle_id
     elif ret_obj['data'] != {} and ret_obj['data']['extensions'] == []:
         bundle_id = ret_obj['data']['id']
-        return bundle_id
-
+        return warnings, bundle_id
     else:
-        logger.debug("file does not exist on appliance, so we'll want to create a bundle and then import")
-        create_ret_obj = create(isamAppliance, filename, check_mode, force=True)
-        if create_ret_obj:
-            bundle_id = get(isamAppliance, f)['data']['id']
-            shutil.rmtree(tmpdir)
-            return bundle_id
+        warnings.append("Bundle does not exist on appliance, create a bundle first and then import.")
+        return warnings, False
 
 
 def _check(isamAppliance, id):
