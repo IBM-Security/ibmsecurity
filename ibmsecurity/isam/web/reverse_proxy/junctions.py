@@ -405,6 +405,9 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['remote_http_header'] = 'do not insert'
                 else:
                     jct_json['remote_http_header'] = remote_http_header
+                # To allow for multiple header values to be sorted during compare convert retrieved data into array
+                if exist_jct['remote_http_header'].startswith('insert - '):
+                    exist_jct['remote_http_header'] = (exist_jct['remote_http_header'][9:]).split(' ')
                 if request_encoding is None:
                     jct_json['request_encoding'] = 'UTF-8, URI Encoded'
                 else:
