@@ -5,6 +5,7 @@ import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
 
+
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
         self.logger = logging.getLogger(__name__)
@@ -124,7 +125,7 @@ class ISAMAppliance(IBMAppliance):
         return warnings, return_call
 
     def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
-                          requires_version=None, warnings=[]):
+                          requires_version=None, warnings=[], json_response=True):
         """
         Send multipart/form-data upload file request to the appliance.
         """
@@ -138,9 +139,14 @@ class ISAMAppliance(IBMAppliance):
             return return_obj
 
         # Build up the URL and header information.
-        headers = {
-            'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
-        }
+        if json_response:
+            headers = {
+                'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
+            }
+        else:
+            headers = {
+                'Accept': 'text/html,application/xhtml+xml,application/xml'
+            }
         self.logger.debug("Headers are: {0}".format(headers))
 
         files = list()
