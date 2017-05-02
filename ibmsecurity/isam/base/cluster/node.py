@@ -51,7 +51,7 @@ def add(isamAppliance, signature_file, restricted=False, check_mode=False, force
                         'mimetype': 'application/octet-stream'
                     }
                 ],
-                {'restricted': restricted})
+                {'restricted': restricted}, json_response=False)
 
     return isamAppliance.create_return_object()
 
