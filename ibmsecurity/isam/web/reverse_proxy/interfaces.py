@@ -40,3 +40,9 @@ def get_next_https_port(isamAppliance, ip_address, check_mode=False, force=False
         get_uri = "/isam/wga_templates/httpsport?ip_addr={0}".format(ip_address)
 
     return isamAppliance.invoke_get("Find the next available HTTPS port for an interface", get_uri)
+
+def get_defaults(isamAppliance, check_mode=False, force=False):
+    """
+    Get defaults
+    """
+    return isamAppliance.invoke_get("Get defaults", "/isam/wga_templates/defaults")
