@@ -365,8 +365,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['basic_auth_mode'] = 'filter'
                 else:
                     jct_json['basic_auth_mode'] = basic_auth_mode
-                if client_ip_http is None:
+                if client_ip_http is None or client_ip_http.lower() == 'no':
                     jct_json['client_ip_http'] = 'do not insert'
+                elif client_ip_http.lower() == 'yes':
+                    jct_json['client_ip_http'] = 'insert'
                 else:
                     jct_json['client_ip_http'] = client_ip_http
                 if cookie_include_path is None:
@@ -393,6 +395,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['junction_soft_limit'] = '0 - using global value'
                 else:
                     jct_json['junction_soft_limit'] = str(junction_soft_limit)
+                if junction_cookie_javascript_block is not None:
+                    jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block
                 if mutual_auth is None:
                     jct_json['mutual_auth'] = 'no'
                 else:
