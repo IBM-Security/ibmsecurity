@@ -97,6 +97,9 @@ def files_same(original_file, new_file):
 
 
 def get_random_temp_dir():
+    """
+    Create a temporary directory
+    """
     import os
     import tempfile
     tmpdir = tempfile.gettempdir()
@@ -104,3 +107,20 @@ def get_random_temp_dir():
     tmpdir += '/%s' % random_str
     os.mkdir(tmpdir)
     return tmpdir
+
+
+def strings(filename, min=4):
+    """
+    Emulate UNIX "strings" command on a file
+    """
+    with open(filename, "rb") as f:
+        result = ""
+        for c in f.read():
+            if c in string.printable:
+                result += c
+                continue
+            if len(result) >= min:
+                yield result
+            result = ""
+        if len(result) >= min:  # catch result at EOF
+            yield result

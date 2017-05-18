@@ -40,9 +40,7 @@ def _check(isamAppliance, fixpack):
     """
     ret_obj = get(isamAppliance)
 
-    # Extract fixpack name from file
-    file_name = os.path.basename(fixpack)
-    fixpack_name, ext_name = file_name.split('.')
+    fixpack_name = _extract_fixpack_name(fixpack)
 
     # Reverse sort the json by 'id'
     json_data_sorted = sorted(ret_obj['data'], key=lambda k: int(k['id']), reverse=True)
@@ -57,6 +55,28 @@ def _check(isamAppliance, fixpack):
             return True
 
     return False
+
+
+def _extract_fixpack_name(fixpack):
+    """
+    Extract fixpack name from the given fixpack
+    """
+    import re
+
+    # Look for the follwing string inside the fixpack file
+    # FIXPACK_NAME="9021_IPv6_Routes_fix"
+    for s in ibmsecurity.utilities.tools.strings(fixpack):
+        match_obj = re.search(r"FIXPACK_NAME=\"(?P<fp_name>\w+)\"", s)
+        if match_obj:
+            logger.info("Fixpack name extracted from file using strings method: {0}".format(match_obj.group('fp_name')))
+            return match_obj.group('fp_name')
+
+    # Unable to extract fixpack name from binary
+    # Return fixpack name derived from the filename
+    file_name = os.path.basename(fixpack)
+    fixpack_name, ext_name = file_name.split('.')
+
+    return fixpack_name
 
 
 def compare(isamAppliance1, isamAppliance2):
