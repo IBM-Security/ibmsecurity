@@ -35,7 +35,7 @@ def upload(isamAppliance, file, check_mode=False, force=False):
                     'filename': file,
                     'mimetype': 'application/octet-stream'
                 }],
-                {})
+                {}, json_response=False)
 
     return isamAppliance.create_return_object()
 
