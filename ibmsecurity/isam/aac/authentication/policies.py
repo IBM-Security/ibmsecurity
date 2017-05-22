@@ -179,6 +179,28 @@ def search(isamAppliance, name, check_mode=False, force=False):
     return ret_obj
 
 
+def activate(isamAppliance, name, enabled=True, check_mode=False, force=False):
+    """
+    Enable or disable a policy
+    """
+    warnings = []
+    if isamAppliance.facts["version"] < "9.0.2.1":
+        warnings.append(
+            "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
+                isamAppliance.facts["version"]))
+    else:
+        ret_obj = get(isamAppliance, name=name)
+        if force or ret_obj['data']['enabled'] != enabled:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return update(isamAppliance, name=name, policy=ret_obj['data']['policy'], uri=ret_obj['data']['uri'],
+                              description=ret_obj['data']['description'], dialect=ret_obj['data']['dialect'],
+                              enabled=enabled)
+
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare Authentication Policies between two appliances
