@@ -75,15 +75,19 @@ def p(jdata):
     pp.pprint(jdata)
     print(yaml.safe_dump(jdata, encoding='utf-8', allow_unicode=True))
 
+if __name__ == "__main__":
+    """
+    This test program should not execute when imported, which would otherwise
+    cause problems when generating the documentation.
+    """
+    # Create a user credential for ISDS appliance
+    u = ISDSApplianceUser(username="admin@local", password="admin")
+    # Create an ISDS appliance with above credential
+    isds_server = ISDSAppliance(hostname="192.168.198.100", user=u, lmi_port=443)
 
-# Create a user credential for ISDS appliance
-u = ISDSApplianceUser(username="admin@local", password="admin")
-# Create an ISDS appliance with above credential
-isds_server = ISDSAppliance(hostname="192.168.198.100", user=u, lmi_port=443)
-
-# Get the current SNMP monitoring setup details
-p(ibmsecurity.isds.snmp_monitoring.get(isdsAppliance=isds_server))
-# Set the V2 SNMP monitoring
-p(ibmsecurity.isds.snmp_monitoring.set_v1v2(isdsAppliance=isds_server, community="IBM"))
-# Commit or Deploy the changes
-p(ibmsecurity.isds.appliance.commit(isamAppliance=isds_server))
+    # Get the current SNMP monitoring setup details
+    p(ibmsecurity.isds.snmp_monitoring.get(isdsAppliance=isds_server))
+    # Set the V2 SNMP monitoring
+    p(ibmsecurity.isds.snmp_monitoring.set_v1v2(isdsAppliance=isds_server, community="IBM"))
+    # Commit or Deploy the changes
+    p(ibmsecurity.isds.appliance.commit(isamAppliance=isds_server))

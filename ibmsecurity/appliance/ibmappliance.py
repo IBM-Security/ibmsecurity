@@ -6,6 +6,37 @@ class IBMError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
+class IBMResponse(dict):
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
+
+    def succeeded_with_data(self):
+        """
+        Determines whether the execution succeeded with data retrieved.
+        :return: True if the execution succeeded and the data is retrieved.
+        """
+        if self.get('rc', -1) == 0 and self.get("data"):
+            return True
+        return False
+
+    def succeeded(self):
+        """
+        Determines whether the execution succeeded.
+        :return: True if succeeded.
+        """
+        if self.get('rc', -1) == 0:
+            return True
+        return False
+
+    def failed(self):
+        """
+        Determines whether the execution failed.
+        :return: True if the execution failed.
+        """
+        if self.get('rc', -1) == 0:
+            return False
+        return True
+
 
 class IBMAppliance:
     __metaclass__ = ABCMeta
@@ -70,6 +101,19 @@ class IBMAppliance:
         """
         pass
 
-
-    def create_return_object(self, rc=0, data={}, warnings=[], changed=False):
-        return {'rc': rc, 'data': data, 'changed': changed, 'warnings': warnings}
+    def create_return_object(self, rc=0, data={}, warnings=[],
+                             changed=False):
+        """
+        Create a response object with the given properties.
+        :param rc: The return code of the call.
+        :param data: the data object of the response. Often in Json.
+        :param warnings: The warnings of the executed call.
+        :param changed: Whether there was any change.
+        :return: The IBMResponse object.
+        """
+        return IBMResponse({'rc': rc,
+                            'data': data,
+                            'changed': changed,
+                            'warnings': warnings,
+                            'status_code': 0
+                            })
