@@ -72,14 +72,12 @@ def p(jdata):
     print(yaml.safe_dump(jdata, encoding='utf-8', allow_unicode=True))
 
 
-u = ISDSApplianceUser(username="admin", password="skyg0d")
+u = ISDSApplianceUser(username="admin", password="admin")
 # isds_server = ISDSAppliance(hostname="isds8otech", user=u, lmi_port=443)
 isds_server = ISDSAppliance(hostname="isds81dz", user=u, lmi_port=443)
 isds_server2 = ISDSAppliance(hostname="isds8otech", user=u, lmi_port=443)
 
 ################ ACTIVE TEST ################
-p(ibmsecurity.isds.snapshots.get(isdsAppliance=isds_server))
-p(ibmsecurity.isds.token.get(isdsAppliance=isds_server))
 p(ibmsecurity.isds.snapshots.apply(isdsAppliance=isds_server, id="24b4b8f1f71bd6b5a07e0e2cc43e93db"))
 ################ ACTIVE TEST ################
 
