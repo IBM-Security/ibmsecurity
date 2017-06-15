@@ -28,36 +28,6 @@ def create(isdsAppliance, comment='', check_mode=False, force=False):
     return isdsAppliance.create_return_object()
 
 
-def _check(isdsAppliance, comment='', id=None):
-    """
-    Check if the last created snapshot has the exact same comment or id exists
-
-    :param isdsAppliance:
-    :param comment:
-    :return:
-    """
-    ret_obj = get(isdsAppliance)
-
-    if id != None:
-        for snaps in ret_obj['data']:
-            if snaps['id'] == id:
-                return True
-    else:
-        for snaps in ret_obj['data']:
-            if snaps['comment'] == comment:
-                return True
-                # # Get snapshot with lowest 'id' value - that will be latest one
-                # snaps = min(ret_obj['data'], key=lambda snap: snap['index'])
-                # logging.debug('Snapshot with lowest index is: ' + str(snaps))
-                # try:
-                #     if snaps['comment'] == comment:
-                #         return True
-                # except:
-                #     pass
-
-    return False
-
-
 def delete(isdsAppliance, id, check_mode=False, force=False):
     """
     Delete a snapshot
@@ -69,10 +39,6 @@ def delete(isdsAppliance, id, check_mode=False, force=False):
             return isdsAppliance.invoke_delete("Deleting snapshot", "/snapshots/" + id)
 
     return isdsAppliance.create_return_object()
-
-    # Logic to delete multiple snapshots - may need to be coded later
-    #    uri = "/snapshots/multi_destroy?record_ids=" + ",".join(ids)
-    #    return isdsAppliance.invoke_delete("Deleting multiple snapshots", uri);
 
 
 def modify(isdsAppliance, id, comment, check_mode=False, force=False):
@@ -108,7 +74,7 @@ def apply(isdsAppliance, id, check_mode=False, force=False):
 def download(isdsAppliance, filename, id, check_mode=False, force=False):
     """
     Download one snapshot file to a zip file.
-    TODO: Can hadnle multiple id's - but rest of logic deals with just one for now
+    TODO: Can handle multiple id's - but rest of logic deals with just one for now
     """
     if force is True or (_check(isdsAppliance, id=id) is True and os.path.exists(filename) is False):
         if check_mode is False:  # No point downloading a file if in check_mode
@@ -131,6 +97,28 @@ def download_latest(isdsAppliance, dir='.', check_mode=False, force=False):
     filename = os.path.join(dir, file)
 
     return download(isdsAppliance, filename, id, check_mode, force)
+
+def upload(isdsAppliance, filename, check_mode=False, force=False):
+    """
+    Upload snapshot
+    """
+    uri = "/snapshots/upload"
+    if _check(isdsAppliance, fn=filename) is False:
+        if check_mode is True:
+            return isdsAppliance.create_return_object(changed=True)
+        else:
+            return isdsAppliance.invoke_post_files(
+                description="Upload snapshot",
+                uri="{0}".format(uri),
+                fileinfo=[{
+                    'file_formfield': 'file',
+                    'filename': filename,
+                    'mimetype': 'application/octet-stream'
+                }],
+                data={},
+                json_response=False)
+
+    return isdsAppliance.create_return_object()
 
 
 def apply_latest(isdsAppliance, check_mode=False, force=False):
@@ -165,3 +153,29 @@ def compare(isdsAppliance1, isdsAppliance2):
         del snapshot['filename']
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id', 'filename'])
+
+def _check(isdsAppliance, comment='', id=None, fn=None):
+    """
+    Check if the last created snapshot has the exact same comment or id exists
+
+    :param isdsAppliance:
+    :param comment:
+    :return:
+    """
+    ret_obj = get(isdsAppliance)
+
+    if id != None:
+        for snaps in ret_obj['data']:
+            if snaps['filename'] == id:
+                return True
+    elif fn != None:
+        for snaps in ret_obj['data']:
+            if snaps['filename'] == fn:
+                return True
+    else:
+        for snaps in ret_obj['data']:
+            if snaps['comment'] == comment:
+                return True
+
+    return False
+
