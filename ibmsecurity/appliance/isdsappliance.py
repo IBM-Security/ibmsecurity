@@ -85,16 +85,68 @@ class ISDSAppliance(IBMAppliance):
             self.logger.debug("Failed to connect to server.")
             return_obj['rc'] = 502
 
-    def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False):
+    def _process_warnings(self, uri, requires_modules, requires_version, warnings=[]):
+        # flag to indicate if processing needs to return and not continue
+        return_call = False
+        self.logger.debug("Checking for minimum version: {0}.".format(requires_version))
+        if requires_version is not None and 'version' in self.facts and self.facts['version'] is not None:
+            if self.facts['version'] < requires_version:
+                return_call = True
+                warnings.append(
+                    "API invoked requires minimum version: {0}, appliance is of lower version: {1}.".format(
+                        requires_version, self.facts['version']))
+        # Detecting modules from uri if none is provided
+        if requires_modules is None and not requires_modules:
+            if uri.startswith("/wga"):
+                requires_modules = ['wga']
+                self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
+            elif uri.startswith("/mga"):
+                requires_modules = ['mga']
+                self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
+
+        self.logger.debug("Checking for one of required modules: {0}.".format(requires_modules))
+        if requires_modules is not None and requires_modules:
+            if 'activations' in self.facts and self.facts['activations']:
+                # Find intersection of the two lists
+                iactive = [ia for ia in self.facts['activations'] if ia in requires_modules]
+                if not iactive:
+                    return_call = True
+                    warnings.append(
+                        "API invoked requires one of modules: {0}, appliance has these modules active: {1}.".format(
+                            requires_modules, self.facts['activations']))
+                else:
+                    self.logger.info("Modules satisfying requirement: {0}".format(iactive))
+            else:
+                return_call = True
+                warnings.append("API invoked requires module: {0}, appliance has no modules active.".format(
+                    requires_modules))
+
+        self.logger.debug("Warnings: {0}".format(warnings))
+        return warnings, return_call
+
+    def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
+                          requires_version=None, warnings=[], json_response=True):
         """
         Send multipart/form-data upload file request to the appliance.
         """
         self._log_desc(description=description)
 
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
+
         # Build up the URL and header information.
-        headers = {
-            'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
-        }
+        if json_response:
+            headers = {
+                'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
+            }
+        else:
+            headers = {
+                'Accept': 'text/html,application/xhtml+xml,application/xml'
+            }
         self.logger.debug("Headers are: {0}".format(headers))
 
         files = list()
@@ -103,8 +155,6 @@ class ISDSAppliance(IBMAppliance):
                           (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
 
         self._suppress_ssl_warning()
-
-        return_obj = self.create_return_object()
 
         try:
             r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
@@ -122,11 +172,19 @@ class ISDSAppliance(IBMAppliance):
 
         return return_obj
 
-    def invoke_put_files(self, description, uri, fileinfo, data, ignore_error=False):
+    def invoke_put_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
+                         requires_version=None, warnings=[]):
         """
         Send multipart/form-data upload file request to the appliance.
         """
         self._log_desc(description=description)
+
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
 
         # Build up the URL and header information.
         headers = {
@@ -141,8 +199,6 @@ class ISDSAppliance(IBMAppliance):
                           (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
 
         self._suppress_ssl_warning()
-
-        return_obj = self.create_return_object()
 
         try:
             r = requests.put(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
@@ -160,12 +216,19 @@ class ISDSAppliance(IBMAppliance):
 
         return return_obj
 
-    def invoke_get_file(self, description, uri, filename, no_headers=False, ignore_error=False):
+    def invoke_get_file(self, description, uri, filename, no_headers=False, ignore_error=False, requires_modules=None,
+                        requires_version=None, warnings=[]):
         """
         Invoke a GET request and download the response data to a file
         """
-
         self._log_desc(description=description)
+
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
 
         # In some cases passing a header causes response to come back as JSON
         if no_headers is True:
@@ -177,8 +240,6 @@ class ISDSAppliance(IBMAppliance):
         self.logger.debug("Headers are: {0}".format(headers))
 
         self._suppress_ssl_warning()
-
-        return_obj = self.create_return_object()
 
         try:
             r = requests.get(url=self._url(uri=uri), auth=(self.user.username, self.user.password), verify=False,
@@ -215,12 +276,20 @@ class ISDSAppliance(IBMAppliance):
 
         return return_obj
 
-    def _invoke_request(self, func, description, uri, ignore_error, data={}):
+    def _invoke_request(self, func, description, uri, ignore_error, data={}, requires_modules=None,
+                        requires_version=None, warnings=[]):
         """
         Send a request to the LMI.  This function is private and should not be
         used directly.  The invoke_get/invoke_put/etc functions should be used instead.
         """
         self._log_desc(description=description)
+
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
 
         # There maybe some cases when header should be blank (not json)
         headers = {
@@ -234,8 +303,6 @@ class ISDSAppliance(IBMAppliance):
         self.logger.debug("Input Data: " + json_data)
 
         self._suppress_ssl_warning()
-
-        return_obj = self.create_return_object()
 
         try:
             if func == requests.get or func == requests.delete:
@@ -257,35 +324,56 @@ class ISDSAppliance(IBMAppliance):
 
         return return_obj
 
-    def invoke_put(self, description, uri, data, ignore_error=False):
+    def invoke_put(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
+                   warnings=[]):
         """
         Send a PUT request to the LMI.
         """
-        return self._invoke_request(requests.put, description, uri, ignore_error, data)
+        return self._invoke_request(requests.put, description, uri, ignore_error, data,
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    warnings=warnings)
 
-    def invoke_post(self, description, uri, data, ignore_error=False):
+    def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
+                    warnings=[]):
         """
         Send a POST request to the LMI.
         """
-        return self._invoke_request(requests.post, description, uri, ignore_error, data)
+        return self._invoke_request(requests.post, description, uri, ignore_error, data,
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    warnings=warnings)
 
-    def invoke_get(self, description, uri, ignore_error=False):
+    def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
+                   warnings=[]):
         """
         Send a GET request to the LMI.
         """
-        return self._invoke_request(requests.get, description, uri, ignore_error)
+        return self._invoke_request(requests.get, description, uri, ignore_error, requires_modules=requires_modules,
+                                    requires_version=requires_version, warnings=warnings)
 
-    def invoke_delete(self, description, uri, ignore_error=False):
+    def invoke_delete(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
+                      warnings=[]):
         """
         Send a DELETE request to the LMI.
         """
-        return self._invoke_request(requests.delete, description, uri, ignore_error)
+        return self._invoke_request(requests.delete, description, uri, ignore_error, requires_modules=requires_modules,
+                                    requires_version=requires_version, warnings=warnings)
 
     def get_facts(self):
         """
         Get facts about the appliance
         """
-        self.get_version()
+        # Fact collection will abort on any exception
+        try:
+            self.get_version()
+
+            # Check if appliance is setup before collecting Activation information
+            import ibmsecurity.isds.base.setup_complete
+            ret_obj = ibmsecurity.isds.base.setup_complete.get(self)
+            if ret_obj['data'].get('configured') is True:
+                self.get_activations()
+        # Exceptions like those connection related will be ignored
+        except:
+            pass
 
     def get_version(self):
         """
@@ -294,10 +382,24 @@ class ISDSAppliance(IBMAppliance):
         When firmware are installed or partition are changed, then this value is updated
         """
         self.facts['version'] = None
-        import ibmsecurity.isds.firmware
+        import ibmsecurity.isds.base.firmware
 
-        ret_obj = ibmsecurity.isds.firmware.get(self)
+        ret_obj = ibmsecurity.isds.base.firmware.get(self)
         for partition in ret_obj['data']:
             if partition['active'] is True:
                 ver = partition['firmware_version'].split(' ')
                 self.facts['version'] = ver[-1]
+
+    def get_activations(self):
+        """
+        Get  appliance activations
+
+        When new modules are activated or old ones de-activated this value is updated.
+        """
+        self.facts['activations'] = []
+        import ibmsecurity.isds.base.activation
+
+        ret_obj = ibmsecurity.isds.base.activation.get(self)
+        for activation in ret_obj['data']:
+            if activation['enabled'] == 'True':
+                self.facts['activations'].append(activation['id'])

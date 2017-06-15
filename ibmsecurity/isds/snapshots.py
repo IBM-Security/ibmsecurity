@@ -61,12 +61,15 @@ def apply(isdsAppliance, id, check_mode=False, force=False):
     """
     Apply a snapshot
     """
+    uri = "/snapshots/apply/" + id
+    print "APPLY"
+    print uri
     if force is True or _check(isdsAppliance, id=id) is True:
         if check_mode is True:
             return isdsAppliance.create_return_object(changed=True)
         else:
-            return isdsAppliance.invoke_post("Applying snapshot", "/snapshots/kickoff_apply",
-                                            {"snapshot_id": id})
+            return isdsAppliance.invoke_post("Applying snapshot", uri,
+                                            {"authenticity_token":"KRVlgWbaS4GCOxfZcw+hkrPH2fVB1Vi+k8cayf0y9T4"})
 
     return isdsAppliance.create_return_object()
 
@@ -166,7 +169,7 @@ def _check(isdsAppliance, comment='', id=None, fn=None):
 
     if id != None:
         for snaps in ret_obj['data']:
-            if snaps['filename'] == id:
+            if snaps['id'] == id:
                 return True
     elif fn != None:
         for snaps in ret_obj['data']:
