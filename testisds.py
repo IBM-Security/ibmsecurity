@@ -78,7 +78,9 @@ isds_server = ISDSAppliance(hostname="isds81dz", user=u, lmi_port=443)
 isds_server2 = ISDSAppliance(hostname="isds8otech", user=u, lmi_port=443)
 
 ################ ACTIVE TEST ################
-p(ibmsecurity.isds.server.startconfig(isdsAppliance=isds_server, serverID="directoryadminserver"))
+p(ibmsecurity.isds.snapshots.get(isdsAppliance=isds_server))
+p(ibmsecurity.isds.token.get(isdsAppliance=isds_server))
+p(ibmsecurity.isds.snapshots.apply(isdsAppliance=isds_server, id="24b4b8f1f71bd6b5a07e0e2cc43e93db"))
 ################ ACTIVE TEST ################
 
 #
@@ -122,7 +124,7 @@ p(ibmsecurity.isds.server.startconfig(isdsAppliance=isds_server, serverID="direc
 # p(ibmsecurity.isds.snapshots.download(isdsAppliance=isds_server, filename="jeff.zip", id="f908e2f7ec4a3e1cb60ca7fc8bfa24fd"))
 # p(ibmsecurity.isds.snapshots.download_latest(isdsAppliance=isds_server))
 # p(ibmsecurity.isds.snapshots.modify(isdsAppliance=isds_server, id="f908e2f7ec4a3e1cb60ca7fc8bfa24fd", comment="NEW COMMENT"))
-# TBD: p(ibmsecurity.isds.snapshots.upload
+# p(ibmsecurity.isds.snapshots.upload(isdsAppliance=isds_server, filename="jeff.zip"))
 # TBD: p(ibmsecurity.isds.snapshots.apply - needs authentication token
 #
 # SUPPORT.PY
@@ -203,7 +205,7 @@ p(ibmsecurity.isds.server.startconfig(isdsAppliance=isds_server, serverID="direc
 # p(ibmsecurity.isds.config.set(isdsAppliance=isds_server, serverType="VD"))
 # p(ibmsecurity.isds.date_time.compare(isdsAppliance1=isds_server, isdsAppliance2=isds_server2))
 #
-# SERVER.PY (NEWS)
+# SERVER.PY (NEW)
 #
 # p(ibmsecurity.isds.server.start(...)
 # p(ibmsecurity.isds.server.startconfig(...)
@@ -215,3 +217,11 @@ p(ibmsecurity.isds.server.startconfig(isdsAppliance=isds_server, serverID="direc
 # p(ibmsecurity.isds.server.stop(isdsAppliance=isds_server, serverID="directoryintegrator"))
 # p(ibmsecurity.isds.server.stop(isdsAppliance=isds_server, serverID="directoryintegratorscimtarget"))
 # p(ibmsecurity.isds.server.stop(isdsAppliance=isds_server, serverID="scimservice"))
+#
+# LOGS.PY (NEW)
+#
+# p(ibmsecurity.isds.logs.get_event_log((isdsAppliance=isds_server))
+#
+# TOKEN.PY (NEW)
+#
+# p(ibmsecurity.isds.token.get(isdsAppliance=isds_server))
