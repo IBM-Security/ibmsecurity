@@ -19,8 +19,9 @@ def execute(isamAppliance, command, input=None, check_mode=False, force=False):
         post_data['input'] = input
 
     warnings = ["Idempotency checks are not coded for CLI calls.",
-                "All CLI calls will be marked as changed whether a change happens or now.",
-                "Check mode not supported for CLI calls."]
+                "All CLI calls will be marked as changed whether a change happens or not."]
+    if check_mode:
+        warnings.append("Check mode not supported for CLI calls.")
 
     return isamAppliance.invoke_post("Run CLI Command", uri, post_data, requires_modules=requires_modules,
                                      requires_version=requires_version, warnings=warnings)
