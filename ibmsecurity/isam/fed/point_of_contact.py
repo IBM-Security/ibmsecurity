@@ -2,13 +2,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/iam/access/v8/poc"
+requires_modules = ["federation"]
+requires_version = "9.0.1.0"
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve a list of point of contact profiles
     """
     return isamAppliance.invoke_get("Retrieve a list of point of contact profiles",
-                                    "/iam/access/v8/poc/profiles/")
+                                    "{0}/profiles".format(uri),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -26,15 +33,18 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a list of point of contact profiles",
-                                    "/iam/access/v8/poc/profiles/{0}".format(id))
+                                    "{0}/profiles/{1}".format(uri, id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get_currentID(isamAppliance, check_mode=False, force=False):
     """
     Retrieve the current point of contact profile information
     """
-    return isamAppliance.invoke_get("Retrieve the current point of contact profile information",
-                                    "/iam/access/v8/poc/")
+    return isamAppliance.invoke_get("Retrieve the current point of contact profile information", uri,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def set_current(isamAppliance, name, check_mode=False, force=False):
@@ -55,11 +65,12 @@ def set_current(isamAppliance, name, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
-                "Update the current point of contact profile information",
-                "/iam/access/v8/poc",
+                "Update the current point of contact profile information", uri,
                 {
                     "currentProfileId": poc_id
-                })
+                },
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -98,7 +109,9 @@ def add(isamAppliance, name, description=None, authenticateCallbacks=None, signI
 
             return isamAppliance.invoke_post(
                 "Create a new point of contact profile",
-                "/iam/access/v8/poc/profiles/", json_data)
+                "{0}/profiles".format(uri), json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -119,7 +132,9 @@ def update(isamAppliance, name, description=None, authenticateCallbacks=None, si
                                      signOutCallbacks, authnPolicyCallbacks)
             return isamAppliance.invoke_put(
                 "Update a specific point of contact profile",
-                "/iam/access/v8/poc/profiles/{0}".format(poc_id), json_data)
+                "{0}/profiles/{1}".format(uri, poc_id), json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -137,7 +152,9 @@ def delete(isamAppliance, name, check_mode=False, force=False):
             poc_id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Delete a point of contact profile",
-                "/iam/access/v8/poc/profiles/{0}".format(poc_id))
+                "{0}/profiles/{1}".format(uri, poc_id),
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

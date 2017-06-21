@@ -2,13 +2,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/mga/partner_templates"
+requires_modules = ["federation"]
+requires_version = "9.0.0.0"
+
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Get the status of the federation partner templates
     """
     return isamAppliance.invoke_get("Get the status of the federation partner templates",
-                                    "/mga/partner_templates")
+                                    uri,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def upload(isamAppliance, filename, check_mode=False, force=False):
@@ -29,8 +36,7 @@ def upload(isamAppliance, filename, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
-                "Update the federation partner templates",
-                "/mga/partner_templates",
+                "Update the federation partner templates", uri,
                 [
                     {
                         'file_formfield': 'file',
@@ -38,7 +44,9 @@ def upload(isamAppliance, filename, check_mode=False, force=False):
                         'mimetype': 'application/octet-stream'
                     }
                 ],
-                {})
+                {},
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

@@ -4,14 +4,21 @@ from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/iam/access/v8/federations"
+requires_modules = ["federation"]
+requires_version = "9.0.1.0"
+
 
 def get_all(isamAppliance, count=None, start=None, filter=None, check_mode=False, force=False):
     """
     Retrieve a list of federations
     """
     return isamAppliance.invoke_get("Retrieve a list of federations",
-                                    "/iam/access/v8/federations/{0}".format(
-                                        tools.create_query_string(count=count, start=start, filter=filter)))
+                                    "{0}/{1}".format(uri, tools.create_query_string(count=count, start=start,
+                                                                                    filter=filter)),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -40,7 +47,9 @@ def get_templates(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve the templates for a federation",
-                                        "/iam/access/v8/federations/{0}/templates".format(id))
+                                        "{0}/{1}/templates".format(uri, id),
+                                        requires_modules=requires_modules,
+                                        requires_version=requires_version)
 
 
 def _get(isamAppliance, id):
@@ -52,7 +61,9 @@ def _get(isamAppliance, id):
     :return:
     """
     return isamAppliance.invoke_get("Retrieve a specific federation",
-                                    "/iam/access/v8/federations/{0}".format(id))
+                                    "{0}/{1}".format(uri, id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def set(isamAppliance, name, protocol, role, configuration, templateName=None, new_name=None, check_mode=False,
@@ -118,7 +129,9 @@ def add(isamAppliance, name, protocol, role, configuration, templateName=None, c
                 json_data['templateName'] = templateName
             return isamAppliance.invoke_post(
                 "Create a new federation",
-                "/iam/access/v8/federations/", json_data)
+                uri, json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -138,7 +151,9 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a federation",
-                "/iam/access/v8/federations/{0}".format(fed_id))
+                "{0}/{1}".format(uri, fed_id),
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -159,7 +174,9 @@ def update(isamAppliance, name, role=None, configuration=None, templateName=None
         else:
             return isamAppliance.invoke_put(
                 "Update a specific federation",
-                "/iam/access/v8/federations/{0}".format(fed_id), json_data)
+                "{0}/{1}".format(uri, fed_id), json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -276,8 +293,10 @@ def export_metadata(isamAppliance, name, filename, check_mode=False, force=False
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a federation",
-                "/iam/access/v8/federations/{0}/metadata".format(fed_id),
-                filename)
+                "{0}/{1}/metadata".format(uri, fed_id),
+                filename,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

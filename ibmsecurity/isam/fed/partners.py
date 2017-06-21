@@ -4,6 +4,11 @@ from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/iam/access/v8/federations"
+requires_modules = ["federation"]
+requires_version = "9.0.1.0"
+
 
 def get_all(isamAppliance, federation_name, count=None, start=None, check_mode=False, force=False):
     """
@@ -22,7 +27,9 @@ def get_all(isamAppliance, federation_name, count=None, start=None, check_mode=F
 
 def _get_all(isamAppliance, fed_id, query_str=''):
     return isamAppliance.invoke_get("Retrieve a list of partners",
-                                    "/iam/access/v8/federations/{0}/partners{1}".format(fed_id, query_str))
+                                    "{0}/{1}/partners{2}".format(uri, fed_id, query_str),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, federation_name, partner_name, check_mode=False, force=False):
@@ -45,7 +52,9 @@ def _get(isamAppliance, federation_id, partner_id):
     Internal function to get data using "id" - used to avoid extra calls
     """
     return isamAppliance.invoke_get("Retrieve a partner",
-                                    "/iam/access/v8/federations/{0}/partners/{1}".format(federation_id, partner_id))
+                                    "{0}/{1}/partners/{2}".format(uri, federation_id, partner_id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def search(isamAppliance, federation_name, partner_name, force=False, check_mode=False):
@@ -97,14 +106,16 @@ def import_metadata(isamAppliance, federation_name, partner_name, filename, chec
                     json_data['name'] = partner_name
                 return isamAppliance.invoke_post_files(
                     "Import a new partner",
-                    "/iam/access/v8/federations/{0}/partners/metadata".format(fed_id),
+                    "{0}/{1}/partners/metadata".format(uri, fed_id),
                     [
                         {
                             'file_formfield': 'metadata',
                             'filename': filename,
                             'mimetype': 'application/octet-stream'
                         }
-                    ], json_data)
+                    ], json_data,
+                    requires_modules=requires_modules,
+                    requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -158,7 +169,9 @@ def add(isamAppliance, federation_name, partner_name, enabled, role, configurati
                     json_data['templateName'] = templateName
                 return isamAppliance.invoke_post(
                     "Create a new partner",
-                    "/iam/access/v8/federations/{0}/partners".format(fed_id), json_data)
+                    "{0}/{1}/partners".format(uri, fed_id), json_data,
+                    requires_modules=requires_modules,
+                    requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -181,7 +194,9 @@ def delete(isamAppliance, federation_name, partner_name, check_mode=False, force
             else:
                 return isamAppliance.invoke_delete(
                     "Delete a partner",
-                    "/iam/access/v8/federations/{0}/partners/{1}".format(fed_id, partner_id))
+                    "{0}/{1}/partners/{2}".format(uri, fed_id, partner_id),
+                    requires_modules=requires_modules,
+                    requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -203,7 +218,9 @@ def update(isamAppliance, federation_name, partner_name, enabled, configuration,
         else:
             return isamAppliance.invoke_put(
                 "Update a specific partner",
-                "/iam/access/v8/federations/{0}/partners/{1}".format(fed_id, partner_id), json_data)
+                "{0}/{1}/partners/{2}".format(uri, fed_id, partner_id), json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

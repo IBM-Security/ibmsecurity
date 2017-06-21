@@ -2,13 +2,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/mga/connector_instructions"
+requires_modules = ["federation"]
+requires_version = "9.0.0.0"
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve all connector instruction sets
     """
-    return isamAppliance.invoke_get("Retrieve all connector instruction sets",
-                                    "/mga/connector_instructions/")
+    return isamAppliance.invoke_get("Retrieve all connector instruction sets", uri,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, id, variable_names=None, check_mode=False, force=False):
@@ -31,4 +37,6 @@ def get(isamAppliance, id, variable_names=None, check_mode=False, force=False):
                 query_str += "{0}={1}".format(key, value)
 
     return isamAppliance.invoke_get("Retrieve a connector instruction set",
-                                    "/mga/connector_instructions/{0}{1}".format(id, query_str))
+                                    "{0}/{1}{2}".format(uri, id, query_str),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)

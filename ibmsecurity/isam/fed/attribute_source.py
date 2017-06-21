@@ -2,13 +2,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/mga/attribute_sources"
+requires_modules = ["federation"]
+requires_version = "9.0.0.0"
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve a list of attribute sources
     """
-    return isamAppliance.invoke_get("Retrieve a list of attribute sources",
-                                    "/mga/attribute_sources/")
+    return isamAppliance.invoke_get("Retrieve a list of attribute sources", uri,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -34,7 +40,9 @@ def _get(isamAppliance, id):
     :return:
     """
     return isamAppliance.invoke_get("Retrieve a specific attribute source",
-                                    "/mga/attribute_sources/{0}".format(id))
+                                    "{0}/{2}".format(uri, id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -88,7 +96,9 @@ def add(isamAppliance, name, type, value, properties=None, check_mode=False, for
                 json_data['properties'] = properties
             return isamAppliance.invoke_post(
                 "Create an attribute source",
-                "/mga/attribute_sources/", json_data)
+                uri, json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -105,7 +115,9 @@ def update(isamAppliance, name, type, value, properties=None, new_name=None, che
         else:
             return isamAppliance.invoke_put(
                 "Update an attribute source",
-                "/mga/attribute_sources/{0}".format(as_id), json_data)
+                "{0}/{1}".format(uri, as_id), json_data,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -164,7 +176,9 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete an attribute source",
-                "/mga/attribute_sources/{0}".format(as_id))
+                "{0}/{1}".format(uri, as_id),
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
