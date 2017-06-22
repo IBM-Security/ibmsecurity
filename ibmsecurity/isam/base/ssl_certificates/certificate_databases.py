@@ -30,7 +30,7 @@ def create(isamAppliance, kdb_name, type='kdb', token_label=None, passcode=None,
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post(
-                "Creating a certificate database",
+                "Creating certificate database '{0}'".format(kdb_name),
                 "/isam/ssl_certificates",
                 {
                     "kdb_name": kdb_name,
