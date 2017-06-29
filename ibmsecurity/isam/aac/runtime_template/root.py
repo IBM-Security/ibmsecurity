@@ -31,13 +31,7 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
         return isamAppliance.invoke_post_files(
             "Replace all Runtime Template Files",
             uri,
-            [
-                {
-                    'file_formfield': 'file',
-                    'filename': filename,
-                    'mimetype': 'application/octet-stream'
-                }
-            ],
+            filename,
             {
                 "force": force
             })

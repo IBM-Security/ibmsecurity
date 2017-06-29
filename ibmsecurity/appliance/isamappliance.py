@@ -149,16 +149,15 @@ class ISAMAppliance(IBMAppliance):
             }
         self.logger.debug("Headers are: {0}".format(headers))
 
-        files = list()
-        for file2post in fileinfo:
-            files.append((file2post['file_formfield'],
-                          (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
+        files = {"file":
+                open(fileinfo, 'rb')}
 
         self._suppress_ssl_warning()
 
         try:
             r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
                               files=files, verify=False, headers=headers)
+            self.logger.debug("Response: %i headers=%s", r.status_code, r.headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
