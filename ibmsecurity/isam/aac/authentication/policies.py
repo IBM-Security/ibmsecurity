@@ -20,7 +20,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieve a specific authentication policy
     """
-    ret_obj = search(isamAppliance, name)
+    ret_obj = search(isamAppliance, filter="name equals {}".format(name))
     if ret_obj['data'] != {}:
         return _get(isamAppliance, ret_obj['data'])
     else:
@@ -46,11 +46,18 @@ def set_file(isamAppliance, name, policy_file, uri, description="",
 
 def set(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
         enabled=None, check_mode=False, force=False):
-    ret_obj = search(isamAppliance, name)
+    ret_obj = search(isamAppliance, filter="name equals {}".format(name))
     if ret_obj['data'] == {}:
         return add(isamAppliance, name, policy, uri, description, dialect, enabled, check_mode, True)
     else:
-        return update(isamAppliance, name, policy, uri, description, dialect, enabled, check_mode, force)
+        try:
+            id = ret_obj['data']['id']
+        except KeyError:
+            error = "Unable to find ID for policy named '{}'".format(name)
+            warnings.append(error)
+            logging.error(error)
+            return isamAppliance.create_return_object(warnings=warnings)
+        return update(isamAppliance, id, name=name, policy=policy, ur=uri, description=description, dialect=dialect, enabled=enabled, check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
@@ -98,46 +105,31 @@ def delete(isamAppliance, id, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
-
-def update(isamAppliance, name, policy, uri, description="",
-           dialect="urn:ibm:security:authentication:policy:1.0:schema", enabled=None, check_mode=False, force=False):
+def update(isamAppliance, id, name=None, policy=None, uri=None, description=None,
+           dialect=None, user_last_modified=None, last_modified=None,
+           date_created=None, predefined=None, enabled=None, check_mode=False, force=False):
     """
-    Update a specified authentication policy
+    Update a specific policy by its ID. If options are provided, they will be modified.
+    If options are not provided, they won't be modified.
     """
     warnings = []
     needs_update = False
-    json_data = {
-        "name": name,
-        "description": description,
-        "policy": policy,
-        "uri": uri,
-        "dialect": dialect
-    }
-    if enabled is not None:
-        if isamAppliance.facts["version"] < "9.0.2.1":
-            warnings.append(
-                "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
-                    isamAppliance.facts["version"]))
-        else:
-            json_data["enabled"] = enabled
-    if force is not True:
-        try:
-            ret_obj = get(isamAppliance, name)
-            id = ret_obj['data']['id']
-            del ret_obj['data']['id']
-            del ret_obj['data']['datecreated']
-            del ret_obj['data']['lastmodified']
-            del ret_obj['data']['userlastmodified']
-            del ret_obj['data']['predefined']
-            import ibmsecurity.utilities.tools
-            exist_data = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-            new_data = ibmsecurity.utilities.tools.json_sort(json_data)
-            logger.debug("Existing Data: {0}".format(exist_data))
-            logger.debug("Provided Data: {0}".format(new_data))
-            if exist_data != new_data:
-                needs_update = True
-        except:
-            pass
+
+    def add_if_not_empty(data, key, value):
+        if value is not None:
+            data[key] = value
+
+    data = {}
+    add_if_not_empty(data, "name", name)
+    add_if_not_empty(data, "policy", policy)
+    add_if_not_empty(data, "uri", uri)
+    add_if_not_empty(data, "description", description)
+    add_if_not_empty(data, "dialect", dialect)
+    add_if_not_empty(data, "id", id)
+    add_if_not_empty(data, "userlastmodified", user_last_modified)
+    add_if_not_empty(data, "lastmodified", last_modified)
+    add_if_not_empty(data, "datecreated", date_created)
+    add_if_not_empty(data, "predefined", predefined)
 
     if force is True or needs_update is True:
         if check_mode is True:
@@ -145,7 +137,7 @@ def update(isamAppliance, name, policy, uri, description="",
         else:
             return isamAppliance.invoke_put(
                 "Update a specified authentication policy",
-                "{0}/{1}".format(module_uri, id), json_data, requires_modules=requires_modules,
+                "{0}/{1}".format(module_uri, id), data, requires_modules=requires_modules,
                 requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object()
@@ -164,19 +156,16 @@ def _check(isamAppliance, id=None, name=None):
     return False
 
 
-def search(isamAppliance, name, check_mode=False, force=False):
-    """
-    Retrieve the id for a given policy name
-    """
-    ret_obj = isamAppliance.create_return_object()
-    ret_obj_all = get_all(isamAppliance)
+# Provides a list of policies matching the specified parameters.
+# For information on the 'filter', consult the RAPI doc for "Retrieve a list of policies".
+def search(isamAppliance, sort_by=None, count=None, start=None, filter=None):
+    parameters = {}
+    parameters["sortBy"] = sort_by
+    parameters["count"] = count
+    parameters["start"] = start
+    parameters["filter"] = filter
 
-    for obj in ret_obj_all['data']:
-        if obj['name'] == name:
-            ret_obj['data'] = obj['id']
-            break
-
-    return ret_obj
+    return isamAppliance.invoke_get("Search for authentication policies", module_uri, parameters)
 
 
 def activate(isamAppliance, name, enabled=True, check_mode=False, force=False):
@@ -194,8 +183,7 @@ def activate(isamAppliance, name, enabled=True, check_mode=False, force=False):
             if check_mode is True:
                 return isamAppliance.create_return_object(changed=True, warnings=warnings)
             else:
-                return update(isamAppliance, name=name, policy=ret_obj['data']['policy'], uri=ret_obj['data']['uri'],
-                              description=ret_obj['data']['description'], dialect=ret_obj['data']['dialect'],
+                return update(isamAppliance, ret_obj['data']['id'],
                               enabled=enabled)
 
     return isamAppliance.create_return_object(warnings=warnings)
