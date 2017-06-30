@@ -276,7 +276,7 @@ class ISAMAppliance(IBMAppliance):
 
         return return_obj
 
-    def _invoke_request(self, func, description, uri, ignore_error, data={}, requires_modules=None,
+    def _invoke_request(self, func, description, uri, ignore_error, data={}, parameters=None, requires_modules=None,
                         requires_version=None, warnings=[]):
         """
         Send a request to the LMI.  This function is private and should not be
@@ -308,11 +308,11 @@ class ISAMAppliance(IBMAppliance):
             if func == requests.get or func == requests.delete:
 
                 r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
-                         verify=False, headers=headers)
+                         parameters=parameters, verify=False, headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
                          auth=(self.user.username, self.user.password),
-                         verify=False, headers=headers)
+                         parameters=parameters, verify=False, headers=headers)
 
             if func != requests.get:
                 return_obj['changed'] = True  # Anything but GET should result in change
@@ -342,13 +342,13 @@ class ISAMAppliance(IBMAppliance):
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     warnings=warnings)
 
-    def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
+    def invoke_get(self, description, uri, parameters=None, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[]):
         """
         Send a GET request to the LMI.
         """
         return self._invoke_request(requests.get, description, uri, ignore_error, requires_modules=requires_modules,
-                                    requires_version=requires_version, warnings=warnings)
+                                    requires_version=requires_version, parameters=parameters, warnings=warnings)
 
     def invoke_delete(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                       warnings=[]):
