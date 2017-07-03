@@ -255,7 +255,7 @@ def delete(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a standard or virtual junction",
-                "{0}/{1}/junctions?junctions_id={1}".format(uri, reverseproxy_id, junctionname),
+                "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id, junctionname),
                 requires_modules=requires_modules,
                 requires_version=requires_version)
 
