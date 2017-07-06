@@ -66,6 +66,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            ret_obj = _get_id(isamAppliance, name=name)
+            id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting an LDAP server connection",
                 "/mga/server_connections/ldap/{0}/v1".format(id))
