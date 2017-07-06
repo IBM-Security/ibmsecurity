@@ -95,8 +95,8 @@ def get_resources(isamAppliance, object='/WebSEAL', check_mode=False, force=Fals
     return ret_obj
 
 
-def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgorithm=None, check_mode=False,
-           force=False):
+def config(isamAppliance, server, resourceUri, type, policies=[], policyCombiningAlgorithm=None,
+           check_mode=False, force=False):
     """
     Configure a resource
 
@@ -112,7 +112,8 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
         else:
             json_data = {
                 "server": server,
-                "resourceUri": resourceUri
+                "resourceUri": resourceUri,
+                "type": type
             }
             json_data['policies'] = _convert_policy_name_to_id(isamAppliance, policies)
             if policyCombiningAlgorithm is not None:
