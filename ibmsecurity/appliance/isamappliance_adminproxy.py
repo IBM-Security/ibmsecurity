@@ -13,7 +13,6 @@ class ISAMApplianceAdminProxy(ISAMAppliance):
 
         self.adminProxyProtocol = adminProxyProtocol
         self.adminProxyHostname = adminProxyHostname
-        self.omitAdminProxy = omitAdminProxy
         
         # Type checking and tranformation to safely reuse this variable later on
         if isinstance(adminProxyPort, basestring):
