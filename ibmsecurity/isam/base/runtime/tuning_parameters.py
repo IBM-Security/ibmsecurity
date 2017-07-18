@@ -2,13 +2,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga", "federation"]
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Get runtime tuning settings
     """
     return isamAppliance.invoke_get("Retrieving runtime tuning parameters",
-                                    "/mga/runtime_tuning/v1")
+                                    "/mga/runtime_tuning/v1",
+                                    requires_modules=requires_modules)
 
 
 def set(isamAppliance, option, value, check_mode=False, force=False):
@@ -28,7 +30,7 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
                 "/mga/runtime_tuning/{0}/v1".format(option),
                 {
                     'value': value
-                })
+                }, requires_modules=requires_modules)
 
     return isamAppliance.create_return_object()
 
@@ -69,7 +71,8 @@ def reset(isamAppliance, option, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Reset a runtime tuning parameter to default value",
-                "/mga/runtime_tuning/{0}/v1".format(option))
+                "/mga/runtime_tuning/{0}/v1".format(option),
+                requires_modules=requires_modules)
 
     return isamAppliance.create_return_object()
 
