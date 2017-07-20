@@ -1,4 +1,5 @@
 import logging
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -8,11 +9,16 @@ requires_modules = ["mga"]
 requires_version = None
 
 
-def get_all(isamAppliance, check_mode=False, force=False):
+def get_all(isamAppliance, start=None, count=None, filter=None, sortBy=None, check_mode=False, force=False):
     """
     Retrieve a list of authentication policies
     """
-    return isamAppliance.invoke_get("Retrieve a list of authentication policies", module_uri,
+    return isamAppliance.invoke_get("Retrieve a list of authentication policies", "{0}/{1}".format(module_uri,
+                                                                                                   tools.create_query_string(
+                                                                                                       start=start,
+                                                                                                       count=count,
+                                                                                                       filter=filter,
+                                                                                                       sortBy=sortBy)),
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 

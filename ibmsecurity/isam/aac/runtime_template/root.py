@@ -15,8 +15,8 @@ def export_file(isamAppliance, filename, check_mode=False, force=False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export all Runtime Template Files",
-                "{0}/?export".format(uri),
-                filename)
+                "{0}/?export=true".format(uri),
+                filename, no_headers=True)
 
     return isamAppliance.create_return_object()
 
@@ -40,4 +40,4 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
             ],
             {
                 "force": force
-            })
+            }, json_response=False)
