@@ -43,7 +43,12 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
                                        requires_version=requires_version)
     # servers are provided as a single string, here we parse it out into a list + dict
     servers = []
-    srvs = ret_obj['data']['servers'].split('#')
+    if isamAppliance.facts["version"] > "9.0.1.0":
+        srv_separator = '#'
+    else:
+        srv_separator = '&'
+    logger.debug("Server Separator being used: {0}".format(srv_separator))
+    srvs = ret_obj['data']['servers'].split(srv_separator)
     logger.debug("Servers in raw string: {0}".format(ret_obj['data']['servers']))
     logger.debug("Number of servers in junction: {0}".format(len(srvs)))
     for srv in srvs:
