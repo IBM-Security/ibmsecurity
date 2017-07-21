@@ -377,18 +377,31 @@ class ISAMAppliance(IBMAppliance):
 
     def get_version(self):
         """
-        Get  appliance version (active partition)
+        Get appliance version (versions API or active partition)
 
         When firmware are installed or partition are changed, then this value is updated
         """
         self.facts['version'] = None
+        import ibmsecurity.isam.base.version
         import ibmsecurity.isam.base.firmware
 
-        ret_obj = ibmsecurity.isam.base.firmware.get(self)
-        for partition in ret_obj['data']:
-            if partition['active'] is True:
-                ver = partition['firmware_version'].split(' ')
-                self.facts['version'] = ver[-1]
+        try:
+            ret_obj = ibmsecurity.isam.base.version.get(self)
+            self.facts['version'] = ret_obj['firmware_version']
+            self.facts['model'] = ret_obj['deployment_model']
+        except IBMError:
+            try:
+                ret_obj = ibmsecurity.isam.base.firmware.get(self)
+                for partition in ret_obj['data']:
+                    if partition['active'] is True:
+                        ver = partition['firmware_version'].split(' ')
+                        self.facts['version'] = ver[-1]
+                self.facts['model'] = "Appliance"
+            except:
+                pass
+        return
+
+
 
     def get_activations(self):
         """
