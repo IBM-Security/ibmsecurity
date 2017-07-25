@@ -27,7 +27,7 @@ def create(isamAppliance, id, password, groups=[], check_mode=False, force=False
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post("Creating snapshot", "/sysaccount/users/v1",
+            return isamAppliance.invoke_post("Creating user", "/sysaccount/users/v1",
                                              {
                                                  'id': id,
                                                  'password': password,
