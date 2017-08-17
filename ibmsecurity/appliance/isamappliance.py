@@ -300,6 +300,7 @@ class ISAMAppliance(IBMAppliance):
 
         # Process the input data into JSON
         json_data = json.dumps(data)
+
         self.logger.debug("Input Data: " + json_data)
 
         self._suppress_ssl_warning()
@@ -357,6 +358,85 @@ class ISAMAppliance(IBMAppliance):
         """
         return self._invoke_request(requests.delete, description, uri, ignore_error, requires_modules=requires_modules,
                                     requires_version=requires_version, warnings=warnings)
+
+    def invoke_request(self, description, method, uri, filename=None, ignore_error=False, requires_modules=None,
+                       requires_version=None,
+                       warnings=[], **kwargs):
+        """
+        parse and send a appropriate request to the appliance.
+        """
+        self._log_desc(description=description)
+
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
+
+        args = {}
+
+        for key, value in kwargs.iteritems():
+            if key == 'json' and value != {}:
+                json_data = json.dumps(value)
+                self.logger.debug("Input json Data: " + json_data)
+                args['json'] = json_data
+            elif key == 'data':
+                try:
+                    json.loads(value)
+                    self.logger.debug("Input Data: " + value)
+                    args['data'] = value
+                except ValueError:
+                    self.logger.debug("Input Data: " + value)
+                    args['data'] = value
+            else:
+                args[key] = value
+
+        self._suppress_ssl_warning()
+
+        try:
+            streaminargs=False
+            r = requests.request(method, url=self._url(uri), auth=(self.user.username, self.user.password),
+                                 verify=False, **args)
+            # check for stream=True
+            if "stream" in args and args["stream"] == True:
+                streaminargs=True
+                if filename == None:
+                    return_obj['warnings'] = return_obj['warnings'].append(
+                        "filename is missing, for stream=True, filename needs to be non null")
+                    return return_obj
+                # else stream content to file
+                else:
+                    if (r.status_code != 200 and r.status_code != 204 and r.status_code != 201):
+                        self.logger.error("  Request failed: ")
+                        self.logger.error("     status code: {0}".format(r.status_code))
+                        if r.text != "":
+                            self.logger.error("     text: " + r.text)
+                        if not ignore_error:
+                            raise IBMError("HTTP Return code: {0}".format(r.status_code), r.text)
+                        else:
+                            return_obj['rc'] = r.status_code
+                            return_obj['data'] = {'msg': 'Unable to extract contents to file!'}
+                    else:
+                        with open(filename, 'wb') as f:
+                            for chunk in r.iter_content(chunk_size=1024):
+                                if chunk:  # filter out keep-alive new chunks
+                                    f.write(chunk)
+                        return_obj['rc'] = 0
+                        return_obj['data'] = {'msg': 'Contents extracted to file: ' + filename}
+
+            if method == "get" or (method =="post" and streaminargs == True):
+                return_obj['changed'] = False
+            else:
+                return_obj['changed'] = True # Anything but GET or a POST with stream=True set should result in change
+
+            if streaminargs == False:
+                self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
+
+        except requests.exceptions.ConnectionError:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+
+        return return_obj
 
     def get_facts(self):
         """

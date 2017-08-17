@@ -10,13 +10,13 @@ requires_version = None
 
 def install(isamAppliance, license, check_mode=False, force=False):
     """
-        install license in the appliance
-        license should be the filename of the license file
+    install license in the appliance
+    license should be the filename of the license file
     """
-
     # create the request header for the post first
-    headers = {"Accept": "text/html"
-               }
+    headers = {
+        "Accept": "text/html"
+    }
 
     file = {"license": open(license, 'rb')}
 
@@ -36,11 +36,11 @@ def install(isamAppliance, license, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+
 def get_all(isamAppliance, check_mode=False, force=False):
     """
-            retrieve all licenses installed in the appliance
+    Retrieve all licenses installed in the appliance
     """
-
     return isamAppliance.invoke_get("Retrieve all licenses installed in the appliance",
                                     "{0}".format(uri), requires_modules=requires_modules,
                                     requires_version=requires_version)
@@ -73,6 +73,7 @@ def _check_license(isamAppliance, license):
 
     return False
 
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare license installed between two appliances
@@ -81,5 +82,4 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get_all(isamAppliance2)
 
     import ibmsecurity.utilities.tools
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2,
-                                                    deleted_keys=['serial_number'])
+    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['serial_number'])
