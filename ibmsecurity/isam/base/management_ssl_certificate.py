@@ -16,10 +16,10 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
     """
     Import certificate database
     """
-
-    if force is True or _check(isamAppliance) is False:
+    warnings = ["Idempotency not available. Unable to extract existing certificate to compare with provide one."]
+    if force is True or _check(isamAppliance, certificate, password) is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(
                 "Import certificate database",
@@ -34,7 +34,7 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
                 {
                     'password': password
                 },
-                json_response=False)
+                json_response=False, warnings=warnings)
 
     return isamAppliance.create_return_object()
 

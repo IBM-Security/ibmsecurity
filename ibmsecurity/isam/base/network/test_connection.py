@@ -56,7 +56,7 @@ def connect(isamAppliance, server, port, ssl=True, timeout=60, key=None, showcer
             json_data[k] = value
 
     ret_obj = isamAppliance.invoke_post("Run Connect Test", uri, json_data, requires_modules=requires_modules,
-                                        requires_version=requires_version)
+                                        requires_version=requires_version, ignore_error=True)
     # HTTP POST calls get flagged as changes - but test connection changes nothing so override
     if ret_obj['changed'] is True:
         ret_obj['changed'] = False
