@@ -35,6 +35,73 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
+def add_endpoint(isamAppliance, endpoint, port, secure, check_mode=False, force=False):
+    """
+    Add runtime endpoint
+    """
+    matches, exists = False, False
+    if force is False:
+        matches, exists = _check(isamAppliance, endpoint, None)
+
+    if force is True or matches is False:  # will add if not exists
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_post(
+                "Add runtime endpoint",
+                "/mga/runtime_tuning/endpoints/v1",
+                {
+                    'interface': endpoint,
+                    'port': port,
+                    'secure': secure
+                }, requires_modules=requires_modules)
+
+    return isamAppliance.create_return_object()
+
+
+def set_endpoint(isamAppliance, endpoint, port, secure, check_mode=False, force=False):
+    """
+    Set runtime endpoint
+    """
+    matches, exists = False, False
+    if force is False:
+        matches, exists = _check(isamAppliance, endpoint, None)
+
+    if force is True or matches is False:  # will add if not exists
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put(
+                "Set runtime endpoint",
+                "/mga/runtime_tuning/endpoints/{0}/v1".format(endpoint),
+                {
+                    'port': port,
+                    'secure': secure
+                }, requires_modules=requires_modules)
+
+    return isamAppliance.create_return_object()
+
+
+def delete_endpoint(isamAppliance, endpoint, check_mode=False, force=False):
+    """
+    Delete runtime endpoint
+    """
+    matches, exists = False, False
+    if force is False:
+        matches, exists = _check(isamAppliance, endpoint, None)
+
+    if force is True or matches is False:  # will add if not exists
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete(
+                "Delete runtime endpoint",
+                "/mga/runtime_tuning/endpoints/{0}/v1".format(endpoint)
+                , requires_modules=requires_modules)
+
+    return isamAppliance.create_return_object()
+
+
 def _check(isamAppliance, option, value):
     """
     Check if tuning parameter option exists and matches value
