@@ -20,7 +20,7 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
 
 
 def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junction_type, server_port, server_dn=None,
-        stateful_junction='no', case_sensitive_urls='no', windows_style_urls='no', virtual_hostname=None,
+        stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
         virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
         proxy_port=None, sms_environment=None, vhost_label=None, check_mode=False, force=False):
     """
@@ -37,8 +37,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
     :param server_dn:
     :param query_contents:
     :param stateful_junction:
-    :param case_sensitive_urls:
-    :param windows_style_urls:
+    :param case_sensitive_url:
+    :param windows_style_url:
     :param https_port:
     :param http_port:
     :param proxy_hostname:
@@ -63,8 +63,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 "server_hostname": server_hostname,
                 "server_port": server_port,
                 "stateful_junction": stateful_junction,
-                "case_sensitive_urls": case_sensitive_urls,
-                "windows_style_urls": windows_style_urls,
+                "case_sensitive_url": case_sensitive_url,
+                "windows_style_url": windows_style_url,
             }
             if https_port is not None:
                 jct_srv_json["https_port"] = https_port

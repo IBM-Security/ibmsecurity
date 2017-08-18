@@ -23,7 +23,7 @@ def install(isamAppliance, license, check_mode=False, force=False):
     if _check_license(isamAppliance, license) == True and force == False:
         return isamAppliance.create_return_object(warnings=["License already installed"])
     else:
-        if _check_license(isamAppliance, license) == True or force == True:
+        if _check_license(isamAppliance, license) == False or force == True:
             if check_mode:
                 return isamAppliance.create_return_object(
                     changed=True)  # there is no real change in appliance, so maybe it should be false
