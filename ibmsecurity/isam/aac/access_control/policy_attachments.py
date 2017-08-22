@@ -95,7 +95,7 @@ def get_resources(isamAppliance, object='/WebSEAL', check_mode=False, force=Fals
     return ret_obj
 
 
-def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgorithm=None,
+def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgorithm=None, cache=None,
            check_mode=False, force=False):
     """
     Configure a resource
@@ -103,43 +103,61 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
     Note: Please input policies with policy names (it will be converted to id's), like so:
      [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
     """
+    warnings = []
     if force is False:
         ret_obj = search(isamAppliance, server, resourceUri)
 
     if force is True or ret_obj['data'] == {}:
+        json_data = {
+            "server": server,
+            "resourceUri": resourceUri
+        }
+        json_data['policies'] = _convert_policy_name_to_id(isamAppliance, policies)
+        if policyCombiningAlgorithm is not None:
+            json_data['policyCombiningAlgorithm'] = policyCombiningAlgorithm
+        if cache is not None:
+            if isamAppliance.facts["version"] < "9.0.3.0":
+                warnings.append(
+                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
+                        isamAppliance.facts["version"], cache))
+            else:
+                json_data["cache"] = cache
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            json_data = {
-                "server": server,
-                "resourceUri": resourceUri
-            }
-            json_data['policies'] = _convert_policy_name_to_id(isamAppliance, policies)
-            if policyCombiningAlgorithm is not None:
-                json_data['policyCombiningAlgorithm'] = policyCombiningAlgorithm
             return isamAppliance.invoke_post(
-                "Configure a resource", uri, json_data)
+                "Configure a resource", uri, json_data, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, server, resourceUri, policyCombiningAlgorithm, check_mode=False, force=False):
+def update(isamAppliance, server, resourceUri, policyCombiningAlgorithm, cache=None, check_mode=False, force=False):
     """
     Update the policy attachment combining algorithm
     """
+    warnings = []
     ret_obj = get(isamAppliance, server, resourceUri)
 
     if force is True or (
-                    ret_obj['data'] != {} and ret_obj['data']['policyCombiningAlgorithm'] != policyCombiningAlgorithm):
+                    ret_obj['data'] != {} and (
+                            ret_obj['data']['policyCombiningAlgorithm'] != policyCombiningAlgorithm or
+                            ret_obj['data']['cache'] != cache)):
+        json_data = {
+            "policyCombiningAlgorithm": policyCombiningAlgorithm
+        }
+        if cache is not None:
+            if isamAppliance.facts["version"] < "9.0.3.0":
+                warnings.append(
+                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
+                        isamAppliance.facts["version"], cache))
+            else:
+                json_data["cache"] = cache
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
-                "Update the policy attachment combining algorithm",
-                "{0}/{1}/properties".format(uri, ret_obj['data']['id']),
-                {
-                    "policyCombiningAlgorithm": policyCombiningAlgorithm
-                })
+                "Update the policy attachment combining algorithm and cache",
+                "{0}/{1}/properties".format(uri, ret_obj['data']['id']), json_data, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
@@ -212,7 +230,7 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     ret_obj = get(isamAppliance, server, resourceUri)
 
     if force is True or (ret_obj['data'] != {} and (
-            ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
+                    ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

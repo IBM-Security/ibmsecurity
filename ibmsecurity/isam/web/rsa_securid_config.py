@@ -26,7 +26,7 @@ def upload(isamAppliance, filename, check_mode=False, force=False):
         "Idempotency check is only to see if there was a config already uploaded. Force upload to replace existing configuration."]
     if force is True or _check(isamAppliance) is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(
                 "Upload a RSA Securid Config file",
