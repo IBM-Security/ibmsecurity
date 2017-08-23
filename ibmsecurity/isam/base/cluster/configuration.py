@@ -17,7 +17,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
-        quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None,
+        quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None, dsc_ssl_keyfile=None,
         dsc_ssl_label=None, dsc_worker_threads=64, dsc_maximum_session_lifetime=3600, dsc_client_grace_period=600,
         hvdb_embedded=True, hvdb_max_size=40, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
         hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
@@ -53,6 +53,8 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
         cluster_json["dsc_port"] = dsc_port
     if dsc_use_ssl is not None:
         cluster_json["dsc_use_ssl"] = dsc_use_ssl
+    if dsc_ssl_keyfile is not None:
+        cluster_json["dsc_ssl_keyfile"] = dsc_ssl_keyfile
     if dsc_ssl_label is not None:
         cluster_json["dsc_ssl_label"] = dsc_ssl_label
     if hvdb_max_size is not None:
