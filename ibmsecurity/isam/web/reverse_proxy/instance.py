@@ -113,6 +113,25 @@ def import_config(isamAppliance, id, file, overwrite=True, check_mode=False, for
     return isamAppliance.create_return_object()
 
 
+def export_config(isamAppliance, id, filename, check_mode=False, force=False):
+    """
+    Export a specific mapping rule
+        -id is the name of the reverse proxy instance
+        -filename is file system location to export the file (e.g. /tmp/webseal_config.zip)
+    """
+    import os.path
+    if force is True or os.path.exists(os.path.dirname(filename)) is True:
+        if check_mode is True:  # No point downloading a file if in check_mode
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_get_file(
+                description="Export a specific mapping rule",
+                uri="{0}/{1}?action=export".format(uri, id),
+                filename=filename)
+
+    return isamAppliance.create_return_object()
+
+
 def execute(isamAppliance, id, operation="restart", check_mode=False, force=False):
     """
     Execute an operation on runtime component
