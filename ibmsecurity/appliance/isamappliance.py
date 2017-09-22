@@ -329,34 +329,51 @@ class ISAMAppliance(IBMAppliance):
         """
         Send a PUT request to the LMI.
         """
-        return self._invoke_request(requests.put, description, uri, ignore_error, data,
+
+        self._log_request("PUT", uri, description)
+        response = self._invoke_request(requests.put, description, uri,
+                                       ignore_error, data,
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     warnings=warnings)
+        return response
 
     def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
                     warnings=[]):
         """
         Send a POST request to the LMI.
         """
-        return self._invoke_request(requests.post, description, uri, ignore_error, data,
+
+        self._log_request("POST", uri, description)
+        response = self._invoke_request(requests.post, description, uri,
+                                       ignore_error, data,
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     warnings=warnings)
+        return response
 
     def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[]):
         """
         Send a GET request to the LMI.
         """
-        return self._invoke_request(requests.get, description, uri, ignore_error, requires_modules=requires_modules,
+        self._log_request("GET", uri, description)
+        response = self._invoke_request(requests.get, description, uri,
+                                   ignore_error, requires_modules=requires_modules,
                                     requires_version=requires_version, warnings=warnings)
+        self._log_response(response)
+        return response
 
     def invoke_delete(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                       warnings=[]):
         """
         Send a DELETE request to the LMI.
         """
-        return self._invoke_request(requests.delete, description, uri, ignore_error, requires_modules=requires_modules,
+        self._log_request("DELETE", uri, description)
+        response = self._invoke_request(requests.delete, description, uri,
+                               ignore_error, requires_modules=requires_modules,
                                     requires_version=requires_version, warnings=warnings)
+
+        self._log_response(response)
+        return response
 
     def get_facts(self):
         """
@@ -416,3 +433,16 @@ class ISAMAppliance(IBMAppliance):
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])
+
+    def _log_request(self, method, url, desc):
+        self.logger.debug("Request: %s %s desc=%s", method, url, desc)
+
+    def _log_response(self, response):
+        if response:
+            self.logger.debug("Response: %d", response.get('rc'))
+            # self.logger.debug("Response: %i %i warnings:%s",
+            #                     response.get('rc'),
+            #                     response.get('status_code'),
+            #                     response.get('warnings'))
+        else:
+            self.logger.debug("Response: None")

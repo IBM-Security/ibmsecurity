@@ -19,6 +19,23 @@ def get_id(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieve the cluster identifier",
                                     "/isam/cluster/id/v2")
 
+def get_default_id(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieve the default cluster identifier of the instance
+    """
+    return isamAppliance.invoke_get("Retrieve the cluster identifier",
+                                    "/isam/cluster/id/default/v2")
+
+
+def get_state(isamAppliance, cluster_id, check_mode=False, force=False):
+    """
+    Get the state of the given cluster ID to check whether it is valid.
+    """
+    if not cluster_id:
+        return isamAppliance.create_return_object()
+    return isamAppliance.invoke_get("Get the state of the given cluster ID",
+                 "/isam/cluster/id/address/{0}/state/v2".format(cluster_id))
+
 
 def get_master(isamAppliance, check_mode=False, force=False):
     """
