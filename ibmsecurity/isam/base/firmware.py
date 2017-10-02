@@ -4,12 +4,12 @@ import ibmsecurity.utilities.tools
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance, check_mode=False, force=False):
+def get(isamAppliance, check_mode=False, force=False, ignore_error=False):
     """
     Retrieve existing firmware.
     """
     return isamAppliance.invoke_get("Retrieving firmware",
-                                    "/firmware_settings")
+                                    "/firmware_settings", ignore_error=ignore_error)
 
 
 def backup(isamAppliance, check_mode=False, force=False):
