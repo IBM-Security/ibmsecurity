@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.appliance.ibmappliance import IBMError
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +86,12 @@ def add(isamAppliance, signature_file, restricted=False, check_mode=False, force
     """
     id = None
     if force is False:
-        ret_obj = get_id(isamAppliance)
-        id = ret_obj['data']['value']
+        try:
+            ret_obj = get_id(isamAppliance)
+            id = ret_obj['data']['value']
+        except IBMError:
+            ret_obj = get_default_id(isamAppliance)
+            id = ret_obj['data']['address']
 
     if force is True or _check(isamAppliance, id) is False:
         if check_mode is True:
