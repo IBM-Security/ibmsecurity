@@ -34,4 +34,4 @@ def get(isamAppliance, reverseproxy_id, configuration_id, check_mode=False, forc
         logger.error("Invalid configuration_id")
         return False
     
-    return ret_value
+    return isamAppliance.create_return_object(data=ret_value)
