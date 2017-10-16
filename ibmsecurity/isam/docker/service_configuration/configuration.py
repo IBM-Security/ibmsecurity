@@ -18,9 +18,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
         hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
-        hvdb_driver_type=None, hvdb_solid_tc=None, cfgdb_embedded=True, cfgdb_db_type=None, cfgdb_address=None,
-        cfgdb_port=None, cfgdb_user=None, cfgdb_password=None, cfgdb_db2_alt_address=None, cfgdb_db2_alt_port=None,
-        cfgdb_db_name=None, cfgdb_db_secure=None, cfgdb_driver_type=None, cfgdb_solid_tc=None):
+        hvdb_driver_type=None, hvdb_solid_tc=None):
     """
     Set service configuration
     """
@@ -54,32 +52,6 @@ def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvd
             import ast
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
             service_json["hvdb_solid_tc"] = hvdb_solid_tc
-    if cfgdb_db_type is not None:
-        service_json["cfgdb_db_type"] = cfgdb_db_type
-    if cfgdb_address is not None:
-        service_json["cfgdb_address"] = cfgdb_address
-    if cfgdb_port is not None:
-        service_json["cfgdb_port"] = cfgdb_port
-    if cfgdb_user is not None:
-        service_json["cfgdb_user"] = cfgdb_user
-    if cfgdb_password is not None:
-        warnings.append("Since existing cfgdb_password cannot be read - this call will not be idempotent.")
-        service_json["cfgdb_password"] = cfgdb_password
-    if cfgdb_db2_alt_address is not None:
-        service_json["cfgdb_db2_alt_address"] = cfgdb_db2_alt_address
-    if cfgdb_db2_alt_port is not None:
-        service_json["cfgdb_db2_alt_port"] = cfgdb_db2_alt_port
-    if cfgdb_db_name is not None:
-        service_json["cfgdb_db_name"] = cfgdb_db_name
-    if cfgdb_db_secure is not None:
-        service_json["cfgdb_db_secure"] = cfgdb_db_secure
-    if cfgdb_driver_type is not None:
-        service_json["cfgdb_driver_type"] = cfgdb_driver_type
-    if cfgdb_solid_tc is not None:
-        if (isinstance(cfgdb_solid_tc, basestring)):
-            import ast
-            cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
-            service_json["cfgdb_solid_tc"] = cfgdb_solid_tc
 
     return isamAppliance.invoke_post("Set service configuration", uri, service_json,
                                      requires_modules=requires_modules, requires_version=requires_version,
