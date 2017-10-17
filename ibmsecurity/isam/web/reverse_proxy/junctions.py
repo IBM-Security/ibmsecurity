@@ -83,7 +83,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         transparent_path_junction=None, mutual_auth=None, insert_session_cookies=None, request_encoding=None,
         enable_basic_auth=None, key_label=None, gso_resource_group=None, junction_cookie_javascript_block=None,
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
-        username=None, password=None, server_uid=None, local_ip=None, ltpa_keyfile_password=None,
+        username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         warnings=[]):
     """
@@ -129,7 +129,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param fsso_config_file:
     :param username:
     :param password:
-    :param server_uid:
+    :param server_uuid:
     :param local_ip:
     :param ltpa_keyfile_password:
     :param delegation_support:
@@ -201,8 +201,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 jct_json["username"] = username
             if password is not None:
                 jct_json["password"] = password
-            if server_uid is not None:
-                jct_json["server_uid"] = server_uid
+            if server_uuid is not None:
+                jct_json["server_uuid"] = server_uuid
             if virtual_hostname is not None:
                 jct_json["virtual_hostname"] = virtual_hostname
             if server_dn is not None:
@@ -275,7 +275,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         transparent_path_junction=None, mutual_auth=None, insert_session_cookies=None, request_encoding=None,
         enable_basic_auth=None, key_label=None, gso_resource_group=None, junction_cookie_javascript_block=None,
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
-        username=None, password=None, server_uid=None, local_ip=None, ltpa_keyfile_password=None,
+        username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
@@ -321,8 +321,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         server_json['server_dn'] = ''
                     else:
                         server_json['server_dn'] = server_dn
-                    if server_uid is not None:
-                        server_json['server_uuid'] = server_uid
+                    if server_uuid is not None:
+                        server_json['server_uuid'] = server_uuid
                     else:
                         # Server UUID gets generated if not specified
                         if 'server_uuid' in srv:
@@ -476,7 +476,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    gso_resource_group=gso_resource_group,
                    junction_cookie_javascript_block=junction_cookie_javascript_block, client_ip_http=client_ip_http,
                    version_two_cookies=version_two_cookies, ltpa_keyfile=ltpa_keyfile, authz_rules=authz_rules,
-                   fsso_config_file=fsso_config_file, username=username, password=password, server_uid=server_uid,
+                   fsso_config_file=fsso_config_file, username=username, password=password, server_uuid=server_uuid,
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True, warnings=warnings)

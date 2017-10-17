@@ -64,8 +64,8 @@ def delete(isamAppliance, label, vlanId, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo='',
-           bondingMode=None, check_mode=False, force=False):
+def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=None,
+           bondingMode='', check_mode=False, force=False):
     """
     Update existing (VLAN) interface
     """
@@ -99,8 +99,13 @@ def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo='
                     'addresses': ret_obj['ipv6']['addresses'],
                 }
             }
-            update_needed = not (
-            ibmsecurity.utilities.tools.json_sort(ret_obj) == ibmsecurity.utilities.tools.json_sort(json_data))
+            sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+            logger.debug("Sorted input: {0}".format(sorted_json_data))
+            sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj)
+            logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+            if sorted_ret_obj != sorted_json_data:
+                logger.info("Changes detected, update needed.")
+                update_needed = True
 
         if force is True or update_needed is True:
             if check_mode is True:

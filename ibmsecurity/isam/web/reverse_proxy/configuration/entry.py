@@ -203,12 +203,12 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
     """
     try:
         ret_obj = get(isamAppliance, reverseproxy_id, stanza_id, entry_id)
+        exists = True
+        update_required = False
+        value = ret_obj['data'][entry_id]
     except:
         return False, True, None  # Exception means entry / stanza not found
 
-    exists = True
-    update_required = False
-    value = ret_obj['data'][entry_id]
     logger.info("Entry found in rp:{0}, stanza:{1}, entryid:{2}, value:{3}".format(reverseproxy_id,
                                                                                    stanza_id,
                                                                                    entry_id,

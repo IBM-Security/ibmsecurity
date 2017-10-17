@@ -115,7 +115,7 @@ def import_config(isamAppliance, id, file, overwrite=True, check_mode=False, for
 
 def export_config(isamAppliance, id, filename, check_mode=False, force=False):
     """
-    Export a specific mapping rule
+    Export a Reverse Proxy Configuration
         -id is the name of the reverse proxy instance
         -filename is file system location to export the file (e.g. /tmp/webseal_config.zip)
     """
@@ -125,7 +125,7 @@ def export_config(isamAppliance, id, filename, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_get_file(
-                description="Export a specific mapping rule",
+                description="Export a Reverse Proxy Configuration",
                 uri="{0}/{1}?action=export".format(uri, id),
                 filename=filename)
 
