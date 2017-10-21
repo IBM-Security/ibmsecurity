@@ -4,6 +4,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
+from ibmsecurity.utilities import tools
 
 
 class ISAMAppliance(IBMAppliance):
@@ -152,7 +153,8 @@ class ISAMAppliance(IBMAppliance):
         files = list()
         for file2post in fileinfo:
             files.append((file2post['file_formfield'],
-                          (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
+                          (tools.path_leaf(file2post['filename']), open(file2post['filename'], 'rb'),
+                           file2post['mimetype'])))
 
         self._suppress_ssl_warning()
 
@@ -395,12 +397,12 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            streaminargs=False
+            streaminargs = False
             r = requests.request(method, url=self._url(uri), auth=(self.user.username, self.user.password),
                                  verify=False, **args)
             # check for stream=True
             if "stream" in args and args["stream"] == True:
-                streaminargs=True
+                streaminargs = True
                 if filename == None:
                     return_obj['warnings'] = return_obj['warnings'].append(
                         "filename is missing, for stream=True, filename needs to be non null")
@@ -425,10 +427,10 @@ class ISAMAppliance(IBMAppliance):
                         return_obj['rc'] = 0
                         return_obj['data'] = {'msg': 'Contents extracted to file: ' + filename}
 
-            if method == "get" or (method =="post" and streaminargs == True):
+            if method == "get" or (method == "post" and streaminargs == True):
                 return_obj['changed'] = False
             else:
-                return_obj['changed'] = True # Anything but GET or a POST with stream=True set should result in change
+                return_obj['changed'] = True  # Anything but GET or a POST with stream=True set should result in change
 
             if streaminargs == False:
                 self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)

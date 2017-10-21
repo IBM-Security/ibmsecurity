@@ -4,6 +4,7 @@ import logging
 import pprint
 import difflib
 import hashlib
+import ntpath
 
 logger = logging.getLogger(__name__)
 
@@ -124,3 +125,8 @@ def strings(filename, min=4):
             result = ""
         if len(result) >= min:  # catch result at EOF
             yield result
+
+
+def path_leaf(path):
+    head, tail = ntpath.split(path)
+    return tail or ntpath.basename(head)
