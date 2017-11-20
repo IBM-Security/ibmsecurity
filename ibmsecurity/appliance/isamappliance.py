@@ -405,7 +405,10 @@ class ISAMAppliance(IBMAppliance):
         try:
             ret_obj = ibmsecurity.isam.base.version.get(self)
             self.facts['version'] = ret_obj['data']['firmware_version']
-            self.facts['model'] = ret_obj['data']['deployment_model']
+
+            if self.facts['version'] > '9.0.3.0':
+                self.facts['model'] = ret_obj['data']['deployment_model']
+
         except IBMError:
             try:
                 ret_obj = ibmsecurity.isam.base.firmware.get(self)
