@@ -407,7 +407,20 @@ class ISAMAppliance(IBMAppliance):
             self.facts['version'] = ret_obj['data']['firmware_version']
 
             if self.facts['version'] > '9.0.3.0':
-                self.facts['model'] = ret_obj['data']['deployment_model']
+                if 'deployment_model' in ret_obj['data']:
+                    self.facts['model'] = ret_obj['data']['deployment_model']
+
+                if 'product_name' in ret_obj['data']:
+                    self.facts['product_name'] = ret_obj['data']['product_name']
+
+                if 'product_description' in ret_obj['data']:
+                    self.facts['product_description'] = ret_obj['data']['product_description']
+
+                if 'firmware_build' in ret_obj['data']:
+                    self.facts['firmware_build'] = ret_obj['data']['firmware_build']
+
+                if 'firmware_label' in ret_obj['data']:
+                    self.facts['firmware_label'] = ret_obj['data']['firmware_label']
 
         except IBMError:
             try:
