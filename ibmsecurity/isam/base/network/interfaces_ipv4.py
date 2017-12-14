@@ -133,3 +133,22 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
             return ibmsecurity.isam.base.network.interfaces._update_interface(isamAppliance, ret_obj)
 
     return isamAppliance.create_return_object()
+
+
+def search(isamAppliance, address, check_mode=False, force=False):
+    """
+    Retrieving uuid for an ipv4 address
+    """
+    ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
+    ipv4_address_uuid = None
+
+    for intfc in ret_obj['data']['interfaces']:
+        for adds in intfc['ipv4']['addresses']:
+            if adds['address'] == address:
+                ipv4_address_uuid = adds['uuid']
+                break
+
+    ret_obj = isamAppliance.create_return_object()
+    ret_obj['data'] = ipv4_address_uuid
+
+    return ret_obj

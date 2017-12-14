@@ -85,6 +85,17 @@ def _get_interface(isamAppliance, label, vlanId=None, check_mode=False, force=Fa
     return None
 
 
+def search(isamAppliance, label, vlanId=None, check_mode=False, force=False):
+    """
+    Search UUID for given label/vlanid
+    """
+    ret_obj = isamAppliance.create_return_object()
+    intf = _get_interface(isamAppliance, label, vlanId, check_mode, force)
+    ret_obj['data'] = intf['uuid']
+
+    return ret_obj
+
+
 def _update_interface(isamAppliance, json_data):
     return isamAppliance.invoke_put("Updating a (VLAN) interface", "/net/ifaces/{0}".format(json_data['uuid']),
                                     json_data)

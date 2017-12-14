@@ -13,21 +13,26 @@ def get(isamAppliance, userid, check_mode=False, force=False):
 
 def get_recent(isamAppliance, userid, timestamp, token_type='refresh_token', check_mode=False, force=False):
     """
-    Get grants by userid and tokens more recent than given timestamp
+    Get grants by userid and tokens more recent than given timestamp, also pass back any other tokens found
 
     token_type will check refresh tokens and can be changed or ignored by passing None
+
+    other tokens could include recent access tokens (not refresh tokens)
     """
     ret_obj = get(isamAppliance=isamAppliance, userid=userid)
 
     recent_tokens = []
+    other_tokens = []
     for attrbs in ret_obj['data']:
         for tok in attrbs['tokens']:
             if tok['dateCreated'] > timestamp and (tok['subType'] == token_type or token_type is None):
-                recent_tokens.append(attrbs)
-                break
+                recent_tokens.append(tok)
+            else:
+                other_tokens.append(tok)
 
     new_ret_obj = isamAppliance.create_return_object()
-    new_ret_obj['data'] = recent_tokens
+    new_ret_obj['data']['recent'] = recent_tokens
+    new_ret_obj['data']['other'] = other_tokens
 
     return new_ret_obj
 
