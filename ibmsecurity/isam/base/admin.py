@@ -14,7 +14,7 @@ def get(isamAppliance, check_mode=False, force=False):
 def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPort=None, check_mode=False, force=False):
     """
     Set password for admin user (super user for appliance)
-    
+
     Note: this function is being maintained for backward compatibility. Use set() going forward.
     """
     warnings = ["Password change requested - cannot query existing password for idempotency check."]
@@ -44,7 +44,8 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
 def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, maxHeapSize=None, sessionTimeout=30,
         httpPort=None, httpsPort=None, minThreads=None, maxThreads=None, maxPoolSize=None, lmiDebuggingEnabled=None,
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
-        enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=22, check_mode=False, force=False):
+        enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, check_mode=False,
+        force=False):
     """
     Updating the administrator settings
     """
@@ -54,7 +55,8 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       sessionTimeout, httpPort, httpsPort, minThreads, maxThreads,
                                                       maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
                                                       acceptClientCerts, validateClientCertIdentity,
-                                                      excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort, warnings)
+                                                      excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
+                                                      enabledTLS, sshdPort, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -69,7 +71,8 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
 
 def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, sessionTimeout, httpPort, httpsPort,
            minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
-           validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort, warnings):
+           validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort,
+           warnings):
     """
     Check whether target key has already been set with the value
     :param isamAppliance:
@@ -164,18 +167,24 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
             json_data["maxFileSize"] = int(maxFileSize)
         elif 'maxFileSize' in ret_obj['data']:
             del ret_obj['data']['maxFileSize']
-
-        if isamAppliance.facts["version"] < "9.0.4.0":
-            pass  # Can safely ignore enabledTLS and sshdPort
-        else:
-            if enabledTLS is not None:
-                json_data["enabledTLS"] = enabledTLS
-            elif 'enabledTLS' in ret_obj['data']:
-                del ret_obj['data']['enabledTLS']
-            if sshdPort is not None:
+        if sshdPort is not None:
+            if isamAppliance.facts["version"] < "9.0.3.0":
+                warnings.append(
+                    "Appliance at version: {0}, sshdPort: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring sshdPort for this call.".format(
+                        isamAppliance.facts["version"], sshdPort))
+            else:
                 json_data["sshdPort"] = sshdPort
-            elif 'sshdPort' in ret_obj['data']:
-                del ret_obj['data']['sshdPort']
+        elif 'sshdPort' in ret_obj['data']:
+            del ret_obj['data']['sshdPort']
+        if enabledTLS is not None:
+            if isamAppliance.facts["version"] < "9.0.4.0":
+                warnings.append(
+                    "Appliance at version: {0}, enabledTLS: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring enabledTLS for this call.".format(
+                        isamAppliance.facts["version"], enabledTLS))
+            else:
+                json_data["enabledTLS"] = enabledTLS
+        elif 'enabledTLS' in ret_obj['data']:
+            del ret_obj['data']['enabledTLS']
 
     if ibmsecurity.utilities.tools.json_sort(json_data) != ibmsecurity.utilities.tools.json_sort(ret_obj['data']):
         logger.debug("Admin Settings are found to be different. See following JSON for difference.")
