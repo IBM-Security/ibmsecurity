@@ -44,7 +44,7 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
 def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, maxHeapSize=None, sessionTimeout=30,
         httpPort=None, httpsPort=None, minThreads=None, maxThreads=None, maxPoolSize=None, lmiDebuggingEnabled=None,
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
-        enableSSLv3=None, maxFiles=None, maxFileSize=None, check_mode=False, force=False):
+        enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=22, check_mode=False, force=False):
     """
     Updating the administrator settings
     """
@@ -54,7 +54,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       sessionTimeout, httpPort, httpsPort, minThreads, maxThreads,
                                                       maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
                                                       acceptClientCerts, validateClientCertIdentity,
-                                                      excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, warnings)
+                                                      excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -69,7 +69,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
 
 def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, sessionTimeout, httpPort, httpsPort,
            minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
-           validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, warnings):
+           validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort, warnings):
     """
     Check whether target key has already been set with the value
     :param isamAppliance:
@@ -98,7 +98,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                         lmiDebuggingEnabled is not None or consoleLogLevel is not None or \
                         acceptClientCerts is not None or validateClientCertIdentity is not None or \
                         excludeCsrfChecking is not None or enableSSLv3 is not None or maxFiles is not None or \
-                        maxFileSize is not None:
+                        maxFileSize is not None or enabledTLS is not None or sshdPort is not None:
             warnings.append(
                 "Appliance at version: {0}, only oldPassword, newPassword, sessionTimeout are supported. Needs 9.0.1.0 or higher. Ignoring other attributes for this call.")
     else:
@@ -164,6 +164,18 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
             json_data["maxFileSize"] = int(maxFileSize)
         elif 'maxFileSize' in ret_obj['data']:
             del ret_obj['data']['maxFileSize']
+
+        if isamAppliance.facts["version"] < "9.0.4.0":
+            pass  # Can safely ignore enabledTLS and sshdPort
+        else:
+            if enabledTLS is not None:
+                json_data["enabledTLS"] = enabledTLS
+            elif 'enabledTLS' in ret_obj['data']:
+                del ret_obj['data']['enabledTLS']
+            if sshdPort is not None:
+                json_data["sshdPort"] = sshdPort
+            elif 'sshdPort' in ret_obj['data']:
+                del ret_obj['data']['sshdPort']
 
     if ibmsecurity.utilities.tools.json_sort(json_data) != ibmsecurity.utilities.tools.json_sort(ret_obj['data']):
         logger.debug("Admin Settings are found to be different. See following JSON for difference.")
