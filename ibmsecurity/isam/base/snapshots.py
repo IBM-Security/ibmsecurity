@@ -99,7 +99,7 @@ def apply(isamAppliance, id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post("Applying snapshot", "/snapshots/kickoff_apply",
+            return isamAppliance.invoke_post_snapshot_id("Applying snapshot", "/snapshots/apply/" + id,
                                             {"snapshot_id": id})
 
     return isamAppliance.create_return_object()
