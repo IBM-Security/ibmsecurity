@@ -350,6 +350,47 @@ class ISAMAppliance(IBMAppliance):
                                     warnings=warnings)
         return response
 
+    def invoke_post_snapshot_id(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
+                    warnings=[]):
+        """
+        Send a POST request to the LMI.  Snapshot id is part of the uri.
+        Requires different headers to normal post.
+        """
+
+        self._log_request("POST", uri, description)
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
+
+        headers = {
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        self.logger.debug("Headers are: {0}".format(headers))
+
+        self._suppress_ssl_warning()
+
+        try:
+            r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
+                              verify=False, headers=headers)
+            return_obj['changed'] = False  # POST of snapshot id would not be a change
+            self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
+
+        except requests.exceptions.ConnectionError:
+            if not ignore_error:
+                self.logger.critical("Failed to connect to server.")
+                raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+            else:
+                self.logger.debug("Failed to connect to server.")
+                return_obj.rc = 502
+
+        return return_obj
+
     def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[]):
         """
