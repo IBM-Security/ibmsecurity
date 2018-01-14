@@ -1,15 +1,16 @@
 import logging
 
 logger = logging.getLogger(__name__)
+requires_modules = ["mga", "federation"]
 
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Get runtime endpoints or listening interfaces
     """
-
     return isamAppliance.invoke_get("Retrieving runtime listening interfaces",
-                                    "/mga/runtime_tuning/v1")
+                                    "/mga/runtime_tuning/v1",
+                                    requires_modules=requires_modules)
 
 
 def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
@@ -41,7 +42,8 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
                     'interface': interface,
                     'port': port,
                     'secure': secure
-                })
+                },
+                requires_modules=requires_modules)
 
     return ret_obj
 
@@ -86,7 +88,8 @@ def delete(isamAppliance, interface, port, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a runtime listening interface",
-                "/mga/runtime_tuning/endpoints/{0}/v1".format(id))
+                "/mga/runtime_tuning/endpoints/{0}/v1".format(id),
+                requires_modules=requires_modules)
 
     return isamAppliance.create_return_object()
 

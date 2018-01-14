@@ -4,7 +4,7 @@ setup(
     name = 'ibmsecurity',
     packages = find_packages(),
     # Date of release used for version - please be sure to use YYYY.MM.DD.seq#, MM and DD should be two digits e.g. 2017.02.05.0
-    version = '2017.12.19.0',
+    version = '2018.01.10.0',
     description = 'Idempotent functions for IBM Security Appliance REST APIs',
     author='IBM',
     author_email='ISAMDEV@au1.ibm.com',
