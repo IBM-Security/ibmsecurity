@@ -332,34 +332,92 @@ class ISAMAppliance(IBMAppliance):
         """
         Send a PUT request to the LMI.
         """
-        return self._invoke_request(requests.put, description, uri, ignore_error, data,
-                                    requires_modules=requires_modules, requires_version=requires_version,
-                                    warnings=warnings)
+
+        self._log_request("PUT", uri, description)
+        response = self._invoke_request(requests.put, description, uri,
+                                        ignore_error, data,
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        warnings=warnings)
+        return response
 
     def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
                     warnings=[]):
         """
         Send a POST request to the LMI.
         """
-        return self._invoke_request(requests.post, description, uri, ignore_error, data,
-                                    requires_modules=requires_modules, requires_version=requires_version,
-                                    warnings=warnings)
+
+        self._log_request("POST", uri, description)
+        response = self._invoke_request(requests.post, description, uri,
+                                        ignore_error, data,
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        warnings=warnings)
+        return response
+
+    def invoke_post_snapshot_id(self, description, uri, data, ignore_error=False, requires_modules=None,
+                                requires_version=None,
+                                warnings=[]):
+        """
+        Send a POST request to the LMI.  Snapshot id is part of the uri.
+        Requires different headers to normal post.
+        """
+
+        self._log_request("POST", uri, description)
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version,
+                                                       warnings=warnings)
+
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
+
+        headers = {
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        self.logger.debug("Headers are: {0}".format(headers))
+
+        self._suppress_ssl_warning()
+
+        try:
+            r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
+                              verify=False, headers=headers)
+            return_obj['changed'] = False  # POST of snapshot id would not be a change
+            self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
+
+        except requests.exceptions.ConnectionError:
+            if not ignore_error:
+                self.logger.critical("Failed to connect to server.")
+                raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+            else:
+                self.logger.debug("Failed to connect to server.")
+                return_obj.rc = 502
+
+        return return_obj
 
     def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[]):
         """
         Send a GET request to the LMI.
         """
-        return self._invoke_request(requests.get, description, uri, ignore_error, requires_modules=requires_modules,
-                                    requires_version=requires_version, warnings=warnings)
+        self._log_request("GET", uri, description)
+        response = self._invoke_request(requests.get, description, uri,
+                                        ignore_error, requires_modules=requires_modules,
+                                        requires_version=requires_version, warnings=warnings)
+        self._log_response(response)
+        return response
 
     def invoke_delete(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
                       warnings=[]):
         """
         Send a DELETE request to the LMI.
         """
-        return self._invoke_request(requests.delete, description, uri, ignore_error, requires_modules=requires_modules,
-                                    requires_version=requires_version, warnings=warnings)
+        self._log_request("DELETE", uri, description)
+        response = self._invoke_request(requests.delete, description, uri,
+                                        ignore_error, requires_modules=requires_modules,
+                                        requires_version=requires_version, warnings=warnings)
+        self._log_response(response)
+        return response
 
     def invoke_request(self, description, method, uri, filename=None, ignore_error=False, requires_modules=None,
                        requires_version=None,
@@ -459,18 +517,45 @@ class ISAMAppliance(IBMAppliance):
 
     def get_version(self):
         """
-        Get  appliance version (active partition)
+        Get appliance version (versions API or active partition)
 
         When firmware are installed or partition are changed, then this value is updated
         """
         self.facts['version'] = None
+        import ibmsecurity.isam.base.version
         import ibmsecurity.isam.base.firmware
 
-        ret_obj = ibmsecurity.isam.base.firmware.get(self)
-        for partition in ret_obj['data']:
-            if partition['active'] is True:
-                ver = partition['firmware_version'].split(' ')
-                self.facts['version'] = ver[-1]
+        try:
+            ret_obj = ibmsecurity.isam.base.version.get(self)
+            self.facts['version'] = ret_obj['data']['firmware_version']
+
+            if self.facts['version'] > '9.0.3.0':
+                if 'deployment_model' in ret_obj['data']:
+                    self.facts['model'] = ret_obj['data']['deployment_model']
+
+                if 'product_name' in ret_obj['data']:
+                    self.facts['product_name'] = ret_obj['data']['product_name']
+
+                if 'product_description' in ret_obj['data']:
+                    self.facts['product_description'] = ret_obj['data']['product_description']
+
+                if 'firmware_build' in ret_obj['data']:
+                    self.facts['firmware_build'] = ret_obj['data']['firmware_build']
+
+                if 'firmware_label' in ret_obj['data']:
+                    self.facts['firmware_label'] = ret_obj['data']['firmware_label']
+
+        except IBMError:
+            try:
+                ret_obj = ibmsecurity.isam.base.firmware.get(self)
+                for partition in ret_obj['data']:
+                    if partition['active'] is True:
+                        ver = partition['firmware_version'].split(' ')
+                        self.facts['version'] = ver[-1]
+                self.facts['model'] = "Appliance"
+            except:
+                pass
+        return
 
     def get_activations(self):
         """
@@ -485,3 +570,16 @@ class ISAMAppliance(IBMAppliance):
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])
+
+    def _log_request(self, method, url, desc):
+        self.logger.debug("Request: %s %s desc=%s", method, url, desc)
+
+    def _log_response(self, response):
+        if response:
+            self.logger.debug("Response: %d", response.get('rc'))
+            # self.logger.debug("Response: %i %i warnings:%s",
+            #                     response.get('rc'),
+            #                     response.get('status_code'),
+            #                     response.get('warnings'))
+        else:
+            self.logger.debug("Response: None")

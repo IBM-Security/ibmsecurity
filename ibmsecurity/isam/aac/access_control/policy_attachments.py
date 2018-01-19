@@ -99,7 +99,6 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
            check_mode=False, force=False):
     """
     Configure a resource
-
     Note: Please input policies with policy names (it will be converted to id's), like so:
      [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
     """
