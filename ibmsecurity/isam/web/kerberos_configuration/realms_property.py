@@ -68,7 +68,7 @@ def add(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=F
     else:
         uriprop = "{0}/{1}".format(realm, subsection)
 
-    if realms._check(isamAppliance, realm) is False:
+    if realms.search(isamAppliance, realm) == {}:
         return isamAppliance.create_return_object(warnings=["Realm: {0} does not exists: ".format(realm)])
 
     if subsection is not None and subsections._check(isamAppliance, realm, subsection) is False:
@@ -99,7 +99,7 @@ def delete(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
     :param isamAppliance:
     :return:
     """
-    if realms._check(isamAppliance, realm) is False:
+    if realms.search(isamAppliance, realm) == {}:
         return isamAppliance.create_return_object(warnings=["Realm: {0} does not exists: ".format(realm)])
 
     if subsection is None:
@@ -134,7 +134,7 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
     else:
         uriprop = "{0}/{1}".format(realm, subsection)
 
-    if realms._check(isamAppliance, realm) is False:
+    if realms.search(isamAppliance, realm) == {}:
         return isamAppliance.create_return_object(warnings=["Realm: {0} does not exists: ".format(realm)])
 
     if subsection is not None and subsections._check(isamAppliance, realm, subsection) is False:

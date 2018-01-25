@@ -14,7 +14,6 @@ def search(isamAppliance, realm, subsection, check_mode=False, force=False):
     """
     Search kerberos realm subsection by name
     """
-
     logger.info("subsection to search under: {0} is: {1} ".format(realm, subsection))
     ret_obj = realms._get(isamAppliance, realm)
     return_obj = isamAppliance.create_return_object()
@@ -38,7 +37,6 @@ def _check(isamAppliance, realm, subsection):
     :param isamAppliance:
     :return:
     """
-
     ret_obj = _search(isamAppliance, realm, subsection)
 
     realm = "{0}/{1}".format("realms", realm)
@@ -58,10 +56,9 @@ def add(isamAppliance, realm, subsection, check_mode=False, force=False):
         :param isamAppliance:
         :return:
      """
+    check_realm = realms.search(isamAppliance, realm)
 
-    check_realm = realms._check(isamAppliance, realm)
-
-    if check_realm is False:
+    if check_realm == {}:
         return isamAppliance.create_return_object(warnings=["Kerberos realm: {0} not found".format(realm)])
 
     check_subsection = _check(isamAppliance, realm, subsection)
@@ -91,7 +88,7 @@ def delete(isamAppliance, realm, subsection, check_mode=False, force=False):
     """
     logger.debug(" Remove param uri = {0}/{1}/{2}".format(uri, realm, subsection))
 
-    if realms._check(isamAppliance, realm) is False and force is False:
+    if realms.search(isamAppliance, realm) == {} and force is False:
         return isamAppliance.create_return_object(warnings=["Realm: {0} does not exists: ".format(realm)])
 
     if _check(isamAppliance, realm, subsection) is False and force is False:

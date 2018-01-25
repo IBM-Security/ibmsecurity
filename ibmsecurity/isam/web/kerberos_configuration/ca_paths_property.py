@@ -14,7 +14,7 @@ def add(isamAppliance, client_realm, server_realm, intermediate_realm, check_mod
     """
     Add a client realm entry property
     """
-    if ca_paths._check(isamAppliance, client_realm) is False:
+    if ca_paths.search(isamAppliance, client_realm) == {}:
         return isamAppliance.create_return_object(
             warnings="Client Realm {0} not found, skipping add property: {1}.".format(client_realm, server_realm))
 
@@ -79,7 +79,7 @@ def update(isamAppliance, client_realm, server_realm, intermediate_realm, check_
     """
     Update a specified Client Realm entry property, client_realm and server_realm passed in argument list needs to exist
     """
-    if ca_paths._check(isamAppliance, client_realm) is False:
+    if ca_paths.search(isamAppliance, client_realm) == {}:
         return isamAppliance.create_return_object(
             warnings="Client Realm {0} not found, skipping update.".format(client_realm))
 
@@ -120,7 +120,7 @@ def update(isamAppliance, client_realm, server_realm, intermediate_realm, check_
 
 def set(isamAppliance, client_realm, server_realm=None, intermediate_realm=None, check_mode=False, force=False):
     """
-        Creating or Modifying an Kerberos Configuration client realm Property, 
+        Creating or Modifying an Kerberos Configuration client realm Property,
     """
     # check for an input of intermediate realm if server realm being set is not None
 
