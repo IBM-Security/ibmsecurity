@@ -91,3 +91,5 @@ ENV/
 # Pycharm
 .idea
 
+# DS
+.DS_Store

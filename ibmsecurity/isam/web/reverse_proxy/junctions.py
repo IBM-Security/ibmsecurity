@@ -85,7 +85,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        warnings=[]):
+        http2_junction=False, http2_proxy=False, sni_name=None, warnings=[]):
     """
     Creating a standard or virtual junction
 
@@ -137,6 +137,9 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param insert_ltpa_cookies:
     :param check_mode:
     :param force:
+    :param http2_junction:
+    :param http2_proxy:
+    :param sni_name:
     :return:
     """
     if force is True or _check(isamAppliance, reverseproxy_id, junction_point) is False:
@@ -233,6 +236,12 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 jct_json["delegation_support"] = delegation_support
             if scripting_support is not None:
                 jct_json["scripting_support"] = scripting_support
+            if http2_junction is not None:
+                jct_json["http2_junction"] = http2_junction
+            if http2_proxy is not None:
+                jct_json["http2_proxy"] = http2_proxy
+            if sni_name is not None:
+                jct_json["sni_name"] = sni_name
 
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
@@ -276,7 +285,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         enable_basic_auth=None, key_label=None, gso_resource_group=None, junction_cookie_javascript_block=None,
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
-        delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False):
+        delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
+        http2_junction=False, http2_proxy=False, sni_name=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -336,6 +346,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         server_json['windows_style_url'] = 'no'
                     else:
                         server_json['windows_style_url'] = windows_style_url
+
                     # Delete dynamic data shown when we get junctions details
                     if 'current_requests' in srv:
                         del srv['current_requests']
@@ -437,6 +448,20 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['transparent_path_junction'] = 'no'
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
+                if http2_junction is None:
+                    jct_json['http2_junction'] = 'no'
+                else:
+                    jct_json['http2_junction'] = http2_junction
+                if http2_proxy is None:
+                    jct_json['http2_proxy'] = 'no'
+                else:
+                    jct_json['http2_proxy'] = http2_proxy
+                if sni_name is None:
+                    jct_json['sni_name'] = 'no'
+                else:
+                    jct_json['sni_name'] = sni_name
+
+
                 # TODO: Not sure of how to match following attributes! Need to revisit.
                 # TODO: Not all function parameters are being checked - need to add!
                 del exist_jct['boolean_rule_header']
@@ -479,7 +504,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    fsso_config_file=fsso_config_file, username=username, password=password, server_uuid=server_uuid,
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
-                   insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True, warnings=warnings)
+                   insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
+                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, warnings=warnings)
 
     return isamAppliance.create_return_object()
 

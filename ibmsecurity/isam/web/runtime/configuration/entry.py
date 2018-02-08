@@ -150,11 +150,37 @@ def delete(isamAppliance, resource_id, stanza_id, entry_id, value_id='', check_m
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            # URL being encoded primarily to handle spaces in them
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, resource_id, stanza_id,
+                                                                                       entry_id, value_id)
+            import urllib
+            full_uri = urllib.quote(f_uri)
             return isamAppliance.invoke_delete(
-                "Deleting a value from a configuration entry - Runtime Environment",
-                "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri,
-                                                                                   resource_id, stanza_id,
-                                                                                   entry_id, value_id))
+                "Deleting a value from a configuration entry - Runtime Environment", full_uri)
+
+    return isamAppliance.create_return_object()
+
+
+def delete_all(isamAppliance, resource_id, stanza_id, entry_id, check_mode=False, force=False):
+    """
+    Deleting all values from a configuration entry - Runtime Environment
+    """
+    delete_required = False
+    if force is False:
+        try:
+            ret_obj = get(isamAppliance, resource_id, stanza_id, entry_id)
+            if ret_obj['data'] != {}:
+                delete_required = True
+        except:
+            pass
+
+    if force is True or delete_required is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, resource_id, stanza_id, entry_id)
+            return isamAppliance.invoke_delete(
+                "Deleting all values from a configuration entry - Runtime Environment", f_uri)
 
     return isamAppliance.create_return_object()
 
