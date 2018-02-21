@@ -60,6 +60,9 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
     """
     Creating a CI server connection
     """
+
+    response = isamAppliance.create_return_object();
+
     if force is True or _check_exists(isamAppliance, name=name) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -81,7 +84,7 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
     return response;
 
 
-def delete(isamAppliance, name=None, check_mode=False, force=False):
+def deleteByName(isamAppliance, name=None, check_mode=False, force=False):
     """
     Deleting a CI server connection
     """
