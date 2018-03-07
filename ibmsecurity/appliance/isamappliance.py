@@ -91,7 +91,7 @@ class ISAMAppliance(IBMAppliance):
         return_call = False
         self.logger.debug("Checking for minimum version: {0}.".format(requires_version))
         if requires_version is not None and 'version' in self.facts and self.facts['version'] is not None:
-            if self.facts['version'] < requires_version:
+            if tools.version_compare(self.facts['version'], requires_version) < 0:
                 return_call = True
                 warnings.append(
                     "API invoked requires minimum version: {0}, appliance is of lower version: {1}.".format(
@@ -529,7 +529,7 @@ class ISAMAppliance(IBMAppliance):
             ret_obj = ibmsecurity.isam.base.version.get(self)
             self.facts['version'] = ret_obj['data']['firmware_version']
 
-            if self.facts['version'] > '9.0.3.0':
+            if tools.version_compare(self.facts['version'], '9.0.3.0') > 0:
                 if 'deployment_model' in ret_obj['data']:
                     self.facts['model'] = ret_obj['data']['deployment_model']
 

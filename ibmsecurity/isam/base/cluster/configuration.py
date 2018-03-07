@@ -112,7 +112,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
             cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
         cluster_json["cfgdb_solid_tc"] = cfgdb_solid_tc
     if cfgdb_fs is not None:
-        if isamAppliance.facts["version"] < "9.0.2.0":
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
             warnings.append(
                 "Appliance at version: {0}, cfgdb_fs: {1} is not supported. Needs 9.0.2.0 or higher. Ignoring cfgdb_fs for this call.".format(
                     isamAppliance.facts["version"], cfgdb_fs))

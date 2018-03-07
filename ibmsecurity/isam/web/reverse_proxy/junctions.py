@@ -1,5 +1,5 @@
 import logging
-from  ibmsecurity.utilities import tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
                                        requires_version=requires_version)
     # servers are provided as a single string, here we parse it out into a list + dict
     servers = []
-    if isamAppliance.facts["version"] > "9.0.1.0":
+    if tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") > 0:
         srv_separator = '#'
     else:
         srv_separator = '&'
@@ -85,7 +85,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=False, http2_proxy=False, sni_name=None, warnings=[]):
+        http2_junction=None, http2_proxy=None, sni_name=None, warnings=[]):
     """
     Creating a standard or virtual junction
 
@@ -237,11 +237,26 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if scripting_support is not None:
                 jct_json["scripting_support"] = scripting_support
             if http2_junction is not None:
-                jct_json["http2_junction"] = http2_junction
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, http2_junction: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_junction for this call.".format(
+                            isamAppliance.facts["version"], http2_junction))
+                else:
+                    jct_json["http2_junction"] = http2_junction
             if http2_proxy is not None:
-                jct_json["http2_proxy"] = http2_proxy
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(
+                            isamAppliance.facts["version"], http2_proxy))
+                else:
+                    jct_json['http2_proxy'] = http2_proxy
             if sni_name is not None:
-                jct_json["sni_name"] = sni_name
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, sni_name: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.".format(
+                            isamAppliance.facts["version"], sni_name))
+                else:
+                    jct_json['sni_name'] = sni_name
 
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
@@ -286,7 +301,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=False, http2_proxy=False, sni_name=None):
+        http2_junction=None, http2_proxy=None, sni_name=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -411,8 +426,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['junction_soft_limit'] = '0 - using global value'
                 else:
                     jct_json['junction_soft_limit'] = str(junction_soft_limit)
+                # We could have a comma delimited set of values - so split them into array
                 if junction_cookie_javascript_block is not None:
-                    jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block
+                    jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
+                    # Here the list is delimited by space
+                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct['junction_cookie_javascript_block'] is not None:
+                        exist_jct['junction_cookie_javascript_block'] = exist_jct['junction_cookie_javascript_block'].split(' ')
                 if mutual_auth is None:
                     jct_json['mutual_auth'] = 'no'
                 else:
@@ -449,18 +468,38 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
                 if http2_junction is None:
-                    jct_json['http2_junction'] = 'no'
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
+                        jct_json['http2_junction'] = 'no'
                 else:
-                    jct_json['http2_junction'] = http2_junction
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                        warnings.append(
+                            "Appliance at version: {0}, http2_junction: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_junction for this call.".format(
+                                isamAppliance.facts["version"], http2_junction))
+                        http2_junction = None
+                    else:
+                        jct_json['http2_junction'] = http2_junction
                 if http2_proxy is None:
-                    jct_json['http2_proxy'] = 'no'
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
+                        jct_json['http2_proxy'] = 'no'
                 else:
-                    jct_json['http2_proxy'] = http2_proxy
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                        warnings.append(
+                            "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(
+                                isamAppliance.facts["version"], http2_proxy))
+                        http2_proxy = None
+                    else:
+                        jct_json['http2_proxy'] = http2_proxy
                 if sni_name is None:
-                    jct_json['sni_name'] = 'no'
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
+                        jct_json['sni_name'] = 'no'
                 else:
-                    jct_json['sni_name'] = sni_name
-
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                        warnings.append(
+                            "Appliance at version: {0}, sni_name: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.".format(
+                                isamAppliance.facts["version"], sni_name))
+                        sni_name = None
+                    else:
+                        jct_json['sni_name'] = sni_name
 
                 # TODO: Not sure of how to match following attributes! Need to revisit.
                 # TODO: Not all function parameters are being checked - need to add!

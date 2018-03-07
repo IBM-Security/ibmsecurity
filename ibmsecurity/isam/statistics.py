@@ -33,14 +33,16 @@ def get_rp_health_summary(isamAppliance, check_mode=False, force=False):
                                     "/wga/widgets/health.json")
 
 
-def get_rp_throughput_summary(isamAppliance, date, duration, check_mode=False, force=False):
+def get_rp_throughput_summary(isamAppliance, date, duration, aspect, summary=True, check_mode=False, force=False):
     """
     Retrieving a summary of throughput for all Reverse Proxy instances
     """
     return isamAppliance.invoke_get("Retrieving a summary of throughput for all Reverse Proxy instances",
                                     "/analysis/reverse_proxy_traffic/throughput/{0}".format(
-                                        tools.create_query_string(date=date,
-                                                                  duration=duration)))
+                                        tools.create_query_string(summary=summary,
+                                                                  date=date,
+                                                                  duration=duration,
+                                                                  aspect=aspect)))
 
 
 def get_rp_throughput(isamAppliance, instance, date, duration, check_mode=False, force=False):
@@ -54,14 +56,15 @@ def get_rp_throughput(isamAppliance, instance, date, duration, check_mode=False,
                                                                                                    duration=duration)))
 
 
-def get_rp_traffic_summary(isamAppliance, instance, date, duration, aspect, check_mode=False, force=False):
+def get_rp_traffic_summary(isamAppliance, instance, date, duration, aspect, summary=True, check_mode=False, force=False):
     """
     Retrieving a summary of traffic by Junction or User-Agent on a Reverse Proxy instance
     """
     return isamAppliance.invoke_get(
         "Retrieving a summary of traffic by Junction or User-Agent on a Reverse Proxy instance",
         "/analysis/reverse_proxy_traffic/traffic/instance/{0}/{1}".format(instance,
-                                                                          tools.create_query_string(date=date,
+                                                                          tools.create_query_string(summary=summary,
+                                                                                                    date=date,
                                                                                                     duration=duration,
                                                                                                     aspect=aspect)))
 
