@@ -467,10 +467,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['transparent_path_junction'] = 'no'
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
-                if http2_junction is None:
-                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
-                        jct_json['http2_junction'] = 'no'
-                else:
+                if http2_junction is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, http2_junction: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_junction for this call.".format(
@@ -478,10 +475,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         http2_junction = None
                     else:
                         jct_json['http2_junction'] = http2_junction
-                if http2_proxy is None:
-                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
-                        jct_json['http2_proxy'] = 'no'
-                else:
+                if http2_proxy is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(
@@ -489,10 +483,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         http2_proxy = None
                     else:
                         jct_json['http2_proxy'] = http2_proxy
-                if sni_name is None:
-                    if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
-                        jct_json['sni_name'] = 'no'
-                else:
+                if sni_name is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, sni_name: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.".format(
