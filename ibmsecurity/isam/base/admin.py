@@ -28,13 +28,13 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
             "sessionTimeout": sessionTimeout
         }
         if httpsPort is not None:
-            if isamAppliance.facts["version"] < "9.0.1.0":
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, httpsPort not supported. Needs 9.0.1.0 or higher. Ignoring httpsPort for this call.")
             else:
                 json_data['httpsPort'] = httpsPort
         else:
-            if isamAppliance.facts["version"] < "9.0.1.0":
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
                 pass  # Can safely ignore httpsPort
             else:
                 warnings.append("Default httpsPort of 443 will be set on the appliance.")
@@ -95,7 +95,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         json_data["confirmPassword"] = newPassword
         if oldPassword is None:
             warnings.append("Please provide old password, when new password is specified.")
-    if isamAppliance.facts["version"] < "9.0.1.0":
+    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
         if minHeapSize is not None or maxHeapSize is not None or httpPort is not None or httpsPort is not None or \
                         minThreads is not None or maxThreads is not None or maxPoolSize is not None or \
                         lmiDebuggingEnabled is not None or consoleLogLevel is not None or \
@@ -168,7 +168,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         elif 'maxFileSize' in ret_obj['data']:
             del ret_obj['data']['maxFileSize']
         if sshdPort is not None:
-            if isamAppliance.facts["version"] < "9.0.3.0":
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, sshdPort: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring sshdPort for this call.".format(
                         isamAppliance.facts["version"], sshdPort))
@@ -177,7 +177,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         elif 'sshdPort' in ret_obj['data']:
             del ret_obj['data']['sshdPort']
         if enabledTLS is not None:
-            if isamAppliance.facts["version"] < "9.0.4.0":
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, enabledTLS: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring enabledTLS for this call.".format(
                         isamAppliance.facts["version"], enabledTLS))
@@ -191,7 +191,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         logger.debug("New JSON: {0}".format(ibmsecurity.utilities.tools.json_sort(json_data)))
         logger.debug("Old JSON: {0}".format(ibmsecurity.utilities.tools.json_sort(ret_obj['data'])))
         # Ensure users know how REST API handles httpsPort default value
-        if httpsPort is None and isamAppliance.facts["version"] >= "9.0.1.0":
+        if httpsPort is None and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") >= 0:
             warnings.append("Default httpsPort of 443 will be set on the appliance.")
         return True, warnings, json_data
     else:  # No changes required

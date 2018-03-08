@@ -22,7 +22,10 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
     if force is False:
         matches, exists = _check(isamAppliance, option, value)
 
-    if force is True or (matches is False and exists is True):
+    if exists is False:
+        warnings.append("Tuning Parameter {0} was not found. set() request will attempt anyway.".format(option))
+
+    if force is True or matches is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -32,8 +35,6 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
                 {
                     'value': value
                 }, requires_modules=requires_modules)
-    elif exists is False:
-        warnings.append("Tuning Parameter {0} was not found. Skipping set() request.".format(option))
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -79,7 +80,7 @@ def reset(isamAppliance, option, check_mode=False, force=False):
                 "/mga/runtime_tuning/{0}/v1".format(option),
                 requires_modules=requires_modules)
     elif exists is False:
-        warnings.append("Tuning Parameter {0} was not found. Skipping set() request.".format(option))
+        warnings.append("Tuning Parameter {0} was not found. Skipping reset() request.".format(option))
 
     return isamAppliance.create_return_object(warnings=warnings)
 

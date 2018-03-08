@@ -1,4 +1,5 @@
 import logging
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,8 @@ def add(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
         enableMultipleRefreshTokensForFaultTolerance=False, pinPolicyEnabled=False, pinLength=4,
-        tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", check_mode=False, force=False):
+        tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", oidc=None, check_mode=False,
+        force=False):
     """
     Create an API protection definition
     """
@@ -76,27 +78,36 @@ def add(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
+            json_data = {
+                "name": name,
+                "description": description,
+                "grantTypes": grantTypes,
+                "tcmBehavior": tcmBehavior,
+                "accessTokenLifetime": accessTokenLifetime,
+                "accessTokenLength": accessTokenLength,
+                "enforceSingleUseAuthorizationGrant": enforceSingleUseAuthorizationGrant,
+                "authorizationCodeLifetime": authorizationCodeLifetime,
+                "authorizationCodeLength": authorizationCodeLength,
+                "issueRefreshToken": issueRefreshToken,
+                "refreshTokenLength": refreshTokenLength,
+                "maxAuthorizationGrantLifetime": maxAuthorizationGrantLifetime,
+                "enforceSingleAccessTokenPerGrant": enforceSingleAccessTokenPerGrant,
+                "enableMultipleRefreshTokensForFaultTolerance": enableMultipleRefreshTokensForFaultTolerance,
+                "pinPolicyEnabled": pinPolicyEnabled,
+                "pinLength": pinLength,
+                "tokenCharSet": tokenCharSet
+            }
+            if oidc is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, oidc: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring oidc for this call.".format(
+                            isamAppliance.facts["version"], oidc))
+                else:
+                    json_data["oidc"] = oidc
+
             return isamAppliance.invoke_post(
                 "Create an API protection definition", uri,
-                {
-                    "name": name,
-                    "description": description,
-                    "grantTypes": grantTypes,
-                    "tcmBehavior": tcmBehavior,
-                    "accessTokenLifetime": accessTokenLifetime,
-                    "accessTokenLength": accessTokenLength,
-                    "enforceSingleUseAuthorizationGrant": enforceSingleUseAuthorizationGrant,
-                    "authorizationCodeLifetime": authorizationCodeLifetime,
-                    "authorizationCodeLength": authorizationCodeLength,
-                    "issueRefreshToken": issueRefreshToken,
-                    "refreshTokenLength": refreshTokenLength,
-                    "maxAuthorizationGrantLifetime": maxAuthorizationGrantLifetime,
-                    "enforceSingleAccessTokenPerGrant": enforceSingleAccessTokenPerGrant,
-                    "enableMultipleRefreshTokensForFaultTolerance": enableMultipleRefreshTokensForFaultTolerance,
-                    "pinPolicyEnabled": pinPolicyEnabled,
-                    "pinLength": pinLength,
-                    "tokenCharSet": tokenCharSet
-                }, requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
+                json_data, requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -128,7 +139,7 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
            authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
            maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
            enableMultipleRefreshTokensForFaultTolerance=False, pinPolicyEnabled=False, pinLength=4,
-           tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", check_mode=False,
+           tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", oidc=None, check_mode=False,
            force=False):
     """
     Update a specified API protection definition
@@ -162,6 +173,13 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
         "pinLength": pinLength,
         "tokenCharSet": tokenCharSet
     }
+    if oidc is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, oidc: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring oidc for this call.".format(
+                    isamAppliance.facts["version"], oidc))
+        else:
+            json_data["oidc"] = oidc
 
     if force is not True:
         if 'datecreated' in ret_obj['data']:
@@ -194,7 +212,7 @@ def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
         enableMultipleRefreshTokensForFaultTolerance=False, pinPolicyEnabled=False, pinLength=4,
-        tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", check_mode=False,
+        tokenCharSet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", oidc=None, check_mode=False,
         force=False):
     """
     Creating or Modifying an API Protection Definition
@@ -212,7 +230,7 @@ def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
                    enforceSingleAccessTokenPerGrant=enforceSingleAccessTokenPerGrant,
                    enableMultipleRefreshTokensForFaultTolerance=enableMultipleRefreshTokensForFaultTolerance,
                    pinPolicyEnabled=pinPolicyEnabled, pinLength=pinLength,
-                   tokenCharSet=tokenCharSet, check_mode=check_mode, force=True)
+                   tokenCharSet=tokenCharSet, oidc=oidc, check_mode=check_mode, force=True)
     else:
         # Update request
         logger.info("Definition {0} exists, requesting to update.".format(name))
@@ -227,7 +245,7 @@ def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
                       enforceSingleAccessTokenPerGrant=enforceSingleAccessTokenPerGrant,
                       enableMultipleRefreshTokensForFaultTolerance=enableMultipleRefreshTokensForFaultTolerance,
                       pinPolicyEnabled=pinPolicyEnabled, pinLength=pinLength,
-                      tokenCharSet=tokenCharSet, check_mode=check_mode, force=force)
+                      tokenCharSet=tokenCharSet, oidc=oidc, check_mode=check_mode, force=force)
 
 
 def compare(isamAppliance1, isamAppliance2):
@@ -250,7 +268,6 @@ def compare(isamAppliance1, isamAppliance2):
         for rules in obj['mappingRules']:
             del rules['id']
 
-    import ibmsecurity.utilities.tools
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2,
-                                                    deleted_keys=['id', 'datecreated', 'lastmodified',
-                                                                  'mappingRules/id'])
+    return tools.json_compare(ret_obj1, ret_obj2,
+                              deleted_keys=['id', 'datecreated', 'lastmodified',
+                                            'mappingRules/id'])
