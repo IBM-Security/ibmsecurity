@@ -3,13 +3,19 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/mga/server_connections/ws"
+requires_modules = ["mga", "federation"]
+requires_version = "9.0.2.1"    # Will change if introduced in an earlier version.
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving a list of all Web Service connections
     """
     return isamAppliance.invoke_get("Retrieving a list of all Web Service connections",
-                                    "/mga/server_connections/ws/v1")
+                                    "{0}/v1".format(uri), requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, name=None, check_mode=False, force=False):
@@ -23,7 +29,9 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving a Web Service connection",
-                                        "/mga/server_connections/ws/{0}/v1".format(id))
+                                        "{0}/{1}/v1".format(uri, id),
+                                        requires_modules=requires_modules,
+                                        requires_version=requires_version)
 
 
 def set(isamAppliance, name, connection, description='', locked=False, servers=None,
@@ -45,22 +53,16 @@ def add(isamAppliance, name, connection, description='', locked=False, servers=N
     """
     Creating a Web Service connection
     """
-#    warnings = []
-#    if isamAppliance.facts["version"] < "9.0.2.1":
-#        warnings.append(
-#            "Appliance is at version: {0}. Enabled server connection type (ws) not supported unless at least 9.0.2.1. Ignoring value.".format(
-#                isamAppliance.facts["version"]))
-#        return isamAppliance.create_return_object(warnings=warnings)
-
     if force is True or _check_exists(isamAppliance, name=name) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post(
                 "Creating a Web Service connection",
-                "/mga/server_connections/ws/v1",
+                "{0}/v1".format(uri),
                 _create_json(name=name, description=description, locked=locked, servers=servers,
-                             connection=connection))
+                             connection=connection), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -77,7 +79,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a Web Service connection",
-                "/mga/server_connections/ws/{0}/v1".format(id))
+                "{0}/{1}/v1".format(uri, id), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -87,7 +90,7 @@ def update(isamAppliance, connection, description='', locked=False, servers=None
     """
     Modifying a Web Service connection
 
-    Use new_name to rename the connection, cannot compare password so update will take place everytime
+    Use new_name to rename the connection
     """
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)
@@ -98,7 +101,8 @@ def update(isamAppliance, connection, description='', locked=False, servers=None
             json_data['name'] = new_name
         return isamAppliance.invoke_put(
             "Modifying a Web Service connection",
-            "/mga/server_connections/ws/{0}/v1".format(id), json_data)
+            "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
+            requires_version=requires_version)
 
 
 def _create_json(name, description, locked, servers, connection):
