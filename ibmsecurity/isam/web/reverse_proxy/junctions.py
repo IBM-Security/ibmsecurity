@@ -188,7 +188,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 jct_json["key_label"] = key_label
             if gso_resource_group is not None:
                 jct_json["gso_resource_group"] = gso_resource_group
-            if junction_cookie_javascript_block is not None:
+            if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
                 jct_json["junction_cookie_javascript_block"] = junction_cookie_javascript_block
             if client_ip_http is not None:
                 jct_json["client_ip_http"] = client_ip_http
@@ -427,7 +427,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['junction_soft_limit'] = str(junction_soft_limit)
                 # We could have a comma delimited set of values - so split them into array
-                if junction_cookie_javascript_block is not None:
+                if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
                     jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
                     # Here the list is delimited by space
                     if 'junction_cookie_javascript_block' in exist_jct and exist_jct['junction_cookie_javascript_block'] is not None:

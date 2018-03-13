@@ -48,7 +48,7 @@ def _check(isamAppliance, option, value):
     matches = False
     exists = False
     try:
-        if ret_obj['data'][option] == value:
+        if str(ret_obj['data'][option]) == str(value):
             logger.info("Tuning parameter {0}/{1} already set.".format(option, value))
             matches = True
         else:
