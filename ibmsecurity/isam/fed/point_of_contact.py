@@ -20,7 +20,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
 
 def get(isamAppliance, name, check_mode=False, force=False):
     """
-    Retrieve a list of point of contact profiles
+    Retrieve a specific point of contact profile
     """
     ret_obj = search(isamAppliance, name=name, check_mode=check_mode, force=force)
     poc_id = ret_obj['data']
@@ -32,7 +32,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 
 def _get(isamAppliance, id):
-    return isamAppliance.invoke_get("Retrieve a list of point of contact profiles",
+    return isamAppliance.invoke_get("Retrieve a specific point of contact profile",
                                     "{0}/profiles/{1}".format(uri, id),
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
