@@ -76,7 +76,7 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
 
 def add(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+        requirePkce=False, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
         force=False):
     """
     Create an API protection definition
@@ -181,7 +181,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 def update(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
            contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+           requirePkce=False, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
            force=False, new_name=None):
     """
     Update a specified mapping rule
@@ -310,7 +310,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
 def set(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+        requirePkce=False, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
         force=False):
     """
     Creating or Modifying an API Protection Definition
