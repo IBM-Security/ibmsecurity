@@ -15,7 +15,7 @@ def get(isamAppliance, cert_dbase_id, check_mode=False, force=False):
     """
     Get details of a certificate database
     """
-    return isamAppliance.invoke_get("Retrieving all current certificate database names",
+    return isamAppliance.invoke_get("Retrieving details of a certificate database",
                                     "/isam/ssl_certificates/{0}/details".format(cert_dbase_id))
 
 
