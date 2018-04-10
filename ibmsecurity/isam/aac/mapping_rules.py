@@ -64,15 +64,15 @@ def set(isamAppliance, name, category, filename=None, content=None, upload_filen
     """
     Creating or Modifying an Mapping Rule
     """
-    if content is None:
-        if upload_filename is None:
+    if content is None or content == '':
+        if upload_filename is None or upload_filename == '':
             return isamAppliance.create_return_object(
                 warnings="Need to pass content or upload_filename for set() to work.")
         else:
             with open(upload_filename, 'r') as contentFile:
                 content = contentFile.read()
-    if filename is None:
-        if upload_filename is None:
+    if filename is None or filename == '':
+        if upload_filename is None or upload_filename == '':
             return isamAppliance.create_return_object(
                 warnings="Need to pass filename or upload_filename for set() to work.")
         else:
