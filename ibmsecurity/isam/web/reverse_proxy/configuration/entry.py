@@ -260,11 +260,14 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
     return exists, update_required, value
 
 
-def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id):
+def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id, reverseproxy_id2=None):
     """
     Compare stanza/entries in two appliances reverse proxy configuration
     """
+    if reverseproxy_id2 is None or reverseproxy_id2 == '':
+        reverseproxy_id2 = reverseproxy_id
+
     ret_obj1 = get_all(isamAppliance1, reverseproxy_id, stanza_id)
-    ret_obj2 = get_all(isamAppliance2, reverseproxy_id, stanza_id)
+    ret_obj2 = get_all(isamAppliance2, reverseproxy_id2, stanza_id)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

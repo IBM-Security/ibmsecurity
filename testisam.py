@@ -2,11 +2,8 @@ import logging.config
 import pprint
 from ibmsecurity.appliance.isamappliance import ISAMAppliance
 from ibmsecurity.user.applianceuser import ApplianceUser
-from ibmsecurity.user.isamuser import ISAMUser
 import pkgutil
 import importlib
-import yaml
-import json
 
 
 def import_submodules(package, recursive=True):
@@ -70,11 +67,10 @@ DEFAULT_LOGGING = {
 logging.config.dictConfig(DEFAULT_LOGGING)
 
 
-# Function to pretty print JSON data and in YAML format
+# Function to pretty print JSON data
 def p(jdata):
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(jdata)
-    print(yaml.safe_dump(jdata, encoding='utf-8', allow_unicode=True))
 
 if __name__ == "__main__":
     """
