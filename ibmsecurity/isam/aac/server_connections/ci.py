@@ -13,7 +13,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
                                     "/mga/server_connections/ci/v1")
 
 
-def get(isamAppliance, name=None, check_mode=False, force=False):
+def get(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieving a CI server connection
     """
@@ -25,22 +25,6 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_get("Retrieving a CI server connection",
                                         "/mga/server_connections/ci/{0}/v1".format(id))
-
-
-def get(isamAppliance, id=None, check_mode=False, force=False):
-    """
-    Retrieving a CI server connection
-    """
-    try:
-        response = isamAppliance.invoke_get("Retrieving a CI server connection",
-            "/mga/server_connections/ci/{0}/v1".format(id));
-    except IBMError as e:
-        if "404" in e[0]:
-            response = isamAppliance.create_return_object(rc=404, data=e[1]);
-        else:
-            raise;
-
-    return response;
 
 
 def set(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
