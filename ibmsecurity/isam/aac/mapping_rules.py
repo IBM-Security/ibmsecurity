@@ -132,11 +132,11 @@ def update(isamAppliance, name, content, check_mode=False, force=False):
     Update a specified mapping rule
     """
     update_required = False
+    ret_obj = search(isamAppliance, name)
+    id = ret_obj['data']
     if force is False:
-        ret_obj = search(isamAppliance, name)
-        if ret_obj['data'] != {}:
-            id = ret_obj['data']
-            ret_obj_content = _get(isamAppliance, ret_obj['data'])
+        if id:
+            ret_obj_content = _get(isamAppliance, id)
             # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
             if (ret_obj_content['data']['content']).strip() != (content).strip():
                 update_required = True
