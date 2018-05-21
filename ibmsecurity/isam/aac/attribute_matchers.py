@@ -136,5 +136,8 @@ def compare(isamAppliance1, isamAppliance2):
     """
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)
-    return tools.json_compare(ret_obj1, ret_obj2,
-                              deleted_keys=[])
+      for obj in ret_obj1['data']:
+        del obj['id']
+    for obj in ret_obj2['data']:
+        del obj['id']
+    return tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id'])
