@@ -66,7 +66,8 @@ def set(isamAppliance, description, properties, predefined=True, supportedDataty
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         if (description == "Exact attribute matcher" or description == "JavascriptPIPMatcher"):
-            warnings.append("Properties for the Exact Attribute Matcher and the JavaScript PIP Matcher should not be modified.")
+            warnings.append(
+                "Properties for the Exact Attribute Matcher and the JavaScript PIP Matcher should not be modified.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
         else:
             # Update request
@@ -136,8 +137,9 @@ def compare(isamAppliance1, isamAppliance2):
     """
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)
-      for obj in ret_obj1['data']:
+    for obj in ret_obj1['data']:
         del obj['id']
     for obj in ret_obj2['data']:
         del obj['id']
+
     return tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id'])

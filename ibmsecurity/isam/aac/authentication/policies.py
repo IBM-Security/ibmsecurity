@@ -215,21 +215,19 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get_all(isamAppliance2)
 
     for obj in ret_obj1['data']:
+        ret_obj = _get(isamAppliance1, obj['id'])
+        obj['policy'] = ret_obj['data']['policy']
         del obj['id']
         del obj['datecreated']
         del obj['lastmodified']
         del obj['userlastmodified']
-        ret_obj = _get(isamAppliance1, ret_obj1['data']['id'])
-        obj['policy'] = ret_obj['data']['policy']
     for obj in ret_obj2['data']:
+        ret_obj = _get(isamAppliance2, obj['id'])
+        obj['policy'] = ret_obj['data']['policy']
         del obj['id']
         del obj['datecreated']
         del obj['lastmodified']
         del obj['userlastmodified']
-        ret_obj = _get(isamAppliance2, ret_obj1['data']['id'])
-        obj['policy'] = ret_obj['data']['policy']
 
-    import ibmsecurity.utilities.tools
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2,
-                                                    deleted_keys=['id', 'datecreated', 'lastmodified',
-                                                                  'userlastmodified'])
+    return tools.json_compare(ret_obj1, ret_obj2,
+                              deleted_keys=['id', 'datecreated', 'lastmodified', 'userlastmodified'])
