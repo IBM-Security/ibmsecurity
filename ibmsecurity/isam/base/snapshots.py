@@ -12,6 +12,38 @@ def get(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving snapshots", "/snapshots")
 
 
+def get_latest(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieve id of latest found snapshot
+    """
+    ret_obj_id = isamAppliance.create_return_object()
+    ret_obj = get(isamAppliance)
+
+    # Get snapshot with lowest 'id' value - that will be latest one
+    snaps = min(ret_obj['data'], key=lambda snap: snap['index'])
+    ret_obj_id['data'] = snaps['id']
+
+    return ret_obj_id
+
+
+def search(isamAppliance, comment, check_mode=False, force=False):
+    """
+    Retrieve snapshots with given comment contained
+    """
+    ret_obj = isamAppliance.create_return_object()
+    ret_obj_all = get(isamAppliance)
+
+    for obj in ret_obj_all['data']:
+        if comment in obj['comment']:
+            logger.debug("Snapshot comment \"{0}\" has this string \"{1}\" in it.".format(obj['comment'], comment))
+            if ret_obj['data'] == {}:
+                ret_obj['data'] = [obj['id']]
+            else:
+                ret_obj['data'].append(obj['id'])
+
+    return ret_obj
+
+
 def create(isamAppliance, comment='', check_mode=False, force=False):
     """
     Create a new snapshot
@@ -100,7 +132,7 @@ def apply(isamAppliance, id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_snapshot_id("Applying snapshot", "/snapshots/apply/" + id,
-                                            {"snapshot_id": id})
+                                                         {"snapshot_id": id})
 
     return isamAppliance.create_return_object()
 
