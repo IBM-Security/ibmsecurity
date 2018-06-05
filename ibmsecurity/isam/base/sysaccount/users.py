@@ -68,7 +68,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def modify(isamAppliance, id, password, old_password, check_mode=False, force=False):
+def modify(isamAppliance, id, password, old_password=None, check_mode=False, force=False):
     """
     Change a users password
     """
@@ -78,8 +78,7 @@ def modify(isamAppliance, id, password, old_password, check_mode=False, force=Fa
         else:
             return isamAppliance.invoke_put("Change password", "/sysaccount/users/{0}/v1".format(id),
                                             {
-                                                'password': password,
-                                                'old_password': old_password
+                                                'password': password
                                             })
 
     return isamAppliance.create_return_object()
