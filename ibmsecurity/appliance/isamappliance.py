@@ -310,8 +310,12 @@ class ISAMAppliance(IBMAppliance):
         try:
             if func == requests.get or func == requests.delete:
 
-                r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
-                         verify=False, headers=headers)
+                if data != {}:
+                    r = func(url=self._url(uri), data=json_data, auth=(self.user.username, self.user.password),
+                             verify=False, headers=headers)
+                else:
+                    r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
+                             verify=False, headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
                          auth=(self.user.username, self.user.password),
@@ -407,15 +411,21 @@ class ISAMAppliance(IBMAppliance):
         self._log_response(response)
         return response
 
-    def invoke_delete(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
+    def invoke_delete(self, description, uri, data={}, ignore_error=False, requires_modules=None, requires_version=None,
                       warnings=[]):
         """
         Send a DELETE request to the LMI.
         """
         self._log_request("DELETE", uri, description)
-        response = self._invoke_request(requests.delete, description, uri,
-                                        ignore_error, requires_modules=requires_modules,
-                                        requires_version=requires_version, warnings=warnings)
+        if data != {}:
+            self.logger.info("Data:{0}".format(data))
+            response = self._invoke_request(requests.delete, description, uri, ignore_error, data=data,
+                                            requires_modules=requires_modules, requires_version=requires_version,
+                                            warnings=warnings)
+        else:
+            response = self._invoke_request(requests.delete, description, uri, ignore_error,
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        warnings=warnings)
         self._log_response(response)
         return response
 
