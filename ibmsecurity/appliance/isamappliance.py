@@ -418,7 +418,7 @@ class ISAMAppliance(IBMAppliance):
         """
         self._log_request("DELETE", uri, description)
         if data != {}:
-            self.logger.info("Data:{0}".format(data))
+            self.logger.info("Input Data:{0}".format(data))
             response = self._invoke_request(requests.delete, description, uri, ignore_error, data=data,
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             warnings=warnings)
