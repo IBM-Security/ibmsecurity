@@ -27,7 +27,7 @@ def enable(isamAppliance, is_primary=False, interface=None, remote=None, port=No
                                          "port": port,
                                          "health_check_interval": health_check_interval,
                                          "health_check_timeout": health_check_timeout
-                                     })
+                                     }, requires_version=requires_version, requires_modules=requires_module)
 
 
 def get(isamAppliance, check_mode=False, force=False):

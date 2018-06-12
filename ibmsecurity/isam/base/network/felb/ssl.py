@@ -16,7 +16,7 @@ def create(isamAppliance, keyfile, check_mode=False, force=False):
             return isamAppliance.invoke_post("Creating Configuration", "{0}".format(module_uri),
                                              {
                                                  "keyfile": keyfile
-                                             })
+                                             }, requires_version=required_version, requires_modules=required_module)
 
 
 def disable(isamAppliance, check_mode=False, force=False):
