@@ -31,6 +31,24 @@ def set(isdsAppliance, hostname, ip_addr, check_mode=False, force=False):
     return isdsAppliance.create_return_object()
 
 
+def add_hostname(isdsAppliance, hostname, ip_addr, check_mode=False, force=False):
+    """
+    Add hostname to host record
+    """
+    if force is True or _check(isdsAppliance, hostname, ip_addr) is False:
+        if check_mode is True:
+            return isdsAppliance.create_return_object(changed=True)
+        else:
+            return isdsAppliance.invoke_post(
+                "Setting host record",
+                "/host_records/" + ip_addr + "/hostnames",
+                {
+                    'name': hostname #switch 'name' to 'hostname' when issue in API documentation is going to be fixed
+                })
+
+    return isdsAppliance.create_return_object()
+
+
 def delete(isdsAppliance, hostname, ip_addr, check_mode=False, force=False):
     """
     Delete a host record
