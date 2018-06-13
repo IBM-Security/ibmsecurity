@@ -43,7 +43,7 @@ def add_hostname(isdsAppliance, hostname, ip_addr, check_mode=False, force=False
                 "Setting host record",
                 "/host_records/" + ip_addr + "/hostnames",
                 {
-                    'name': hostname #switch 'name' to 'hostname' when issue in API documentation is going to be fixed
+                    'name': hostname
                 })
 
     return isdsAppliance.create_return_object()
