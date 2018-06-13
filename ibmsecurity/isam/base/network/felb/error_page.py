@@ -5,7 +5,7 @@ requires_module=None
 requires_version=None
 
 
-def download(isamAppliance, error_page, check_mode=False, force=False):
+def add(isamAppliance, error_page, check_mode=False, force=False):
     """
     Downloads error page
     """
@@ -57,6 +57,8 @@ def _check(isamAppliance, error_page):
     for page in pages['data']:
         if page['id'] == error_page:
             change_required=False
+            return change_required
+
 
     return change_required
 
@@ -71,10 +73,3 @@ def _check_update(isamAppliance, error_page, content=None):
         change_required=True
 
     return change_required
-
-def _check_upload(isamAppliance, error_page, file=None):
-    """
-    checks upload for idempotency
-    """
-
-    return isamAppliance.invoke_get("Checking", "/isam/felb/errorpages")

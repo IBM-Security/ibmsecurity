@@ -5,7 +5,7 @@ requires_modules = None
 requires_version = None
 
 
-def create(isamAppliance, enabled, name, address, port, netmask, interface, scheduler, health_check_interval,
+def add(isamAppliance, enabled, name, address, port, netmask, interface, scheduler, health_check_interval,
            rise, fall, layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name,
            attribute_value, server_id, server_active, server_address, server_port, server_weight,
            server_secure=False, server_ssllabel=None, check_mode=False, force=False):
