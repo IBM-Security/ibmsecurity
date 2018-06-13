@@ -1,5 +1,3 @@
-# Transfer to ibmsecurity/appliance folder
-
 import json
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
