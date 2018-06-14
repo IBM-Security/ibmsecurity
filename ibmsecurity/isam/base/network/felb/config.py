@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 # TODO needs work
 
 
@@ -10,104 +13,111 @@ def export(isamAppilance, check_mode=False, force=False):
     """
     Exporting current FELB configuration with RESTful web service
     """
-    return isamAppilance.invoke_get("Exporting Configuration", "{0}?export=true".format(module_uri), requires_modules=requires_module, requires_version=requires_version)
-
+    return isamAppilance.invoke_get("Exporting Configuration", "{0}?export=true".format(module_uri),
+                                    requires_modules=requires_module, requires_version=requires_version)
 
 
 def imp_config(isamAppliance, file, check_mode=False, force=False):
     """
     Importing FELB file
     """
-    change_required=_check_import(isamAppliance, file)
+    change_required = _check_import(isamAppliance, file)
 
     if force is True or change_required is True:
         return isamAppliance.invoke_post("Importing Configuration", "{0}".format(module_uri),
-                                             {
-                                                 "file": file
-                                             }, requires_version=requires_version, requires_modules=requires_module)  # TODO stopping point till i can talk to someone about it
+                                         {
+                                             "file": file
+                                         }, requires_version=requires_version,
+                                         requires_modules=requires_module)  # TODO stopping point till i can talk to someone about it
     else:
         return isamAppliance.create_return_object(changed=False)
 
+
 def replace(isamAppliance, enable, debug, ha_enable, is_primary, interface,
-           remote, port, health_check_interval, health_check_timeout, local, remote_address,
-           remote_port, remote_facility, ssl_enable, keyfile, services_enable, name, services_address,
-           services_port, netmask, services_interface, scheduler, services_health_check_interval, rise, fall,
+            remote, port, health_check_interval, health_check_timeout, local, remote_address,
+            remote_port, remote_facility, ssl_enable, keyfile, services_enable, name, services_address,
+            services_port, netmask, services_interface, scheduler, services_health_check_interval, rise, fall,
             layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name, attribute_value, server_id,
-           server_active, server_address, server_port, server_weight, server_secure=False, ssllabel=None, check_mode=False, force=False):
+            server_active, server_address, server_port, server_weight, server_secure=False, ssllabel=None,
+            check_mode=False, force=False):
     """
     updates ssl configuration
     """
     if force is True or _check(isamAppliance, enable, debug, ha_enable, is_primary, interface,
-           remote, port, health_check_interval, health_check_timeout, local, remote_address,
-           remote_port, remote_facility, ssl_enable, keyfile, services_enable, name, services_address,
-           services_port, netmask, services_interface, scheduler, services_health_check_interval, rise, fall,
-            layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name, attribute_value, server_id,
-           server_active, server_address, server_port, server_weight, server_secure=False, ssllabel=None) is True:
+                               remote, port, health_check_interval, health_check_timeout, local, remote_address,
+                               remote_port, remote_facility, ssl_enable, keyfile, services_enable, name,
+                               services_address,
+                               services_port, netmask, services_interface, scheduler, services_health_check_interval,
+                               rise, fall,
+                               layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name,
+                               attribute_value, server_id,
+                               server_active, server_address, server_port, server_weight, server_secure=False,
+                               ssllabel=None) is True:
         return isamAppliance.invoke_put("Updating Configuration", "{0}".format(module_uri),
-                                    {
-                                        "enable": enable,
-                                        "debug": debug,
-                                        "ha":{
-                                            "enable": ha_enable,
-                                            "is_primary": is_primary,
-                                            "interface": interface,
-                                            "remote": remote,
-                                            "port": port,
-                                            "health_check_interval": health_check_interval,
-                                            "health_check_timeout": health_check_timeout
+                                        {
+                                            "enable": enable,
+                                            "debug": debug,
+                                            "ha": {
+                                                "enable": ha_enable,
+                                                "is_primary": is_primary,
+                                                "interface": interface,
+                                                "remote": remote,
+                                                "port": port,
+                                                "health_check_interval": health_check_interval,
+                                                "health_check_timeout": health_check_timeout
                                             },
-                                        "logging":{
-                                            "local": local,
-                                            "remote_address": remote_address,
-                                            "remote_port": remote_port,
-                                            "remote_facility": remote_facility
+                                            "logging": {
+                                                "local": local,
+                                                "remote_address": remote_address,
+                                                "remote_port": remote_port,
+                                                "remote_facility": remote_facility
                                             },
-                                        "ssl":{
-                                            "enable": ssl_enable,
-                                            "keyfile": keyfile
+                                            "ssl": {
+                                                "enable": ssl_enable,
+                                                "keyfile": keyfile
                                             },
-                                        "services":[
+                                            "services": [
                                                 {
-                                                "enable": services_enable,
-                                                "name": name,
-                                                "address": services_address,
-                                                "port": services_port,
-                                                "netmask": netmask,
-                                                "interface": services_interface,
-                                                "scheduler": scheduler,
-                                                "health_check_interval": services_health_check_interval,
-                                                "rise": rise,
-                                                "fall": fall,
-                                                "layer": {
-                                                    "type": layer_type,
-                                                    "layer7_secure": layer7_secure,
-                                                    "layer7_ssl_label": layer7_ssl_label,
-                                                    "layer7_cookie": layer7_cookie
-                                                        },
-                                                "attributes":[
-                                                    {
-                                                        "name": attribute_name,
-                                                        "value": attribute_value
-                                                    }
-                                                ],
-                                                "servers": [
-                                                    {
-                                                        "id": server_id,
-                                                        "active": server_active,
-                                                        "address": server_address,
-                                                        "port": server_port,
-                                                        "weight": server_weight,
-                                                        "secure": server_secure,
-                                                        "ssllabel": ssllabel
-                                                    }
-                                                ]
+                                                    "enable": services_enable,
+                                                    "name": name,
+                                                    "address": services_address,
+                                                    "port": services_port,
+                                                    "netmask": netmask,
+                                                    "interface": services_interface,
+                                                    "scheduler": scheduler,
+                                                    "health_check_interval": services_health_check_interval,
+                                                    "rise": rise,
+                                                    "fall": fall,
+                                                    "layer": {
+                                                        "type": layer_type,
+                                                        "layer7_secure": layer7_secure,
+                                                        "layer7_ssl_label": layer7_ssl_label,
+                                                        "layer7_cookie": layer7_cookie
+                                                    },
+                                                    "attributes": [
+                                                        {
+                                                            "name": attribute_name,
+                                                            "value": attribute_value
+                                                        }
+                                                    ],
+                                                    "servers": [
+                                                        {
+                                                            "id": server_id,
+                                                            "active": server_active,
+                                                            "address": server_address,
+                                                            "port": server_port,
+                                                            "weight": server_weight,
+                                                            "secure": server_secure,
+                                                            "ssllabel": ssllabel
+                                                        }
+                                                    ]
 
-                                            }
+                                                }
 
-                                        ],
+                                            ],
 
+                                        })
 
-                                    })
 
 def get(isamAppliance):
     """
@@ -138,12 +148,12 @@ def update(isamAppliance, felb_id, value, check_mode=False, force=False):
     :param force:
     :return:
     """
-    change_required= _check_update(isamAppliance, felb_id, value)
+    change_required = _check_update(isamAppliance, felb_id, value)
     if force is True or change_required is True:
         return isamAppliance.invoke_put("Updating configuration", "{0}/configuration/{1}".format(module_uri, felb_id),
-                                    {
-                                        "value": value
-                                    })
+                                        {
+                                            "value": value
+                                        })
     else:
         return isamAppliance.create_return_object(changed=False)
 
@@ -154,22 +164,22 @@ def _check_import(isamAppliance, file):
     """
 
     temp_obj = get(isamAppliance)
-    change_required=False
+    change_required = False
     if temp_obj['file'] != file:
-        change_required=True
-
+        change_required = True
 
     return change_required
+
 
 def _check_update(isamappliance, felb_id, value):
     """
     checks update for value passed
     """
-    change_required=False
+    change_required = False
     temp_obj = isamappliance.invoke_get("Retrieving configuration", "{0}/configuration/{1}".format(module_uri, felb_id))
 
     if temp_obj['value'] != value:
-        change_required=True
+        change_required = True
 
     return change_required
 
@@ -178,7 +188,7 @@ def _check(isamAppliance, enable, debug, ha_enable, is_primary, interface,
            remote, port, health_check_interval, health_check_timeout, local, remote_address,
            remote_port, remote_facility, ssl_enable, keyfile, services_enable, name, services_address,
            services_port, netmask, services_interface, scheduler, services_health_check_interval, rise, fall,
-            layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name, attribute_value, server_id,
+           layer_type, layer7_secure, layer7_ssl_label, layer7_cookie, attribute_name, attribute_value, server_id,
            server_active, server_address, server_port, server_weight, server_secure=False, ssllabel=None):
     """
     Checks update in full
