@@ -8,6 +8,7 @@ uri = "/iam/access/v8/devicefingerprints/userIds/"
 requires_modules = ["mga"]
 requires_version = None
 
+
 def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=False):
     """
     Retrieve a list of user IDs from devices fingerprints
@@ -15,6 +16,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     return isamAppliance.invoke_get("Retrieve a list of user IDs from Devices Fingerprints",
                                     uri,
                                     requires_modules=requires_modules, requires_version=requires_version)
+
 
 def search(isamAppliance, userID, force=False, check_mode=False):
     """
@@ -31,6 +33,7 @@ def search(isamAppliance, userID, force=False, check_mode=False):
 
     return return_obj
 
+
 def get(isamAppliance, userID, check_mode=False, force=False):
     """
     Retrieve a list of device fingerprints for a given user ID
@@ -46,6 +49,7 @@ def get(isamAppliance, userID, check_mode=False, force=False):
         return isamAppliance.invoke_get("Retrieve a list of device fingerprints for a given user ID",
                                         "{0}/{1}".format(uri, userID))
 
+
 def delete(isamAppliance, userID, check_mode=False, force=False):
     """
     Delete all device fingerprints for the given user ID
@@ -58,5 +62,8 @@ def delete(isamAppliance, userID, check_mode=False, force=False):
         warnings.append("User {0} had no match, skipping Delete.".format(userID))
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
-        return isamAppliance.invoke_delete("Delete all device fingerprints for the given user ID",
-                                        "{0}/{1}".format(uri, userID))
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Delete all device fingerprints for the given user ID",
+                                               "{0}/{1}".format(uri, userID))

@@ -5,8 +5,6 @@ requires_module = None
 requires_version = None
 
 
-
-
 def delete(isamAppliance, check_mode=False, force=False):
     """
     Disables High Availability Configuration
@@ -15,7 +13,7 @@ def delete(isamAppliance, check_mode=False, force=False):
 
 
 def add(isamAppliance, is_primary, interface, remote, port, health_check_interval,
-           health_check_timeout, check_mode=False, force=False):
+        health_check_timeout, check_mode=False, force=False):
     """
     enables HA
     """
@@ -39,25 +37,22 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def update(isamAppliance, is_primary, interface, remote, port, health_check_interval,
            health_check_timeout, check_mode=False, force=False):
-
     update_required = _check(isamAppliance, is_primary=is_primary, interface=interface, remote=remote,
-                                        port=port, health_check_interval=health_check_interval,
-                                        health_check_timeout=health_check_timeout)
+                             port=port, health_check_interval=health_check_interval,
+                             health_check_timeout=health_check_timeout)
     if force is True or update_required is True:
         return isamAppliance.invoke_put("Updating High Availability", module_uri,
-                                            {
-                                                "is_primary": is_primary,
-                                                "interface": interface,
-                                                "remote": remote,
-                                                "port": port,
-                                                "health_check_interval": health_check_interval,
-                                                "health_check_timeout": health_check_timeout
+                                        {
+                                            "is_primary": is_primary,
+                                            "interface": interface,
+                                            "remote": remote,
+                                            "port": port,
+                                            "health_check_interval": health_check_interval,
+                                            "health_check_timeout": health_check_timeout
 
-                                            }, requires_modules=requires_module, requires_version=requires_version)
+                                        }, requires_modules=requires_module, requires_version=requires_version)
     elif check_mode is True:
         return isamAppliance.create_return_object(changed=False)
-
-
 
 
 def _check(isamAppliance, is_primary, interface, remote, port, health_check_interval,

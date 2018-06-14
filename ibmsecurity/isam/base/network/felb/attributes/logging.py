@@ -18,7 +18,7 @@ def update(isamAppliance, local, remote_address, remote_port, remote_facility, c
 
     if force is True or change_required is True:
         return isamAppliance.invoke_put("Updating Configuration", module_uri, json_data,
-                                     requires_modules=requires_modules, requires_version=requires_versions)
+                                        requires_modules=requires_modules, requires_version=requires_versions)
     if change_required is False:
         return isamAppliance.create_return_object(changed=False)
 
@@ -39,7 +39,7 @@ def _check(isamAppliance, local, remote_address, remote_port, remote_facility):
 
         }
         if check_obj['data']['local'] != local:
-            change_required=True
+            change_required = True
         return change_required, json_data
     else:
         if check_obj['data']['remote_address'] != remote_address:

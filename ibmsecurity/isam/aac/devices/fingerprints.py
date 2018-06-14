@@ -17,6 +17,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
                                     "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
                                     requires_modules=requires_modules, requires_version=requires_version)
 
+
 def get(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieve a device fingerprint for a specific device
@@ -31,6 +32,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_get("Retrieve a specific Device Fingerprint",
                                         "{0}/{1}".format(uri, id))
+
 
 def search(isamAppliance, name, force=False, check_mode=False):
     """
@@ -47,6 +49,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     return return_obj
 
+
 def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Delete a device fingerprint for a specific device
@@ -59,14 +62,19 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         warnings.append("Device {0} had no match, skipping delete.".format(name))
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
-        return isamAppliance.invoke_delete("Delete a specific Device Fingerprint",
-                                        "{0}/{1}".format(uri, id))
-
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Delete a specific Device Fingerprint",
+                                               "{0}/{1}".format(uri, id))
 
 
 def delete_set(isamAppliance, devices, check_mode=False, force=False):
     """
     Delete a set of device fingerprints
     """
-    return isamAppliance.invoke_delete(description="Delete a set of device fingerprints",
-                                        uri=uri, data=devices, ignore_error=True)
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_delete(description="Delete a set of device fingerprints",
+                                           uri=uri, data=devices, ignore_error=True)
