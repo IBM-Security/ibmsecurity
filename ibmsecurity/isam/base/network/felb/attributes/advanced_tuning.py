@@ -1,4 +1,6 @@
-import ibmsecurity.utilities.tools
+import logging
+
+logger = logging.getLogger(__name__)
 
 module_uri = "/isam/felb/configuration/attributes"
 requires_modules = None
