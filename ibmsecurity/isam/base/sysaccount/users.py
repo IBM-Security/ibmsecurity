@@ -72,16 +72,20 @@ def modify(isamAppliance, id, password, old_password=None, check_mode=False, for
     """
     Change a users password
     """
+    warnings = []
+    if old_password is not None and old_password != '':
+        warnings.append("old_password is not required. Provided value will be ignored.")
     if force is True or _check(isamAppliance, id=id) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put("Change password", "/sysaccount/users/{0}/v1".format(id),
                                             {
                                                 'password': password
-                                            })
+                                            }, warnings=warnings)
 
     return isamAppliance.create_return_object()
+
 
 def compare(isamAppliance1, isamAppliance2):
     """
