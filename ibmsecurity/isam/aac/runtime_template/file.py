@@ -174,7 +174,7 @@ def export_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting a file from the runtime template files directory",
-                "/mga/template_files/{0}/{1}?type=File".format(path, name), filename)
+                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename)
 
     return isamAppliance.create_return_object()
 
