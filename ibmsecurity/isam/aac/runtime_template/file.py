@@ -208,6 +208,7 @@ def _check_import(isamAppliance, path, name, filename, check_mode=False):
         shutil.rmtree(tmpdir)
         return True
 
+
 def import_file(isamAppliance, path, name, filename, check_mode=False, force=False):
     """
     Importing a file in the runtime template files directory.
@@ -215,8 +216,7 @@ def import_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file != None and force == False:
-        warnings.append("File {0} exists in path {1}. Ignoring import.".format(name,path))
-        return isamAppliance.create_return_object(warnings=warnings)
+        warnings.append("File {0} exists in path {1}.".format(name,path))
 
     if force is True or _check_import(isamAppliance, path, name, filename, check_mode=check_mode):
         if check_mode is True:
@@ -237,7 +237,7 @@ def import_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
                     'force': force
                 })
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def compare(isamAppliance1, isamAppliance2, instance_id):
