@@ -1,100 +1,95 @@
 import ibmsecurity.utilities.tools
+import logging
 
 module_uri = "/isam/felb/configuration/ssl"
-required_module = None  # TODO find out
-required_version = None  # TODO find out
+required_module = None
+required_version = None
+
+logger = logging.getLogger(__name__)
 
 
-def add(isamAppliance, keyfile, check_mode=False, force=False):
+def enable(isamAppliance, keyfile, check_mode=False, force=False):
     """
     Creates ssl configuration
     """
-    if force is True or _check_add(isamAppliance, keyfile) is True:
-        return isamAppliance.invoke_post("Creating Configuration", "{0}".format(module_uri),
-                                         {
-                                             "keyfile": keyfile
-                                         }, requires_version=required_version, requires_modules=required_module)
-    if check_mode is True:
-        if _check_add(isamAppliance, keyfile) is False:
-            return isamAppliance.create_return_object(changed=False)
+    if force is True or _check_enable(isamAppliance, keyfile) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_post("Creating SSL configuration", module_uri,
+                                             {
+                                                 "keyfile": keyfile
+                                             }, requires_version=required_version, requires_modules=required_module)
+
+    return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, check_mode=False, force=False):
+def disable(isamAppliance, check_mode=False, force=False):
     """
     Deletes ssl configuration
     """
-    return isamAppliance.invoke_delete("Disabling Configuration", "{0}".format(module_uri))
+    if force is True or _check_disable(isamAppliance) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Disabling SSL", module_uri,
+                                               requires_version=required_version, requires_modules=required_module)
+    else:
+        return isamAppliance.create_return_object()
 
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieves ssl configuration
     """
-    return isamAppliance.invoke_get("Retrieving Configuration", "{0}/".format(module_uri))
+    return isamAppliance.invoke_get("Retrieving SSL configuration", module_uri,
+                                    requires_version=required_version, requires_modules=required_module)
 
 
-def update(isamAppliance, keyfile, is_primary, interface, remote, port, health_check_interval,
-           health_check_timeout, check_mode=False, force=False):
+def _check_enable(isamAppliance, keyfile=None):
     """
-    Updates keyfile
+    checks add function for idempotency
     """
-    update_required = _check(isamAppliance, keyfile, is_primary, interface, remote, port, health_check_interval,
-                             health_check_timeout)
-
-    if update_required is True or force is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_put("Updated SSL configurations", module_uri,
-                                            {
-                                                "keyfile": keyfile,
-                                                "is_primary": is_primary,
-                                                "interface": interface,
-                                                "remote": remote,
-                                                "port": port,
-                                                "health_check_interval": health_check_interval,
-                                                "health_check_timeout": health_check_timeout
-
-                                            }, requires_modules=required_module, requires_version=required_version)
+    change_required = False
+    check_obj = get(isamAppliance)
+    # checks to see if ssl configuration exists
+    try:
+        if check_obj['data']['keyfile'] != keyfile:
+            change_required = True
+    except:
+        change_required = True
+    return change_required
 
 
-def _check(isamAppliance, keyfile, is_primary, interface, remote, port, health_check_interval,
-           health_check_timeout):
+def _check_disable(isamAppliance):
     """
-    Idempotency Test
-    parameters past keyfile are set to none because create method uses only keyfile as parameter, functions main
-    purpose is to check upon update.
+    Checks delete function for idempotency
     """
-    ret_obj = get(isamAppliance)
 
-    # Checks to see if parameters passed match values in original appliance
-    if ret_obj['data']['keyfile'] != keyfile:
-        return True
-    elif ret_obj['data']['is_primary'] != is_primary:
-        return True
-    elif ret_obj['data']['interface'] != interface:
-        return True
-    elif ret_obj['data']['remote'] != remote:
-        return True
-    elif ret_obj['data']['port'] != port:
-        return True
-    elif ret_obj['data']['health_check_interval'] != health_check_interval:
-        return True
-    elif ret_obj['data']['health_check_timeout'] != health_check_timeout:
+    check_obj = get(isamAppliance)
+
+    if check_obj['data']['enabled'] == True:
         return True
     else:
         return False
 
 
-def _check_add(isamAppliance, keyfile):
+def set(isamAppliance, keyfile, check_mode=True, force=False):
     """
-    checks add function for idempotency
+    determines if enable or disable is used.
     """
-    change_required = False
-    temp_obj = get(isamAppliance)
-    if temp_obj['data']['enabled'] == True:
-        if temp_obj['data']['keyfile'] != keyfile:
-            change_required = True
-            return change_required
-    else:
-        return change_required
+    check_obj = get(isamAppliance)
+
+    if check_obj['data']['enabled'] is False:
+        enable(isamAppliance, keyfile, check_mode, force)
+    # TODO ask if it is nesessary to have set method if there isnt an update method.
+
+
+def compare(isamAppliance1, isamAppliance2):
+    """
+    Compare cluster configuration between two appliances
+    """
+    ret_obj1 = get(isamAppliance1)
+    ret_obj2 = get(isamAppliance2)
+
+    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
