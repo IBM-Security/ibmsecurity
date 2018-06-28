@@ -19,6 +19,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving user", "/sysaccount/users/{0}/v1".format(id))
 
 
+
 def create(isamAppliance, id, password, groups=[], check_mode=False, force=False):
     """
     Create a new user
