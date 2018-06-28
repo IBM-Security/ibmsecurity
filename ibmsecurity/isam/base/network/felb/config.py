@@ -30,7 +30,7 @@ def imp_config(isamAppliance, file, check_mode=False, force=False):
                                              {
                                                  "file": file
                                              }, requires_version=requires_version,
-                                             requires_modules=requires_module)  # TODO stopping point till i can talk to someone about it
+                                             requires_modules=requires_module)
     else:
         return isamAppliance.create_return_object(changed=False)
 

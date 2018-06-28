@@ -74,15 +74,6 @@ def _check_disable(isamAppliance):
         return False
 
 
-def set(isamAppliance, keyfile, check_mode=True, force=False):
-    """
-    determines if enable or disable is used.
-    """
-    check_obj = get(isamAppliance)
-
-    if check_obj['data']['enabled'] is False:
-        enable(isamAppliance, keyfile, check_mode, force)
-    # TODO ask if it is nesessary to have set method if there isnt an update method.
 
 
 def compare(isamAppliance1, isamAppliance2):
