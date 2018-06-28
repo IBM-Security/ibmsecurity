@@ -367,8 +367,8 @@ class ISDSAppliance(IBMAppliance):
             self.get_version()
 
             # Check if appliance is setup before collecting Activation information
-            import ibmsecurity.isds.base.setup_complete
-            ret_obj = ibmsecurity.isds.base.setup_complete.get(self)
+            import ibmsecurity.isds.setup_complete
+            ret_obj = ibmsecurity.isds.setup_complete.get(self)
             if ret_obj['data'].get('configured') is True:
                 self.get_activations()
         # Exceptions like those connection related will be ignored
@@ -382,9 +382,9 @@ class ISDSAppliance(IBMAppliance):
         When firmware are installed or partition are changed, then this value is updated
         """
         self.facts['version'] = None
-        import ibmsecurity.isds.base.firmware
+        import ibmsecurity.isds.firmware
 
-        ret_obj = ibmsecurity.isds.base.firmware.get(self)
+        ret_obj = ibmsecurity.isds.firmware.get(self)
         for partition in ret_obj['data']:
             if partition['active'] is True:
                 ver = partition['firmware_version'].split(' ')
@@ -397,9 +397,9 @@ class ISDSAppliance(IBMAppliance):
         When new modules are activated or old ones de-activated this value is updated.
         """
         self.facts['activations'] = []
-        import ibmsecurity.isds.base.activation
+        import ibmsecurity.isds.activation
 
-        ret_obj = ibmsecurity.isds.base.activation.get(self)
+        ret_obj = ibmsecurity.isds.activation.get(self)
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])

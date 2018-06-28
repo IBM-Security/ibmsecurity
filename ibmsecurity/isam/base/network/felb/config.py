@@ -1,5 +1,11 @@
 import logging
+<<<<<<< HEAD
 import ibmsecurity.utilities.tools
+=======
+
+logger = logging.getLogger(__name__)
+# TODO needs work
+>>>>>>> upstream/master
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +18,11 @@ def export(isamAppilance, check_mode=False, force=False):
     """
     Exporting current FELB configuration with RESTful web service
     """
+<<<<<<< HEAD
     return isamAppilance.invoke_get("Exporting FELB configuration", "{0}?export=true".format(module_uri),
+=======
+    return isamAppilance.invoke_get("Exporting Configuration", "{0}?export=true".format(module_uri),
+>>>>>>> upstream/master
                                     requires_modules=requires_module, requires_version=requires_version)
 
 
@@ -23,6 +33,7 @@ def imp_config(isamAppliance, file, check_mode=False, force=False):
     change_required = _check_import(isamAppliance, file)
 
     if force is True or change_required is True:
+<<<<<<< HEAD
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -31,6 +42,13 @@ def imp_config(isamAppliance, file, check_mode=False, force=False):
                                                  "file": file
                                              }, requires_version=requires_version,
                                              requires_modules=requires_module)
+=======
+        return isamAppliance.invoke_post("Importing Configuration", "{0}".format(module_uri),
+                                         {
+                                             "file": file
+                                         }, requires_version=requires_version,
+                                         requires_modules=requires_module)  # TODO stopping point till i can talk to someone about it
+>>>>>>> upstream/master
     else:
         return isamAppliance.create_return_object(changed=False)
 
@@ -55,6 +73,7 @@ def replace(isamAppliance, enable, debug, ha_enable, is_primary, interface,
                                attribute_value, server_id,
                                server_active, server_address, server_port, server_weight, server_secure=False,
                                ssllabel=None) is True:
+<<<<<<< HEAD
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -123,6 +142,72 @@ def replace(isamAppliance, enable, debug, ha_enable, is_primary, interface,
                                                 ],
 
                                             })
+=======
+        return isamAppliance.invoke_put("Updating Configuration", "{0}".format(module_uri),
+                                        {
+                                            "enable": enable,
+                                            "debug": debug,
+                                            "ha": {
+                                                "enable": ha_enable,
+                                                "is_primary": is_primary,
+                                                "interface": interface,
+                                                "remote": remote,
+                                                "port": port,
+                                                "health_check_interval": health_check_interval,
+                                                "health_check_timeout": health_check_timeout
+                                            },
+                                            "logging": {
+                                                "local": local,
+                                                "remote_address": remote_address,
+                                                "remote_port": remote_port,
+                                                "remote_facility": remote_facility
+                                            },
+                                            "ssl": {
+                                                "enable": ssl_enable,
+                                                "keyfile": keyfile
+                                            },
+                                            "services": [
+                                                {
+                                                    "enable": services_enable,
+                                                    "name": name,
+                                                    "address": services_address,
+                                                    "port": services_port,
+                                                    "netmask": netmask,
+                                                    "interface": services_interface,
+                                                    "scheduler": scheduler,
+                                                    "health_check_interval": services_health_check_interval,
+                                                    "rise": rise,
+                                                    "fall": fall,
+                                                    "layer": {
+                                                        "type": layer_type,
+                                                        "layer7_secure": layer7_secure,
+                                                        "layer7_ssl_label": layer7_ssl_label,
+                                                        "layer7_cookie": layer7_cookie
+                                                    },
+                                                    "attributes": [
+                                                        {
+                                                            "name": attribute_name,
+                                                            "value": attribute_value
+                                                        }
+                                                    ],
+                                                    "servers": [
+                                                        {
+                                                            "id": server_id,
+                                                            "active": server_active,
+                                                            "address": server_address,
+                                                            "port": server_port,
+                                                            "weight": server_weight,
+                                                            "secure": server_secure,
+                                                            "ssllabel": ssllabel
+                                                        }
+                                                    ]
+
+                                                }
+
+                                            ],
+
+                                        })
+>>>>>>> upstream/master
 
 
 def get(isamAppliance):
@@ -336,6 +421,7 @@ def _check(isamAppliance, enable, debug, ha_enable, is_primary, interface,
         return True
     if check_obj['data']['servers']['weight'] != server_weight:
         return True
+<<<<<<< HEAD
     if check_obj['data']['servers']['layer']['type'] != layer_type:
         return True
     if check_obj['data']['servers']['layer']['layer7_cookie'] != layer7_cookie:
@@ -344,3 +430,5 @@ def _check(isamAppliance, enable, debug, ha_enable, is_primary, interface,
         return True
     if check_obj['data']['servers']['layer']['layer7_ssl_label'] != layer7_ssl_label:
         return True
+=======
+>>>>>>> upstream/master

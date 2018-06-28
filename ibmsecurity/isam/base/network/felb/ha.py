@@ -8,7 +8,11 @@ requires_module = None
 requires_version = None
 
 
+<<<<<<< HEAD
 def disable(isamAppliance, check_mode=False, force=False):
+=======
+def delete(isamAppliance, check_mode=False, force=False):
+>>>>>>> upstream/master
     """
     Disabling HA
     """
@@ -23,8 +27,13 @@ def disable(isamAppliance, check_mode=False, force=False):
         return isamAppliance.create_return_object()
 
 
+<<<<<<< HEAD
 def enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
            health_check_timeout, check_mode=False, force=False):
+=======
+def add(isamAppliance, is_primary, interface, remote, port, health_check_interval,
+        health_check_timeout, check_mode=False, force=False):
+>>>>>>> upstream/master
     """
     Enabling HA
     """
@@ -56,6 +65,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def update(isamAppliance, is_primary, interface, remote, port, health_check_interval,
            health_check_timeout, check_mode=False, force=False):
+<<<<<<< HEAD
     """
     Updating HA configuration
     """
@@ -81,6 +91,24 @@ def update(isamAppliance, is_primary, interface, remote, port, health_check_inte
     else:
         return isamAppliance.create_return_object()
 
+=======
+    update_required = _check(isamAppliance, is_primary=is_primary, interface=interface, remote=remote,
+                             port=port, health_check_interval=health_check_interval,
+                             health_check_timeout=health_check_timeout)
+    if force is True or update_required is True:
+        return isamAppliance.invoke_put("Updating High Availability", module_uri,
+                                        {
+                                            "is_primary": is_primary,
+                                            "interface": interface,
+                                            "remote": remote,
+                                            "port": port,
+                                            "health_check_interval": health_check_interval,
+                                            "health_check_timeout": health_check_timeout
+
+                                        }, requires_modules=requires_module, requires_version=requires_version)
+    elif check_mode is True:
+        return isamAppliance.create_return_object(changed=False)
+>>>>>>> upstream/master
 
 def set(isamAppliance, is_primary, interface, remote, port, health_check_interval,
         health_check_timeout, check_mode=False, force=False):
@@ -89,6 +117,7 @@ def set(isamAppliance, is_primary, interface, remote, port, health_check_interva
     """
     check_obj = get(isamAppliance)
 
+<<<<<<< HEAD
     if check_mode['data']['enabled'] is False:
         enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
                health_check_timeout, check_mode, force)
@@ -100,6 +129,10 @@ def set(isamAppliance, is_primary, interface, remote, port, health_check_interva
 
 def _check_enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
                   health_check_timeout):
+=======
+def _check(isamAppliance, is_primary, interface, remote, port, health_check_interval,
+           health_check_timeout, check_mode=False, force=False):
+>>>>>>> upstream/master
     """
     idempotency test for each parameter
     """
@@ -120,6 +153,7 @@ def _check_enable(isamAppliance, is_primary, interface, remote, port, health_che
         return True
     else:
         return False
+<<<<<<< HEAD
 
 
 def _check_disable(isamAppliance):
@@ -142,3 +176,5 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get(isamAppliance2)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
+=======
+>>>>>>> upstream/master

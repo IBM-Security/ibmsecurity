@@ -21,6 +21,9 @@ def set(isamAppliance, client_id, options, endpoints, discovery_mechanisms, chec
         "endpoints": endpoints,
         "discovery_mechanisms": discovery_mechanisms
     }
-    return isamAppliance.invoke_post(
-        "Set MMFA endpoint configuration",
-        "/iam/access/v8/mmfa-config/", json_data)
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_post(
+            "Set MMFA endpoint configuration",
+            "/iam/access/v8/mmfa-config/", json_data)
