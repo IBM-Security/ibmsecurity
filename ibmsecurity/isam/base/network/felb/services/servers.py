@@ -1,4 +1,7 @@
 import ibmsecurity.utilities.tools
+import logging
+
+logger = logging.getLogger(__name__)
 
 module_uri = "/isam/felb/configuration/services/"
 requires_modulers = None
@@ -7,32 +10,45 @@ requires_version = None
 
 def add(isamAppliance, service_name, address, active, port, weight, secure, ssllabel, check_mode=False, force=False):
     """
-    Creates server under specificed service name
+    Creating a server
     """
-    change_required = _check(isamAppliance, service_name, address, active, port, weight, secure, ssllabel)
+    change_required = _check_exist(isamAppliance, service_name, address, port=port)
 
     if force is True or change_required is True:
-        return isamAppliance.invoke_post("Creating Server", "{0}{1}/servers".format(module_uri, service_name, address),
-                                         {
-                                             "active": active,
-                                             "address": address,
-                                             "port": port,
-                                             "weight": weight,
-                                             "secure": secure,
-                                             "ssllabel": ssllabel
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
 
-                                         },
-                                         requires_version=requires_version, requires_modules=requires_modulers)
+            return isamAppliance.invoke_post("Creating a server",
+                                             "{0}{1}/servers".format(module_uri, service_name, address),
+                                             {
+                                                 "active": active,
+                                                 "address": address,
+                                                 "port": port,
+                                                 "weight": weight,
+                                                 "secure": secure,
+                                                 "ssllabel": ssllabel
+
+                                             },
+                                             requires_version=requires_version, requires_modules=requires_modulers)
     else:
-        return isamAppliance.create_return_object(changed=False)
+        return isamAppliance.create_return_object()
 
 
 def delete(isamAppliance, service_name, address, check_mode=False, force=False):
     """
     deletes a server from specified service name
     """
-    return (
-        isamAppliance.invoke_delete("Deleting Server", "{0}{1}/servers/{2}".format(module_uri, service_name, address)))
+    if force is True or _check_exist(isamAppliance, service_name, address) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Deleting a server",
+                                               "{0}{1}/servers/{2}".format(module_uri, service_name, address),
+                                               requires_version=requires_version, requires_modules=requires_modulers)
+
+    else:
+        return isamAppliance.create_return_object()
 
 
 def get(isamAppliance, service_name, address, check_mode=False, force=False):
@@ -40,75 +56,92 @@ def get(isamAppliance, service_name, address, check_mode=False, force=False):
     Retrieves server from specified service name
     """
     return (
-        isamAppliance.invoke_get("Retrieving Server", "{0}{1}/servers/{2}".format(module_uri, service_name, address)))
+        isamAppliance.invoke_get("Retrieving a server", "{0}{1}/servers/{2}".format(module_uri, service_name, address),
+                                 requires_version=requires_version, requires_modules=requires_modulers))
 
 
 def get_all(isamAppliance, service_name, check_mode=False, force=False):
     """
     Retrieves a list of servers under a specified service
     """
-    return isamAppliance.invoke_get("Retrieving Servers", "{0}{1}/servers".format(module_uri, service_name))
+    return isamAppliance.invoke_get("Retrieving servers for a service",
+                                    "{0}{1}/servers".format(module_uri, service_name),
+                                    requires_version=requires_version, requires_modules=requires_modulers)
 
 
-def update(isamAppliance, service_name, address, active, port, weight, secure=False, ssllabel=None, new_address=None, new_port=None, check_mode=False,
+def update(isamAppliance, service_name, address, active, new_address, new_port, weight, secure=False, ssllabel=None,
+           check_mode=False,
            force=False):
     """
     Updating server
     """
-    # TODO ask why this keeps adding port to address
-
-    change_required = _check(isamAppliance, service_name, address, active, port, weight, secure, ssllabel, new_address, new_port)
-
-    json_data = {
-        "active": active,
-        "weight": weight,
-        "secure": secure,
-        "ssllabel": ssllabel
-    }
-    if new_address is not None:
-        json_data["address"] = new_address
-    else:
-        json_data["address"]= address
-    if new_port is not None:
-        json_data["port"] = new_port
-    else:
-        json_data["port"] = port
+    change_required = _check_update(isamAppliance, service_name, address, active, new_address, new_port, weight, secure,
+                                    ssllabel)
 
     if force is True or change_required is True:
-        isamAppliance.invoke_put("Updating Server",
-                                 "{0}{1}/servers/{2}".format(module_uri, service_name, "{0}:{1}".format(address, port)), json_data,
-                                 requires_modules=requires_modulers, requires_version=requires_version)
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+
+            return isamAppliance.invoke_put("Updating a server",
+                                            "{0}{1}/servers/{2}".format(module_uri, service_name, address),
+                                            {
+                                                "address": new_address,
+                                                "active": active,
+                                                "port": new_port,
+                                                "weight": weight,
+                                                "secure": secure,
+                                                "ssllabel": ssllabel
+
+                                            },
+                                            requires_modules=requires_modulers,
+                                            requires_version=requires_version)
     else:
-        return isamAppliance.create_return_object(changed=False)
+        return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, service_name, address, active, port, weight, secure=False, ssllabel=None, new_address=None, new_port=None):
+def _check_update(isamAppliance, service_name, address, active, new_address, new_port, weight, secure=False,
+                  ssllabel=None):
     """
     idempontency test
     """
-    change_required = False
+    org_obj = get(isamAppliance, service_name, address)
 
-    org_obj = get(isamAppliance, service_name, "{0}:{1}".format(address, port))
-    if new_address or new_port is not None: #check to change address or port number
-        change_required=True
-        return change_required
-    if org_obj['data']['address'] != address:
-        change_required = True
-        return change_required
+    if org_obj['data']['address'] != new_address:
+        return True
     elif org_obj['data']['active'] != active:
-        change_required = True
-        return change_required
-    elif org_obj['data']['port'] != port:
-        change_required = True
-        return change_required
+        return True
+    elif org_obj['data']['port'] != new_port:
+        return True
     elif org_obj['data']['weight'] != weight:
-        change_required = True
-        return change_required
+        return True
     elif org_obj['data']['secure'] != secure:
-        change_required = True
-        return change_required
+        return True
     elif org_obj['data']['ssllabel'] != ssllabel:
-        change_required = True
-        return change_required
+        return True
     else:
-        return change_required
+        return False
+
+
+def _check_exist(isamAppliance, service_name, address):
+    """
+    idempotency test for delete function
+    """
+    check_obj = {}
+    # Check weather the address with corresponding server exists
+    try:
+        check_obj = get(isamAppliance, service_name, address)
+    except:
+        return False
+
+    return True
+
+
+def compare(isamAppliance1, isamAppliance2):
+    """
+    Compare cluster configuration between two appliances
+    """
+    ret_obj1 = get(isamAppliance1)
+    ret_obj2 = get(isamAppliance2)
+
+    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
