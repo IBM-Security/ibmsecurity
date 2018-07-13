@@ -20,7 +20,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
 def _find_forwarder(ret_obj, server, port, protocol):
     '''
     Will return None or the forwarder object found
-    index returned will be length of array of no match
+    index returned will be length of array if no match
     '''
     existing_forwarder = None
     i = 0
@@ -73,7 +73,11 @@ def set(isamAppliance, server, port=514, protocol='udp', debug=False, keyfile=No
         client_certificate=None, permitted_peers=None, sources=[], check_mode=False, force=False):
     ret_obj = get_all(isamAppliance, check_mode, force)
 
+    warnings = []
     existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)
+    if existing_forwarder is not None and sources == [] and existing_forwarder['sources'] != sources:
+        sources = existing_forwarder['sources']
+        warnings.append("No sources provided, using existing sources to set forwarder   .")
 
     json_data = {
         'server': server,
@@ -109,11 +113,11 @@ def set(isamAppliance, server, port=514, protocol='udp', debug=False, keyfile=No
 
     if update_required:
         if check_mode:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return _update_forwarder_policy(isamAppliance, json_to_post)
+            return _update_forwarder_policy(isamAppliance, json_to_post, warnings=warnings)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _update_forwarder_policy(isamAppliance, json_to_post, warnings=[]):
