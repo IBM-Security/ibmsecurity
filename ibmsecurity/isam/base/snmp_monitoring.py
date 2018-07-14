@@ -12,6 +12,16 @@ def get(isamAppliance, check_mode=False, force=False):
                                     "/snmp/v1")
 
 
+def set(isamAppliance, community=None, securityLevel=None, securityUser=None, authProtocol=None, authPassword=None, privacyProtocol=None, privacyPassword=None, port=161, check_mode=False, force=False):
+    """
+    Using the 'community' var, determine which SNMP version will be configured
+    """
+    if community is not None:
+        return set_v1v2(isamAppliance, community, port, check_mode, force)
+    else:
+        return set_v3(isamAppliance, securityLevel, securityUser, authProtocol, authPassword, privacyProtocol, privacyPassword, port, check_mode, force)
+
+
 def set_v1v2(isamAppliance, community, port=161, check_mode=False, force=False):
     """
     Set SNMP Monitoring v1/2
