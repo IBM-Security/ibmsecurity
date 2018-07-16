@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 artifact_type = "pip"
 # URI for this module
 uri = "/iam/access/v8/pips"
+requires_modules = ["mga"]
+requires_version = "9.0.5.0"
 
 
 def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=False):
@@ -14,7 +16,8 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of Policy Information Points (PIPs)
     """
     return isamAppliance.invoke_get("Retrieve a list of policy information points (pips)",
-           "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)))
+                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+                                    requires_modules=requires_modules, requires_version=requires_version)
 
 
 def get(isamAppliance, name=None, check_mode=False, force=False):
@@ -29,14 +32,18 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
     else:
         try:
             response = isamAppliance.invoke_get("Retrieve a specific PIP",
-                                        "{0}/{1}".format(uri, id))
+                                                "{0}/{1}".format(uri, id),
+                                                requires_modules=requires_modules,
+                                                requires_version=requires_version
+                                                )
         except IBMError as e:
-              if "404" in e[0]:
-                     response = isamAppliance.create_return_object(rc=404, data=e[1])
-              else:
-                  raise
+            if "404" in e[0]:
+                response = isamAppliance.create_return_object(rc=404, data=e[1])
+            else:
+                raise
 
     return response
+
 
 def get_pip(isamAppliance, pip_id, check_mode=False, force=False):
     """
@@ -44,28 +51,28 @@ def get_pip(isamAppliance, pip_id, check_mode=False, force=False):
     """
     if _check_exists(isamAppliance, id=pip_id) is True:
         return isamAppliance.invoke_get("Retrieve a specific PIP ID",
-                                    "{0}/{1}".format(uri, pip_id))
+                                        "{0}/{1}".format(uri, pip_id), requires_modules=requires_modules,
+                                        requires_version=requires_version)
     else:
         return isamAppliance.create_return_object()
 
 
-def set(isamAppliance, name,  searchBaseDN, searchFilter,searchTimeout, serverConnection,
+def set(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverConnection,
         attributeName, attributeSelector, description='', type="LDAP",
         cacheSize=10000, cacheLifetime=600, check_mode=False, force=False):
-
     """
     Creating or Modifying an LDAP PIP
     """
     if _check_exists(isamAppliance, name=name) is False:
         # Force the add - we already know connection does not exist
         return add(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverConnection,
-                attributeName, attributeSelector, description='', type="LDAP",
-                cacheSize=10000, cacheLifetime=600, check_mode=False, force=True)
+                   attributeName, attributeSelector, description='', type="LDAP",
+                   cacheSize=10000, cacheLifetime=600, check_mode=False, force=True)
     else:
         # Update request
         return update(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverConnection,
-                attributeName, attributeSelector, description='', type="LDAP",
-                cacheSize=10000, cacheLifetime=600, check_mode=False, force=False)
+                      attributeName, attributeSelector, description='', type="LDAP",
+                      cacheSize=10000, cacheLifetime=600, check_mode=False, force=False)
 
 
 def add(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverConnection,
@@ -80,13 +87,15 @@ def add(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverCo
         else:
             try:
                 response = isamAppliance.invoke_post(
-                "Creating an LDAP PIP",
-                "{0}".format(uri),
-                _create_json(name=name, description=description, type=type,
-                             searchBaseDN=searchBaseDN, searchFilter=searchFilter,
-                             searchTimeout=searchTimeout, serverConnection=serverConnection,
-                             cacheSize=cacheSize, cacheLifetime=cacheLifetime,
-                             attributeName=attributeName, attributeSelector=attributeSelector))
+                    "Creating an LDAP PIP",
+                    "{0}".format(uri),
+                    _create_json(name=name, description=description, type=type,
+                                 searchBaseDN=searchBaseDN, searchFilter=searchFilter,
+                                 searchTimeout=searchTimeout, serverConnection=serverConnection,
+                                 cacheSize=cacheSize, cacheLifetime=cacheLifetime,
+                                 attributeName=attributeName, attributeSelector=attributeSelector),
+                    requires_modules=requires_modules, requires_version=requires_version
+                )
 
             except IBMError as e:
                 if "400" in e[0]:
@@ -112,8 +121,10 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
 
             try:
                 response = isamAppliance.invoke_delete(
-                       "Deleting an LDAP PIP",
-                       "{0}/{1}".format(uri, id))
+                    "Deleting an LDAP PIP",
+                    "{0}/{1}".format(uri, id),
+                    requires_modules=requires_modules, requires_version=requires_version
+                )
             except IBMError as e:
                 if "404" in e[0]:
                     response = isamAppliance.create_return_object(rc=404, data=e[1])
@@ -124,11 +135,10 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
 
 
 def update(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverConnection,
-          attributeName, attributeSelector, description='', type="LDAP", cacheSize=10000,
-          cacheLifetime=600, new_name=None, check_mode=False, force=False):
+           attributeName, attributeSelector, description='', type="LDAP", cacheSize=10000,
+           cacheLifetime=600, new_name=None, check_mode=False, force=False):
     """
     Modifying an LDAP PIP
-
     Use new_name to rename the connection
     """
     if check_mode is True:
@@ -137,17 +147,18 @@ def update(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serve
         ret_obj = _get_id(isamAppliance, name=name)
         id = ret_obj['data']
         json_data = _create_json(name=name, description=description, type=type,
-                     searchBaseDN=searchBaseDN, searchFilter=searchFilter,
-                     searchTimeout=searchTimeout, serverConnection=serverConnection,
-                     cacheSize=cacheSize, cacheLifetime=cacheLifetime,
-                     attributeName=attributeName, attributeSelector=attributeSelector)
+                                 searchBaseDN=searchBaseDN, searchFilter=searchFilter,
+                                 searchTimeout=searchTimeout, serverConnection=serverConnection,
+                                 cacheSize=cacheSize, cacheLifetime=cacheLifetime,
+                                 attributeName=attributeName, attributeSelector=attributeSelector)
         if new_name is not None:  # Rename condition
             json_data['name'] = new_name
 
         try:
-            response =  isamAppliance.invoke_put(
-                        "Modifying an LDAP PIP",
-                        "{0}/{1}".format(uri, id), json_data)
+            response = isamAppliance.invoke_put(
+                "Modifying an LDAP PIP",
+                "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules,
+                requires_version=requires_version)
         except IBMError as e:
             if "400" in e[0]:
                 response = isamAppliance.create_return_object(rc=400, data=e[1])
@@ -158,31 +169,31 @@ def update(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serve
 
 
 def _create_json(name, description, type, searchBaseDN, searchFilter,
-                searchTimeout, serverConnection, cacheSize, cacheLifetime,
-                attributeName, attributeSelector):
+                 searchTimeout, serverConnection, cacheSize, cacheLifetime,
+                 attributeName, attributeSelector):
     """
     Create a JSON to be used for the REST API call
     """
     json = {
-        "name":name,
-        "description":description,
-        "type":"LDAP",
-        "properties":[
-            {"key":"searchBaseDN","value":searchBaseDN,"datatype":"String",
-            "sensitive":False,"readOnly":False},
-            {"key":"searchFilter","value":searchFilter,
-            "datatype":"String","sensitive":False,"readOnly":False},
-            {"key":"searchTimeout","value":searchTimeout,"datatype":"Integer",
-            "sensitive":False,"readOnly":False},
-            {"key":"dataSource","value":serverConnection,
-            "datatype":"String","sensitive":False,"readOnly":False},
-            {"key":"cacheSize","value":cacheSize,"datatype":"Integer",
-            "sensitive":False,"readOnly":False},
-            {"key":"cacheLifetime","value":cacheLifetime,"datatype":"Integer",
-            "sensitive":False,"readOnly":False}
+        "name": name,
+        "description": description,
+        "type": "LDAP",
+        "properties": [
+            {"key": "searchBaseDN", "value": searchBaseDN, "datatype": "String",
+             "sensitive": False, "readOnly": False},
+            {"key": "searchFilter", "value": searchFilter,
+             "datatype": "String", "sensitive": False, "readOnly": False},
+            {"key": "searchTimeout", "value": searchTimeout, "datatype": "Integer",
+             "sensitive": False, "readOnly": False},
+            {"key": "dataSource", "value": serverConnection,
+             "datatype": "String", "sensitive": False, "readOnly": False},
+            {"key": "cacheSize", "value": cacheSize, "datatype": "Integer",
+             "sensitive": False, "readOnly": False},
+            {"key": "cacheLifetime", "value": cacheLifetime, "datatype": "Integer",
+             "sensitive": False, "readOnly": False}
         ],
-        "attributes":[
-            {"name":attributeName,"selector":attributeSelector}
+        "attributes": [
+            {"name": attributeName, "selector": attributeSelector}
         ]
     }
 

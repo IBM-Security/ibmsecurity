@@ -4,13 +4,17 @@ from ibmsecurity.appliance.ibmappliance import IBMError
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga"]
+requires_version = "9.0.5.0"
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving a list of all CI server connections
     """
     return isamAppliance.invoke_get("Retrieving a list of all CI server connections",
-                                    "/mga/server_connections/ci/v1")
+                                    "/mga/server_connections/ci/v1", requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -24,7 +28,8 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object(1)
     else:
         return isamAppliance.invoke_get("Retrieving a CI server connection",
-                                        "/mga/server_connections/ci/{0}/v1".format(id))
+                                        "/mga/server_connections/ci/{0}/v1".format(id),
+                                        requires_modules=requires_modules, requires_version=requires_version)
 
 
 def set(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
@@ -55,7 +60,9 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
                 response = isamAppliance.invoke_post(
                     "Creating a CI server connection",
                     "/mga/server_connections/ci/v1",
-                    _create_json(name=name, description=description, locked=locked, connection=connection))
+                    _create_json(name=name, description=description, locked=locked, connection=connection),
+                    requires_modules=requires_modules, requires_version=requires_version)
+
 
             except IBMError as e:
                 if "400" in e[0]:
@@ -80,9 +87,11 @@ def deleteByName(isamAppliance, name=None, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a CI server connection",
-                "/mga/server_connections/ci/{0}/v1".format(id))
+                "/mga/server_connections/ci/{0}/v1".format(id), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
+
 
 def delete(isamAppliance, id, check_mode=False, force=False):
     """
@@ -95,7 +104,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
             try:
                 response = isamAppliance.invoke_delete(
                     "Deleting a CI server connection",
-                    "/mga/server_connections/ci/{0}/v1".format(id))
+                    "/mga/server_connections/ci/{0}/v1".format(id), requires_modules=requires_modules,
+                    requires_version=requires_version)
             except IBMError as e:
                 if "404" in e[0]:
                     response = isamAppliance.create_return_object(rc=404, data=e[1]);
@@ -109,7 +119,6 @@ def update(isamAppliance, id, connection, description='', locked=False, name=Non
            new_name=None, check_mode=False, force=False):
     """
     Modifying a CI server connection
-
     Use new_name to rename the connection, cannot compare password so update will take place everytime
     """
     if check_mode is True:
@@ -121,7 +130,8 @@ def update(isamAppliance, id, connection, description='', locked=False, name=Non
         try:
             response = isamAppliance.invoke_put(
                 "Modifying a CI server connection",
-                "/mga/server_connections/ci/{0}/v1".format(id), json_data)
+                "/mga/server_connections/ci/{0}/v1".format(id), json_data, requires_modules=requires_modules,
+                requires_version=requires_version)
         except IBMError as e:
             if "400" in e[0]:
                 response = isamAppliance.create_return_object(rc=400, data=e[1]);
