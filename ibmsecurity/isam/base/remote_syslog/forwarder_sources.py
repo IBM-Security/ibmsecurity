@@ -23,7 +23,7 @@ def get_all(isamAppliance, server, port, protocol, check_mode=False, force=False
 def _find_forwarder_source(ret_obj, server, port, protocol, name):
     '''
     Will return None or the forwarder object found
-    index returned will be length of array of no match
+    index returned will be length of array if no match
     '''
     existing_forwarder, i = forwarder._find_forwarder(ret_obj, server, port, protocol)
 

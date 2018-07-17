@@ -93,3 +93,6 @@ ENV/
 
 # DS
 .DS_Store
+
+# Test Script
+test.py

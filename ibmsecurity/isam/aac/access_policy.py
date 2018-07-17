@@ -1,52 +1,53 @@
 import logging
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/iam/access/v8/access-policies/"
+requires_modules = ["federation", "mga"]
+requires_version = "9.0.4.0"
 
-def get_all(isamAppliance, check_mode=False, force=False):
+
+# TODO - check the version this was introduced in.
+def get_all(isamAppliance, sortBy=None, count=None, start=None, filter=None, check_mode=False, force=False):
     """
-    Retrieve a list of mapping rules
+    Retrieve a list of access policies
     """
-    return isamAppliance.invoke_get("Retrieve a list of mapping rules",
-                                    "/iam/access/v8/mapping-rules")
+    return isamAppliance.invoke_get("Retrieve a list of access policies", "{0}{1}".format(uri,
+                                                                                          tools.create_query_string(
+                                                                                              sortBy=sortBy,
+                                                                                              count=count, start=start,
+                                                                                              filter=filter)),
+                                    requires_modules=requires_modules, requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
     """
-    Retrieve a specific mapping rule
+    Retrieve a specific access policy
     """
-    ret_obj = search(isamAppliance, name=name)
-    id = ret_obj['data']
+    ret_obj = search(isamAppliance, name, check_mode, force)
 
-    if id == {}:
-        return isamAppliance.create_return_object()
+    warnings = []
+    if ret_obj['data'] == {}:
+        return isamAppliance.create_return_object(warnings=["Access policy with name {} not found.".format(name)])
     else:
-        return _get(isamAppliance, id)
+        return _get(isamAppliance, ret_obj['data'])
 
 
-def _get(isamAppliance, id):
+def _get(isamAppliance, access_policy_id):
     """
     Internal function to get data using "id" - used to avoid extra calls
-
-    :param isamAppliance:
-    :param id:
-    :return:
     """
-    return isamAppliance.invoke_get("Retrieve a specific mapping rule",
-                                    "/iam/access/v8/mapping-rules/{0}".format(id))
+    return isamAppliance.invoke_get("Retrieve a specific access policy", "{0}{1}".format(uri, access_policy_id),
+                                    requires_modules=requires_modules, requires_version=requires_version)
 
 
 def search(isamAppliance, name, check_mode=False, force=False):
     """
-    Search mapping rule by name
-
-    :param isamAppliance:
-    :param name:
-    :param check_mode:
-    :param force:
-    :return:
+    Search access policy by name
     """
-    ret_obj = get_all(isamAppliance, check_mode, force)
+    ret_obj = get_all(isamAppliance, check_mode=check_mode, force=force)
 
     return_obj = isamAppliance.create_return_object()
 
@@ -59,59 +60,52 @@ def search(isamAppliance, name, check_mode=False, force=False):
     return return_obj
 
 
-def set(isamAppliance, name, category, filename=None, content=None, upload_filename=None, check_mode=False,
+def set(isamAppliance, name, file=None, content=None, type='JavaScript', category='OIDC', check_mode=False,
         force=False):
     """
-    Creating or Modifying an Mapping Rule
+    Creating or Modifying an Access Policy
     """
     if content is None or content == '':
-        if upload_filename is None or upload_filename == '':
+        if file is None or file == '':
             return isamAppliance.create_return_object(
-                warnings="Need to pass content or upload_filename for set() to work.")
+                warnings=["Need to pass content or file for set() to work."])
         else:
-            with open(upload_filename, 'r') as contentFile:
+            with open(file, 'r') as contentFile:
                 content = contentFile.read()
-    if filename is None or filename == '':
-        if upload_filename is None or upload_filename == '':
-            return isamAppliance.create_return_object(
-                warnings="Need to pass filename or upload_filename for set() to work.")
-        else:
-            filename = _extract_filename(upload_filename)
-    if _check(isamAppliance, name=name) is False:
+    ret_obj = search(isamAppliance, name=name)
+    if ret_obj['data'] == {}:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name=name, filename=filename, content=content, category=category,
+        return add(isamAppliance, name=name, content=content, category=category, type=type,
                    check_mode=check_mode, force=True)
     else:
         # Update request
         return update(isamAppliance, name=name, content=content, check_mode=check_mode, force=force)
 
 
-def add(isamAppliance, name, filename=None, content=None, category="OAUTH", check_mode=False, force=False):
+def add(isamAppliance, name, content, type="JavaScript", category="OIDC", check_mode=False, force=False):
     """
-    Add a mapping rule
+    Create a new access policy
     """
-    if force is True or _check(isamAppliance, name) is False:
+    ret_obj = search(isamAppliance, name)
+    if force is True or ret_obj['data'] == {}:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if filename is None:
-                filename = _extract_filename(name, category)
             return isamAppliance.invoke_post(
-                "Add a mapping rule",
-                "/iam/access/v8/mapping-rules",
+                "Create a new access policy", uri,
                 {
                     "name": name,
-                    "fileName": filename,
+                    "type": type,
                     "content": content,
                     "category": category
-                })
+                }, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
 def delete(isamAppliance, name, check_mode=False, force=False):
     """
-    Delete a mapping rule
+    Delete an access policy
     """
     if force is False:
         ret_obj = search(isamAppliance, name)
@@ -121,15 +115,16 @@ def delete(isamAppliance, name, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete a mapping rule",
-                "/iam/access/v8/mapping-rules/{0}".format(ret_obj['data']))
+                "Delete an access policy",
+                "{}{}".format(uri, ret_obj['data']), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
 def update(isamAppliance, name, content, check_mode=False, force=False):
     """
-    Update a specified mapping rule
+    Update a specified access policy
     """
     update_required = False
     ret_obj = search(isamAppliance, name)
@@ -138,7 +133,7 @@ def update(isamAppliance, name, content, check_mode=False, force=False):
         if id:
             ret_obj_content = _get(isamAppliance, id)
             # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
-            if (ret_obj_content['data']['content']).strip() != (content).strip():
+            if (ret_obj_content['data']['properties']['content']).strip() != (content).strip():
                 update_required = True
 
     if force is True or update_required is True:
@@ -146,18 +141,18 @@ def update(isamAppliance, name, content, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
-                "Update a specified mapping rule",
-                "/iam/access/v8/mapping-rules/{0}".format(id),
+                "Update a specified access policy",
+                "{}{}".format(uri, id),
                 {
                     'content': content
-                })
+                }, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
 def export_file(isamAppliance, name, filename, check_mode=False, force=False):
     """
-    Export a specific mapping rule
+    Export a specific access policy
     """
     import os.path
     if force is False:
@@ -167,63 +162,52 @@ def export_file(isamAppliance, name, filename, check_mode=False, force=False):
         if check_mode is False:  # No point downloading a file if in check_mode
             id = ret_obj['data']
             return isamAppliance.invoke_get_file(
-                "Export a specific mapping rule",
-                "/iam/access/v8/mapping-rules/{0}/file/".format(id),
-                filename)
+                "Export a specific access policy",
+                "{}{}/file".format(uri, id),
+                filename, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
-def upload(isamAppliance, name, upload_filename, filename=None, category="OAUTH", check_mode=False, force=False):
+def upload(isamAppliance, name, file, type='JavaScript', category="OIDC", check_mode=False, force=False):
     """
-    Import a new mapping rule
+    Import a new access policy
     """
-    if force is True or _check(isamAppliance, name) is False:
+    ret_obj = search(isamAppliance, name)
+    if force is True or ret_obj['data'] == {}:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if filename is None:
-                filename = _extract_filename(upload_filename)
-
             return isamAppliance.invoke_post_files(
-                "Import a new mapping rule",
-                "/iam/access/v8/mapping-rules",
+                "Import a new access policy", uri,
                 [
                     {
                         'file_formfield': 'file',
-                        'filename': upload_filename,
+                        'filename': file,
                         'mimetype': 'application/octet-stream'
                     }
                 ],
                 {
                     "name": name,
-                    "filename": filename,
+                    "type": type,
                     "category": category
-                })
+                }, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
-def _extract_filename(upload_filename):
+def import_file(isamAppliance, name, file, check_mode=False, force=False):
     """
-    Extract filename from fully qualified path to use if no filename provided
-    """
-    import os.path
-    return os.path.basename(upload_filename)
-
-
-def import_file(isamAppliance, name, filename, check_mode=False, force=False):
-    """
-    Import a mapping rule (replace)
+    Import a access policy
     """
     update_required = False
     if force is False:
         ret_obj = search(isamAppliance, name)
         if ret_obj['data'] != {}:
             ret_obj_content = _get(isamAppliance, ret_obj['data'])
-            with open(filename, 'r') as infile:
+            with open(file, 'r') as infile:
                 content = infile.read()
-            if (ret_obj_content['data']['content']).strip() != content.strip():
+            if (ret_obj_content['data']['properties']['content']).strip() != content.strip():
                 update_required = True
 
     if force is True or update_required is True:
@@ -231,44 +215,32 @@ def import_file(isamAppliance, name, filename, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
-                "Import a mapping rule (replace)",
-                "/iam/access/v8/mapping-rules/{0}/file".format(ret_obj['data']),
+                "Import a access policy",
+                "{}{}/file".format(uri, ret_obj['data']),
                 [
                     {
                         'file_formfield': 'file',
-                        'filename': filename,
+                        'filename': file,
                         'mimetype': 'application/file'
                     }
                 ],
-                {})
+                {}, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, name):
-    """
-    Check if Mapping Rules already exists
-    """
-    ret_obj = get_all(isamAppliance)
-
-    for obj in ret_obj['data']:
-        if obj['name'] == name:
-            return True
-
-    return False
-
-
 def compare(isamAppliance1, isamAppliance2):
     """
-    Compare Mapping Rules between two appliances
+    Compare access policies between two appliances
     """
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)
 
     for obj in ret_obj1['data']:
+        obj = _get(isamAppliance1, obj['id'])['data']
         del obj['id']
     for obj in ret_obj2['data']:
+        obj = _get(isamAppliance2, obj['id'])['data']
         del obj['id']
 
-    import ibmsecurity.utilities.tools
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id'])
+    return tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id'])
