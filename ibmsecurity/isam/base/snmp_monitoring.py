@@ -15,22 +15,32 @@ def set_v1v2(isamAppliance, community, port=161, check_mode=False, force=False):
     """
     Set SNMP Monitoring v1/2
     """
-    if force is True or _check(isamAppliance, community, port) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_put(
-                "Updating SNMP Monitoring",
-                "/snmp/v1",
-                {
-                    "snmpv1v2c": {
-                        "community": community
-                    },
-                    "enabled": True,
-                    "port": port
-                })
+    snmpv1v2c = {
+        "community": community
+    }
+    return set(isamAppliance, True, port, snmpv1v2c, None, check_mode, force)
 
-    return isamAppliance.create_return_object()
+
+def set_v3(isamAppliance, securityLevel, securityUser, authProtocol, authPassword, privacyProtocol, privacyPassword, port=161, check_mode=False, force=False):
+    """
+    Set SNMP Monitoring v3
+    """
+    snmpv3= {
+	"securityLevel": securityLevel,
+	"securityUser": securityUser,
+	"authProtocol": authProtocol,
+	"authPassword": authPassword,
+	"privacyProtocol": privacyProtocol,
+	"privacyPassword": privacyPassword
+    },
+    return set(isamAppliance, True, port, None, snmpv3, check_mode, force)
+
+
+def disable(isamAppliance, check_mode=False, force=False):
+    """
+    Disable SNMP Monitoring
+    """
+    return set(isamAppliance, False, None, None, None, check_mode, force)
 
 
 def set(isamAppliance, enabled, port=None, snmpv1v2c=None, snmpv3=None, check_mode=False, force=False):
@@ -94,27 +104,6 @@ def _check(isamAppliance, community, port):
         return False
 
     return True
-
-
-def disable(isamAppliance, check_mode=False, force=False):
-    """
-    Disable SNMP Monitoring
-    """
-    if force is False:
-        ret_obj = get(isamAppliance)
-
-    if force is True or ret_obj['data'][0]['enabled'] is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_put(
-                "Disabling SNMP Monitoring",
-                "/snmp/v1",
-                {
-                    "enabled": False
-                })
-
-    return isamAppliance.create_return_object()
 
 
 def compare(isamAppliance1, isamAppliance2):
