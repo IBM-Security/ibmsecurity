@@ -25,14 +25,14 @@ def set_v3(isamAppliance, securityLevel, securityUser, authProtocol, authPasswor
     """
     Set SNMP Monitoring v3
     """
-    snmpv3= {
+    snmpv3 = {
 	"securityLevel": securityLevel,
 	"securityUser": securityUser,
 	"authProtocol": authProtocol,
 	"authPassword": authPassword,
 	"privacyProtocol": privacyProtocol,
 	"privacyPassword": privacyPassword
-    },
+    }
     return set(isamAppliance, True, port, None, snmpv3, check_mode, force)
 
 
