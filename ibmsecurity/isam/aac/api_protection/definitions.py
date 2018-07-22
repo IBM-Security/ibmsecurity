@@ -178,10 +178,12 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
             warnings.append(
                 "Appliance at version: {0}, oidc: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring oidc for this call.".format(
                     isamAppliance.facts["version"], oidc))
+            oidc = None
         else:
             json_data["oidc"] = oidc
 
     if force is not True:
+
         if 'datecreated' in ret_obj['data']:
             del ret_obj['data']['datecreated']
         if 'id' in ret_obj['data']:
@@ -190,6 +192,35 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
             del ret_obj['data']['lastmodified']
         if 'mappingRules' in ret_obj['data']:
             del ret_obj['data']['mappingRules']
+
+        # Inspecting oidcConfig and remove missing or None attributes in returned object
+        if oidc is not None and 'oidc' in ret_obj['data']:
+            if 'enabled' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['enabled'] is None:
+                del ret_obj['data']['oidc']['enabled']
+            if 'iss' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['iss'] is None:
+                del ret_obj['data']['oidc']['iss']
+            if 'poc' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['poc'] is None:
+                del ret_obj['data']['oidc']['poc']
+            if 'lifetime' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['lifetime'] is None:
+                del ret_obj['data']['oidc']['lifetime']
+            if 'alg' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['alg'] is None:
+                del ret_obj['data']['oidc']['alg']
+            if 'db' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['db'] is None:
+                del ret_obj['data']['oidc']['db']
+            if 'cert' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['cert'] is None:
+                del ret_obj['data']['oidc']['cert']
+            if 'attributeSources' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['attributeSources'] is None:
+                del ret_obj['data']['oidc']['attributeSources']
+
+            # Inspecting oidcEncConfig and remove missing or None attributes in returned object
+            if 'enc' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['enc'] is not None:
+                if 'enabled' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enabled'] is None:
+                    del ret_obj['data']['oidc']['enc']['enabled']
+                if 'alg' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['alg'] is None:
+                    del ret_obj['data']['oidc']['enc']['alg']
+                if 'enc' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enc'] is None:
+                    del ret_obj['data']['oidc']['enc']['enc']
+
         import ibmsecurity.utilities.tools
         if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) != ibmsecurity.utilities.tools.json_sort(
                 json_data):
