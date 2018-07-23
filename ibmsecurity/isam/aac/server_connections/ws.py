@@ -1,5 +1,5 @@
 import logging
-import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -117,10 +117,11 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
         if 'uuid' in ret_obj['data']:
            del ret_obj['data']['uuid']
 
-        import ibmsecurity.utilities.tools        
-
-        if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) != ibmsecurity.utilities.tools.json_sort(
-                json_data):
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        if sorted_ret_obj != sorted_json_data:
             needs_update = True
     
         if 'password' in connection:
