@@ -221,9 +221,11 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                 if 'enc' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enc'] is None:
                     del ret_obj['data']['oidc']['enc']['enc']
 
-        import ibmsecurity.utilities.tools
-        if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) != ibmsecurity.utilities.tools.json_sort(
-                json_data):
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        if sorted_ret_obj != sorted_json_data:
             needs_update = True
 
     if force is True or needs_update is True:
