@@ -239,7 +239,7 @@ def _check_import(isamAppliance, instance_id, id, filename, check_mode=False):
     """
     tmpdir = get_random_temp_dir()
     tmp_original_file = os.path.join(tmpdir, os.path.basename(id))
-    if _check(isamAppliance, instance_id, id, ''):
+    if (_check(isamAppliance, instance_id, id, '') is not None):
         export_file(isamAppliance, instance_id, id, tmp_original_file, check_mode=False, force=True)
         logger.debug("file already exists on appliance")
         if files_same(tmp_original_file, filename):

@@ -1,6 +1,8 @@
 import logging
 import ibmsecurity.utilities.tools
 import os.path
+from ibmsecurity.isam.web.reverse_proxy.management_root import directory
+from ibmsecurity.isam.web.reverse_proxy.management_root import file
 
 logger = logging.getLogger(__name__)
 
@@ -47,3 +49,22 @@ def import_zip(isamAppliance, instance_id, filename, check_mode=False, force=Fal
                 'type': 'file',
                 'force': force
             })
+            
+def check(isamAppliance, instance_id, id, name, type, check_mode=False, force=False):
+  ret_obj = None
+  
+  if(type.lower() == 'directory'):
+    ret_obj = directory._check(isamAppliance, instance_id, id, name)
+  elif(type.lower() == 'file'):
+    ret_obj = file._check(isamAppliance, instance_id, id, name)
+  else:
+    type = 'unknown'
+
+  data = {
+      'id': ret_obj,
+      'top': id,
+      'name': name,
+      'type': type
+  }
+    
+  return isamAppliance.create_return_object(data=data)
