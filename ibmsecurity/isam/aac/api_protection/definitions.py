@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/definitions"
-requires_modules = ["mga"]
+requires_modules = ["mga", "federation"]
 requires_version = None
 
 
