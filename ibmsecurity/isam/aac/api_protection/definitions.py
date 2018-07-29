@@ -221,6 +221,22 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                 if 'enc' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enc'] is None:
                     del ret_obj['data']['oidc']['enc']['enc']
 
+            if 'dynamicClients' in json_data['oidc'] and json_data['oidc']['dynamicClients'] is not None:
+	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+		    warnings.append(
+		        "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(isamAppliance.facts["version"], dynamicClients))
+                    del json_data['oidc']['dynamicClients']
+	    else:
+                json_data['oidc']['dynamicClients'] = False
+
+            if 'issueSecret' in json_data['oidc'] and json_data['oidc']['issueSecret'] is not None:
+	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+		    warnings.append(
+		        "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(isamAppliance.facts["version"], issueSecret))
+                    del json_data['oidc']['issueSecret']
+	    else:
+                json_data['oidc']['issueSecret'] = False
+
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
         logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
