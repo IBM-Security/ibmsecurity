@@ -18,12 +18,28 @@ def get_all_app(isdsAppliance, check_mode=False, force=False):
     """
     return isdsAppliance.invoke_get("Retrieving all application interfaces", "/application_interfaces")
 
-
 def get(isdsAppliance, uuid, check_mode=False, force=False):
     """
     Retrieving a single interface
     """
     return isdsAppliance.invoke_get("Retrieving a single interface", "/application_interfaces/" + uuid + "/addresses/1")
+
+def add(isdsAppliance, address, netmask, network_type, ipFqdn, prefix="", interface="P.1", check_mode=False, force=False):
+    """
+    Adding an address to an interface
+    """
+    if check_mode is True:
+        return isdsAppliance.create_return_object(changed=True)
+    else:
+        return isdsAppliance.invoke_post(
+            "Creating a new address for an interface",
+            "/application_interfaces/" + interface + "/addresses",
+            {
+		'address': address,
+		'netmask': netmask,
+ 		'type'   : network_type,
+		'ipFqdn' : ipFqdn
+            })
 
 
 def compare(isdsAppliance1, isdsAppliance2):

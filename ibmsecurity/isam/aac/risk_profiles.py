@@ -54,7 +54,8 @@ def search(isamAppliance, name, force=False, check_mode=False):
     return return_obj
 
 
-def set(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False, force=False):
+def set(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False,
+        force=False):
     """
     Creating or Modifying a Risk Profile
     """
@@ -68,7 +69,9 @@ def set(isamAppliance, name, active, description=None, attributes=None, predefin
         logger.info("Risk Profile {0} exists, requesting to update.".format(name))
         return update(isamAppliance, name, active, description, attributes, predefined, check_mode, force)
 
-def add(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False, force=False):
+
+def add(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False,
+        force=False):
     """
     Create a new Risk Profile
     """
@@ -93,7 +96,9 @@ def add(isamAppliance, name, active, description=None, attributes=None, predefin
 
     return isamAppliance.create_return_object()
 
-def update(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False, force=False):
+
+def update(isamAppliance, name, active, description=None, attributes=None, predefined=False, check_mode=False,
+           force=False):
     """
     Update a specified Risk Profile
     """
@@ -158,6 +163,7 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
 
     return id, update_required, json_data
 
+
 def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Delete a specified Risk Profile
@@ -179,6 +185,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
                     "{0}/{1}".format(uri, prof_id))
 
     return isamAppliance.create_return_object()
+
 
 def compare(isamAppliance1, isamAppliance2):
     """
