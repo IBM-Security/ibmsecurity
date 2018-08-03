@@ -28,6 +28,7 @@ def get(isdsAppliance, name, check_mode=False, force=False):
     else:
         return _get(isdsAppliance, obj_id)
 
+
 def _get(isdsAppliance, uuid):
     return isdsAppliance.invoke_get("Get a specific email object",
                                     "{0}{1}".format(module_uri, uuid), requires_modules=requires_modules,
@@ -62,12 +63,13 @@ def add(isdsAppliance, name, smtpServer, from_email, to_email, smtpPort=25, objT
     return isdsAppliance.create_return_object()
 
 
-def update(isdsAppliance, name, smtpServer, from_email, to_email, new_name = None, smtpPort=25, objType='email',
+def update(isdsAppliance, name, smtpServer, from_email, to_email, new_name=None, smtpPort=25, objType='email',
            comment='', check_mode=False, force=False):
     """
     Update a specific email object
     """
-    change_required, json_data = _check(isdsAppliance, name, smtpServer, from_email, to_email, new_name, smtpPort, objType, comment)
+    change_required, json_data = _check(isdsAppliance, name, smtpServer, from_email, to_email, new_name, smtpPort,
+                                        objType, comment)
     uuid = search(isdsAppliance, name)['data']
 
     if force is True or change_required is True:
@@ -126,6 +128,7 @@ def delete(isdsAppliance, name, check_mode=False, force=False):
 
     return isdsAppliance.create_return_object()
 
+
 def search(isamAppliance, name, force=False, check_mode=False):
     """
     Search policy id by name
@@ -141,8 +144,9 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     return return_obj
 
+
 def _check(isdsAppliance, name, smtpServer, from_email, to_email, new_name, smtpPort, objType,
-        comment):
+           comment):
     """
     Check if the email object exists and is the same - uuid=None means add versus update
     """
@@ -161,7 +165,6 @@ def _check(isdsAppliance, name, smtpServer, from_email, to_email, new_name, smtp
         'from': from_email,
         'to': to_email
     }
-
 
     if check_obj['data'] == {}:
         logger.warning("Email Object not found, No update required")

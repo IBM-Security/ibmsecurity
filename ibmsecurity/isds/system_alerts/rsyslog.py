@@ -30,8 +30,10 @@ def get(isdsAppliance, name, check_mode=False, force=False):
     else:
         return _get(isdsAppliance, obj_id)
 
+
 def _get(isdsAppliance, uuid):
     return isdsAppliance.invoke_get("Retrieving Rsyslog Object", "{}{}".format(module_uri, uuid))
+
 
 def add(isdsAppliance, name, collector, collectorPort=514, collectorLeef=False, objType='rsyslog', comment='',
         check_mode=False, force=False):
@@ -40,7 +42,6 @@ def add(isdsAppliance, name, collector, collectorPort=514, collectorLeef=False, 
     """
     if force is False:
         ret_obj = search(isdsAppliance, name, check_mode, force)
-
 
     if force is True or ret_obj['data'] == {}:
         if check_mode is True:
@@ -59,7 +60,8 @@ def add(isdsAppliance, name, collector, collectorPort=514, collectorLeef=False, 
     return isdsAppliance.create_return_object()
 
 
-def update(isdsAppliance, name, collector, collectorPort=514, collectorLeef=False, objType='rsyslog', comment='',new_name=None,
+def update(isdsAppliance, name, collector, collectorPort=514, collectorLeef=False, objType='rsyslog', comment='',
+           new_name=None,
            check_mode=False, force=False):
     """
     Update a specific rsyslog object
@@ -118,6 +120,7 @@ def delete(isdsAppliance, name, check_mode=False, force=False):
 
     return isdsAppliance.create_return_object()
 
+
 def search(isamAppliance, name, force=False, check_mode=False):
     """
     Search alert id by name
@@ -154,7 +157,6 @@ def _check(isdsAppliance, name, collector, collectorPort, collectorLeef, objType
         'collectorLeef': collectorLeef
     }
 
-
     if check_obj['data'] == {}:
         logger.warning("RSYSLOG Object not found, No update required")
         return change_required, ret_obj
@@ -172,7 +174,6 @@ def _check(isdsAppliance, name, collector, collectorPort, collectorLeef, objType
         change_required = True
 
     return change_required, ret_obj
-
 
 
 def compare(isdsAppliance1, isdsAppliance2):

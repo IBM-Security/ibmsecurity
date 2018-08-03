@@ -70,7 +70,7 @@ def _check(isdsAppliance, uuid):
 
 def compare(isdsAppliance1, isdsAppliance2):
     """
-    Compare system alert objects between two appliances
+    Compare system alert objects between two appliance
     """
     ret_obj1 = get(isdsAppliance1)
     ret_obj2 = get(isdsAppliance2)

@@ -84,10 +84,10 @@ def update(isdsAppliance, name, trapAddress, trapCommunity, new_name=None, trapN
     uuid = search(isdsAppliance, name)['data']
 
     change_required, json_data = _check(isdsAppliance, name, trapAddress, trapCommunity,
-                                               new_name, trapNotificationType, trapVersion, trapPort, objType,
-                                               username, authEnabled, authType, authPassPhrase, privEnabled,
-                                               privType, privPassPhrase, informSnmpEngineID,
-                                               informTimeout, comment)
+                                        new_name, trapNotificationType, trapVersion, trapPort, objType,
+                                        username, authEnabled, authType, authPassPhrase, privEnabled,
+                                        privType, privPassPhrase, informSnmpEngineID,
+                                        informTimeout, comment)
 
     if force is True or change_required is True:
         if check_mode is True:
@@ -163,11 +163,10 @@ def search(isdsAppliance, name, check_mode=False, force=False):
 
 
 def _check(isdsAppliance, name, trapAddress, trapCommunity, new_name=None, trapNotificationType=None,
-                  trapVersion='V1',
-                  trapPort=162, objType='snmp', username=None, authEnabled=False, authType=None, authPassPhrase=None,
-                  privEnabled=None, privType=None, privPassPhrase=None, informSnmpEngineID=None, informTimeout=None,
-                  comment='', check_mode=False, force=False):
-
+           trapVersion='V1',
+           trapPort=162, objType='snmp', username=None, authEnabled=False, authType=None, authPassPhrase=None,
+           privEnabled=None, privType=None, privPassPhrase=None, informSnmpEngineID=None, informTimeout=None,
+           comment='', check_mode=False, force=False):
     check_obj = get(isdsAppliance, name)
     change_required = False
 
