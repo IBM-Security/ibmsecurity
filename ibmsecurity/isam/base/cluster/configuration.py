@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -141,8 +142,12 @@ def _check(isamAppliance, cluster_json):
     :return:
     """
     ret_obj = get(isamAppliance)
-    logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
-    logger.debug("JSON to Apply: {0}".format(cluster_json))
+
+
+    sorted_ret_obj = tools.json_sort(ret_obj['data'])
+    sorted_json_data = tools.json_sort(cluster_json)
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
     for key, value in cluster_json.iteritems():
         try:
