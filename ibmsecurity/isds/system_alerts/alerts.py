@@ -58,7 +58,7 @@ def disable(isdsAppliance, name, check_mode=False, force=False):
 
 def _check(isdsAppliance, uuid):
     """
-    Check if the system alert exists or not
+    Check if the system alert exists
     """
     ret_obj = get(isdsAppliance)
     for obj in ret_obj['data']['responses']:

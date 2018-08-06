@@ -106,7 +106,7 @@ def set(isdsAppliance, name, trapAddress, trapCommunity, trapNotificationType=No
         privEnabled=None, privType=None, privPassPhrase=None, informSnmpEngineID=None, informTimeout=None,
         comment='', check_mode=False, force=False):
     """
-    set function determines if add or update is required then executes the correct function
+    set function determines if add or update is required
     """
     if search(isdsAppliance, name)['data'] != {}:
         logger.info("Updating SNMP")

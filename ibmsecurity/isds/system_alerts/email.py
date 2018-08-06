@@ -148,7 +148,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 def _check(isdsAppliance, name, smtpServer, from_email, to_email, new_name, smtpPort, objType,
            comment):
     """
-    Check if the email object exists and is the same - uuid=None means add versus update
+    Check if the email object exists and is the same
     """
     check_obj = get(isdsAppliance, name)
     change_required = False

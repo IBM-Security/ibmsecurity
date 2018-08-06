@@ -140,8 +140,6 @@ def search(isamAppliance, name, force=False, check_mode=False):
 def _check(isdsAppliance, name, collector, collectorPort, collectorLeef, objType, comment, new_name=None):
     """
     Check if the rsyslog object exists and is the same - uuid=None means add versus delete
-
-    NOTE: if UUID is not found that will be same as no match!!!
     """
     check_obj = get(isdsAppliance, name)
     change_required = False
