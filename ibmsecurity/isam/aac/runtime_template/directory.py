@@ -14,6 +14,12 @@ def get(isamAppliance, path, check_mode=False, force=False):
 
 
 def _check(isamAppliance, path, name):
+
+    if name == '':
+        pathParts = path.rsplit('/', 1 );
+        path = pathParts[0];
+        name = pathParts[1];
+
     ret_obj = get(isamAppliance, path)
 
     for obj in ret_obj['data']['contents']:
