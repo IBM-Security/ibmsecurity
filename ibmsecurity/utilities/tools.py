@@ -166,7 +166,7 @@ def version_compare(version1, version2):
     :return:
     """
     def normalize(v):
-        v = re.sub(r'_b\d+', '', v)
+        v = re.sub(r'_b\d+$', '', v)
         return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
 
     return cmp(normalize(version1), normalize(version2))
