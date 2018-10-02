@@ -75,7 +75,8 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
 
 
 def add(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
-        contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, encryptionDb=None, encryptionCert=None, jwksUri=None, requirePkce=False, check_mode=False,
+        contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
         force=False):
     """
     Create an API protection definition
@@ -121,14 +122,6 @@ def add(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                 client_json["clientId"] = clientId
             if clientSecret is not None:
                 client_json["clientSecret"] = clientSecret
-            if encryptionDb is not None:
-                client_json["encryptionDb"] = encryptionDb
-            if encryptionCert is not None:
-                client_json["encryptionCert"] = encryptionCert
-            if jwksUri is not None:
-                client_json["jwksUri"] = jwksUri
-            if requirePkce is not None:
-                client_json["requirePkce"] = requirePkce
             if requirePkce is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
@@ -187,7 +180,8 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 
 def update(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
-           contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, encryptionDb=None, encryptionCert=None, jwksUri=None, requirePkce=False, check_mode=False,
+           contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
+           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
            force=False, new_name=None):
     """
     Update a specified mapping rule
@@ -260,26 +254,6 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
             json_data["clientSecret"] = clientSecret
         elif 'clientSecret' in ret_obj['data']:
             del ret_obj['data']['clientSecret']
-        if encryptionDb is not None:
-            json_data["encryptionDb"] = encryptionDb
-        elif 'encryptionDb' in ret_obj['data']:
-            del ret_obj['data']['encryptionDb']
-        if encryptionCert is not None:
-            json_data["encryptionCert"] = encryptionCert
-        elif 'encryptionCert' in ret_obj['data']:
-            del ret_obj['data']['encryptionCert']
-        if jwksUri is not None:
-            json_data["jwksUri"] = jwksUri
-        elif 'jwksUri' in ret_obj['data']:
-            del ret_obj['data']['jwksUri']
-        if requirePkce is not None:
-            json_data["requirePkce"] = requirePkce
-        elif 'requirePkce' in ret_obj['data']:
-            del ret_obj['data']['requirePkce']
-        if tools.json_sort(ret_obj['data']) != tools.json_sort(json_data):
-            needs_update = True
-        logger.info("Definition on the server: {0}".format(ret_obj['data']))
-        logger.info("Desired configuration: {0}".format(json_data))
         if requirePkce is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                 warnings.append(
@@ -336,8 +310,8 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
 
 def set(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
-        contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None, encryptionDb=None, encryptionCert=None, jwksUri=None, requirePkce=False,
-        check_mode=False,
+        contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
         force=False):
     """
     Creating or Modifying an API Protection Definition
@@ -346,16 +320,17 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
         return add(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
-                   contactPerson=contactPerson,
-                   contactType=contactType, email=email, phone=phone, otherInfo=otherInfo, clientId=clientId,
-                   clientSecret=clientSecret, encryptionDb=encryptionDb, encryptionCert=encryptionCert, jwksUri=jwksUri, requirePkce=requirePkce, check_mode=check_mode, force=True)
+                   contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
+                   clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
+                   encryptionCert=encryptionCert, jwksUri=jwksUri, check_mode=check_mode, force=True)
     else:
         # Update request
         logger.info("Definition {0} exists, requesting to update.".format(name))
         return update(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                       contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
-                      otherInfo=otherInfo, clientId=clientId, clientSecret=clientSecret, new_name=new_name, encryptionDb=encryptionDb, encryptionCert=encryptionCert, jwksUri=jwksUri, requirePkce=requirePkce,
-                      check_mode=check_mode, force=force)
+                      otherInfo=otherInfo, clientId=clientId, clientSecret=clientSecret, new_name=new_name,
+                      requirePkce=requirePkce, encryptionDb=encryptionDb, encryptionCert=encryptionCert,
+                      jwksUri=jwksUri, check_mode=check_mode, force=force)
 
 def compare(isamAppliance1, isamAppliance2):
     """
