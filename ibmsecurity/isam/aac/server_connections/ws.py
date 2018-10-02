@@ -1,5 +1,5 @@
 import logging
-import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +52,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
     return return_obj
 
 
-def add(isamAppliance, name, connection, description='', locked=False, servers=None,
-        check_mode=False, force=False):
+def add(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
     """
     Creating a Web Service connection
     """
@@ -92,8 +91,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=warnings)
         
 
-def update(isamAppliance, connection, description='', locked=False, servers=None, name=None,
-           new_name=None, check_mode=False, force=False):
+def update(isamAppliance, connection, description='', locked=False, name=None, new_name=None, 
+	check_mode=False, force=False):
     """
     Modifying a Web Service connection
 
@@ -118,10 +117,11 @@ def update(isamAppliance, connection, description='', locked=False, servers=None
         if 'uuid' in ret_obj['data']:
            del ret_obj['data']['uuid']
 
-        import ibmsecurity.utilities.tools        
-
-        if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) != ibmsecurity.utilities.tools.json_sort(
-                json_data):
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        if sorted_ret_obj != sorted_json_data:
             needs_update = True
     
         if 'password' in connection:
@@ -139,17 +139,16 @@ def update(isamAppliance, connection, description='', locked=False, servers=None
     
     return isamAppliance.create_return_object(warnings=warnings)
 
-def set(isamAppliance, name, connection, description='', locked=False, servers=None,
-        check_mode=False, force=False):
+def set(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
     """
     Creating or Modifying a Web Service connection
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name, connection, description, locked, servers, check_mode, True)
+        return add(isamAppliance, name, connection, description, locked, check_mode, True)
     else:
         # Update request
-        return update(isamAppliance, connection, description, locked, servers, name, None,
+        return update(isamAppliance, connection, description, locked, name, None,
                       check_mode, force)
 
 def _create_json(name, description, locked, connection):

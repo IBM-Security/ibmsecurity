@@ -8,7 +8,7 @@ requires_module = None
 requires_version = None
 
 
-def export(isamAppilance, check_mode=False, force=False):
+def export_file(isamAppilance, check_mode=False, force=False):
     """
     Exporting current FELB configuration with RESTful web service
     """
@@ -16,7 +16,7 @@ def export(isamAppilance, check_mode=False, force=False):
                                     requires_modules=requires_module, requires_version=requires_version)
 
 
-def imp_config(isamAppliance, file, check_mode=False, force=False):
+def import_file(isamAppliance, file, check_mode=False, force=False):
     """
     Importing FELB file
     """
@@ -125,7 +125,7 @@ def replace(isamAppliance, enable, debug, ha_enable, is_primary, interface,
                                             })
 
 
-def get(isamAppliance):
+def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieves configuration in full
     :param isamAppliance:

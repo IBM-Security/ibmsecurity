@@ -316,12 +316,13 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
                 json_data["jwksUri"] = jwksUri
         elif 'jwksUri' in ret_obj['data']:
             del ret_obj['data']['jwksUri']
+
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
-            logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-            logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
     if force is True or needs_update is True:
         if check_mode is True:
