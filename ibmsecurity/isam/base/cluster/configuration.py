@@ -1,4 +1,5 @@
 import logging
+import copy
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ def get(isamAppliance, check_mode=False, force=False):
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
         quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None, dsc_ssl_keyfile=None,
         dsc_ssl_label=None, dsc_worker_threads=64, dsc_maximum_session_lifetime=3600, dsc_client_grace_period=600,
-        hvdb_embedded=True, hvdb_max_size=40, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
+        hvdb_embedded=True, hvdb_max_size=None, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
         hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
         hvdb_driver_type=None, hvdb_solid_tc=None, cfgdb_embedded=True, cfgdb_db_type=None, cfgdb_address=None,
         cfgdb_port=None, cfgdb_user=None, cfgdb_password=None, cfgdb_db2_alt_address=None, cfgdb_db2_alt_port=None,
@@ -68,7 +69,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if hvdb_user is not None:
         cluster_json["hvdb_user"] = hvdb_user
     if hvdb_password is not None:
-        warnings.append("Since existing hvdb_password cannot be read - this call will not be idempotent.")
+        warnings.append("Since existing hvdb_password cannot be read - this parameter is ignored for idempotency.")
         cluster_json["hvdb_password"] = hvdb_password
     if hvdb_db2_alt_address is not None:
         cluster_json["hvdb_db2_alt_address"] = hvdb_db2_alt_address
@@ -94,7 +95,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_user is not None:
         cluster_json["cfgdb_user"] = cfgdb_user
     if cfgdb_password is not None:
-        warnings.append("Since existing cfgdb_password cannot be read - this call will not be idempotent.")
+        warnings.append("Since existing cfgdb_password cannot be read - this parameter is ignored for idempotency.")
         cluster_json["cfgdb_password"] = cfgdb_password
     if cfgdb_db2_alt_address is not None:
         cluster_json["cfgdb_db2_alt_address"] = cfgdb_db2_alt_address
@@ -142,9 +143,15 @@ def _check(isamAppliance, cluster_json):
     """
     ret_obj = get(isamAppliance)
     logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
-    logger.debug("JSON to Apply: {0}".format(cluster_json))
+    
+    temp = copy.deepcopy(cluster_json) # deep copy neccessary: otherwise password parameter would be removed from desired config dict 'cluster_json'. Comparison is done with temp<>ret_obj object 
+    for idx, x in enumerate(cluster_json):
+      if "password" in x:
+        logger.debug("Ignoring JSON password entry: '{0}' to satisfy idempotency.".format(x))
+        del temp[x]
+    logger.debug("Passwordless JSON to Apply: {0}".format(temp))
 
-    for key, value in cluster_json.iteritems():
+    for key, value in temp.iteritems():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(

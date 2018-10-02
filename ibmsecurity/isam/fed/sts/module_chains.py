@@ -1,6 +1,8 @@
 import logging
+import copy
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.fed.sts import templates
+from ibmsecurity.isam.aac import mapping_rules
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +130,12 @@ def add(isamAppliance, name, chainName, requestType, description=None, tokenType
                 if appliesTo is not None:
                     json_data['appliesTo'] = appliesTo
                 if properties is not None:
-                    json_data['properties'] = properties
+                  for idx, x in enumerate(properties['self']):
+                    if "map.rule.reference.names" in x['name']:
+                      ret_obj1 = mapping_rules.search(isamAppliance, x['value'][0])
+                      properties['self'].append({ "name": x['prefix'] + ".map.rule.reference.ids", "value": [ret_obj1['data']]})
+                      del properties['self'][idx]
+                  json_data['properties'] = properties
                 return isamAppliance.invoke_post(
                     "Create an STS chain", uri, json_data,
                     requires_modules=requires_modules,
@@ -207,6 +214,19 @@ def _check(isamAppliance, name, chainName, requestType, description, tokenType, 
         logger.info("STS Chain not found, returning no update required.")
         return None, update_required, json_data
     else:
+        if(ret_obj['data']['properties']):
+          if(ret_obj['data']['properties']['self'] == []):
+            del ret_obj['data']['properties']['self']
+          else:
+            for idx, x in enumerate(ret_obj['data']['properties']['self']):
+              if "password" in x['name']:
+                del ret_obj['data']['properties']['self'][idx]
+          if(ret_obj['data']['properties']['partner'] == []):
+            del ret_obj['data']['properties']['partner']
+          else:
+            for idx, x in enumerate(ret_obj['data']['properties']['partner']):
+              if "password" in x['name']:
+                del ret_obj['data']['properties']['partner'][idx]
         chain_id = ret_obj['data']['id']
         del ret_obj['data']['id']
         if new_name is not None:
@@ -234,8 +254,23 @@ def _check(isamAppliance, name, chainName, requestType, description, tokenType, 
         if appliesTo is not None:
             json_data['appliesTo'] = appliesTo
         if properties is not None:
-            json_data['properties'] = properties
-        sorted_json_data = tools.json_sort(json_data)
+          for idx, x in enumerate(properties['self']):
+            if "map.rule.reference.names" in x['name']:
+              ret_obj1 = mapping_rules.search(isamAppliance, x['value'][0])             
+              properties['self'].append({ "name": x['prefix'] + ".map.rule.reference.ids", "value": [ret_obj1['data']]})
+              del properties['self'][idx]
+          json_data['properties'] = properties
+        
+        temp = copy.deepcopy(json_data) # deep copy neccessary: otherwise password parameter would be removed from desired config dict 'json_data'
+        if('self' in temp['properties']):
+          for idx, x in enumerate(temp['properties']['self']):
+            if "password" in x['name']:
+              del temp['properties']['self'][idx]
+        if('partner' in temp['properties']):
+          for idx, x in enumerate(temp['properties']['partner']):
+            if "password" in x['name']:
+              del temp['properties']['partner'][idx]
+        sorted_json_data = tools.json_sort(temp)
         logger.debug("Sorted input: {0}".format(sorted_json_data))
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
