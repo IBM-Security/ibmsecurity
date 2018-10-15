@@ -45,8 +45,8 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
 def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, maxHeapSize=None, sessionTimeout=30,
         httpPort=None, httpsPort=None, minThreads=None, maxThreads=None, maxPoolSize=None, lmiDebuggingEnabled=None,
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
-        enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None, 
-        sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None, 
+        enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None,
+        sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None,
         check_mode=False, force=False):
     """
     Updating the administrator settings
@@ -58,7 +58,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
                                                       acceptClientCerts, validateClientCertIdentity,
                                                       excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
-                                                      enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout, 
+                                                      enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
                                                       sshdClientAliveInterval, swapFileSize, httpProxy, warnings)
 
     if force is True or update_required is True:
@@ -100,11 +100,11 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
             warnings.append("Please provide old password, when new password is specified.")
     if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
         if minHeapSize is not None or maxHeapSize is not None or httpPort is not None or httpsPort is not None or \
-                        minThreads is not None or maxThreads is not None or maxPoolSize is not None or \
-                        lmiDebuggingEnabled is not None or consoleLogLevel is not None or \
-                        acceptClientCerts is not None or validateClientCertIdentity is not None or \
-                        excludeCsrfChecking is not None or enableSSLv3 is not None or maxFiles is not None or \
-                        maxFileSize is not None or enabledTLS is not None or sshdPort is not None:
+                minThreads is not None or maxThreads is not None or maxPoolSize is not None or \
+                lmiDebuggingEnabled is not None or consoleLogLevel is not None or \
+                acceptClientCerts is not None or validateClientCertIdentity is not None or \
+                excludeCsrfChecking is not None or enableSSLv3 is not None or maxFiles is not None or \
+                maxFileSize is not None or enabledTLS is not None or sshdPort is not None:
             warnings.append(
                 "Appliance at version: {0}, only oldPassword, newPassword, sessionTimeout are supported. Needs 9.0.1.0 or higher. Ignoring other attributes for this call.")
     else:
@@ -188,7 +188,6 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["enabledTLS"] = enabledTLS
         elif 'enabledTLS' in ret_obj['data']:
             del ret_obj['data']['enabledTLS']
-
         if sessionCachePurge is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
@@ -198,7 +197,6 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["sessionCachePurge"] = sessionCachePurge
         elif 'sessionCachePurge' in ret_obj['data']:
             del ret_obj['data']['sessionCachePurge']
-
         if sessionInactivityTimeout is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
@@ -208,7 +206,6 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["sessionInactivityTimeout"] = sessionInactivityTimeout
         elif 'sessionInactivityTimeout' in ret_obj['data']:
             del ret_obj['data']['sessionInactivityTimeout']
-            
         if sshdClientAliveInterval is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
@@ -218,7 +215,6 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["sshdClientAliveInterval"] = sshdClientAliveInterval
         elif 'sshdClientAliveInterval' in ret_obj['data']:
             del ret_obj['data']['sshdClientAliveInterval']
-            
         if swapFileSize is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
@@ -228,7 +224,6 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["swapFileSize"] = swapFileSize
         elif 'swapFileSize' in ret_obj['data']:
             del ret_obj['data']['swapFileSize']
-
         if httpProxy is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
@@ -246,7 +241,8 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
     if sorted_ret_obj != sorted_json_data:
         logger.debug("Admin Settings are found to be different. See above JSON for difference.")
         # Ensure users know how REST API handles httpsPort default value
-        if httpsPort is None and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") >= 0:
+        if httpsPort is None and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"],
+                                                                             "9.0.1.0") >= 0:
             warnings.append("Default httpsPort of 443 will be set on the appliance.")
         return True, warnings, json_data
     else:  # No changes required
