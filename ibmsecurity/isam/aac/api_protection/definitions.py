@@ -104,18 +104,18 @@ def add(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
                             isamAppliance.facts["version"], oidc))
                 else:
                     json_data["oidc"] = oidc
-		if 'dynamicClients' in json_data['oidc'] and json_data['oidc']['dynamicClients'] is not None:
+                if 'dynamicClients' in json_data['oidc']:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(
-                                isamAppliance.facts["version"], dynamicClients))
-                        json_data['oidc']['dynamicClients'] = None
-		if 'issueSecret' in json_data['oidc'] and json_data['oidc']['issueSecret'] is not None:
+                                isamAppliance.facts["version"], json_data['oidc']['dynamicClients']))
+                        del json_data['oidc']['dynamicClients']
+                if 'issueSecret' in json_data['oidc']:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(
-                                isamAppliance.facts["version"], issueSecret))
-                        json_data['oidc']['issueSecret'] = None
+                                isamAppliance.facts["version"], json_data['oidc']['issueSecret']))
+                        del json_data['oidc']['issueSecret']
 
             return isamAppliance.invoke_post(
                 "Create an API protection definition", uri,
@@ -233,23 +233,23 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                 if 'enc' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enc'] is None:
                     del ret_obj['data']['oidc']['enc']['enc']
 
-            if 'dynamicClients' in json_data['oidc'] and json_data['oidc']['dynamicClients'] is not None:
-	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
-		    warnings.append(
-		        "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(isamAppliance.facts["version"], dynamicClients))
+            if 'dynamicClients' in json_data['oidc']:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(isamAppliance.facts["version"], json_data['oidc']['dynamicClients']))
                     del json_data['oidc']['dynamicClients']
-	    else:
-	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
-                    json_data['oidc']['dynamicClients'] = False
+            else:
+                if 'dynamicClients' in  ret_obj['data']['oidc']:
+                    del ret_obj['data']['oidc']['dynamicClients']
 
-            if 'issueSecret' in json_data['oidc'] and json_data['oidc']['issueSecret'] is not None:
-	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
-		    warnings.append(
-		        "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(isamAppliance.facts["version"], issueSecret))
+            if 'issueSecret' in json_data['oidc']:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(isamAppliance.facts["version"], json_data['oidc']['issueSecret']))
+                    del json_data['oidc']['issueSecret']
+            else:
+                if 'issueSecret' in  ret_obj['data']['oidc']:
                     del ret_obj['data']['oidc']['issueSecret']
-	    else:
-	        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
-                    json_data['oidc']['issueSecret'] = False
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
