@@ -239,7 +239,7 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                         "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(isamAppliance.facts["version"], json_data['oidc']['dynamicClients']))
                     del json_data['oidc']['dynamicClients']
             else:
-                if 'dynamicClients' in  ret_obj['data']['oidc']:
+                if 'dynamicClients' in ret_obj['data']['oidc']:
                     del ret_obj['data']['oidc']['dynamicClients']
 
             if 'issueSecret' in json_data['oidc']:
@@ -248,7 +248,7 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                         "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(isamAppliance.facts["version"], json_data['oidc']['issueSecret']))
                     del json_data['oidc']['issueSecret']
             else:
-                if 'issueSecret' in  ret_obj['data']['oidc']:
+                if 'issueSecret' in ret_obj['data']['oidc']:
                     del ret_obj['data']['oidc']['issueSecret']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
