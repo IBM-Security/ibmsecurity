@@ -245,7 +245,6 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                     warnings.append(
                         "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(
                             isamAppliance.facts["version"], json_data['oidc']['issueSecret']))
-                    del ret_obj['data']['oidc']['issueSecret']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
