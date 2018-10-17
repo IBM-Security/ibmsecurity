@@ -233,18 +233,33 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                 if 'enc' in ret_obj['data']['oidc']['enc'] and ret_obj['data']['oidc']['enc']['enc'] is None:
                     del ret_obj['data']['oidc']['enc']['enc']
 
+            # For dynamicClients & issueSecret parameters
+            #
+            # If the values for dynamicClients or issueSecret are missing, then they are
+            # considered to be of the value "false" by the appliance, this allows for old
+            # configuration to be forward compatible, without the function of the
+            # definition being changed by the same payload.
             if 'dynamicClients' in json_data['oidc']:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                     warnings.append(
                         "Appliance at version: {0}, dynamicClients: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring dynamicClients for this call.".format(
                             isamAppliance.facts["version"], json_data['oidc']['dynamicClients']))
                     del json_data['oidc']['dynamicClients']
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
+                    if 'dynamicClients' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['dynamicClients'] is False:
+                        del ret_obj['data']['oidc']['dynamicClients']
 
             if 'issueSecret' in json_data['oidc']:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                     warnings.append(
                         "Appliance at version: {0}, issueSecret: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.".format(
                             isamAppliance.facts["version"], json_data['oidc']['issueSecret']))
+                    del json_data['oidc']['issueSecret']
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
+                    if 'issueSecret' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['issueSecret'] is False:
+                        del ret_obj['data']['oidc']['issueSecret']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
