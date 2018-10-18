@@ -43,7 +43,14 @@ class ISAMAppliance(IBMAppliance):
         return_obj['rc'] = http_response.status_code
 
         # Examine the response.
-        if (http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
+        if (http_response.status_code == 403):
+            self.logger.error("  Request failed: ")
+            self.logger.error("     status code: {0}".format(http_response.status_code))
+            if http_response.text != "":
+                self.logger.error("     text: " + http_response.text)
+	    # Unconditionally raise exception to abort execution
+            raise IBMFatal("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
+        elif (http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
             self.logger.error("  Request failed: ")
             self.logger.error("     status code: {0}".format(http_response.status_code))
             if http_response.text != "":
@@ -51,13 +58,6 @@ class ISAMAppliance(IBMAppliance):
             if not ignore_error:
                 raise IBMError("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
             return_obj['changed'] = False  # force changed to be False as there is an error
-        elif (http_response.status_code == 403):
-            self.logger.error("  Request failed: ")
-            self.logger.error("     status code: {0}".format(http_response.status_code))
-            if http_response.text != "":
-                self.logger.error("     text: " + http_response.text)
-	    # Unconditionally raise exception to abort execution
-            raise IBMFatal("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
         else:
             return_obj['rc'] = 0
 
