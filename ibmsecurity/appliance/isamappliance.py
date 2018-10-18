@@ -50,6 +50,13 @@ class ISAMAppliance(IBMAppliance):
             if not ignore_error:
                 raise IBMError("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
             return_obj['changed'] = False  # force changed to be False as there is an error
+        elif (http_response.status_code == 403):
+            self.logger.error("  Request failed: ")
+            self.logger.error("     status code: {0}".format(http_response.status_code))
+            if http_response.text != "":
+                self.logger.error("     text: " + http_response.text)
+	    # Unconditionally raise exception to abort execution
+            raise IBMFatal("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
         else:
             return_obj['rc'] = 0
 
@@ -521,6 +528,9 @@ class ISAMAppliance(IBMAppliance):
             ret_obj = ibmsecurity.isam.base.setup_complete.get(self)
             if ret_obj['data'].get('configured') is True:
                 self.get_activations()
+        # Be sure to let fatal error unconditionally percolate up the stack
+        except IBMFatal:
+            raise
         # Exceptions like those connection related will be ignored
         except:
             pass
@@ -555,6 +565,9 @@ class ISAMAppliance(IBMAppliance):
                 if 'firmware_label' in ret_obj['data']:
                     self.facts['firmware_label'] = ret_obj['data']['firmware_label']
 
+        # Be sure to let fatal error unconditionally percolate up the stack
+        except IBMFatal:
+            raise
         except IBMError:
             try:
                 ret_obj = ibmsecurity.isam.base.firmware.get(self)
