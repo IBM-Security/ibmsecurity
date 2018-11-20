@@ -22,6 +22,11 @@ def add(isamAppliance, label, address, prefixLength, vlanId=None, allowManagemen
                 if addr['address'] == address:
                     add_needed = False
                     break
+        else:
+            warnings = []
+            warnings.append("Interface {0} not found, Add is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
+
     # Cannot add an address and keep dhcp enabled
     if add_needed is True and ret_obj['ipv6']['dhcp']['enabled'] is True:
         ret_obj['ipv6']['dhcp']['enabled'] = False
@@ -40,7 +45,6 @@ def add(isamAppliance, label, address, prefixLength, vlanId=None, allowManagemen
                 'allowManagement': allowManagement,
                 'enabledAddress': True,
                 'enabled': enabled
-
             }
             ret_obj['ipv6']['addresses'].append(addr)
             return ibmsecurity.isam.base.network.interfaces._update_interface(isamAppliance, ret_obj)
@@ -62,6 +66,10 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
                     delete_needed = True
                     ret_obj['ipv6']['addresses'].remove(addr)
                     break
+        else:
+            warnings = []
+            warnings.append("Interface {0} not found, Delete is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or delete_needed is True:
         if check_mode is True:
@@ -98,6 +106,10 @@ def update(isamAppliance, label, address, new_address, prefixLength, vlanId=None
                         ret_obj['ipv6']['addresses'].remove(addr)
                         ret_obj['ipv6']['addresses'].append(upd_addr)
                     break
+        else:
+            warnings = []
+            warnings.append("Interface {0} not found, Update is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
         if check_mode is True:
@@ -129,6 +141,10 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
                 # Cannot have DHCP and ip addresses at same time
                 if enabled is True:
                     ret_obj['ipv6']['addresses'] = []
+        else:
+            warnings = []
+            warnings.append("Interface {0} not found, Set dhcp is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
         if check_mode is True:
