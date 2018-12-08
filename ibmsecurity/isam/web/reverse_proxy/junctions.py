@@ -440,7 +440,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['preserve_cookie'] = 'no'
                 else:
                     jct_json['preserve_cookie'] = preserve_cookie
-                if remote_http_header is None:
+                if remote_http_header is None or remote_http_header == []:
                     jct_json['remote_http_header'] = 'do not insert'
                 elif isinstance(remote_http_header, basestring) and remote_http_header.lower() == 'all':
                     jct_json['remote_http_header'] = ['iv_creds', 'iv_groups', 'iv_user']
