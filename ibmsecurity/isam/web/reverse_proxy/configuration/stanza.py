@@ -58,10 +58,13 @@ def _check(isamAppliance, reverseproxy_id, stanza_id):
     return False
 
 
-def compare(isamAppliance1, isamAppliance2, reverseproxy_id):
+def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=None):
     """
     Compare stanzas within reverse proxy configuration between two appliances
     """
+    if reverseproxy_id2 is None or reverseproxy_id2 == '':
+        reverseproxy_id2 = reverseproxy_id
+
     import ibmsecurity.isam.web.reverse_proxy.configuration.entry
 
     # The following array contains entries that will be ignored across all stanzas
@@ -80,7 +83,7 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id):
                 entries[stanza][str(k)] = v
     ret_obj1['data'] = entries
 
-    ret_obj2 = get(isamAppliance2, reverseproxy_id)
+    ret_obj2 = get(isamAppliance2, reverseproxy_id2)
     entries = {}
     for stanza in ret_obj2['data']:
         entries[stanza] = {}

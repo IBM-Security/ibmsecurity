@@ -91,3 +91,8 @@ ENV/
 # Pycharm
 .idea
 
+# DS
+.DS_Store
+
+# Test Script
+test.py

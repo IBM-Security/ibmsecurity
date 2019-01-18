@@ -26,6 +26,7 @@ def set(isamAppliance,
         anon_bind=True,
         bind_dn=None,
         bind_password=None,
+        ldap_debug=None,
         check_mode=False,
         force=False):
     """
@@ -60,6 +61,15 @@ def set(isamAppliance,
         json_data["bind_dn"] = bind_dn
     if bind_password is not None:
         json_data["bind_password"] = bind_password
+    if ldap_debug is not None or ldap_debug == '':
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, ldap_debug: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring ldap_debug for this call.".format(
+                    isamAppliance.facts["version"], ldap_debug))
+        else:
+            json_data["ldap_debug"] = ldap_debug
+    elif ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
+        json_data["ldap_debug"] = False
     if force is False:
         if bind_password is not None:
             warnings.append("Unable to read existing bind password to check idempotency.")

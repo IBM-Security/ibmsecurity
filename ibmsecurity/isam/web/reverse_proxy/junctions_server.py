@@ -22,7 +22,7 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
 def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junction_type, server_port, server_dn=None,
         stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
         virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
-        proxy_port=None, sms_environment=None, vhost_label=None, check_mode=False, force=False):
+        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, check_mode=False, force=False):
     """
     Adding a back-end server to an existing standard or virtual junctions
 
@@ -45,6 +45,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
     :param proxy_port:
     :param sms_environment:
     :param vhost_label:
+    :param server_uuid:
     :param check_mode:
     :param force:
     :return:
@@ -80,12 +81,14 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 jct_srv_json["vhost_label"] = vhost_label
             if server_dn is not None:
                 jct_srv_json["server_dn"] = server_dn
-            if virtual_hostname is not None:
+            if virtual_hostname is not None and virtual_hostname != '':
                 jct_srv_json["virtual_hostname"] = virtual_hostname
             if virtual_https_hostname is not None:
                 jct_srv_json["virtual_https_hostname"] = virtual_https_hostname
             if query_contents is not None:
                 jct_srv_json["query_contents"] = query_contents
+            if server_uuid is not None and server_uuid != '':
+                jct_srv_json["server_uuid"] = server_uuid
 
             return isamAppliance.invoke_put(
                 "Adding a back-end server to an existing standard or virtual junctions",

@@ -77,7 +77,7 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
                 "dialect": dialect
             }
             if enabled is not None:
-                if isamAppliance.facts["version"] < "9.0.2.1":
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
                     warnings.append(
                         "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
                             isamAppliance.facts["version"]))
@@ -120,7 +120,7 @@ def update(isamAppliance, name, policy, uri, description="",
         "dialect": dialect
     }
     if enabled is not None:
-        if isamAppliance.facts["version"] < "9.0.2.1":
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
             warnings.append(
                 "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
                     isamAppliance.facts["version"]))
@@ -190,7 +190,7 @@ def activate(isamAppliance, name, enabled=True, check_mode=False, force=False):
     Enable or disable a policy
     """
     warnings = []
-    if isamAppliance.facts["version"] < "9.0.2.1":
+    if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
         warnings.append(
             "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
                 isamAppliance.facts["version"]))
@@ -215,21 +215,19 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get_all(isamAppliance2)
 
     for obj in ret_obj1['data']:
+        ret_obj = _get(isamAppliance1, obj['id'])
+        obj['policy'] = ret_obj['data']['policy']
         del obj['id']
         del obj['datecreated']
         del obj['lastmodified']
         del obj['userlastmodified']
-        ret_obj = _get(isamAppliance1, ret_obj1['data']['id'])
-        obj['policy'] = ret_obj['data']['policy']
     for obj in ret_obj2['data']:
+        ret_obj = _get(isamAppliance2, obj['id'])
+        obj['policy'] = ret_obj['data']['policy']
         del obj['id']
         del obj['datecreated']
         del obj['lastmodified']
         del obj['userlastmodified']
-        ret_obj = _get(isamAppliance2, ret_obj1['data']['id'])
-        obj['policy'] = ret_obj['data']['policy']
 
-    import ibmsecurity.utilities.tools
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2,
-                                                    deleted_keys=['id', 'datecreated', 'lastmodified',
-                                                                  'userlastmodified'])
+    return tools.json_compare(ret_obj1, ret_obj2,
+                              deleted_keys=['id', 'datecreated', 'lastmodified', 'userlastmodified'])

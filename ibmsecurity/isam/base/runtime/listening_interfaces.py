@@ -1,15 +1,17 @@
 import logging
+import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
+requires_modules = ["mga", "federation"]
 
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Get runtime endpoints or listening interfaces
     """
-
     return isamAppliance.invoke_get("Retrieving runtime listening interfaces",
-                                    "/mga/runtime_tuning/v1")
+                                    "/mga/runtime_tuning/v1",
+                                    requires_modules=requires_modules)
 
 
 def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
@@ -41,10 +43,26 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
                     'interface': interface,
                     'port': port,
                     'secure': secure
-                })
+                },
+                requires_modules=requires_modules)
 
     return ret_obj
 
+def set_by_address(isamAppliance, address, port, secure,check_mode=False, force=False):
+    ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
+    uuid = None
+
+    for intfc in ret_obj['data']['interfaces']:
+        for intfc_adr in intfc['ipv4']['addresses']:
+            if intfc_adr['address'] == address:
+                uuid = "{0}.{1}".format(intfc['uuid'],intfc_adr['uuid'])
+                break
+        for intfc_adr in intfc['ipv6']['addresses']:
+            if intfc_adr['address'] == address:
+                uuid = "{0}.{1}".format(intfc['uuid'],intfc_adr['uuid'])
+                break
+    
+    return set(isamAppliance, uuid, port, secure, check_mode, force)
 
 def _check(isamAppliance, interface, port):
     """
@@ -86,7 +104,8 @@ def delete(isamAppliance, interface, port, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a runtime listening interface",
-                "/mga/runtime_tuning/endpoints/{0}/v1".format(id))
+                "/mga/runtime_tuning/endpoints/{0}/v1".format(id),
+                requires_modules=requires_modules)
 
     return isamAppliance.create_return_object()
 

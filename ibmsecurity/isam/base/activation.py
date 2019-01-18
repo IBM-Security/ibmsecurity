@@ -27,6 +27,8 @@ def set(isamAppliance, id, code, check_mode=False, force=False):
                     'code': code
                 })
             # Update 'facts', with newly activated module
+            if 'activations' not in isamAppliance.facts:
+                isamAppliance.facts['activations'] = []
             isamAppliance.facts['activations'].append(id)
             return ret_obj
 

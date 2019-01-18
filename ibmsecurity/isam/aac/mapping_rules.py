@@ -64,15 +64,15 @@ def set(isamAppliance, name, category, filename=None, content=None, upload_filen
     """
     Creating or Modifying an Mapping Rule
     """
-    if content is None:
-        if upload_filename is None:
+    if content is None or content == '':
+        if upload_filename is None or upload_filename == '':
             return isamAppliance.create_return_object(
                 warnings="Need to pass content or upload_filename for set() to work.")
         else:
             with open(upload_filename, 'r') as contentFile:
                 content = contentFile.read()
-    if filename is None:
-        if upload_filename is None:
+    if filename is None or filename == '':
+        if upload_filename is None or upload_filename == '':
             return isamAppliance.create_return_object(
                 warnings="Need to pass filename or upload_filename for set() to work.")
         else:
@@ -132,11 +132,11 @@ def update(isamAppliance, name, content, check_mode=False, force=False):
     Update a specified mapping rule
     """
     update_required = False
+    ret_obj = search(isamAppliance, name)
+    id = ret_obj['data']
     if force is False:
-        ret_obj = search(isamAppliance, name)
-        if ret_obj['data'] != {}:
-            id = ret_obj['data']
-            ret_obj_content = _get(isamAppliance, ret_obj['data'])
+        if id:
+            ret_obj_content = _get(isamAppliance, id)
             # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
             if (ret_obj_content['data']['content']).strip() != (content).strip():
                 update_required = True
@@ -260,7 +260,7 @@ def _check(isamAppliance, name):
 
 def compare(isamAppliance1, isamAppliance2):
     """
-    Compare Client Certificate Mapping between two appliances
+    Compare Mapping Rules between two appliances
     """
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)

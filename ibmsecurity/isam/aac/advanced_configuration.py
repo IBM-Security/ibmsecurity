@@ -2,13 +2,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URI for this module
+uri = "/iam/access/v8/override-configs"
+requires_modules = ["mga","federation"]
+requires_version = None
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve a list of configuration properties
     """
     return isamAppliance.invoke_get("Retrieve a list of configuration properties",
-                                    "/iam/access/v8/override-configs")
+                                    "/iam/access/v8/override-configs", requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, key, check_mode=False, force=False):
@@ -22,7 +28,8 @@ def get(isamAppliance, key, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific configuration property",
-                                        "/iam/access/v8/override-configs/{0}".format(id))
+                                        "/iam/access/v8/override-configs/{0}".format(id),
+                                        requires_modules=requires_modules, requires_version=requires_version)
 
 
 def update(isamAppliance, key, value, sensitive, check_mode=False, force=False):
@@ -43,7 +50,7 @@ def update(isamAppliance, key, value, sensitive, check_mode=False, force=False):
                 {
                     'value': value,
                     'sensitive': sensitive
-                })
+                }, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -65,7 +72,7 @@ def update_all(isamAppliance, values, check_mode=False, force=False):
             return isamAppliance.invoke_put(
                 "Update a list of configuration properties",
                 "/iam/access/v8/override-configs",
-                vals)
+                vals, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

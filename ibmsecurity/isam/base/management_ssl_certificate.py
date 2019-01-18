@@ -16,7 +16,7 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
     """
     Import certificate database
     """
-    warnings = ["Idempotency not available. Unable to extract existing certificate to compare with provide one."]
+    warnings = ["Idempotency not available. Unable to extract existing certificate to compare with provided one."]
     if force is True or _check(isamAppliance, certificate, password) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
@@ -47,6 +47,7 @@ def _check(isamAppliance, certificate, password):
 
     return False
 
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare management authentication settings
@@ -54,5 +55,4 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 
-    import ibmsecurity.utilities.tools
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

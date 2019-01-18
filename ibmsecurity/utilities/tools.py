@@ -5,6 +5,7 @@ import pprint
 import difflib
 import hashlib
 import ntpath
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,81 @@ def json_sort(json_data):
         return sorted(json_sort(x) for x in json_data)
     else:
         return json_data
+
+
+def json_replace_value(json_data, from_value, to_value):
+    '''
+    Replaces all found from_values with to_value in a json - from_value can be a JSON itself
+
+    :param json_data:
+    :param from_value:
+    :param to_value:
+    :return:
+    '''
+    if json_data == from_value:
+        return to_value
+    elif isinstance(json_data, dict):
+        new_dict = {}
+        for key, value in json_data.items():
+            if type(value) == type(from_value) and value == from_value:
+                value = to_value
+            elif isinstance(value, dict):
+                value = json_replace_value(value, from_value, to_value)
+            elif isinstance(value, list):
+                value = json_replace_value(value, from_value, to_value)
+            new_dict[key] = value
+        return new_dict
+    elif isinstance(json_data, list):
+        new_list = []
+        for elem in json_data:
+            if type(elem) == type(from_value) and elem == from_value:
+                elem = to_value
+            elif isinstance(elem, dict):
+                elem = json_replace_value(elem, from_value, to_value)
+            elif isinstance(elem, list):
+                elem = json_replace_value(elem, from_value, to_value)
+            new_list.append(elem)
+        return new_list
+    else:
+        return json_data
+
+
+def json_remove_value(json_data, value):
+    '''
+    Removes all found values (along with key if part of a dict)
+
+    :param json_data:
+    :param from_value:
+    :param to_value:
+    :return:
+    '''
+    if isinstance(json_data, dict):
+        new_dict = {}
+        for k, v in json_data.items():
+            if isinstance(v, dict) or isinstance(v, list):
+                v = json_remove_value(v, value)
+                new_dict[k] = v
+            elif type(v) == type(value) and v == value:
+                pass
+            else:
+                new_dict[k] = v
+        return new_dict
+    elif isinstance(json_data, list):
+        new_list = []
+        for elem in json_data:
+            if isinstance(elem, dict) or isinstance(elem, list):
+                elem = json_remove_value(elem, value)
+                new_list.append(elem)
+            elif type(elem) == type(value) and elem == value:
+                pass
+            else:
+                new_list.append(elem)
+        return new_list
+    else:
+        if type(json_data) == type(value) and json_data == value:
+            return None
+        else:
+            return json_data
 
 
 def random_password(length=12, allow_special=True):
@@ -130,3 +206,41 @@ def strings(filename, min=4):
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
+
+def version_compare(version1, version2):
+    """
+    Compare two ISAM version strings. Please note that the versions should be all numeric separated by dots.
+
+    Returns following values:
+         0 - if version strings are equivalent
+        >0 - if version1 is greater than version2
+        <0 - if version1 is less than version2
+
+    Test cases to run for verifying this code:
+        assert version_compare("1", "1") == 0
+        assert version_compare("2.1", "2.2") < 0
+        assert version_compare("3.0.4.10", "3.0.4.2") > 0
+        assert version_compare("4.08", "4.08.01") < 0
+        assert version_compare("3.2.1.9.8144", "3.2") > 0
+        assert version_compare("3.2", "3.2.1.9.8144") < 0
+        assert version_compare("1.2", "2.1") < 0
+        assert version_compare("2.1", "1.2") > 0
+        assert version_compare("5.6.7", "5.6.7") == 0
+        assert version_compare("1.01.1", "1.1.1") == 0
+        assert version_compare("1.1.1", "1.01.1") == 0
+        assert version_compare("1", "1.0") == 0
+        assert version_compare("1.0", "1") == 0
+        assert version_compare("1.0", "1.0.1") < 0
+        assert version_compare("1.0.1", "1.0") > 0
+        assert version_compare("1.0.2.0", "1.0.2") == 0
+        assert version_compare("10.0", "9.0.3") > 0
+
+    :param version1:
+    :param version2:
+    :return:
+    """
+    def normalize(v):
+        return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
+
+    return cmp(normalize(version1), normalize(version2))

@@ -160,7 +160,7 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, reverseproxy_id,
-                                                                                          stanza_id, entry_id, value_id)
+                                                                                       stanza_id, entry_id, value_id)
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -169,6 +169,30 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             full_uri = urllib.quote(ruri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
+
+    return isamAppliance.create_return_object()
+
+
+def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, force=False):
+    """
+    Deleting all values from a configuration entry - Reverse Proxy
+    """
+    delete_required = False
+    if force is False:
+        try:
+            ret_obj = get(isamAppliance, reverseproxy_id, stanza_id, entry_id)
+            if ret_obj['data'] != {}:
+                delete_required = True
+        except:
+            pass
+
+    if force is True or delete_required is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id, stanza_id, entry_id)
+            return isamAppliance.invoke_delete(
+                "Deleting all values from a configuration entry - Reverse Proxy", f_uri)
 
     return isamAppliance.create_return_object()
 
@@ -236,11 +260,14 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
     return exists, update_required, value
 
 
-def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id):
+def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id, reverseproxy_id2=None):
     """
     Compare stanza/entries in two appliances reverse proxy configuration
     """
+    if reverseproxy_id2 is None or reverseproxy_id2 == '':
+        reverseproxy_id2 = reverseproxy_id
+
     ret_obj1 = get_all(isamAppliance1, reverseproxy_id, stanza_id)
-    ret_obj2 = get_all(isamAppliance2, reverseproxy_id, stanza_id)
+    ret_obj2 = get_all(isamAppliance2, reverseproxy_id2, stanza_id)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

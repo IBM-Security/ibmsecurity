@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
-        quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None,
+        quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None, dsc_ssl_keyfile=None,
         dsc_ssl_label=None, dsc_worker_threads=64, dsc_maximum_session_lifetime=3600, dsc_client_grace_period=600,
         hvdb_embedded=True, hvdb_max_size=40, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
         hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
@@ -53,6 +54,8 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
         cluster_json["dsc_port"] = dsc_port
     if dsc_use_ssl is not None:
         cluster_json["dsc_use_ssl"] = dsc_use_ssl
+    if dsc_ssl_keyfile is not None:
+        cluster_json["dsc_ssl_keyfile"] = dsc_ssl_keyfile
     if dsc_ssl_label is not None:
         cluster_json["dsc_ssl_label"] = dsc_ssl_label
     if hvdb_max_size is not None:
@@ -110,7 +113,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
             cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
         cluster_json["cfgdb_solid_tc"] = cfgdb_solid_tc
     if cfgdb_fs is not None:
-        if isamAppliance.facts["version"] < "9.0.2.0":
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
             warnings.append(
                 "Appliance at version: {0}, cfgdb_fs: {1} is not supported. Needs 9.0.2.0 or higher. Ignoring cfgdb_fs for this call.".format(
                     isamAppliance.facts["version"], cfgdb_fs))
@@ -139,8 +142,12 @@ def _check(isamAppliance, cluster_json):
     :return:
     """
     ret_obj = get(isamAppliance)
-    logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
-    logger.debug("JSON to Apply: {0}".format(cluster_json))
+
+
+    sorted_ret_obj = tools.json_sort(ret_obj['data'])
+    sorted_json_data = tools.json_sort(cluster_json)
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
     for key, value in cluster_json.iteritems():
         try:

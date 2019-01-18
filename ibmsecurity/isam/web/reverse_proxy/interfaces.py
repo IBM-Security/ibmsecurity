@@ -23,7 +23,7 @@ def get_next_http_port(isamAppliance, ip_address, check_mode=False, force=False)
     """
     Find the next available HTTP port for an interface
     """
-    if isamAppliance.facts["version"] < "8.0.0.0":
+    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "8.0.0.0") < 0:
         get_uri = "/isam/wga_templates/httpport/{0}".format(ip_address)
     else:
         get_uri = "/isam/wga_templates/httpport?ip_addr={0}".format(ip_address)
@@ -34,7 +34,7 @@ def get_next_https_port(isamAppliance, ip_address, check_mode=False, force=False
     """
     Find the next available HTTPS port for an interface
     """
-    if isamAppliance.facts["version"] < "8.0.0.0":
+    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "8.0.0.0") < 0:
         get_uri = "/isam/wga_templates/httpsport/{0}".format(ip_address)
     else:
         get_uri = "/isam/wga_templates/httpsport?ip_addr={0}".format(ip_address)

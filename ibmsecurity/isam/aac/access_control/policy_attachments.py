@@ -99,7 +99,6 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
            check_mode=False, force=False):
     """
     Configure a resource
-
     Note: Please input policies with policy names (it will be converted to id's), like so:
      [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
     """
@@ -116,7 +115,7 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
         if policyCombiningAlgorithm is not None:
             json_data['policyCombiningAlgorithm'] = policyCombiningAlgorithm
         if cache is not None:
-            if isamAppliance.facts["version"] < "9.0.3.0":
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
                         isamAppliance.facts["version"], cache))
@@ -146,7 +145,7 @@ def update(isamAppliance, server, resourceUri, policyCombiningAlgorithm, cache=N
             "policyCombiningAlgorithm": policyCombiningAlgorithm
         }
         if cache is not None:
-            if isamAppliance.facts["version"] < "9.0.3.0":
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
                         isamAppliance.facts["version"], cache))

@@ -56,7 +56,7 @@ def export_file(isamAppliance, instance_id, file_id, filename, check_mode=False,
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Exporting a common log file",
-                "{0}/{1}/{2}?export".format(uri, instance_id, file_id),
+                "{0}/{1}/{2}?export=true".format(uri, instance_id, file_id),
                 filename)
 
     return isamAppliance.create_return_object()
