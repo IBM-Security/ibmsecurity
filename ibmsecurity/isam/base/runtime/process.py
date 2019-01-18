@@ -46,16 +46,16 @@ def _check(isamAppliance, operation):
     """
     ret_obj = get(isamAppliance)
 
-    if ret_obj['data']['restart_required'] is True and operation == "restart":
+    if 'restart_required' in ret_obj['data'] and ret_obj['data']['restart_required'] is True and operation == "restart":
         logger.info("Liberty Runtime process requires a restart")
         return True
-    elif ret_obj['data']['return_code'] == 0 and operation == "stop":
+    elif 'return_code' in ret_obj['data'] and ret_obj['data']['return_code'] == 0 and operation == "stop":
         logger.info("Liberty Runtime process is running and can be stopped")
         return True
-    elif ret_obj['data']['return_code'] == 1 and operation == "start":
+    elif 'return_code' in ret_obj['data'] and ret_obj['data']['return_code'] == 1 and operation == "start":
         logger.info("Liberty Runtime process is not running and can be started")
         return True
-    elif ret_obj['data']['reload_required'] is True and operation == "reload":
+    elif 'reload_required' in ret_obj['data'] and ret_obj['data']['reload_required'] is True and operation == "reload":
         logger.info("Liberty Runtime process requires reload")
         return True
     else:

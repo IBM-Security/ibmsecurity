@@ -47,6 +47,9 @@ def get(isamAppliance, server, port, protocol, name, check_mode=False, force=Fal
     """
     ret_obj = forwarder.get_all(isamAppliance=isamAppliance, check_mode=check_mode, force=force)
 
+    if isinstance(port, basestring):
+        port=int(port)
+
     existing_forwarder, i, existing_forwarder_source, j = _find_forwarder_source(ret_obj, server, port, protocol, name)
 
     return_obj = isamAppliance.create_return_object()
@@ -61,6 +64,9 @@ def delete(isamAppliance, server, port, protocol, name, check_mode=False, force=
     """
     ret_obj = forwarder.get_all(isamAppliance=isamAppliance, check_mode=check_mode, force=force)
     json_to_post = ret_obj['data']
+
+    if isinstance(port, basestring):
+        port=int(port)
 
     existing_forwarder, i, existing_forwarder_source, j = _find_forwarder_source(ret_obj, server, port, protocol, name)
     if existing_forwarder is not None and existing_forwarder_source is not None:
@@ -78,6 +84,9 @@ def set(isamAppliance, server, port, protocol, name, tag, facility, severity, ch
     Set a remote syslog forwarding source
     """
     ret_obj = forwarder.get_all(isamAppliance=isamAppliance, check_mode=check_mode, force=force)
+
+    if isinstance(port, basestring):
+	port=int(port)
 
     existing_forwarder, i, existing_forwarder_source, j = _find_forwarder_source(ret_obj, server, port, protocol, name)
 
