@@ -76,7 +76,7 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
 
 def add(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, check_mode=False,
         force=False):
     """
     Create an API protection definition
@@ -150,6 +150,13 @@ def add(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                             isamAppliance.facts["version"], jwksUri))
                 else:
                     client_json["jwksUri"] = jwksUri
+            if extProperties is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
+                            isamAppliance.facts["version"], extProperties))
+                else:
+                    client_json["extProperties"] = extProperties
 
             return isamAppliance.invoke_post(
                 "Create an API protection definition", uri, client_json, requires_modules=requires_modules,
@@ -181,7 +188,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 def update(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
            contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, check_mode=False,
            force=False, new_name=None):
     """
     Update a specified mapping rule
@@ -290,6 +297,15 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
                 json_data["jwksUri"] = jwksUri
         elif 'jwksUri' in ret_obj['data']:
             del ret_obj['data']['jwksUri']
+        if extProperties is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
+                        isamAppliance.facts["version"], extProperties))
+            else:
+                json_data["extProperties"] = extProperties
+        elif 'extProperties' in ret_obj['data']:
+            del ret_obj['data']['extProperties']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
@@ -311,7 +327,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
 def set(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, check_mode=False,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, check_mode=False,
         force=False):
     """
     Creating or Modifying an API Protection Definition
@@ -322,7 +338,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
         return add(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                    contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
                    clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
-                   encryptionCert=encryptionCert, jwksUri=jwksUri, check_mode=check_mode, force=True)
+                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties, check_mode=check_mode, force=True)
     else:
         # Update request
         logger.info("Definition {0} exists, requesting to update.".format(name))
@@ -330,7 +346,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                       contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
                       otherInfo=otherInfo, clientId=clientId, clientSecret=clientSecret, new_name=new_name,
                       requirePkce=requirePkce, encryptionDb=encryptionDb, encryptionCert=encryptionCert,
-                      jwksUri=jwksUri, check_mode=check_mode, force=force)
+                      jwksUri=jwksUri, extProperties=extProperties, check_mode=check_mode, force=force)
 
 def compare(isamAppliance1, isamAppliance2):
     """
