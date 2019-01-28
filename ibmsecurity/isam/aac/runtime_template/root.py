@@ -79,6 +79,6 @@ def delete(isamAppliance, id, type, check_mode=False, force=False):
     :return:
     """
     if(type.lower() == 'directory'):
-      return directory.delete(isamAppliance, id)
+      return directory.delete(isamAppliance, id, check_mode, force)
     elif(type.lower() == 'file'):
-      return file.delete(isamAppliance, id)
+      return file.delete(isamAppliance, id, check_mode, force)

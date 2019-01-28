@@ -84,6 +84,40 @@ def create(isamAppliance, path, name, check_mode=False, force=False):
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+def create(isamAppliance, id, check_mode=False, force=False):
+    """
+    Creating a directory in the runtime template files directory
+
+    :param isamAppliance:
+    :param id:
+    :param name:
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    warnings = []
+    
+    path = os.path.dirname(id)
+    name = os.path.basename(id)
+    
+    check_dir = _check(isamAppliance, id)
+    if check_dir != None:
+        warnings.append("Directory {0} exists. Ignoring create.".format(id))
+
+    if force is True or check_dir == None:
+        if check_mode is True:          
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_post(
+                "Creating a directory in the runtime template files directory",
+                "/mga/template_files/{0}".format(path),
+                {
+                    'dir_name': name,
+                    'type': 'dir'
+                })
+
+    return isamAppliance.create_return_object(warnings=warnings)
+
 
 def delete(isamAppliance, id, check_mode=False, force=False):
     """
