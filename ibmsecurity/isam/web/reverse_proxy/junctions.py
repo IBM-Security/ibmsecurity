@@ -450,7 +450,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['preserve_cookie'] = 'no'
                 else:
                     jct_json['preserve_cookie'] = preserve_cookie
-                if remote_http_header is None:
+                if remote_http_header is None or remote_http_header == []:
                     jct_json['remote_http_header'] = 'do not insert'
                 elif isinstance(remote_http_header, basestring) and remote_http_header.lower() == 'all':
                     jct_json['remote_http_header'] = ['iv_creds', 'iv_groups', 'iv_user']
@@ -560,12 +560,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     return isamAppliance.create_return_object()
 
 
-def compare(isamAppliance1, isamAppliance2, reverseproxy_id):
+def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=None):
     """
     Compare list of junctions in a given reverse proxy between 2 appliances
     """
+    if reverseproxy_id2 is None or reverseproxy_id2 == '':
+-        reverseproxy_id2 = reverseproxy_id
     ret_obj1 = get_all(isamAppliance1, reverseproxy_id)
-    ret_obj2 = get_all(isamAppliance2, reverseproxy_id)
+    ret_obj2 = get_all(isamAppliance2, reverseproxy_id2)
 
     for jct in ret_obj1['data']:
         ret_obj = get(isamAppliance1, reverseproxy_id, jct['id'])
@@ -574,18 +576,20 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id):
             del srv['current_requests']
             del srv['operation_state']
             del srv['server_state']
-            del srv['server_uuid']
+            if ret_obj['data']['stateful_junction'] == 'no':
+                del srv['server_uuid']
             del srv['total_requests']
         jct['details'] = ret_obj['data']
 
     for jct in ret_obj2['data']:
-        ret_obj = get(isamAppliance2, reverseproxy_id, jct['id'])
+        ret_obj = get(isamAppliance2, reverseproxy_id2, jct['id'])
         del ret_obj['data']['active_worker_threads']
         for srv in ret_obj['data']['servers']:
             del srv['current_requests']
             del srv['operation_state']
             del srv['server_state']
-            del srv['server_uuid']
+            if ret_obj['data']['stateful_junction'] == 'no':
+                del srv['server_uuid']
             del srv['total_requests']
         jct['details'] = ret_obj['data']
 
