@@ -563,7 +563,7 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
     Compare list of junctions in a given reverse proxy between 2 appliances
     """
     if reverseproxy_id2 is None or reverseproxy_id2 == '':
--        reverseproxy_id2 = reverseproxy_id
+        reverseproxy_id2 = reverseproxy_id
     ret_obj1 = get_all(isamAppliance1, reverseproxy_id)
     ret_obj2 = get_all(isamAppliance2, reverseproxy_id2)
 
