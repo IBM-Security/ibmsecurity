@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/definitions"
-requires_modules = ["mga"]
+requires_modules = ["mga", "federation"]
 requires_version = None
 
 
@@ -247,7 +247,8 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                     del json_data['oidc']['dynamicClients']
             else:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
-                    if 'dynamicClients' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['dynamicClients'] is False:
+                    if 'dynamicClients' in ret_obj['data']['oidc'] and ret_obj['data']['oidc'][
+                        'dynamicClients'] is False:
                         del ret_obj['data']['oidc']['dynamicClients']
 
             if 'issueSecret' in json_data['oidc']:
