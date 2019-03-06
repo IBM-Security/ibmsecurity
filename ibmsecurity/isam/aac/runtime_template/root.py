@@ -1,4 +1,7 @@
 import logging
+import os.path
+from ibmsecurity.isam.aac.runtime_template import directory
+from ibmsecurity.isam.aac.runtime_template import file
 
 logger = logging.getLogger(__name__)
 
@@ -41,3 +44,43 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
             {
                 "force": force
             }, json_response=False)
+
+
+def check(isamAppliance, id, type, check_mode=False, force=False):
+    ret_obj = None
+
+    if (type.lower() == 'directory'):
+        ret_obj = directory._check(isamAppliance, id)
+    elif (type.lower() == 'file'):
+        ret_obj = file._check(isamAppliance, id)
+    else:
+        type = 'unknown'
+
+    name = os.path.basename(id)
+    path = os.path.dirname(id)
+
+    data = {
+        'id': ret_obj,
+        'path': path,
+        'name': name,
+        'type': type
+    }
+
+    return isamAppliance.create_return_object(data=data)
+
+
+def delete(isamAppliance, id, type, check_mode=False, force=False):
+    """
+    Deleting a file or directory in the runtime template files directory
+
+    :param isamAppliance:
+    :param id:
+    :param_type:
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    if (type.lower() == 'directory'):
+        return directory.delete(isamAppliance, id)
+    elif (type.lower() == 'file'):
+        return file.delete(isamAppliance, id)
