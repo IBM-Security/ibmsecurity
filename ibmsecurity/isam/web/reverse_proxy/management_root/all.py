@@ -37,7 +37,7 @@ def import_zip(isamAppliance, instance_id, filename, check_mode=False, force=Fal
     else:
         return isamAppliance.invoke_post_files(
             "Importing the contents of a .zip file to the administration pages root",
-            "/wga/reverseproxy/{0}/management_root".format(instance_id), filename,
+            "/wga/reverseproxy/{0}/management_root".format(instance_id),
             [
                 {
                     'file_formfield': 'file',
