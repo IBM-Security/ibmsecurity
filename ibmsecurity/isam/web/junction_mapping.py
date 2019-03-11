@@ -88,7 +88,13 @@ def update(isamAppliance, id, jmt_config_data, check_mode=False, force=False):
     """
     Update a Junction Mapping
     """
-    if force is True or _check(isamAppliance, id) is True:
+    update_required = False
+    ret_obj_content = get(isamAppliance, id)
+    # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
+    if (ret_obj_content['data']['contents']).strip() != (jmt_config_data).strip():
+	update_required = True
+
+    if force is True or update_required is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
