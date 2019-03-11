@@ -29,8 +29,8 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
     if id == {}:
         logger.info("PIP Type {0} had no match, skipping retrieval.".format(name))
-        warning = "PIP Type {0} had no match, skipping retrieval.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP Type {0} had no match, skipping retrieval.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, id)
 

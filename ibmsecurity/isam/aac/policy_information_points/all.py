@@ -29,8 +29,8 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
 
     if id == {}:
         logger.info("PIP '{0}' had no match, skipping retrieval.".format(name))
-        warning = ["PIP '{0}' had no match, skipping retrieval.".format(name)]
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP '{0}' had no match, skipping retrieval.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, id)
 
@@ -56,8 +56,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
 
     if id == {}:
         logger.info("PIP '{0}' does not exists, skipping delete.".format(name))
-        warning = ["PIP '{0}' does not exists, skipping delete.".format(name)]
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP '{0}' does not exists, skipping delete.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
 
@@ -98,3 +98,27 @@ def search(isamAppliance, name, force=False, check_mode=False):
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific PIP",
                                     "{0}/{1}".format(uri, id))
+
+
+def _create_json(name, properties, attributes, description, type):
+    json_data = {
+        "name": name,
+        "type": type,
+    }
+
+    if attributes is not None:
+        json_data['attributes'] = attributes
+    else:
+        json_data['attributes'] = []
+
+    if description is not None:
+        json_data['description'] = description
+    else:
+        json_data['description'] = ''
+
+    if properties is not None:
+        json_data['properties'] = properties
+    else:
+        json_data['properties'] = []
+
+    return json_data

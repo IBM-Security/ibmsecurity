@@ -1,5 +1,5 @@
 import logging
-from ibmsecurity.isam.aac.policy_information_points.all import get, search
+from ibmsecurity.isam.aac.policy_information_points.all import get, search, _create_json
 from ibmsecurity.utilities.tools import json_sort
 
 logger = logging.getLogger(__name__)
@@ -10,7 +10,7 @@ requires_modules = ["mga"]
 requires_version = None
 
 
-def set(isamAppliance, name, properties, attributes, description=None, new_name=None, type="LDAP", check_mode=False,
+def set(isamAppliance, name, properties, attributes, description=None, type="LDAP", new_name=None, check_mode=False,
         force=False):
     """
     Creating or Modifying an LDAP PIP
@@ -20,18 +20,17 @@ def set(isamAppliance, name, properties, attributes, description=None, new_name=
 
     if id == {}:
         # If no id was found, Force the add
-        return add(isamAppliance, name=name, description=description, properties=properties, attributes=attributes,
+        return add(isamAppliance, name=name, properties=properties, attributes=attributes, description=description,
                    type=type, check_mode=check_mode, force=force)
     else:
         # Update PIP
-        return update(isamAppliance, name=name, new_name=new_name, description=description, properties=properties,
-                      attributes=attributes,
-                      type=type, check_mode=check_mode, force=force)
+        return update(isamAppliance, name=name, properties=properties, attributes=attributes, description=description,
+                      type=type, new_name=new_name, check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, properties, attributes, description=None, type="LDAP", check_mode=False, force=False):
     """
-    Create a JavaScript policy information point
+    Create a LDAP policy information point
     """
 
     ret_obj = search(isamAppliance, name, check_mode=False, force=False)
@@ -39,8 +38,8 @@ def add(isamAppliance, name, properties, attributes, description=None, type="LDA
 
     if id != {}:
         logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
-        warning = "PIP '{0}' already exists.  Skipping add.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP '{0}' already exists.  Skipping add.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id == {}:
         if check_mode is True:
@@ -48,7 +47,7 @@ def add(isamAppliance, name, properties, attributes, description=None, type="LDA
         else:
 
             return isamAppliance.invoke_post(
-                "Create a JavaScript policy information point",
+                "Create a LDAP policy information point",
                 "{0}".format(uri),
                 _create_json(name=name, description=description, type=type,
                              attributes=attributes, properties=properties),
@@ -58,43 +57,52 @@ def add(isamAppliance, name, properties, attributes, description=None, type="LDA
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, properties, attributes, description=None, new_name=None, type="LDAP", check_mode=False,
+def update(isamAppliance, name, properties, attributes, description=None, type="LDAP", new_name=None, check_mode=False,
            force=False):
     """
-    Update a specific JavaScript policy information point
+    Update a specific LDAP policy information point
     """
 
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
+
+    ret_new_name = search(isamAppliance, name=new_name)
+    new_name_id = ret_new_name['data']
+
+    if name != new_name:
+        if new_name_id != {}:
+            logger.info("New PIP name '{0}' already exists.  Skipping update.".format(new_name))
+            warnings = ["New PIP name '{0}' already exists.  Skipping update.".format(new_name)]
+            return isamAppliance.create_return_object(warnings=warnings)
+
     update_required = False
 
     if id != {}:
-        json_data = get(isamAppliance, name=name)
-
-        if properties != None:
-            current_props = json_data['data']['properties']
-            json_sort(current_props)
-            json_sort(properties)
-            if current_props != properties:
-                update_required = True
-
-        if attributes != None:
-            current_attrs = json_data['data']['attributes']
-            json_sort(current_attrs)
-            json_sort(attributes)
-            if current_attrs != attributes:
-                update_required = True
-
-        if description != None:
-            current_description = json_data['data']['description']
-            if current_description != description:
-                update_required = True
+        ret_obj = get(isamAppliance, name=name)
 
         if new_name != None:
-            if name != new_name:
-                name = new_name
-                update_required = True
+            json_data = _create_json(name=new_name, properties=properties, attributes=attributes,
+                                     description=description, type=type)
+        else:
+            json_data = _create_json(name=name, properties=properties, attributes=attributes, description=description,
+                                     type=type)
 
+        sorted_json_data = json_sort(json_data)
+
+        logger.debug("Sorted input: {0}".format(sorted_json_data))
+
+        del ret_obj['data']['id']
+        del ret_obj['data']['predefined']
+        sorted_ret_obj = json_sort(ret_obj['data'])
+
+        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+
+        if sorted_json_data != sorted_ret_obj:
+            update_required = True
+    else:
+        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
+        warnings = ["PIP '{0}' does not exists.  Skipping update.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -103,34 +111,17 @@ def update(isamAppliance, name, properties, attributes, description=None, new_na
         else:
 
             return isamAppliance.invoke_put(
-                "Update a specific JavaScript policy information point",
+                "Update a specific LDAP policy information point",
                 "{0}/{1}".format(uri, id),
-                _create_json(name=name, description=description, type=type,
-                             attributes=attributes, properties=properties),
+                json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
-    if id == {}:
-        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
-        warning = "PIP '{0}' does not exists.  Skipping update.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
-
     if update_required is False:
         logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
-        warning = "Input is the same as current PIP '{0}'.  Skipping update.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["Input is the same as current PIP '{0}'.  Skipping update.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
 
 
-def _create_json(name, description, type, attributes, properties):
-    json_data = {
-        "name": name,
-        "description": description,
-        "type": type
-    }
-    if attributes is not None:
-        json_data['attributes'] = attributes
-    if properties is not None:
-        json_data['properties'] = properties
-    return json_data

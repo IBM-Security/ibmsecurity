@@ -1,6 +1,7 @@
 import logging
-from .all import search, get, _get
+from .all import search, get, _get, _create_json
 from ibmsecurity.utilities.tools import json_sort
+import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ def add(isamAppliance, name, properties, attributes=None, description=None, type
 
     if id != {}:
         logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
-        warning = ["PIP '{0}' already exists.  Skipping add.".format(name)]
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP '{0}' already exists.  Skipping add.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id == {}:
         if check_mode is True:
@@ -45,42 +46,48 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
     """
     Update a specific JavaScript policy information point
 
-    todo: put all the input into a json and do a json_sort and then compare.  add debug logger after each sort.  put [] around warning string
-
     """
 
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
+
+    ret_new_name = search(isamAppliance, name=new_name)
+    new_name_id = ret_new_name['data']
+
+    if name != new_name:
+        if new_name_id != {}:
+            logger.info("New PIP name '{0}' already exists.  Skipping update.".format(new_name))
+            warnings = ["New PIP name '{0}' already exists.  Skipping update.".format(new_name)]
+            return isamAppliance.create_return_object(warnings=warnings)
+
     update_required = False
 
     if id != {}:
-        json_data = get(isamAppliance, name=name)
-
-
-
-        if properties != None:
-            current_props = json_data['data']['properties']
-            json_sort(current_props)
-            json_sort(properties)
-            if current_props != properties:
-                update_required = True
-
-        if attributes != None:
-            current_attrs = json_data['data']['attributes']
-            json_sort(current_attrs)
-            json_sort(attributes)
-            if current_attrs != attributes:
-                update_required = True
-
-        if description != None:
-            current_description = json_data['data']['description']
-            if current_description != description:
-                update_required = True
+        ret_obj = get(isamAppliance, name=name)
 
         if new_name != None:
-            if name != new_name:
-                name = new_name
-                update_required = True
+            json_data = _create_json(name=new_name, properties=properties, attributes=attributes,
+                                     description=description, type=type)
+        else:
+            json_data = _create_json(name=name, properties=properties, attributes=attributes, description=description,
+                                     type=type)
+
+        sorted_json_data = json_sort(json_data)
+
+        logger.debug("Sorted input: {0}".format(sorted_json_data))
+
+        del ret_obj['data']['id']
+        del ret_obj['data']['predefined']
+        sorted_ret_obj = json_sort(ret_obj['data'])
+
+        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+
+        if sorted_json_data != sorted_ret_obj:
+            update_required = True
+    else:
+        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
+        warnings = ["PIP '{0}' does not exists.  Skipping update.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -91,20 +98,14 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
             return isamAppliance.invoke_put(
                 "Update a specific JavaScript policy information point",
                 "{0}/{1}".format(uri, id),
-                _create_json(name=name, description=description, type=type,
-                             attributes=attributes, properties=properties),
+                json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
-    if id == {}:
-        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
-        warning = "PIP '{0}' does not exists.  Skipping update.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
-
-    elif update_required is False:
+    if update_required is False:
         logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
-        warning = "Input is the same as current PIP '{0}'.  Skipping update.".format(name)
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["Input is the same as current PIP '{0}'.  Skipping update.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
 
@@ -131,16 +132,20 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
     """
     Export a specific policy information point
 
-    todo: check if the file exists already or not
-
     """
+
+    if os.path.exists(filepath) is True:
+        logger.info("File '{0}' already exists.  Skipping export.".format(filepath))
+        warnings = ["File '{0}' already exists.  Skipping export.".format(filepath)]
+        return isamAppliance.create_return_object(warnings=warnings)
+
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
 
     if id == {}:
         logger.info("PIP '{0}' does not exists.  Skipping export.".format(name))
-        warning = ["PIP '{0}' does not exists.  Skipping export.".format(name)]
-        return isamAppliance.create_return_object(warnings=warning)
+        warnings = ["PIP '{0}' does not exists.  Skipping export.".format(name)]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id != {}:
         if check_mode is True:
@@ -159,6 +164,12 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
     """
     Import a specific policy information point
     """
+
+    if os.path.exists(filepath) is False:
+        logger.info("File '{0}' does not exists.  Skipping import.".format(filepath))
+        warnings = ["File '{0}' does not exists.  Skipping import.".format(filepath)]
+        return isamAppliance.create_return_object(warnings=warnings)
+
     ret_obj = search(isamAppliance, name)
     id = ret_obj['data']
 
@@ -180,14 +191,15 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
                         update_required = True
                     else:
                         logger.info("File content is the same for PIP '{0}'.  Skipping import.".format(name))
-                        return isamAppliance.create_return_object()
+                        warnings = ["File content is the same for PIP '{0}'.  Skipping import.".format(name)]
+                        return isamAppliance.create_return_object(warnings=warnings)
 
             if found_key is False:
                 update_required = True
         else:
             logger.info("PIP '{0}' does not exists.  Skipping import.".format(name))
-            warning = ["PIP '{0}' does not exists.  Skipping import.".format(name)]
-            return isamAppliance.create_return_object(warnings=warning)
+            warnings = ["PIP '{0}' does not exists.  Skipping import.".format(name)]
+            return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -209,16 +221,3 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
             )
 
     return isamAppliance.create_return_object()
-
-
-def _create_json(name, description, type, attributes, properties):
-    json_data = {
-        "name": name,
-        "description": description,
-        "type": type
-    }
-    if attributes is not None:
-        json_data['attributes'] = attributes
-    if properties is not None:
-        json_data['properties'] = properties
-    return json_data
