@@ -95,7 +95,7 @@ def get_resources(isamAppliance, object='/WebSEAL', check_mode=False, force=Fals
     return ret_obj
 
 
-def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgorithm=None, cache=None,
+def config(isamAppliance, server, resourceUri, policies=[], policyType=None, policyCombiningAlgorithm=None, cache=None,
            check_mode=False, force=False):
     """
     Configure a resource
@@ -111,6 +111,14 @@ def config(isamAppliance, server, resourceUri, policies=[], policyCombiningAlgor
             "server": server,
             "resourceUri": resourceUri
         }
+        if policyType is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, policyType: {1} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call.".format(
+                        isamAppliance.facts["version"], cache))
+            else:
+                json_data['type'] = policyType
+
         json_data['policies'] = _convert_policy_name_to_id(isamAppliance, policies)
         if policyCombiningAlgorithm is not None:
             json_data['policyCombiningAlgorithm'] = policyCombiningAlgorithm
@@ -138,9 +146,9 @@ def update(isamAppliance, server, resourceUri, policyCombiningAlgorithm, cache=N
     ret_obj = get(isamAppliance, server, resourceUri)
 
     if force is True or (
-                    ret_obj['data'] != {} and (
-                            ret_obj['data']['policyCombiningAlgorithm'] != policyCombiningAlgorithm or
-                            ret_obj['data']['cache'] != cache)):
+            ret_obj['data'] != {} and (
+            ret_obj['data']['policyCombiningAlgorithm'] != policyCombiningAlgorithm or
+            ret_obj['data']['cache'] != cache)):
         json_data = {
             "policyCombiningAlgorithm": policyCombiningAlgorithm
         }
@@ -229,7 +237,7 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     ret_obj = get(isamAppliance, server, resourceUri)
 
     if force is True or (ret_obj['data'] != {} and (
-                    ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
+            ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
