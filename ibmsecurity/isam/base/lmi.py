@@ -58,7 +58,8 @@ def await_startup(isamAppliance, wait_time=300, check_freq=5, start_time=None, c
         else:
             time.sleep(check_freq)
             sec += check_freq
-            logger.debug("Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec, check_freq))
+            logger.debug(
+                "Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec, check_freq))
 
         if sec >= wait_time:
             warnings.append("The LMI restart not detected or completed, exiting... after {0} seconds".format(sec))
@@ -66,11 +67,12 @@ def await_startup(isamAppliance, wait_time=300, check_freq=5, start_time=None, c
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+
 def restart_and_wait(isamAppliance, wait_time=300, check_freq=5, check_mode=False, force=False):
     ret_obj = get(isamAppliance)
     _start_time = ret_obj['data'][0]['start_time']
 
     restart(isamAppliance, check_mode, force)
 
-    return await_startup(isamAppliance,wait_time=wait_time, check_freq=check_freq, start_time=_start_time, check_mode=False, force=False)
-
+    return await_startup(isamAppliance, wait_time=wait_time, check_freq=check_freq, start_time=_start_time,
+                         check_mode=False, force=False)

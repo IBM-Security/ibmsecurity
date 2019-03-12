@@ -6,9 +6,11 @@ class IBMError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
+
 class IBMFatal(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
+
 
 class IBMResponse(dict):
     def __init__(self, *args, **kwargs):

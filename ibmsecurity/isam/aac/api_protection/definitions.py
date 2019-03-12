@@ -58,7 +58,8 @@ def search(isamAppliance, name, check_mode=False, force=False):
     return return_obj
 
 
-def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+        tcmBehavior="NEVER_PROMPT",
         accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -163,7 +164,8 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def update(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def update(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+           tcmBehavior="NEVER_PROMPT",
            accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
            authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
            maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -314,7 +316,8 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+        tcmBehavior="NEVER_PROMPT",
         accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -327,7 +330,7 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
-        return add(isamAppliance=isamAppliance, name=name, description=description, accessPolicyName=accessPolicyName, 
+        return add(isamAppliance=isamAppliance, name=name, description=description, accessPolicyName=accessPolicyName,
                    grantTypes=grantTypes, tcmBehavior=tcmBehavior,
                    accessTokenLifetime=accessTokenLifetime, accessTokenLength=accessTokenLength,
                    enforceSingleUseAuthorizationGrant=enforceSingleUseAuthorizationGrant,
@@ -341,7 +344,8 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     else:
         # Update request
         logger.info("Definition {0} exists, requesting to update.".format(name))
-        return update(isamAppliance=isamAppliance, name=name, description=description, accessPolicyName=accessPolicyName, 
+        return update(isamAppliance=isamAppliance, name=name, description=description,
+                      accessPolicyName=accessPolicyName,
                       grantTypes=grantTypes, tcmBehavior=tcmBehavior,
                       accessTokenLifetime=accessTokenLifetime, accessTokenLength=accessTokenLength,
                       enforceSingleUseAuthorizationGrant=enforceSingleUseAuthorizationGrant,

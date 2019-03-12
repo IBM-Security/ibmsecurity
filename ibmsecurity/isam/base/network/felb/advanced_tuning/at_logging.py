@@ -12,7 +12,8 @@ def get(isamAppliance):
     """
     Retrieves logging configuration attributes
     """
-    return isamAppliance.invoke_get("Retrieving logging configuration attributes", module_uri, requires_modules=requires_modules,
+    return isamAppliance.invoke_get("Retrieving logging configuration attributes", module_uri,
+                                    requires_modules=requires_modules,
                                     requires_version=requires_versions)
 
 
@@ -32,14 +33,15 @@ def update(isamAppliance, local, remote_address, remote_port, remote_facility, c
     else:
         return isamAppliance.create_return_object()
 
+
 def _check_update(isamAppliance, local, remote_address, remote_port, remote_facility):
     """
     Checks update for idempotency
     """
-    change_required=False
+    change_required = False
     check_obj = get(isamAppliance)
 
-    #checks to see if logging is local or remote, if remote all other data gets set to None
+    # checks to see if logging is local or remote, if remote all other data gets set to None
     if check_obj['data']['local'] is True:
         if check_obj['data']['local'] != local:
             change_required = True
@@ -73,6 +75,7 @@ def _check_update(isamAppliance, local, remote_address, remote_port, remote_faci
 
         else:
             return change_required, json_data
+
 
 def compare(isamAppliance1, isamAppliance2):
     """

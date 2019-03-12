@@ -123,5 +123,3 @@ def update(isamAppliance, name, properties, attributes, description=None, type="
         return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
-
-

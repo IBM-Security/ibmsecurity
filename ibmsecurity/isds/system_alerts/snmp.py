@@ -67,12 +67,12 @@ def update(isdsAppliance, uuid, name, trapAddress, trapCommunity, trapNotificati
     Update a specific snmp object
     """
     if force is True or (
-                    _exists(isdsAppliance, uuid) is True and _check(isdsAppliance, uuid, name, trapAddress,
-                                                                    trapCommunity, trapNotificationType, trapVersion,
-                                                                    trapPort, objType, username, authEnabled, authType,
-                                                                    authPassPhrase, privEnabled, privType,
-                                                                    privPassPhrase, informSnmpEngineID, informTimeout,
-                                                                    comment) is False):
+            _exists(isdsAppliance, uuid) is True and _check(isdsAppliance, uuid, name, trapAddress,
+                                                            trapCommunity, trapNotificationType, trapVersion,
+                                                            trapPort, objType, username, authEnabled, authType,
+                                                            authPassPhrase, privEnabled, privType,
+                                                            privPassPhrase, informSnmpEngineID, informTimeout,
+                                                            comment) is False):
         if check_mode is True:
             return isdsAppliance.create_return_object(changed=True)
         else:

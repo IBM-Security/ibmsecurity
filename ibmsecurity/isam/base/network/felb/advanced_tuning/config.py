@@ -57,8 +57,7 @@ def get(isamAppliance, attribute_name):
     Retrieves attribute
     """
     return isamAppliance.invoke_get("Retrieving an attribute", "{0}/{1}".format(module_uri, attribute_name),
-                        requires_modules=requires_modules, requires_version=requires_version)
-
+                                    requires_modules=requires_modules, requires_version=requires_version)
 
 
 def get_all(isamAppliance):

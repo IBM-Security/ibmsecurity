@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 # URI for this module
 uri = "/iam/access/v8/pips"
 requires_modules = ["mga"]
-requires_version =  None
+requires_version = None
 
 
 def add(isamAppliance, name, properties, attributes, description=None, type="RESTful Web Service",
@@ -40,8 +40,8 @@ def add(isamAppliance, name, properties, attributes, description=None, type="RES
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, properties, attributes, description=None, type="RESTful Web Service", new_name=None, check_mode=False,
-           force=False):
+def update(isamAppliance, name, properties, attributes, description=None, type="RESTful Web Service", new_name=None,
+           check_mode=False, force=False):
     """
     Update a specific RESTful Web Service policy information point
     """
@@ -126,5 +126,3 @@ def set(isamAppliance, name, properties, attributes, description=None, type="RES
         # Update PIP
         return update(isamAppliance, name=name, properties=properties, attributes=attributes, description=description,
                       type=type, new_name=new_name, check_mode=check_mode, force=force)
-
-

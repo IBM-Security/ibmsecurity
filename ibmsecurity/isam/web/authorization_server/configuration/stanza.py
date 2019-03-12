@@ -78,7 +78,7 @@ def compare(isamAppliance1, isamAppliance2, id, id2=None):
     for stanza in ret_obj1['data']:
         entries[stanza] = {}
         stanza_entries = ibmsecurity.isam.web.authorization_server.configuration.entry.get_all(isamAppliance1, id,
-                                                                                        stanza)
+                                                                                               stanza)
         for k, v in stanza_entries['data'].iteritems():
             if k not in ignore_entries:
                 entries[stanza][str(k)] = v
@@ -89,7 +89,7 @@ def compare(isamAppliance1, isamAppliance2, id, id2=None):
     for stanza in ret_obj2['data']:
         entries[stanza] = {}
         stanza_entries = ibmsecurity.isam.web.authorization_server.configuration.entry.get_all(isamAppliance2, id,
-                                                                                        stanza)
+                                                                                               stanza)
         for k, v in stanza_entries['data'].iteritems():
             if k not in ignore_entries:
                 entries[stanza][str(k)] = v

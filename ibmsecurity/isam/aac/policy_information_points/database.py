@@ -40,8 +40,8 @@ def add(isamAppliance, name, properties, attributes, description=None, type="Dat
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, properties, attributes, description=None, type="Database", new_name=None, check_mode=False,
-           force=False):
+def update(isamAppliance, name, properties, attributes, description=None, type="Database", new_name=None,
+           check_mode=False, force=False):
     """
     Update a specific Database policy information point
     """
@@ -123,6 +123,3 @@ def set(isamAppliance, name, properties, attributes, description=None, type="Dat
         # Update PIP
         return update(isamAppliance, name=name, properties=properties, attributes=attributes, description=description,
                       type=type, new_name=new_name, check_mode=check_mode, force=force)
-
-
-

@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 uri = "/snmpd/v1"
 
+
 def get(isdsAppliance, check_mode=False, force=False):
     """
     Get SNMP Monitoring v1/2
@@ -23,12 +24,13 @@ def set_v1v2(isdsAppliance, community, port=161, check_mode=False, force=False):
             return isdsAppliance.invoke_put(
                 "Updating SNMP Monitoring", uri,
                 {
-                    "snmpv1v2c": { "community": community },
+                    "snmpv1v2c": {"community": community},
                     "enabled": True,
                     "port": port
                 })
 
     return isdsAppliance.create_return_object()
+
 
 def _checkv1_2(isdsAppliance, community, port):
     ret_obj = get(isdsAppliance)
@@ -48,24 +50,26 @@ def _checkv1_2(isdsAppliance, community, port):
     return True
 
 
-def set_v3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol, privacyPassword, privacyProtocol, port=161, check_mode=False, force=False):
+def set_v3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol, privacyPassword, privacyProtocol,
+           port=161, check_mode=False, force=False):
     """
     Set SNMP Monitoring v3
     """
-    if force is True or _checkV3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol, privacyPassword, privacyProtocol, port) is False:
+    if force is True or _checkV3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol,
+                                 privacyPassword, privacyProtocol, port) is False:
         if check_mode is True:
             return isdsAppliance.create_return_object(changed=True)
         else:
             return isdsAppliance.invoke_put(
                 "Updating SNMP Monitoring", uri,
                 {
-                    "snmpv3": { "securityLevel": securityLevel,
-                                "securityUser": securityUser,
-                                "authPassword": authPassword,
-                                "authProtocol": authProtocol,
-                                "privacyPassword": privacyPassword,
-                                "privacyProtocol": privacyProtocol
-                },
+                    "snmpv3": {"securityLevel": securityLevel,
+                               "securityUser": securityUser,
+                               "authPassword": authPassword,
+                               "authProtocol": authProtocol,
+                               "privacyPassword": privacyPassword,
+                               "privacyProtocol": privacyProtocol
+                               },
                     "enabled": True,
                     "port": port
                 })
@@ -73,7 +77,8 @@ def set_v3(isdsAppliance, securityLevel, securityUser, authPassword, authProtoco
     return isdsAppliance.create_return_object()
 
 
-def _checkV3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol, privacyPassword, privacyProtocol, port):
+def _checkV3(isdsAppliance, securityLevel, securityUser, authPassword, authProtocol, privacyPassword, privacyProtocol,
+             port):
     ret_obj = get(isdsAppliance)
 
     if ret_obj['data'][0]['enabled'] is False:

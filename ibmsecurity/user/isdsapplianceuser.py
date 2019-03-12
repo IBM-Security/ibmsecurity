@@ -1,10 +1,11 @@
 import logging
 from .user import User
 
-class ISDSApplianceUser(User) :
+
+class ISDSApplianceUser(User):
     super_user = "admin"  # Use name that will work regardless of Management Authentication setting
-    
-    def __init__(self, password, username = None):
+
+    def __init__(self, password, username=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating a user')
 

@@ -21,17 +21,18 @@ def set_v1v2(isamAppliance, community, port=161, check_mode=False, force=False):
     return set(isamAppliance, True, port, snmpv1v2c, None, check_mode, force)
 
 
-def set_v3(isamAppliance, securityLevel, securityUser, authProtocol, authPassword, privacyProtocol, privacyPassword, port=161, check_mode=False, force=False):
+def set_v3(isamAppliance, securityLevel, securityUser, authProtocol, authPassword, privacyProtocol, privacyPassword,
+           port=161, check_mode=False, force=False):
     """
     Set SNMP Monitoring v3
     """
     snmpv3 = {
-	"securityLevel": securityLevel,
-	"securityUser": securityUser,
-	"authProtocol": authProtocol,
-	"authPassword": authPassword,
-	"privacyProtocol": privacyProtocol,
-	"privacyPassword": privacyPassword
+        "securityLevel": securityLevel,
+        "securityUser": securityUser,
+        "authProtocol": authProtocol,
+        "authPassword": authPassword,
+        "privacyProtocol": privacyProtocol,
+        "privacyPassword": privacyPassword
     }
     return set(isamAppliance, True, port, None, snmpv3, check_mode, force)
 

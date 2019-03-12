@@ -51,9 +51,9 @@ def update(isamAppliance, uuid, name, smtpServer, from_email, to_email, smtpPort
     Update a specific email object
     """
     if force is True or (
-                    _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, comment, smtpServer,
-                                                                    smtpPort,
-                                                                    from_email, to_email) is False):
+            _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, comment, smtpServer,
+                                                            smtpPort,
+                                                            from_email, to_email) is False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

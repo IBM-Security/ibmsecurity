@@ -102,7 +102,8 @@ def update(isamAppliance, label, address, new_address, prefixLength, vlanId=None
                         'enabled': enabled
                     }
                     update_needed = not (
-                        ibmsecurity.utilities.tools.json_sort(addr) == ibmsecurity.utilities.tools.json_sort(upd_addr))
+                            ibmsecurity.utilities.tools.json_sort(addr) == ibmsecurity.utilities.tools.json_sort(
+                        upd_addr))
                     if (update_needed is True):
                         ret_obj['ipv6']['addresses'].remove(addr)
                         ret_obj['ipv6']['addresses'].append(upd_addr)
@@ -135,8 +136,9 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
                 'allowManagement': allowManagement
             }
             update_needed = not (
-                ibmsecurity.utilities.tools.json_sort(ret_obj['ipv6']['dhcp']) == ibmsecurity.utilities.tools.json_sort(
-                    upd_dhcp))
+                    ibmsecurity.utilities.tools.json_sort(
+                        ret_obj['ipv6']['dhcp']) == ibmsecurity.utilities.tools.json_sort(
+                upd_dhcp))
             if (update_needed is True):
                 ret_obj['ipv6']['dhcp'] = upd_dhcp
                 # Cannot have DHCP and ip addresses at same time
