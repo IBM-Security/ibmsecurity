@@ -430,8 +430,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
                     jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
                     # Here the list is delimited by space
-                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct['junction_cookie_javascript_block'] is not None:
-                        exist_jct['junction_cookie_javascript_block'] = exist_jct['junction_cookie_javascript_block'].split(' ')
+                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct[
+                        'junction_cookie_javascript_block'] is not None:
+                        exist_jct['junction_cookie_javascript_block'] = exist_jct[
+                            'junction_cookie_javascript_block'].split(' ')
                 if mutual_auth is None:
                     jct_json['mutual_auth'] = 'no'
                 else:

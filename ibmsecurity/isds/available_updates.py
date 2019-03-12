@@ -63,7 +63,7 @@ def _check_file(isdsAppliance, file):
 
         # Split of file by '-' hyphen and '_' under score
         import re
-        fp = re.split('-|_',fn[0])
+        fp = re.split('-|_', fn[0])
         logger.debug("{0}: version: {1} date: {2}".format(fp[2], fp[0], fp[3]))
 
         # Check if firmware level already contains the update to be uploaded or greater, check Active partition

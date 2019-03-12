@@ -49,11 +49,11 @@ def _check(isdsAppliance, comment='', id=None):
             if sups['comment'] == comment:
                 return True
 
-#       if isinstance(ret_obj['data'], list):
-#           # check only latest comment
-#           sup_file = min(ret_obj['data'], key=lambda sup: sup['index'])
-#           if sup_file['comment'] == comment:
-#               return True
+    #       if isinstance(ret_obj['data'], list):
+    #           # check only latest comment
+    #           sup_file = min(ret_obj['data'], key=lambda sup: sup['index'])
+    #           if sup_file['comment'] == comment:
+    #               return True
 
     return False
 

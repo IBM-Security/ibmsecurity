@@ -30,7 +30,6 @@ def set(isamAppliance, check_mode=False, force=False):
 
 
 def _check(isamAppliance):
-
     ret_obj = get(isamAppliance)
 
     rc = False
@@ -40,5 +39,3 @@ def _check(isamAppliance):
         rc = True
 
     return rc
-
-

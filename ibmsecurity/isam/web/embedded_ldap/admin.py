@@ -11,7 +11,7 @@ def set_pw(isamAppliance, password, check_mode=False, force=False):
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_post("Changing the administrator password of the embedded LDAP server",
-                                        "/isam/embedded_ldap/change_pwd/v1",
-                                        {
-                                            "password": password
-                                        })
+                                         "/isam/embedded_ldap/change_pwd/v1",
+                                         {
+                                             "password": password
+                                         })

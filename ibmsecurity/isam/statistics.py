@@ -56,7 +56,8 @@ def get_rp_throughput(isamAppliance, instance, date, duration, check_mode=False,
                                                                                                    duration=duration)))
 
 
-def get_rp_traffic_summary(isamAppliance, instance, date, duration, aspect, summary=True, check_mode=False, force=False):
+def get_rp_traffic_summary(isamAppliance, instance, date, duration, aspect, summary=True, check_mode=False,
+                           force=False):
     """
     Retrieving a summary of traffic by Junction or User-Agent on a Reverse Proxy instance
     """

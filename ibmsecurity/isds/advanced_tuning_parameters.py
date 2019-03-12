@@ -24,8 +24,8 @@ def set(isdsAppliance, key, value, comment="", check_mode=False, force=False):
     if ibmsecurity.utilities.tools.version_compare(isdsAppliance.facts["version"], "8.0.1.9") < 0:
         warnings = []
         warnings.append(
-	    "Appliance at version: {0}, 'Advanced Tuning Parameters' is not supported. Needs 8.0.1.9 or higher. Ignoring 'Advanced Tuning Parameters' for this call.".format(
-	        isdsAppliance.facts["version"]))
+            "Appliance at version: {0}, 'Advanced Tuning Parameters' is not supported. Needs 8.0.1.9 or higher. Ignoring 'Advanced Tuning Parameters' for this call.".format(
+                isdsAppliance.facts["version"]))
         return isdsAppliance.create_return_object(warnings=warnings)
 
     ret_obj = isdsAppliance.create_return_object()
@@ -80,7 +80,8 @@ def _check(isdsAppliance, key, value=None):
         given_value_list = []
         for v in value:
             given_value_list.append(str(v))
-        rc = ibmsecurity.utilities.tools.json_sort(exist_value_list) == ibmsecurity.utilities.tools.json_sort(given_value_list)
+        rc = ibmsecurity.utilities.tools.json_sort(exist_value_list) == ibmsecurity.utilities.tools.json_sort(
+            given_value_list)
         logger.info(
             "Advanced tuning parameter: {0} has existing values: {1}, and given values: {2} - match status: {3}".format(
                 key, exist_value_list, given_value_list, rc))

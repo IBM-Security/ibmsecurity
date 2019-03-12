@@ -143,7 +143,8 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, policies=None, policyCombiningAlgorithm='denyOverrides', description="", predefined=False,
+def update(isamAppliance, name, policies=None, policyCombiningAlgorithm='denyOverrides', description="",
+           predefined=False,
            new_name=None, check_mode=False, force=False):
     """
     Update a specified policy set

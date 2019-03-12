@@ -70,7 +70,8 @@ def _check(isamAppliance, key, value=None):
         given_value_list = []
         for v in value:
             given_value_list.append(str(v))
-        rc = ibmsecurity.utilities.tools.json_sort(exist_value_list) == ibmsecurity.utilities.tools.json_sort(given_value_list)
+        rc = ibmsecurity.utilities.tools.json_sort(exist_value_list) == ibmsecurity.utilities.tools.json_sort(
+            given_value_list)
         logger.info(
             "Advanced tuning parameter: {0} has existing values: {1}, and given values: {2} - match status: {3}".format(
                 key, exist_value_list, given_value_list, rc))

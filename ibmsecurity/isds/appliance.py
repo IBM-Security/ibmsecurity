@@ -35,21 +35,21 @@ def _changes_available(isdsAppliance):
     :param isdsAppliance:
     :return:
     """
-#    changes = isdsAppliance.invoke_get("Get pending changes",
-#                                       "/pending_changes")
-#    logger.debug("Pending changes on appliance are:")
-#    logger.debug(changes['data'])
-#
-#    change_count = isdsAppliance.invoke_get("Get pending changes count",
-#                                            "/pending_changes/count")
-#    logger.debug("Pending change count on appliance is:")
-#    logger.debug(change_count['data'])
-#
-#    if change_count['data']['count'] > 0 or len(changes['data']['changes']) > 0:
-#        logger.info("pending changes found")
-#        return True
-#    else:
-#        return False
+    #    changes = isdsAppliance.invoke_get("Get pending changes",
+    #                                       "/pending_changes")
+    #    logger.debug("Pending changes on appliance are:")
+    #    logger.debug(changes['data'])
+    #
+    #    change_count = isdsAppliance.invoke_get("Get pending changes count",
+    #                                            "/pending_changes/count")
+    #    logger.debug("Pending change count on appliance is:")
+    #    logger.debug(change_count['data'])
+    #
+    #    if change_count['data']['count'] > 0 or len(changes['data']['changes']) > 0:
+    #        logger.info("pending changes found")
+    #        return True
+    #    else:
+    #        return False
 
     return True
 
@@ -96,6 +96,6 @@ def rollback(isdsAppliance, check_mode=False, force=False):
             return isdsAppliance.create_return_object(changed=True)
         else:
             return isdsAppliance.invoke_get("Rollback the changes",
-                                               "/pending_changes/forget")
+                                            "/pending_changes/forget")
 
     return isdsAppliance.create_return_object()

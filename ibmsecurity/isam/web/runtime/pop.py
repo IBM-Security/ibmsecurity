@@ -14,9 +14,9 @@ def get_all(isamAppliance, isamUser, admin_domain='Default'):
                                         "/isam/pdadmin/poplistext/v1", {
                                             "admin_id": isamUser.username,
                                             "admin_pwd": isamUser.password,
-#                                            "pop_name": pop_name,
-                                           # "pop_attribute_name": pop_attribute_name,
-                                           # "pop_attribute_value": pop_attribute_value,
+                                            #                                            "pop_name": pop_name,
+                                            # "pop_attribute_name": pop_attribute_name,
+                                            # "pop_attribute_value": pop_attribute_value,
                                             "admin_domain": admin_domain
                                         })
     ret_obj['changed'] = False

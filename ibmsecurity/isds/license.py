@@ -36,7 +36,7 @@ def install(isdsAppliance, license, check_mode=False, force=False):
     license_key = licence_key_tokens[1].strip()
     logger.debug("License name: " + license_name)
     logger.debug("License key: " + license_key)
-    
+
     if _check_license(isdsAppliance) == True and force == False:
         return isdsAppliance.create_return_object(warnings=["License already installed"])
     else:
@@ -45,10 +45,10 @@ def install(isdsAppliance, license, check_mode=False, force=False):
                 return isdsAppliance.create_return_object(
                     changed=True)  # there is no real change in appliance, so maybe it should be false
             else:
-                return isdsAppliance.invoke_post("Applying license key to appliance",uri,
-                {
-                    "Licensetext": license_key
-                })
+                return isdsAppliance.invoke_post("Applying license key to appliance", uri,
+                                                 {
+                                                     "Licensetext": license_key
+                                                 })
 
 
 def _check_license(isdsAppliance):
@@ -66,9 +66,9 @@ def _check_license(isdsAppliance):
         {"LicenseActivated":"ENTERPRISE"}
     """
 
-    if ret_obj['data'] == {"LicenseActivated":"STANDARD"}:
+    if ret_obj['data'] == {"LicenseActivated": "STANDARD"}:
         return True
-    elif ret_obj['data'] == {"LicenseActivated":"ENTERPRISE"}:
+    elif ret_obj['data'] == {"LicenseActivated": "ENTERPRISE"}:
         return True
     else:
         return False  # no license installed in the appliance

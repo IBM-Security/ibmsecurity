@@ -24,7 +24,8 @@ def execute(isamAppliance, operation="restart", check_mode=False, force=False):
     warnings = []
     # Reload function is new to ISAM v9.0.2.0
     if operation == "reload" and tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
-        warnings.append("Appliance is at version {0}, reload requires atleast v9.0.2.0".format(isamAppliance.facts['version']))
+        warnings.append(
+            "Appliance is at version {0}, reload requires atleast v9.0.2.0".format(isamAppliance.facts['version']))
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or _check(isamAppliance, operation) is True:
@@ -59,5 +60,7 @@ def _check(isamAppliance, operation):
         logger.info("Liberty Runtime process requires reload")
         return True
     else:
-        logger.info("Executing {0} on Liberty Runtime process not required or will not work. Use force if needed.".format(operation))
+        logger.info(
+            "Executing {0} on Liberty Runtime process not required or will not work. Use force if needed.".format(
+                operation))
         return False

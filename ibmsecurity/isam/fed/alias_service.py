@@ -1,5 +1,5 @@
 import logging
-from  ibmsecurity.utilities import tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 

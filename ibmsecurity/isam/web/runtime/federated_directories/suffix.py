@@ -60,11 +60,11 @@ def _check(isamAppliance, directory_name, suffix):
     ret_obj = get(isamAppliance, directory_name)
 
     for suffix_obj in ret_obj['data']:
-        if isinstance(suffix, list):    # Add passes a list
+        if isinstance(suffix, list):  # Add passes a list
             for new_suffix in suffix:
                 if new_suffix['id'] == suffix_obj['id']:
                     return True
-        else:   # Update passes just suffix_name
+        else:  # Update passes just suffix_name
             if suffix_obj['id'] == suffix:
                 return True
 

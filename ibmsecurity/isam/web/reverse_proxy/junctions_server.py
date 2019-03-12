@@ -119,6 +119,6 @@ def delete(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
             return isamAppliance.invoke_delete(
                 "Deleting a standard or virtual junction's server",
                 "{0}/{1}/junctions?junctions_id={2}&servers_id={3}".format(uri, reverseproxy_id, junction_point,
-                                                                            ret_obj['data']))
+                                                                           ret_obj['data']))
 
     return isamAppliance.create_return_object()

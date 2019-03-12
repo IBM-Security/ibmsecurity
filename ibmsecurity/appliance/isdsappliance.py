@@ -331,7 +331,6 @@ class ISDSAppliance(IBMAppliance):
 
         return return_obj
 
-
     def invoke_put(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[]):
         """

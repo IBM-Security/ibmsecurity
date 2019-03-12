@@ -19,7 +19,8 @@ def get(isamAppliance, id, check_mode=False, force=False):
     """
     Get information on single transaction
     """
-    return isamAppliance.invoke_get("Retrieving a transaction", "{0}{1}".format(module_uri, id), requires_version=requires_version,
+    return isamAppliance.invoke_get("Retrieving a transaction", "{0}{1}".format(module_uri, id),
+                                    requires_version=requires_version,
                                     requires_modules=requires_modules)
 
 

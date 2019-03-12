@@ -13,7 +13,8 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve all authorization servers
     """
-    return isamAppliance.invoke_get(description="Retrieving all authorization servers", uri="{0}/{1}".format(uri, version),
+    return isamAppliance.invoke_get(description="Retrieving all authorization servers",
+                                    uri="{0}/{1}".format(uri, version),
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -36,8 +37,10 @@ def _check(isamAppliance, id):
     return False
 
 
-def add(isamAppliance, inst_name, admin_pwd, addresses, hostname='localhost', authport='7136', adminport='7137', domain='Default',
-        admin_id='sec_master', ssl='no', ssl_port=None, keyfile=None, keyfile_label=None, check_mode=False, force=False):
+def add(isamAppliance, inst_name, admin_pwd, addresses, hostname='localhost', authport='7136', adminport='7137',
+        domain='Default',
+        admin_id='sec_master', ssl='no', ssl_port=None, keyfile=None, keyfile_label=None, check_mode=False,
+        force=False):
     """
     Add an authorization server
 
@@ -48,7 +51,8 @@ def add(isamAppliance, inst_name, admin_pwd, addresses, hostname='localhost', au
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post(description="Add an authorization server", uri="{0}/{1}".format(uri, version),
+            return isamAppliance.invoke_post(description="Add an authorization server",
+                                             uri="{0}/{1}".format(uri, version),
                                              data={
                                                  "inst_name": inst_name,
                                                  "hostname": hostname,
@@ -89,9 +93,13 @@ def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', check_mode=False
                                             },
                                             requires_modules=requires_modules, requires_version=requires_version)
 
-    return isamAppliance.create_return_object(warnings="The authorization server instance specified in the request does not exist. Check that the authorization server instance is correct: {0}".format(id))
+    return isamAppliance.create_return_object(
+        warnings="The authorization server instance specified in the request does not exist. Check that the authorization server instance is correct: {0}".format(
+            id))
 
-def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin_pwd=None, check_mode=False, force=False, warnings=[]):
+
+def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin_pwd=None, check_mode=False,
+            force=False, warnings=[]):
     """
     Execute an operation on runtime component
 
@@ -112,8 +120,8 @@ def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin
                     return isamAppliance.create_return_object(changed=True)
                 else:
                     body_json = {
-                                    "operation": operation
-                                }
+                        "operation": operation
+                    }
                     if operation == "renew":
                         if admin_pwd is not None:
                             body_json["admin_id"] = admin_id
@@ -128,9 +136,12 @@ def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin
                                                     requires_version=requires_version, warnings=warnings)
             break
     if _check(isamAppliance, id) is False:
-        return isamAppliance.create_return_object(warnings="The authorization server instance specified in the request does not exist. Check that the authorization server instance is correct: {0}".format(id))
+        return isamAppliance.create_return_object(
+            warnings="The authorization server instance specified in the request does not exist. Check that the authorization server instance is correct: {0}".format(
+                id))
     else:
         return isamAppliance.create_return_object()
+
 
 def compare(isamAppliance1, isamAppliance2):
     """

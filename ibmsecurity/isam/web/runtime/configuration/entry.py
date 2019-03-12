@@ -72,7 +72,7 @@ def _add(isamAppliance, resource_id, stanza_id, entries):
 
 def set(isamAppliance, resource_id, stanza_id, entries, check_mode=False, force=False):
     """
-    Set a configuration entry or entries by stanza - Runtime Environment 
+    Set a configuration entry or entries by stanza - Runtime Environment
 
     Note: entries has to be [['key', 'value1'], ['key', 'value2]], cannot provide [['key', ['value1', 'value2']]]
     get() returns the second format - thus lots of logic to handle this discrepancy.
@@ -222,9 +222,9 @@ def _check(isamAppliance, resource_id, stanza_id, entry_id, value_id):
     update_required = False
     value = ret_obj['data'][entry_id]
     logger.info("Entry found in resource:{0}, stanza:{1}, entryid:{2}, value:{3}".format(resource_id,
-                                                                                   stanza_id,
-                                                                                   entry_id,
-                                                                                   value))
+                                                                                         stanza_id,
+                                                                                         entry_id,
+                                                                                         value))
     logger.debug("Existing Value(s): {0}".format(value))
     logger.debug("Value to update  : {0}".format(value_id))
 
