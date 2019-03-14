@@ -79,9 +79,6 @@ def add(isamAppliance, name, contents=None, check_mode=False, force=False):
 def update(isamAppliance, name, filepath=None, contents=None, check_mode=False, force=False):
     """
     Updating an existing User Mapping CDAS file with new file
-
-    todo: take out line 89 to 92, so it will error out.  take out warning for line 121
-    change filepath to None and check for None.
     """
 
     warnings = []
@@ -249,7 +246,6 @@ def import_file(isamAppliance, filepath, check_mode=False, force=False):
 def rename(isamAppliance, name, new_name, check_mode=False, force=False):
     """
     Renaming a User Mapping CDAS file
-    todo: error out on new_name exists
     """
 
     ret_obj = search(isamAppliance, name=name)
