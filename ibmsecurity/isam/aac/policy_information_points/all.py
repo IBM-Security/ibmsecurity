@@ -56,8 +56,7 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
 
     if id == {}:
         logger.info("PIP '{0}' does not exists, skipping delete.".format(name))
-        warnings = ["PIP '{0}' does not exists, skipping delete.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
+        return isamAppliance.create_return_object()
 
     return isamAppliance.create_return_object()
 
