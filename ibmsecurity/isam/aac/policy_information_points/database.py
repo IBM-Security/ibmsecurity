@@ -39,8 +39,7 @@ def add(isamAppliance, name, properties, attributes, description=None, type="Dat
 
 
 def update(isamAppliance, name, properties, attributes, description=None, type="Database", new_name=None,
-           check_mode=False,
-           force=False):
+           check_mode=False,force=False):
     """
     Update a specific Database policy information point
     """

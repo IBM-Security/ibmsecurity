@@ -39,8 +39,7 @@ def add(isamAppliance, name, properties, attributes, description=None, type="RES
 
 
 def update(isamAppliance, name, properties, attributes, description=None, type="RESTful Web Service", new_name=None,
-           check_mode=False,
-           force=False):
+           check_mode=False, force=False):
     """
     Update a specific RESTful Web Service policy information point
     """
