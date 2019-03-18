@@ -21,8 +21,6 @@ def add(isamAppliance, name, properties, attributes=None, description=None, type
 
     if id != {}:
         logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
-        warnings = ["PIP '{0}' already exists.  Skipping add.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id == {}:
         if check_mode is True:
@@ -47,15 +45,6 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
     """
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
-
-    ret_new_name = search(isamAppliance, name=new_name)
-    new_name_id = ret_new_name['data']
-
-    if name != new_name:
-        if new_name_id != {}:
-            logger.info("New PIP name '{0}' already exists.  Skipping update.".format(new_name))
-            warnings = ["New PIP name '{0}' already exists.  Skipping update.".format(new_name)]
-            return isamAppliance.create_return_object(warnings=warnings)
 
     update_required = False
 
@@ -101,8 +90,6 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
 
     if update_required is False:
         logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
-        warnings = ["Input is the same as current PIP '{0}'.  Skipping update.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
 
