@@ -22,8 +22,6 @@ def add(isamAppliance, name, properties, attributes=None, description=None, type
 
     if id != {}:
         logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
-        warnings = ["PIP '{0}' already exists.  Skipping add.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id == {}:
         if check_mode is True:
@@ -50,15 +48,6 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
 
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
-
-    ret_new_name = search(isamAppliance, name=new_name)
-    new_name_id = ret_new_name['data']
-
-    if name != new_name:
-        if new_name_id != {}:
-            logger.info("New PIP name '{0}' already exists.  Skipping update.".format(new_name))
-            warnings = ["New PIP name '{0}' already exists.  Skipping update.".format(new_name)]
-            return isamAppliance.create_return_object(warnings=warnings)
 
     update_required = False
 
@@ -104,8 +93,6 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
 
     if update_required is False:
         logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
-        warnings = ["Input is the same as current PIP '{0}'.  Skipping update.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
 
     return isamAppliance.create_return_object()
 
@@ -144,8 +131,6 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
 
     if id == {}:
         logger.info("PIP '{0}' does not exists.  Skipping export.".format(name))
-        warnings = ["PIP '{0}' does not exists.  Skipping export.".format(name)]
-        return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or id != {}:
         if check_mode is True:
@@ -163,12 +148,8 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
 def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
     """
     Import a specific policy information point
-    """
 
-    if os.path.exists(filepath) is False:
-        logger.info("File '{0}' does not exists.  Skipping import.".format(filepath))
-        warnings = ["File '{0}' does not exists.  Skipping import.".format(filepath)]
-        return isamAppliance.create_return_object(warnings=warnings)
+    """
 
     ret_obj = search(isamAppliance, name)
     id = ret_obj['data']
@@ -191,8 +172,6 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
                         update_required = True
                     else:
                         logger.info("File content is the same for PIP '{0}'.  Skipping import.".format(name))
-                        warnings = ["File content is the same for PIP '{0}'.  Skipping import.".format(name)]
-                        return isamAppliance.create_return_object(warnings=warnings)
 
             if found_key is False:
                 update_required = True
