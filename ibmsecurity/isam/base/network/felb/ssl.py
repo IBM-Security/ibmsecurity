@@ -74,6 +74,8 @@ def _check_disable(isamAppliance):
         return False
 
 
+
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare cluster configuration between two appliances

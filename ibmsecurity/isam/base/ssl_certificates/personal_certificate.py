@@ -187,7 +187,7 @@ def _check_default(isamAppliance, kdb_id, cert_id, default):
     for certdb in ret_obj['data']:
         if certdb['id'] == cert_id:
             if (certdb['default'].lower() == 'true' and default.lower() == 'no') or (
-                    certdb['default'].lower() == 'false' and default.lower() == 'yes'):
+                            certdb['default'].lower() == 'false' and default.lower() == 'yes'):
                 return True
 
     return False

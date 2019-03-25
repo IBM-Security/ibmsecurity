@@ -15,7 +15,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
 
     :param isamAppliance:
     :param instance_id:
-    :param junction:
+	:param junction:
     :param hostname:
     :param port:
     :param username:

@@ -94,6 +94,7 @@ def set(isamAppliance, error_page, content=None, check_mode=False, force=False):
     return update(isamAppliance, error_page, content, check_mode, force)
 
 
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare error pages between two appliances

@@ -57,7 +57,6 @@ def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvd
                                      requires_modules=requires_modules, requires_version=requires_version,
                                      warnings=warnings)
 
-
 def _check(isamAppliance, service_json):
     """
     Check if provided json values match the configuration on appliance
@@ -74,7 +73,7 @@ def _check(isamAppliance, service_json):
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(
-                        ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
+                                ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
                     return False
