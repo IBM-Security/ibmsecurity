@@ -73,7 +73,6 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
     return return_obj
 
-
 def search(isamAppliance, name, check_mode=False, force=False):
     """
     Search kerberos domain to realm mapping by name

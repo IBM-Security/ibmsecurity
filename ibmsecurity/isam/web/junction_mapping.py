@@ -18,7 +18,6 @@ def get(isamAppliance, id, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieve a Junction Mapping",
                                     "/wga/jmt_config/{0}".format(id))
 
-
 def _get_template(isamAppliance):
     """
     Retrieve a Junction Mapping Template
@@ -89,18 +88,9 @@ def update(isamAppliance, id, jmt_config_data, check_mode=False, force=False):
     """
     Update a Junction Mapping
     """
-    warnings = []
-    update_required = False
-    ret_obj_content = get(isamAppliance, id)
-    if ret_obj_content['data'] == {}:
-        warnings.append("Junction Mapping {} not found. Skipping update.".format(id))
-    # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
-    elif (ret_obj_content['data']['contents']).strip() != (jmt_config_data).strip():
-        update_required = True
-
-    if force is True or update_required is True:
+    if force is True or _check(isamAppliance, id) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
                 "Update a Junction Mapping",
@@ -108,9 +98,9 @@ def update(isamAppliance, id, jmt_config_data, check_mode=False, force=False):
                 {
                     'id': id,
                     'jmt_config_data': jmt_config_data
-                }, warnings=warnings)
+                })
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
 def export_file(isamAppliance, id, filename, check_mode=False, force=False):

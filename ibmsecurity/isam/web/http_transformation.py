@@ -79,18 +79,9 @@ def update(isamAppliance, id, content, check_mode=False, force=False):
     """
     Update a HTTP Transformation
     """
-    warnings = []
-    update_required = False
-    ret_obj_content = get(isamAppliance, id)
-    if ret_obj_content['data'] == {}:
-        warnings.append("HTTP Transformation {} not found. Skipping update.".format(id))
-    # Having to strip whitespace to get a good comparison (suspect carriage returns added after save happens)
-    elif (ret_obj_content['data']['contents']).strip() != (content).strip():
-        update_required = True
-
-    if force is True or update_required is True:
+    if force is True or _check(isamAppliance, id) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
                 "Update a HTTP Transformation",
@@ -98,9 +89,9 @@ def update(isamAppliance, id, content, check_mode=False, force=False):
                 {
                     'id': id,
                     'content': content
-                }, warnings=warnings)
+                })
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
 def export_file(isamAppliance, id, filename, check_mode=False, force=False):

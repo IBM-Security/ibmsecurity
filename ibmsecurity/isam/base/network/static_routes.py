@@ -137,8 +137,7 @@ def _get_uuid(isamAppliance, address, interfaceUUID):
     ret_obj = get_all(isamAppliance)
     for sr in ret_obj['data']['staticRoutes']:
         logger.debug("Scanning {0}/{1} in Static Routes: {2}".format(address, interfaceUUID, sr))
-        if sr['address'] == address and (
-                sr['interfaceUUID'] == interfaceUUID or (sr['interfaceUUID'] == '' and interfaceUUID is None)):
+        if sr['address'] == address and (sr['interfaceUUID'] == interfaceUUID or (sr['interfaceUUID'] == '' and interfaceUUID is None)):
             return sr['uuid']
 
     return None

@@ -48,8 +48,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
     return return_obj
 
 
-def set(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher,
-        storageDomain,
+def set(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain,
         new_name=False, check_mode=False, force=False):
     """
     Creating or Modifying a Attribute
@@ -58,18 +57,15 @@ def set(isamAppliance, name, description, attributeURI, type, category, datatype
 
     if ret_obj['data'] == {}:
         logger.info('Adding "{1}" as a new {0}'.format(artifact_type, name))
-        return add(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer,
-                   matcher, storageDomain,
-                   check_mode, True)
+        return add(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain,
+                    check_mode, True)
     else:
         logger.info('Update for {0} "{1}"'.format(artifact_type, name))
-        return update(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer,
-                      matcher, storageDomain,
+        return update(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain,
                       new_name, check_mode, force)
 
 
-def add(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher,
-        storageDomain,
+def add(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain, 
         check_mode=False, force=False):
     """
     Create a new Attribute
@@ -98,16 +94,14 @@ def add(isamAppliance, name, description, attributeURI, type, category, datatype
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher,
-           storageDomain,
+def update(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain,
            new_name=False, check_mode=False, force=False):
     """
     Update a specified Attribute
 
     """
-    artifact_id, update_required, json_data = _check(isamAppliance, name, description, attributeURI,
-                                                     type, category, datatype, predefined, issuer, matcher,
-                                                     storageDomain, new_name)
+    artifact_id, update_required, json_data = _check(isamAppliance, name, description, attributeURI, 
+                                                    type, category, datatype, predefined, issuer, matcher, storageDomain, new_name)
     if artifact_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
         raise IBMError("999", "Cannot update data for unknown attribute: {0}".format(name))
@@ -123,8 +117,7 @@ def update(isamAppliance, name, description, attributeURI, type, category, datat
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher,
-           storageDomain,
+def _check(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer, matcher, storageDomain,
            new_name=False):
     """
     Check and return True if update needed

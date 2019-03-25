@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/clients"
-requires_modules = ["mga", "federation"]
+requires_modules = ["mga"]
 requires_version = None
 
 
@@ -76,7 +76,7 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
 
 def add(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, 
         check_mode=False, force=False):
     """
     Create an API protection definition
@@ -188,7 +188,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 def update(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
            contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, 
            check_mode=False, force=False, new_name=None):
     """
     Update a specified mapping rule
@@ -327,7 +327,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
 def set(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, 
         check_mode=False, force=False):
     """
     Creating or Modifying an API Protection Definition
@@ -338,7 +338,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
         return add(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                    contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
                    clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
-                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties,
+                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties, 
                    check_mode=check_mode, force=True)
     else:
         # Update request

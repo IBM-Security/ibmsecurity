@@ -7,62 +7,26 @@ import shutil
 logger = logging.getLogger(__name__)
 
 
-def get_all(isamAppliance, check_mode=False, force=False, ignore_error=False):
+def get(isamAppliance, path, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files?recursive=yes", ignore_error=ignore_error)
+                                    "/mga/template_files/{0}".format(path))
 
 
-def get(isamAppliance, id, check_mode=False, force=False, ignore_error=False):
-    """
-    Retrieving the current runtime template files directory contents
-    """
-    return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files/{0}".format(id), ignore_error=ignore_error)
+def _check(isamAppliance, path, name):
+    ret_obj = get(isamAppliance, path)
 
-
-def _check(isamAppliance, id):
-    ret_obj = get_all(isamAppliance, ignore_error=True)
-
-    if (ret_obj['rc'] != 404 or ret_obj['rc'] != 400):
-        return _parse_id(ret_obj['data'], id)
-    else:
-        return None
-
-
-def _parse_id(contents, file_name):
-    """
-    Recursively parse and find the id for a given file name
-
-    :param contents:
-    :param file_name:
-    :return id:
-    """
-    try:
-        split_file = file_name.split('/', 1)
-        cur_file = split_file[0]
-        rest_file = split_file[1]
-    except:
-        rest_file = ''
-    for file in contents:
-        if file['name'] == cur_file:
-            if rest_file == '':
-                if file['type'] == 'File':
-                    return file['id']
-                else:
-                    return None
-            else:
-                if len(file['children']) == 0:
-                    return None
-                else:
-                    return _parse_id(file['children'], rest_file)
-
+    for obj in ret_obj['data']['contents']:
+        if obj['name'] == name and obj['type'] == 'File':
+            logger.info("File .{0}".format(obj['name']))
+            return True    
+   
     return None
 
 
-def create(isamAppliance, path, name, contents="", check_mode=False, force=False):
+def create(isamAppliance, path, name, contents=None, check_mode=False, force=False):
     """
     Creating a file in the runtime template files directory
 
@@ -75,13 +39,12 @@ def create(isamAppliance, path, name, contents="", check_mode=False, force=False
     :return:
     """
     warnings = []
-    id = path + "/" + name
-    check_file = _check(isamAppliance, id)
+    check_file = _check(isamAppliance, path, name)
     if check_file != None:
-        warnings.append("File {0} exists in path {1}. Ignoring create.".format(name, path))
+        warnings.append("File {0} exists in path {1}. Ignoring create.".format(name,path))
 
     if force is True or check_file == None:
-        if check_mode is True:
+        if check_mode is True:          
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
@@ -95,7 +58,7 @@ def create(isamAppliance, path, name, contents="", check_mode=False, force=False
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def update(isamAppliance, id, contents=None, check_mode=False, force=False):
+def update(isamAppliance, path, name, contents=None, check_mode=False, force=False):
     """
     Update a file in the runtime template files directory
     :param isamAppliance:
@@ -107,19 +70,19 @@ def update(isamAppliance, id, contents=None, check_mode=False, force=False):
     :return:
     """
     warnings = []
-    check_file = _check(isamAppliance, id)
+    check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists. Ignoring update.".format(id))
+        warnings.append("File {0} does not exists in path {1}. Ignoring update.".format(name,path))
         return isamAppliance.create_return_object(warnings=warnings)
-
-    if force is True or check_file != None:
+    
+    if force is True or check_file is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             if contents is not None:
-                return isamAppliance.invoke_put(
+                return isamAppliance.invoke_put_files(
                     "Update a file in the runtime template files directory",
-                    "/mga/template_files/{0}".format(id),
+                    "/mga/template_files/{0}/{1}".format(path, name),
                     {
                         'contents': contents,
                         'type': 'file'
@@ -129,7 +92,7 @@ def update(isamAppliance, id, contents=None, check_mode=False, force=False):
                 return isamAppliance.create_return_object(warnings=warnings)
 
 
-def delete(isamAppliance, id, check_mode=False, force=False):
+def delete(isamAppliance, path, name, check_mode=False, force=False):
     """
     Deleting a file in the runtime template files directory
 
@@ -141,23 +104,23 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     :return:
     """
     warnings = []
-    check_file = _check(isamAppliance, id)
+    check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists. Ignoring delete.".format(id))
+        warnings.append("File {0} does not exists in path {1}. Ignoring delete.".format(name,path))
         return isamAppliance.create_return_object(warnings=warnings)
-
+  
     if force is True or check_file != None:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a file in the runtime template files directory",
-                "/mga/template_files/{0}".format(id))
+                "/mga/template_files/{0}/{1}".format(path, name))
 
     return isamAppliance.create_return_object()
 
 
-def rename(isamAppliance, id, new_name, check_mode=False, force=False):
+def rename(isamAppliance, path, name, new_name, check_mode=False, force=False):
     """
     Deleting a file in the runtime template files directory
 
@@ -170,38 +133,27 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
     :return:
     """
     warnings = []
+    check_file = _check(isamAppliance, path, name)
+    if check_file == None:
+        warnings.append("File {0} does not exists in path {1}. Ignoring rename.".format(name,path))
+        return isamAppliance.create_return_object(warnings=warnings)
 
-    try:
-        split_dir = id.split('/')
-        path = split_dir[:-1]
-        new_path = '/'.join([str(x) for x in path]) + "/" + new_name
-
-    except:
-        logger.info("New path can't be build from id: {0} and new_name: {1}.".format(id, new_name))
-
-    if force is False:
-        new_file_id = _check(isamAppliance, new_path)
-        file_id = _check(isamAppliance, id)
-
-    if new_file_id != None:
-        warnings.append("File {0} does already exist. Ignoring renameing.".format(new_path))
-
-    if force is True or (file_id != None and new_file_id == None):
+    if force is True or check_file != None:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
                 "Renaming a file in the runtime template files directory",
-                "/mga/template_files/{0}".format(id),
+                "/mga/template_files/{0}/{1}".format(path, name),
                 {
                     'new_name': new_name,
                     'type': 'file'
                 })
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
-def export_file(isamAppliance, id, filename, check_mode=False, force=False):
+def export_file(isamAppliance, path, name, filename, check_mode=False, force=False):
     """
     Exporting a file from the runtime template files directory
 
@@ -213,21 +165,22 @@ def export_file(isamAppliance, id, filename, check_mode=False, force=False):
     :return:
     """
     warnings = []
-    check_file = _check(isamAppliance, id)
+    check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists. Ignoring export.".format(id))
+        warnings.append("File {0} does not exists in path {1}. Ignoring export.".format(name,path))
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or check_file != None:
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting a file from the runtime template files directory",
-                "/mga/template_files/{0}?type=File&export=true".format(id), filename)
+                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename)
 
     return isamAppliance.create_return_object()
 
 
-def _check_import(isamAppliance, id, filename, check_mode=False):
+
+def _check_import(isamAppliance, path, name, filename, check_mode=False):
     """
     Checks if file on the Appliance (name) exists and if so, whether it is different from filename
     :param isamAppliance:
@@ -237,9 +190,9 @@ def _check_import(isamAppliance, id, filename, check_mode=False):
     :return:
     """
     tmpdir = get_random_temp_dir()
-    tmp_original_file = os.path.join(tmpdir, os.path.basename(id))
-    if _check(isamAppliance, id):
-        export_file(isamAppliance, id, tmp_original_file, check_mode=False, force=True)
+    tmp_original_file = os.path.join(tmpdir, os.path.basename(name))
+    if _check(isamAppliance, path, name):
+        export_file(isamAppliance, path, name, tmp_original_file, check_mode=False, force=True)
         logger.debug("file already exists on appliance")
         if files_same(tmp_original_file, filename):
             logger.debug("files are the same, so we don't want to do anything")
@@ -247,7 +200,7 @@ def _check_import(isamAppliance, id, filename, check_mode=False):
             return False
         else:
             logger.debug("files are different, so we delete existing file in preparation for import")
-            delete(isamAppliance, id, check_mode=check_mode, force=True)
+            delete(isamAppliance, path, name, check_mode=check_mode, force=True)
             shutil.rmtree(tmpdir)
             return True
     else:
@@ -256,22 +209,22 @@ def _check_import(isamAppliance, id, filename, check_mode=False):
         return True
 
 
-def import_file(isamAppliance, id, filename, check_mode=False, force=False):
+def import_file(isamAppliance, path, name, filename, check_mode=False, force=False):
     """
     Importing a file in the runtime template files directory.
     """
     warnings = []
-    check_file = _check(isamAppliance, id)
+    check_file = _check(isamAppliance, path, name)
     if check_file != None and force == False:
-        warnings.append("File {0} exist.".format(id))
+        warnings.append("File {0} exists in path {1}.".format(name,path))
 
-    if force is True or _check_import(isamAppliance, id, filename, check_mode=check_mode):
+    if force is True or _check_import(isamAppliance, path, name, filename, check_mode=check_mode):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
                 "Importing a file in the runtime template files directory",
-                "/mga/template_files/{0}".format(id),
+                "/mga/template_files/{0}/{1}".format(path, name),
                 [
                     {
                         'file_formfield': 'file',
@@ -287,8 +240,8 @@ def import_file(isamAppliance, id, filename, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def compare(isamAppliance1, isamAppliance2):
-    ret_obj1 = get_all(isamAppliance1)
-    ret_obj2 = get_all(isamAppliance2)
+def compare(isamAppliance1, isamAppliance2, instance_id):
+    ret_obj1 = get_all(isamAppliance1, instance_id)
+    ret_obj2 = get_all(isamAppliance2, instance_id)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

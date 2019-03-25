@@ -26,9 +26,9 @@ def get(isamAppliance, file_path, length=None, start=None, check_mode=False, for
     """
     return isamAppliance.invoke_get("Retrieving the contents of a file from the application log files area",
                                     "{0}/{1}{2}".format(uri, file_path,
-                                                        tools.create_query_string(
-                                                            length=length,
-                                                            start=start)))
+                                                         tools.create_query_string(
+                                                             length=length,
+                                                             start=start)))
 
 
 def clear(isamAppliance, file_id, check_mode=False, force=False):

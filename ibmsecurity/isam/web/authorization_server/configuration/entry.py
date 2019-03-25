@@ -12,11 +12,10 @@ def get_all(isamAppliance, id, stanza_id, check_mode=False, force=False):
     Retrieving all configuration entries for a stanza - Authorization Server
     """
     try:
-        return isamAppliance.invoke_get(
-            description="Retrieving all configuration entries for a stanza - Authorization Server",
-            uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri,
-                                                             id,
-                                                             stanza_id))
+        return isamAppliance.invoke_get(description="Retrieving all configuration entries for a stanza - Authorization Server",
+                                        uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri,
+                                                                                  id,
+                                                                                  stanza_id))
     except:
         # Return empty array - exception thrown if stanza has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -30,9 +29,9 @@ def get(isamAppliance, id, stanza_id, entry_id, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get(description="Retrieving a specific configuration entry - Authorization Server",
                                     uri="{0}/{1}/configuration/stanza/{2}/entry_name/{3}/v1".format(uri,
-                                                                                                    id,
-                                                                                                    stanza_id,
-                                                                                                    entry_id))
+                                                                                             id,
+                                                                                             stanza_id,
+                                                                                             entry_id))
 
 
 def add(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
@@ -161,7 +160,7 @@ def delete(isamAppliance, id, stanza_id, entry_id, value_id='', check_mode=False
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}/v1".format(uri, id,
-                                                                                          stanza_id, entry_id, value_id)
+                                                                                       stanza_id, entry_id, value_id)
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -212,9 +211,9 @@ def update(isamAppliance, id, stanza_id, entry_name_id, value_id, check_mode=Fal
             return isamAppliance.invoke_put(
                 description="Updating a configuration entry or entries by stanza - Authorization Server",
                 uri="{0}/{1}/configuration/stanza/{2}/entry_name/{3}/v1".format(uri,
-                                                                                id,
-                                                                                stanza_id,
-                                                                                entry_name_id),
+                                                                         id,
+                                                                         stanza_id,
+                                                                         entry_name_id),
                 data={
                     'value': value_id
                 })
@@ -235,9 +234,9 @@ def _check(isamAppliance, id, stanza_id, entry_id, value_id):
         return False, True, None  # Exception means entry / stanza not found
 
     logger.info("Entry found in acld:{0}, stanza:{1}, entryid:{2}, value:{3}".format(id,
-                                                                                     stanza_id,
-                                                                                     entry_id,
-                                                                                     value))
+                                                                                   stanza_id,
+                                                                                   entry_id,
+                                                                                   value))
     logger.debug("Existing Value(s): {0}".format(value))
     logger.debug("Value to update  : {0}".format(value_id))
 

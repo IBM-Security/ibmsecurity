@@ -4,7 +4,6 @@ from ibmsecurity.utilities.tools import json_compare
 
 logger = logging.getLogger(__name__)
 
-
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Get all current host records
@@ -12,14 +11,12 @@ def get_all(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving current host records",
                                     "/isam/host_records")
 
-
 def get(isamAppliance, addr, check_mode=False, force=False):
     """
     Get hostnames for specific addr
     """
     return isamAppliance.invoke_get("Retrieving host records for {0}".format(addr),
                                     "/isam/host_records/{0}/hostnames".format(addr))
-
 
 def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
     """
@@ -62,7 +59,6 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
 
     return ret_obj
 
-
 def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
     """
     Creates a new host record for addr with hostnames
@@ -104,7 +100,6 @@ def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
                 })
     return ret_obj
 
-
 def update(isamAppliance, addr, name, check_mode=False, force=False):
     """
     Update an existing addr with a new hostname
@@ -131,11 +126,10 @@ def update(isamAppliance, addr, name, check_mode=False, force=False):
             return isamAppliance.invoke_post(
                 "Update existing host record",
                 "/isam/host_records/{0}/hostnames".format(addr),
-                {'name': hostnames_remaining[0]}
+                { 'name': hostnames_remaining[0] }
             )
 
     return ret_obj
-
 
 def delete(isamAppliance, addr, name=None, check_mode=False, force=False):
     """

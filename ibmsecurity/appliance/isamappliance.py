@@ -4,7 +4,6 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
-from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 
 
@@ -43,15 +42,7 @@ class ISAMAppliance(IBMAppliance):
         return_obj['rc'] = http_response.status_code
 
         # Examine the response.
-        if (http_response.status_code == 403):
-            self.logger.error("  Request failed: ")
-            self.logger.error("     status code: {0}".format(http_response.status_code))
-            if http_response.text != "":
-                self.logger.error("     text: " + http_response.text)
-            # Unconditionally raise exception to abort execution
-            raise IBMFatal("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
-        elif (
-                http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
+        if (http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
             self.logger.error("  Request failed: ")
             self.logger.error("     status code: {0}".format(http_response.status_code))
             if http_response.text != "":
@@ -433,8 +424,8 @@ class ISAMAppliance(IBMAppliance):
                                             warnings=warnings)
         else:
             response = self._invoke_request(requests.delete, description, uri, ignore_error,
-                                            requires_modules=requires_modules, requires_version=requires_version,
-                                            warnings=warnings)
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        warnings=warnings)
         self._log_response(response)
         return response
 
@@ -530,9 +521,6 @@ class ISAMAppliance(IBMAppliance):
             ret_obj = ibmsecurity.isam.base.setup_complete.get(self)
             if ret_obj['data'].get('configured') is True:
                 self.get_activations()
-        # Be sure to let fatal error unconditionally percolate up the stack
-        except IBMFatal:
-            raise
         # Exceptions like those connection related will be ignored
         except:
             pass
@@ -567,9 +555,6 @@ class ISAMAppliance(IBMAppliance):
                 if 'firmware_label' in ret_obj['data']:
                     self.facts['firmware_label'] = ret_obj['data']['firmware_label']
 
-        # Be sure to let fatal error unconditionally percolate up the stack
-        except IBMFatal:
-            raise
         except IBMError:
             try:
                 ret_obj = ibmsecurity.isam.base.firmware.get(self)

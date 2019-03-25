@@ -26,7 +26,7 @@ def load(isamAppliance, kdb_id, label, server, port, check_mode=False, force=Fal
     """
     Load a certificate from a server
     """
-    if force is True or _check_load(isamAppliance, kdb_id, label, server, port) is False:
+    if force is True or _check(isamAppliance, kdb_id, label) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -41,60 +41,6 @@ def load(isamAppliance, kdb_id, label, server, port, check_mode=False, force=Fal
                 })
 
     return isamAppliance.create_return_object()
-
-
-def _check_expired(notafter_epoch):
-    """
-    Can be used to check for expired certs
-    Returns True if expired, False otherwise
-    """
-    import time
-    epoch_time = int(time.time())
-    cert_epoch = int(notafter_epoch)
-    return cert_epoch < epoch_time
-
-
-def _check_load(isamAppliance, kdb_id, label, server, port):
-    """
-    Checks if certificate to be loaded on the Appliance exists and if so, whether it is different from
-    the one on the remote host.
-
-    If the certificate exists on the Appliance, but has a different label,
-    we return True, so that load() takes no action.
-
-    If the requested label matches an existing label on the appliance,
-    but the certs are different, check to see if cert is expired.  If so, replace cert.
-    If not, do not replace.
-    """
-    import ssl
-    remote_cert_pem = ssl.get_server_certificate((server, port))
-
-    # Look for remote_cert_pem on in the signer certs on the appliance
-    ret_obj = get_all(isamAppliance, kdb_id)
-    for cert_data in ret_obj['data']:
-        cert_id = cert_data['id']
-        cert_pem = get(isamAppliance, kdb_id, cert_id)['data']['contents']
-        if cert_id == label:  # label exists on appliance already
-            if cert_pem == remote_cert_pem:  # certificate data is the same
-                logger.debug("The certificate already exits on the appliance with the same label name.")
-                return True  # both the labels and certificates match
-            else:
-                # Labels match, but the certs are different, so we need to update it.
-                # However, you cannot load a cert with the same label name onto the appliance, since you get
-                #   CTGSK2021W A duplicate certificate already exists in the database.
-                # We delete the cert from the appliance and return False to the load() function,
-                # so that we can load the new one
-                ret_obj = delete(isamAppliance, kdb_id, cert_id)
-                logger.debug("Labels match, but the certs are different, so we need to update it.")
-                return False
-        else:
-            if cert_pem == remote_cert_pem:  # cert on the appliance, but with a different name
-                logger.info(
-                    "The certifcate is already on the appliance, but it has a different label name. "
-                    "The existing label name is {label} and requested label name is {cert_id}".format(
-                        label=label, cert_id=cert_id))
-                return True
-    return False
 
 
 def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
