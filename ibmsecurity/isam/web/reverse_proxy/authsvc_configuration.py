@@ -6,12 +6,11 @@ logger = logging.getLogger(__name__)
 requires_modules = ["wga"]
 requires_version = "9.0.4.0"
 
-
 def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username='easuser', password='passw0rd',
-           junction="/mga", reuse_certs=False, reuse_acls=False, 
+           junction="/mga", reuse_certs=False, reuse_acls=False,
            check_mode=False, force=False):
     """
-    Oauth and Oidc configuration for a reverse proxy instance
+    Authentication and Context Based configuration for a reverse proxy instance
 
     :param isamAppliance:
     :param instance_id:
@@ -22,9 +21,6 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     :param password:
     :param reuse_certs:
     :param reuse_acls:
-    :param api:
-    :param browser:
-    :param auth_register:
     :param check_mode:
     :param force:
     :return:
@@ -38,24 +34,15 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
             "port": port,
             "username": username,
             "password": password,
-            "api": api,
-            "browser": browser,
             "reuse_certs": reuse_certs,
             "reuse_acls": reuse_acls
         }
-        if auth_register is not None:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, auth_register: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring auth_register for this call.".format(
-                        isamAppliance.facts["version"], auth_register))
-            else:
-                json_data["auth_register"] = auth_register
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
-                "OAuth configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/oauth_config".format(instance_id), json_data, warnings=warnings,
+                "Context Based and authentication configuration for a reverse proxy instance",
+                "/wga/reverseproxy/{0}/authsvc_config".format(instance_id), json_data, warnings=warnings,
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -76,5 +63,4 @@ def _check_config(isamAppliance, instance_id, junction):
         if j['id'] == junction:
             logger.info("Junction {} was found - hence oauth config must have already executed.".format(junction))
             return True
-
     return False
