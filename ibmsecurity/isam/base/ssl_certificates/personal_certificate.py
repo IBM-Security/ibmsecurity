@@ -20,7 +20,7 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
                                     "/isam/ssl_certificates/{0}/personal_cert/{1}".format(kdb_id, cert_id))
 
 
-def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='1024', check_mode=False, force=False):
+def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='1024', signature_algorithm='', check_mode=False, force=False):
     """
     Generating a self-signed personal certificate in a certificate database
     """
@@ -37,7 +37,8 @@ def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size=
                     "dn": dn,
                     "expire": expire,
                     'default': default,
-                    'size': size
+                    'size': size,
+                    'signature_algorithm': signature_algorithm
                 })
 
     return isamAppliance.create_return_object()
