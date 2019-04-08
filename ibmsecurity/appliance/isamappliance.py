@@ -15,7 +15,8 @@ class ISAMAppliance(IBMAppliance):
             self.lmi_port = int(lmi_port)
         else:
             self.lmi_port = lmi_port
-
+        self.session = requests.session()
+        self.session.auth = (user.username, user.password)
         IBMAppliance.__init__(self, hostname, user)
 
     def _url(self, uri):
@@ -159,8 +160,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
-                              files=files, verify=False, headers=headers)
+            r = self.session.post(url=self._url(uri=uri), data=data, files=files, verify=False, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -203,8 +203,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = requests.put(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
-                             files=files, verify=False, headers=headers)
+            r = self.session.put(url=self._url(uri=uri), data=data, files=files, verify=False, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -244,8 +243,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = requests.get(url=self._url(uri=uri), auth=(self.user.username, self.user.password), verify=False,
-                             stream=True, headers=headers)
+            r = self.session.get(url=self._url(uri=uri), verify=False, stream=True, headers=headers)
 
             if (r.status_code != 200 and r.status_code != 204 and r.status_code != 201):
                 self.logger.error("  Request failed: ")
@@ -308,20 +306,17 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            if func == requests.get or func == requests.delete:
+            if func == self.session.get or func == self.session.delete:
 
                 if data != {}:
-                    r = func(url=self._url(uri), data=json_data, auth=(self.user.username, self.user.password),
-                             verify=False, headers=headers)
+                    r = func(url=self._url(uri), data=json_data, verify=False, headers=headers)
                 else:
-                    r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
-                             verify=False, headers=headers)
+                    r = func(url=self._url(uri), verify=False, headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
-                         auth=(self.user.username, self.user.password),
                          verify=False, headers=headers)
 
-            if func != requests.get:
+            if func != self.session.get:
                 return_obj['changed'] = True  # Anything but GET should result in change
 
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
@@ -338,7 +333,7 @@ class ISAMAppliance(IBMAppliance):
         """
 
         self._log_request("PUT", uri, description)
-        response = self._invoke_request(requests.put, description, uri,
+        response = self._invoke_request(self.session.put, description, uri,
                                         ignore_error, data,
                                         requires_modules=requires_modules, requires_version=requires_version,
                                         warnings=warnings)
@@ -351,7 +346,7 @@ class ISAMAppliance(IBMAppliance):
         """
 
         self._log_request("POST", uri, description)
-        response = self._invoke_request(requests.post, description, uri,
+        response = self._invoke_request(self.session.post, description, uri,
                                         ignore_error, data,
                                         requires_modules=requires_modules, requires_version=requires_version,
                                         warnings=warnings)
@@ -384,8 +379,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
-                              verify=False, headers=headers)
+            r = self.session.post(url=self._url(uri=uri), data=data, verify=False, headers=headers)
             return_obj['changed'] = False  # POST of snapshot id would not be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -405,7 +399,8 @@ class ISAMAppliance(IBMAppliance):
         Send a GET request to the LMI.
         """
         self._log_request("GET", uri, description)
-        response = self._invoke_request(requests.get, description, uri,
+
+        response = self._invoke_request(self.session.get, description, uri,
                                         ignore_error, requires_modules=requires_modules,
                                         requires_version=requires_version, warnings=warnings)
         self._log_response(response)
@@ -419,13 +414,13 @@ class ISAMAppliance(IBMAppliance):
         self._log_request("DELETE", uri, description)
         if data != {}:
             self.logger.info("Input Data:{0}".format(data))
-            response = self._invoke_request(requests.delete, description, uri, ignore_error, data=data,
+            response = self._invoke_request(self.session.delete, description, uri, ignore_error, data=data,
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             warnings=warnings)
         else:
-            response = self._invoke_request(requests.delete, description, uri, ignore_error,
-                                        requires_modules=requires_modules, requires_version=requires_version,
-                                        warnings=warnings)
+            response = self._invoke_request(self.session.delete, description, uri, ignore_error,
+                                            requires_modules=requires_modules, requires_version=requires_version,
+                                            warnings=warnings)
         self._log_response(response)
         return response
 
@@ -466,8 +461,7 @@ class ISAMAppliance(IBMAppliance):
 
         try:
             streaminargs = False
-            r = requests.request(method, url=self._url(uri), auth=(self.user.username, self.user.password),
-                                 verify=False, **args)
+            r = self.session.request(method, url=self._url(uri), verify=False, **args)
             # check for stream=True
             if "stream" in args and args["stream"] == True:
                 streaminargs = True
