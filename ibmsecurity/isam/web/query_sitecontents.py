@@ -35,8 +35,7 @@ def export_file(isamAppliance, file_id, filename, check_mode=False, force=False)
 
     if os.path.exists(filename) is True:
         logger.info("File '{0}' already exists.  Skipping export.".format(filename))
-        warnings = ["File '{0}' already exists.  Skipping export.".format(filename)]
-        return isamAppliance.create_return_object(warnings=warnings)
+        return isamAppliance.create_return_object()
 
     filefound = False
 

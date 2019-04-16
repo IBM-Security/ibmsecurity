@@ -136,9 +136,8 @@ def export_template(isamAppliance, filename, check_mode=False, force=False):
     import os.path
 
     if os.path.exists(filename) is True:
-        logger.info("File '{0}' already exists.  Skipping export.".format(filename))
-        warnings = ["File '{0}' already exists.  Skipping export.".format(filename)]
-        return isamAppliance.create_return_object(warnings=warnings)
+        logger.info("File '{0}' already exists. Skipping export.".format(filename))
+        return isamAppliance.create_return_object()
 
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)

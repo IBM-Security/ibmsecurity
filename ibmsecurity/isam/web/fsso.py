@@ -1,5 +1,4 @@
 import logging
-import ntpath
 import os.path
 from ibmsecurity.utilities import tools
 
