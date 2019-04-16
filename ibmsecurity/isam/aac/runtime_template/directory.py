@@ -5,12 +5,16 @@ import os.path
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance, path, check_mode=False, force=False):
+def get(isamAppliance, path, recursive=None, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
-    return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
+    if recursive == None:
+        return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
                                     "/mga/template_files/{0}".format(path))
+    else:
+        return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
+                                    "/mga/template_files/{0}/?recursive={1}".format(path, recursive))
 
 
 def _check(isamAppliance, path, name):
