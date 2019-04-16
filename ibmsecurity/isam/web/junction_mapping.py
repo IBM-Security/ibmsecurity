@@ -129,6 +129,28 @@ def export_file(isamAppliance, id, filename, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
+def export_template(isamAppliance, filename, check_mode=False, force=False):
+    """
+    Exporting the JMT configuration file template
+    """
+    import os.path
+
+    if os.path.exists(filename) is True:
+        logger.info("File '{0}' already exists.  Skipping export.".format(filename))
+        warnings = ["File '{0}' already exists.  Skipping export.".format(filename)]
+        return isamAppliance.create_return_object(warnings=warnings)
+
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_get_file(
+            "Exporting the JMT configuration file template",
+            "/isam/wga_templates/jmt_template?export",
+            filename)
+
+    return isamAppliance.create_return_object()
+
+
 def import_file(isamAppliance, id, filename, check_mode=False, force=False):
     """
     Importing a Junction Mapping

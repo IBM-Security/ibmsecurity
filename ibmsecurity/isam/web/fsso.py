@@ -199,9 +199,8 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
 def import_file(isamAppliance, filepath, check_mode=False, force=False):
     """
     Importing a new FSSO configuration file
-    todo: replace ntpath with os.path
     """
-    filename = ntpath.basename(filepath)
+    filename = os.path.basename(filepath)
 
     ret_obj = search(isamAppliance, name=filename)
     id = ret_obj['data']
