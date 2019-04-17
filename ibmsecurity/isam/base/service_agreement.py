@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
+uri = "/setup_service_agreements"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -27,6 +28,21 @@ def set(isamAppliance, check_mode=False, force=False):
                 })
 
     return isamAppliance.create_return_object(changed=False)
+
+
+def get_non_ibm(isamAppliance, offering, check_mode=False, force=False):
+    """
+    Reading non-IBM the software license agreement terms
+    """
+    return isamAppliance.invoke_get("Reading non-IBM the software license agreement terms",
+                                    "{0}/non_ibm_text/{1}".format(uri, offering))
+
+
+def get_terms(isamAppliance, check_mode=False, force=False):
+    """
+    Reading the software license agreement terms
+    """
+    return isamAppliance.invoke_get("Reading the software license agreement terms", "{0}/".format(uri))
 
 
 def _check(isamAppliance):
