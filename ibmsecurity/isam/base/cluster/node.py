@@ -20,6 +20,13 @@ def get_id(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieve the cluster identifier",
                                     "/isam/cluster/id/v2")
 
+def get_list(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving valid cluster identifiers
+    """
+    return isamAppliance.invoke_get("Retrieving valid cluster identifiers",
+                                    "/isam/cluster/id/list/v2")
+
 def get_default_id(isamAppliance, check_mode=False, force=False):
     """
     Retrieve the default cluster identifier of the instance

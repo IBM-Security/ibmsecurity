@@ -46,6 +46,26 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_version=required_version, requires_modules=required_module)
 
 
+def update(isamAppliance, keyfile, check_mode=False, force=False):
+    """
+    Updating SSL configuration
+    """
+    # Call to check function to see if configuration already exist
+    update_required = _check_enable(isamAppliance, keyfile)
+
+    if force is True or update_required is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put("Updating SSL configuration", module_uri,
+                                            {
+                                                'keyfile': keyfile
+
+                                            }, requires_modules=required_module, requires_version=required_version)
+
+    return isamAppliance.create_return_object()
+
+
 def _check_enable(isamAppliance, keyfile=None):
     """
     checks add function for idempotency
@@ -72,8 +92,6 @@ def _check_disable(isamAppliance):
         return True
     else:
         return False
-
-
 
 
 def compare(isamAppliance1, isamAppliance2):

@@ -42,6 +42,23 @@ def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=
     return isamAppliance.create_return_object()
 
 
+def test(isamAppliance, host, server=None, force=False, check_mode=False):
+    """
+    Run DNS Lookup Test
+
+    """
+
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+
+    return isamAppliance.invoke_post("Run DNS Lookup Test",
+                                     "/isam/net/lookup",
+                                     {
+                                         'host': host,
+                                         'server': server
+                                     })
+
+
 def _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, searchDomains, auto=False,
            autoFromInterface=None):
     """
