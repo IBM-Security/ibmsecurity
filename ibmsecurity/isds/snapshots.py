@@ -62,8 +62,6 @@ def apply(isdsAppliance, id, check_mode=False, force=False):
     Apply a snapshot
     """
     uri = "/snapshots/apply/" + id
-    print "APPLY"
-    print uri
     if force is True or _check(isdsAppliance, id=id) is True:
         if check_mode is True:
             return isdsAppliance.create_return_object(changed=True)
