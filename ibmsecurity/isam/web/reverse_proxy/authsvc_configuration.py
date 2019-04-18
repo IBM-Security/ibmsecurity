@@ -42,7 +42,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
         else:
             return isamAppliance.invoke_post(
                 "Context Based and authentication configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/authsvc_config".format(instance_id), json_data, warnings=warnings,
+                "/wga/reverseproxy/{}/authsvc_config".format(instance_id), json_data, warnings=warnings,
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
