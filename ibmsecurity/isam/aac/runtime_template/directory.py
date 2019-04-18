@@ -1,6 +1,5 @@
 import logging
 import ibmsecurity.utilities.tools
-import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -13,12 +12,14 @@ def get_all(isamAppliance, check_mode=False, force=False, ignore_error=False):
                                     "/mga/template_files?recursive=yes", ignore_error=ignore_error)
 
 
-def get(isamAppliance, path, check_mode=False, force=False, ignore_error=False):
+def get(isamAppliance, path, recursive=None, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files/{0}?recursive=yes".format(path), ignore_error=ignore_error)
+                                    "/mga/template_files/{}/{}".format(path,
+                                                                     ibmsecurity.utilities.tools.create_query_string(
+                                                                         recursive=recursive)))
 
 
 def _check(isamAppliance, id):
