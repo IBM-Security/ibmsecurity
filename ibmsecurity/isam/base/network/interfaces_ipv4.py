@@ -6,10 +6,11 @@ logger = logging.getLogger(__name__)
 
 
 def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=False, vlanId=None, allowManagement=False,
-        enabled=True, check_mode=False,
+        enabled=True, check_mode=False, comment='', name='', bondingMode=None, bondedTo=None,
         force=False):
     """
     Adding an IPv4 address to an interface
+    bondingMode, bondedTo, comment and name are not used, but are there to allow using the same structure for interfaces_vlan.py
     """
     add_needed = True
     ret_obj = {}
