@@ -12,6 +12,13 @@ def get(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving the administrator settings", "/admin_cfg")
 
 
+def get_lmi_tracing(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving the LMI trace specification
+    """
+    return isamAppliance.invoke_get("Retrieving the LMI trace specification", "/admin_cfg/lmi_tracing")
+
+
 def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPort=None, check_mode=False, force=False):
     """
     Set password for admin user (super user for appliance)
@@ -70,6 +77,52 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                 "/core/admin_cfg", json_data, warnings=warnings)
 
     return isamAppliance.create_return_object(changed=False, warnings=warnings)
+
+
+def set_lmi_tracing(isamAppliance, specifications, check_mode=False, force=False):
+    """
+    Updating the LMI trace specification
+    """
+
+    current_obj = get_lmi_tracing(isamAppliance)
+    current_specs = current_obj['data']['trace_specification']
+
+    old_specs = current_specs.split(":")
+    new_specs = specifications.split(":")
+
+    old_specs.sort()
+    new_specs.sort()
+
+    if old_specs != new_specs or force is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put(
+                "Updating the LMI trace specification",
+                "/admin_cfg/lmi_tracing", {'trace_specification': specifications})
+
+    return isamAppliance.create_return_object()
+
+
+def delete_lmi_tracing(isamAppliance, check_mode=False, force=False):
+    """
+    Resetting the LMI trace specification
+    """
+
+    current_obj = get_lmi_tracing(isamAppliance)
+    current_specs = current_obj['data']['trace_specification']
+
+    if force is True or current_specs != "*=config=enabled":
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+
+            return isamAppliance.invoke_delete(
+                "Resetting the LMI trace specification",
+                "/admin_cfg/lmi_tracing",
+            )
+
+    return isamAppliance.create_return_object()
 
 
 def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, sessionTimeout, httpPort, httpsPort,
