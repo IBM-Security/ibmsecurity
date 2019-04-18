@@ -1,4 +1,5 @@
 import logging
+import re
 import ibmsecurity.utilities.tools
 import ibmsecurity.isam.base.network.interfaces
 
@@ -76,6 +77,13 @@ def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=N
             enabled = True
         else:
             enabled = False
+    #Bonding - slave
+    if bondedTo is not None:
+        # logic to see if the bondedTo is a uuid or a label .  If it's a label, lookup the uuid
+        if bool(re.search('[0-9]{1}.[0-9]{1}', bondedTo)):
+            # this is a label
+            bondedTo = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, bondedTo)
+            bondedTo = bondedTo['uuid']
     if force is False:
         ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
