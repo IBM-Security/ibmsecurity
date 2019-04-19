@@ -31,7 +31,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 def get_policies(isamAppliance, name, check_mode=False, force=False):
     """
-    Retrieve a specific policy set
+    Retrieve policies in a specific policy set
     """
     ret_obj = search(isamAppliance, name=name, check_mode=check_mode, force=force)
     pol_id = ret_obj['data']
@@ -40,7 +40,7 @@ def get_policies(isamAppliance, name, check_mode=False, force=False):
         logger.info("Policy {0} had no match, skipping retrieval.".format(name))
         return isamAppliance.create_return_object()
     else:
-        return isamAppliance.invoke_get("Retrieve a specific policy set",
+        return isamAppliance.invoke_get("Retrieve policies in a specific policy set",
                                         "{0}/{1}/policies".format(uri, pol_id))
 
 def search(isamAppliance, name, force=False, check_mode=False):
