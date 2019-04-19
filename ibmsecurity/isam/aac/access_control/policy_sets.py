@@ -29,6 +29,19 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.invoke_get("Retrieve a specific policy set",
                                         "{0}/{1}".format(uri, pol_id))
 
+def get_policies(isamAppliance, name, check_mode=False, force=False):
+    """
+    Retrieve a specific policy set
+    """
+    ret_obj = search(isamAppliance, name=name, check_mode=check_mode, force=force)
+    pol_id = ret_obj['data']
+
+    if pol_id == {}:
+        logger.info("Policy {0} had no match, skipping retrieval.".format(name))
+        return isamAppliance.create_return_object()
+    else:
+        return isamAppliance.invoke_get("Retrieve a specific policy set",
+                                        "{0}/{1}/policies".format(uri, pol_id))
 
 def search(isamAppliance, name, force=False, check_mode=False):
     """
