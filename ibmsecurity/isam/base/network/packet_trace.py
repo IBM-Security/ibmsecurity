@@ -1,4 +1,5 @@
 import logging
+import os.path
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,22 @@ def delete(isamAppliance, check_mode=False, force=False):
                 "Executing  delete operation on packet trace", "/isam/packet_tracing/", warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
+
+
+def export_file(isamAppliance, filepath, filename, check_mode=False, force=False):
+    """
+    Exporting the packet tracing PCAP file
+    """
+    if force is True or os.path.exists(filepath) is False:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_get_file(
+                "Exporting the packet tracing PCAP file",
+                "/isam/packet_tracing/pcap/{0}?export".format(filename), filepath
+            )
+
+    return isamAppliance.create_return_object()
 
 
 def _check(isamAppliance, enabled):
