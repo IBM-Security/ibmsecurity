@@ -28,7 +28,7 @@ def install(isdsAppliance, license, check_mode=False, force=False):
     xxx Edition Key:     xyxyxyxyxyxyxyxyxyxyxy
     """
     f = open(license, 'rt')
-    print(f.readline())
+    logger.debug(f.readline())
     licence_key_line = f.readline()
 
     licence_key_tokens = licence_key_line.split(':')
@@ -54,7 +54,7 @@ def install(isdsAppliance, license, check_mode=False, force=False):
 def _check_license(isdsAppliance):
     """
     check if a particular license is installed in the appliance
-    cannot retrieve installed license key value so sole presence 
+    cannot retrieve installed license key value so sole presence
     of license is sufficient
     """
 

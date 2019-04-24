@@ -16,6 +16,14 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
+def get_config(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving FELB configuration
+    """
+    return isamAppliance.invoke_get("Retrieving FELB configuration", "{0}/configuration".format(module_uri),
+                                    requires_modules=requires_modules, requires_version=requires_version)
+
+
 def set(isamAppliance, enabled, debug, ha, logging, ssl, services, attributes,
         check_mode=False, force=False):
     """

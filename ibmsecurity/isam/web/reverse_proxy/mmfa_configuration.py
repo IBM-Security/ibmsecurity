@@ -1,4 +1,5 @@
 import logging
+from ibmsecurity.isam.web.reverse_proxy.configuration import entry
 
 logger = logging.getLogger(__name__)
 requires_modules = ["wga"]
@@ -30,7 +31,7 @@ def config(isamAppliance, instance_id, lmi, runtime, reuse_acls=None, reuse_cert
                 "/wga/reverseproxy/{0}/mmfa_config".format(instance_id), json_data,
                 requires_modules=requires_modules, requires_version=requires_version)
 
-        return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object()
 
 
 def unconfig(isamAppliance, instance_id, check_mode=False, force=False):
@@ -42,19 +43,29 @@ def unconfig(isamAppliance, instance_id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "MMFA configuration for a reverse proxy instance",
+                "MMFA unconfiguration for a reverse proxy instance",
                 "/wga/reverseproxy/{0}/mmfa_config".format(instance_id),
                 requires_modules=requires_modules, requires_version=requires_version)
 
-        return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object()
 
 
 def _check_config(isamAppliance, instance_id):
     """
-    TODO: Need to code this function to check if Oauth is already configured - one option is to check for existince of junction
+    Check webseal config stanza / entry for autoconfig flag to determine if config already done
 
     :param isamAppliance:
     :param instance_id:
     :return:
     """
+    try:
+        ret_obj = entry.get(isamAppliance, instance_id, "mmfa-config-info", "autoconfig")
+        if ret_obj['data']['autoconfig'] == ["mmfa"]:
+            logger.info(
+                "WebSEAL entry mmfa-config-info:autoconfig has value {}. 'mmfa' means config already done.".format(
+                    ret_obj['data']))
+            return True
+    except:
+        pass
+
     return False
