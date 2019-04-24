@@ -430,6 +430,7 @@ class ISAMAppliance(IBMAppliance):
             response = self._invoke_request(self.session.delete, description, uri, ignore_error,
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             warnings=warnings)
+
         self._log_response(response)
         return response
 
