@@ -5,6 +5,8 @@ import os.path
 logger = logging.getLogger(__name__)
 
 uri = "/support"
+requires_modules = None
+requires_version = "9.0.4.0"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -64,8 +66,11 @@ def create(isamAppliance, comment='', wrp=None, isam_runtime=None, lmi=None, clu
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post("Creating a new support file", uri,
-                                             json_data)
+            return isamAppliance.invoke_post("Creating a new support file",
+                                             "{0}/".format(uri),
+                                             json_data,
+                                             requires_modules=requires_modules,
+                                             requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
