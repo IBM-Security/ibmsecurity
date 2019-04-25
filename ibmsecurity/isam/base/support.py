@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 uri = "/support"
 requires_modules = None
-requires_version = "9.0.4.0"
+requires_version = "9.0.2.0"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -40,27 +40,33 @@ def create(isamAppliance, comment='', wrp=None, isam_runtime=None, lmi=None, clu
 
     json_data = {}
     json_data['comment'] = comment
+    min_version = True
 
-    if wrp != None:
-        json_data['wrp'] = wrp
+    if 'version' in isamAppliance.facts and isamAppliance.facts['version'] is not None:
+        if tools.version_compare(isamAppliance.facts['version'], requires_version) < 0:
+            min_version = False
 
-    if isam_runtime != None:
-        json_data['isam_runtime'] = isam_runtime
+    if min_version is True:
+        if wrp != None:
+            json_data['wrp'] = wrp
 
-    if lmi != None:
-        json_data['lmi'] = lmi
+        if isam_runtime != None:
+            json_data['isam_runtime'] = isam_runtime
 
-    if cluster != None:
-        json_data['cluster'] = cluster
+        if lmi != None:
+            json_data['lmi'] = lmi
 
-    if felb != None:
-        json_data['felb'] = felb
+        if cluster != None:
+            json_data['cluster'] = cluster
 
-    if aac_federation != None:
-        json_data['aac_federation'] = aac_federation
+        if felb != None:
+            json_data['felb'] = felb
 
-    if system != None:
-        json_data['system'] = system
+        if aac_federation != None:
+            json_data['aac_federation'] = aac_federation
+
+        if system != None:
+            json_data['system'] = system
 
     if force is True or _check(isamAppliance, comment=comment) is False:
         if check_mode is True:
