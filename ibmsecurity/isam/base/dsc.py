@@ -19,7 +19,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 
 def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600, client_grace=600,
-        servers=None):
+        servers=None, force=False):
     """
     Set DSC configuration
     """
