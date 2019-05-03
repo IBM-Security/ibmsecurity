@@ -18,7 +18,7 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
-def set(isamAppliance, port=None, worker_threads=64, max_session_lifetime=3600, client_grace=600,
+def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600, client_grace=600,
         servers=None):
     """
     Set DSC configuration
@@ -29,7 +29,8 @@ def set(isamAppliance, port=None, worker_threads=64, max_session_lifetime=3600, 
         "worker_threads": worker_threads,
         "max_session_lifetime": maximum_session_lifetime,
         "client_grace": client_grace,
-        "port": port
+        "service_port": service_port,
+        "replication_port": replication_port
     }
     if servers is not None:
         dsc_json["servers@"]=servers
