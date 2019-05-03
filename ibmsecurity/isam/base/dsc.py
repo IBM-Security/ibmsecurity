@@ -27,7 +27,7 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
     # Create a simple json with just the main client attributes
     dsc_json = {
         "worker_threads": worker_threads,
-        "max_session_lifetime": maximum_session_lifetime,
+        "max_session_lifetime": max_session_lifetime,
         "client_grace": client_grace,
         "service_port": service_port,
         "replication_port": replication_port
