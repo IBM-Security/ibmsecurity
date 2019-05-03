@@ -12,6 +12,39 @@ def get(isamAppliance, check_mode=False, force=False):
                                     "/isam/capabilities/v1")
 
 
+def get_activation(isamAppliance, name=None, id=None, check_mode=False, force=False):
+    """
+    Retrieve a specified activation offering
+    """
+    if id == None:
+        if name != None:
+            id = _get_id(isamAppliance, name)
+
+    return isamAppliance.invoke_get("Retrieve a specified activation offering",
+                                    "/isam/capabilities/{0}/v1".format(id))
+
+
+def update(isamAppliance, enabled, name=None, id=None, check_mode=False, force=False):
+    """
+    Update an activation offering
+    """
+
+    if id == None:
+        if name != None:
+            id = _get_id(isamAppliance, name)
+
+    if force is True or check(isamAppliance, id) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put("Update an activation offering",
+                                            "/isam/capabilities/{0}/v1".format(id),
+                                            {'enabled': enabled}
+                                            )
+
+    return isamAppliance.create_return_object()
+
+
 def set(isamAppliance, id, code, check_mode=False, force=False):
     """
     Activate an ISAM module
@@ -75,3 +108,11 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get(isamAppliance2)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
+
+
+def _get_id(isamAppliance, name):
+    ret_obj = get(isamAppliance)
+    for activation in ret_obj['data']:
+        if name == activation['name']:
+            objid = activation['id']
+            return objid
