@@ -6,11 +6,10 @@ logger = logging.getLogger(__name__)
 
 
 def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=False, vlanId=None, allowManagement=False,
-        enabled=True, check_mode=False, comment='', name='', bondingMode=None, bondedTo=None,
-        force=False):
+        enabled=True, check_mode=False, force=False):
     """
     Adding an IPv4 address to an interface
-    bondingMode, bondedTo, comment and name are not used, but are there to allow using the same structure for interfaces_vlan.py
+    bondingMode, bondedTo, comment and name removed again, no longer required.
     """
     add_needed = True
     ret_obj = {}
@@ -37,7 +36,6 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
                 'allowManagement': allowManagement,
                 'enabledAddress': True,
                 'enabled': enabled
-
             }
             ret_obj['ipv4']['addresses'].append(addr)
             return ibmsecurity.isam.base.network.interfaces._update_interface(isamAppliance, ret_obj)
