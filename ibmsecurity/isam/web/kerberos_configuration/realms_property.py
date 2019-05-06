@@ -22,7 +22,7 @@ def search(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
         uriprop = "{0}/{1}".format(realm, subsection)
 
     logger.info("property to search under: {0} where property is: {1}".format(uriprop, propname))
-    ret_obj = realms._get(isamAppliance, uriprop)
+    ret_obj = realms.get(isamAppliance, uriprop)
     return_obj = isamAppliance.create_return_object()
     return_obj["warnings"] = ret_obj["warnings"]
 
@@ -47,7 +47,7 @@ def _check(isamAppliance, realm, propname, propvalue, subsection=None):
 
     propstring = "{0} = {1}".format(propname, propvalue)
 
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
+    ret_obj = search(isamAppliance, realm, propname, subsection)
     logger.debug("Looking for existing kerberos property {0} in {1}".format(propname, ret_obj['data']))
     if ret_obj['data'] != {}:
         if ret_obj['data'] == propstring:
