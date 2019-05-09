@@ -5,7 +5,7 @@ from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
-uri = "/isam/dsc/config²"
+uri = "/isam/dsc/config"
 requires_modules = None
 requires_version = None
 
@@ -19,7 +19,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 
 def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600, client_grace=600,
-        ignore_password_for_idempotency=False, servers=None, force=False):
+        ignore_password_for_idempotency=False, servers=None, check_mode=False, force=False):
     """
     Set DSC configuration
     """
@@ -33,13 +33,13 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         "replication_port": replication_port
     }
     if servers is not None:
-        dsc_json["servers@"]=servers
+        dsc_json["servers"]=servers
 
     if force is True or _check(isamAppliance, dsc_json, ignore_password_for_idempotency) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_post("Set dsc configuration", uri, _json,
+            return isamAppliance.invoke_put("Set dsc configuration", uri, dsc_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
                                              warnings=warnings)
 
