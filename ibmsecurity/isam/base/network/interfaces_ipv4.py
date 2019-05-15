@@ -13,6 +13,7 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
     """
     add_needed = True
     ret_obj = {}
+    warnings = []
     if force is False:
         ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
@@ -21,6 +22,10 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
             for addr in ret_obj['ipv4']['addresses']:
                 if addr['address'] == address:
                     add_needed = False
+        else:
+            warnings.append("Interface {0} not found, Add is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
+
     if add_needed is True:
         ret_obj['ipv4']['overrideSubnetChecking'] = overrideSubnetChecking
     if force is True or add_needed is True:
@@ -36,7 +41,6 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
                 'allowManagement': allowManagement,
                 'enabledAddress': True,
                 'enabled': enabled
-
             }
             ret_obj['ipv4']['addresses'].append(addr)
             return ibmsecurity.isam.base.network.interfaces._update_interface(isamAppliance, ret_obj)
@@ -50,6 +54,7 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
     """
     delete_needed = False
     ret_obj = {}
+    warnings = []
     if force is False:
         ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
@@ -58,6 +63,9 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
                     delete_needed = True
                     ret_obj['ipv4']['addresses'].remove(addr)
                     break
+        else:
+            warnings.append("Interface {0} not found, Delete is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or delete_needed is True:
         if check_mode is True:
@@ -75,6 +83,7 @@ def update(isamAppliance, label, address, new_address, maskOrPrefix, vlanId=None
     """
     update_needed = False
     ret_obj = {}
+    warnings = []
     if force is False:
         ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
@@ -88,12 +97,16 @@ def update(isamAppliance, label, address, new_address, maskOrPrefix, vlanId=None
                         'enabled': enabled
                     }
                     update_needed = not (
-                        ibmsecurity.utilities.tools.json_sort(addr) == ibmsecurity.utilities.tools.json_sort(upd_addr))
+                            ibmsecurity.utilities.tools.json_sort(addr) == ibmsecurity.utilities.tools.json_sort(
+                        upd_addr))
                     if (update_needed is True):
                         ret_obj['ipv4']['addresses'].remove(addr)
                         ret_obj['ipv4']['addresses'].append(upd_addr)
                         ret_obj['ipv4']['overrideSubnetChecking'] = overrideSubnetChecking
                     break
+        else:
+            warnings.append("Interface {0} not found, Update is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
         if check_mode is True:
@@ -111,6 +124,7 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
     """
     update_needed = False
     ret_obj = {}
+    warnings = []
     if force is False:
         ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
@@ -121,10 +135,14 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
                 'routeMetric': routeMetric
             }
             update_needed = not (
-                ibmsecurity.utilities.tools.json_sort(ret_obj['ipv4']['dhcp']) == ibmsecurity.utilities.tools.json_sort(
-                    upd_dhcp))
+                    ibmsecurity.utilities.tools.json_sort(
+                        ret_obj['ipv4']['dhcp']) == ibmsecurity.utilities.tools.json_sort(
+                upd_dhcp))
             if (update_needed is True):
                 ret_obj['ipv4']['dhcp'] = upd_dhcp
+        else:
+            warnings.append("Interface {0} not found, Set dhcp is not supported.".format(label))
+            return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
         if check_mode is True:

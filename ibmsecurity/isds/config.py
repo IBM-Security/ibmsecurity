@@ -8,7 +8,7 @@ def get(isdsAppliance, check_mode=False, force=False):
     """
     Get current configured server type
     """
-    return isdsAppliance.invoke_get("Retrieving Server Type","/servertype_object")
+    return isdsAppliance.invoke_get("Retrieving Server Type", "/servertype_object")
 
 
 def set(isdsAppliance, serverType="RDBM", check_mode=False, force=False):

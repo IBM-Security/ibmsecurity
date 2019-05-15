@@ -156,7 +156,8 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
         else:
             return isamAppliance.invoke_put(
                 "Update Audit Configuration",
-                "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules, requires_version=requires_version)
+                "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

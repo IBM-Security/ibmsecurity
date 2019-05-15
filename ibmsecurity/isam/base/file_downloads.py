@@ -23,6 +23,6 @@ def export_file(isamAppliance, file_path, filename, check_mode=False, force=Fals
             return isamAppliance.invoke_get_file(
                 "Downloading a file from the file downloads area",
                 "/isam/downloads/{0}?type=File&browser=&".format(file_path),
-            filename, True)
+                filename, True)
 
     return isamAppliance.create_return_object()

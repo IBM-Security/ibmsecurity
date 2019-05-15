@@ -51,8 +51,8 @@ def update(isamAppliance, uuid, name, collector, collectorPort=514, collectorLee
     Update a specific rsyslog object
     """
     if force is True or (
-                    _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, objType, comment,
-                                                                    collector, collectorPort, collectorLeef) is False):
+            _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, objType, comment,
+                                                            collector, collectorPort, collectorLeef) is False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

@@ -73,56 +73,46 @@ def _check(isamAppliance, comment='', id=None):
     if id != None:
         for snaps in ret_obj['data']:
             if snaps['id'] == id:
+                logger.debug("Found id: {}".format(id))
                 return True
     else:
         for snaps in ret_obj['data']:
             if snaps['comment'] == comment:
+                logger.debug("Found comment: {}".format(comment))
                 return True
-                # # Get snapshot with lowest 'id' value - that will be latest one
-                # snaps = min(ret_obj['data'], key=lambda snap: snap['index'])
-                # logging.debug('Snapshot with lowest index is: ' + str(snaps))
-                # try:
-                #     if snaps['comment'] == comment:
-                #         return True
-                # except:
-                #     pass
 
     return False
 
 
-def delete(isamAppliance, id, check_mode=False, force=False):
+def delete(isamAppliance, id, comment=None, check_mode=False, force=False):
     """
-    Delete a snapshot
+    Delete snapshot(s) - check id before processing comment. id can be a list
     """
-    if force is True or _check(isamAppliance, id=id) is True:
+    ids = []
+    delete_flag = False
+    if (isinstance(id, list)):
+        for i in id:
+            if _check(isamAppliance, id=i) is True:
+                delete_flag = True
+                ids.append(i)
+    elif (_check(isamAppliance, id=id) is True):
+        delete_flag = True
+        ids.append(id)
+    elif (comment is not None):
+        ret_obj = search(isamAppliance, comment=comment)
+        if ret_obj != {} and ret_obj['data'] != {}:
+            delete_flag = True
+            ids = ret_obj['data']
+    logger.info("Deleting the following list of IDs: {}".format(ids))
+    if force is True or delete_flag is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete("Deleting snapshot", "/snapshots/" + id)
+            return isamAppliance.invoke_delete("Deleting snapshot",
+                                               "/snapshots/multi_destroy?record_ids=" + ",".join(ids))
 
     return isamAppliance.create_return_object()
 
-def multi_delete(isamAppliance, ids=[], comment=None, check_mode=False, force=False):
-    """
-    Delete multiple snapshots based on id or comment
-    """
-    if comment != None:
-      ret_obj = search(isamAppliance, comment=comment)
-      if ret_obj['data'] == {}:
-        return isamAppliance.create_return_object(changed=False)
-      else:
-        if ids == []:
-          ids = ret_obj['data']
-        else:
-          for snaps in ret_obj['data']:
-            ids.append(snaps)
-
-    if check_mode is True:
-        return isamAppliance.create_return_object(changed=True)
-    else:
-        return isamAppliance.invoke_delete("Deleting one or multiple snapshots", "/snapshots/multi_destroy?record_ids=" + ",".join(ids))
-
-    return isamAppliance.create_return_object()
 
 def modify(isamAppliance, id, comment, check_mode=False, force=False):
     """
@@ -145,59 +135,58 @@ def apply(isamAppliance, id=None, comment=None, check_mode=False, force=False):
     Apply a snapshot
     There is a priority in the parameter to be used for snapshot applying: id > comment
     """
-    if comment != None and id == None:
-      ret_obj = search(isamAppliance, comment=comment)
-      if ret_obj['data'] == {}:
-        return isamAppliance.create_return_object(changed=False)
-      elif len(ret_obj['data']) == 1:
-        id = ret_obj['data'][0]
-      else:
-        logger.warn("There are multiple files with matching comments. Only one snapshot at a time can be applied !")
-
-    if id != None:
-      if force is True or _check(isamAppliance, id=id) is True:
-          if check_mode is True:
-              return isamAppliance.create_return_object(changed=True)
-          else:
-              return isamAppliance.invoke_post_snapshot_id("Applying snapshot", "/snapshots/apply/" + id,
-                                                          {"snapshot_id": id})
+    apply_flag = False
+    if id is not None:
+        apply_flag = _check(isamAppliance, id=id)
+    elif comment is not None:
+        ret_obj = search(isamAppliance, comment)
+        if ret_obj['data'] != {}:
+            if len(ret_obj['data']) == 1:
+                id = ret_obj['data'][0]
+            else:
+                logger.warn(
+                    "There are multiple files with matching comments. Only one snapshot at a time can be applied !")
+    else:
+        logger.warn("No snapshot detail provided - no id nor comment.")
+    if force is True or apply_flag is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_post_snapshot_id("Applying snapshot", "/snapshots/apply/" + id,
+                                                         {"snapshot_id": id})
 
     return isamAppliance.create_return_object()
 
 
-def download(isamAppliance, filename, id=None, ids=[], comment=None, check_mode=False, force=False):
+def download(isamAppliance, filename, id=None, comment=None, check_mode=False, force=False):
     """
     Download one snapshot file to a zip file.
-    Multiple file download is now supported.
+    Multiple file download is now supported. Simply pass a list of id.
     For backwards compatibility the id parameter and old behaviour is checked at the beginning.
     """
-    if id != None:
-      if force is True or (_check(isamAppliance, id=id) is True and os.path.exists(filename) is False):
-          if check_mode is False:  # No point downloading a file if in check_mode
-              uri = "/snapshots/download?record_ids={0}".format(id)
-              return isamAppliance.invoke_get_file("Downloading snapshots", uri, filename)
-    else:
-      # Search for the id corresponding to the comment and consolidate them in the ids variable
-      if comment != None:
+    ids = []
+    download_flag = False
+    if (isinstance(id, list)):
+        for i in id:
+            if _check(isamAppliance, id=i) is True:
+                download_flag = True
+                ids.append(i)
+    elif (_check(isamAppliance, id=id) is True):
+        download_flag = True
+        ids.append(id)
+    elif (comment is not None):
         ret_obj = search(isamAppliance, comment=comment)
-        if ret_obj['data'] == {}:
-          logger.info("No snapshots found with text {0} in it.".format(comment))
-        else:
-          if ids == []:
+        if ret_obj != {} and ret_obj['data'] != {}:
+            download_flag = True
             ids = ret_obj['data']
-          else:
-            for snaps in ret_obj['data']:
-              ids.append(snaps)
+    logger.info("Downloading the following list of IDs: {}".format(ids))
 
-      # Additional check (REST-Calls) for every id in the ids variable is skipped as in this case error handling is better done by the REST API
-      if force is True or os.path.exists(filename) is False: # Don't overwrite if not forced to
-        if check_mode is True and ids != []: # We are in check_mode but would try to download named ids
-          return isamAppliance.create_return_object(changed=True)
-        elif check_mode is True and ids == []: # We are in check_mode but have nothing to download
-          return isamAppliance.create_return_object(changed=False)
-        else:
-          # Download all ids known so far
-          return isamAppliance.invoke_get_file("Downloading multiple snapshots","/snapshots/download?record_ids=" + ",".join(ids), filename )
+    if force is True or (
+            os.path.exists(filename) is False and download_flag is True):  # Don't overwrite if not forced to
+        if check_mode is False:  # We are in check_mode but would try to download named ids
+            # Download all ids known so far
+            return isamAppliance.invoke_get_file("Downloading multiple snapshots",
+                                                 "/snapshots/download?record_ids=" + ",".join(ids), filename)
 
     return isamAppliance.create_return_object()
 
@@ -229,20 +218,22 @@ def apply_latest(isamAppliance, check_mode=False, force=False):
 
     return apply(isamAppliance, id, check_mode, force)
 
+
 def upload(isamAppliance, file, comment=None, check_mode=False, force=False):
     """
     Upload Snapshot file
     """
-    if force is True or _check_file(isamAppliance, file) is False:
+    if comment is None:
+        import zipfile
+
+        zFile = zipfile.ZipFile(file)
+        if "Comment" in zFile.namelist():
+            comment = zFile.open("Comment")
+
+    if force is True or _check(isamAppliance, comment=comment) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if comment == None:
-              import zipfile
-
-              zFile = zipfile.ZipFile(file)
-              if "Comment" in zFile.namelist():
-                comment = zFile.open("Comment")
 
             return isamAppliance.invoke_post_files(
                 "Upload Snapshot",
@@ -253,26 +244,11 @@ def upload(isamAppliance, file, comment=None, check_mode=False, force=False):
                     'mimetype': 'application/octet-stream'
                 }],
                 {
-                  'comment': comment if comment != None else ''
+                    'comment': comment if comment != None else ''
                 }, json_response=False)
 
     return isamAppliance.create_return_object()
 
-def _check_file(isamAppliance, file):
-    """
-    Check if snapshot file already exists
-    """
-    import os.path
-
-    ret_obj = get(isamAppliance)
-
-    filename = os.path.basename(file)
-
-    for obj in ret_obj['data']:
-        if obj['filename'] == filename:
-            return True
-
-    return False
 
 def compare(isamAppliance1, isamAppliance2):
     """

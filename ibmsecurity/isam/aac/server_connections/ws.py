@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 # URI for this module
 uri = "/mga/server_connections/ws"
 requires_modules = ["mga", "federation"]
-requires_version = "9.0.2.1"    # Will change if introduced in an earlier version.
+requires_version = "9.0.2.1"  # Will change if introduced in an earlier version.
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -24,7 +24,7 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
     """
     ret_obj = search(isamAppliance, name=name, force=force)
     id = ret_obj["data"]
-    
+
     if id == {}:
         logger.info("Web Service connection {0} had no match, skipping retrieval.".format(name))
         return isamAppliance.create_return_object()
@@ -63,8 +63,8 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
             return isamAppliance.invoke_post(
                 "Creating a Web Service connection",
                 "{0}/v1".format(uri),
-                _create_json(name=name, description=description, locked=locked, connection=connection), 
-                    requires_modules=requires_modules, requires_version=requires_version)
+                _create_json(name=name, description=description, locked=locked, connection=connection),
+                requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -89,10 +89,10 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
                 requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
-        
 
-def update(isamAppliance, connection, description='', locked=False, name=None, new_name=None, 
-	check_mode=False, force=False):
+
+def update(isamAppliance, connection, description='', locked=False, name=None, new_name=None,
+           check_mode=False, force=False):
     """
     Modifying a Web Service connection
 
@@ -100,13 +100,13 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
     """
     ret_obj = get(isamAppliance, name)
     warnings = ret_obj["warnings"]
-    
+
     if ret_obj["data"] == {}:
         warnings.append("Web Service connection {0} not found, skipping update.".format(name))
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["uuid"]
-        
+
     needs_update = False
 
     json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
@@ -115,7 +115,7 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
 
     if force is not True:
         if 'uuid' in ret_obj['data']:
-           del ret_obj['data']['uuid']
+            del ret_obj['data']['uuid']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
@@ -123,7 +123,7 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
         logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
-    
+
         if 'password' in connection:
             warnings.append("Since existing password cannot be read - this call will not be idempotent.")
             needs_update = True
@@ -135,9 +135,10 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
             return isamAppliance.invoke_put(
                 "Modifying a Web Service connection",
                 "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
-                requires_version=requires_version,warnings=warnings)
-    
+                requires_version=requires_version, warnings=warnings)
+
     return isamAppliance.create_return_object(warnings=warnings)
+
 
 def set(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
     """
@@ -150,6 +151,7 @@ def set(isamAppliance, name, connection, description='', locked=False, check_mod
         # Update request
         return update(isamAppliance, connection, description, locked, name, None,
                       check_mode, force)
+
 
 def _create_json(name, description, locked, connection):
     """

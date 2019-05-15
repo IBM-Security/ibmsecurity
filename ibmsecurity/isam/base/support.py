@@ -5,6 +5,8 @@ import os.path
 logger = logging.getLogger(__name__)
 
 uri = "/support"
+requires_modules = None
+requires_version = "9.0.2.0"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -14,18 +16,66 @@ def get(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving information about all valid support files", uri)
 
 
-def create(isamAppliance, comment='', check_mode=False, force=False):
+def get_categories(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving information about all the support categories
+    """
+    return isamAppliance.invoke_get("Retrieving information about all the support categories",
+                                    "{0}/categories".format(uri))
+
+
+def get_instances(isamAppliance, name, check_mode=False, force=False):
+    """
+    Retrieving information about all the instances for a specific support category
+    """
+    return isamAppliance.invoke_get("Retrieving information about all the instances for a specific support category",
+                                    "{0}/categories/{1}/instances".format(uri, name))
+
+
+def create(isamAppliance, comment='', wrp=None, isam_runtime=None, lmi=None, cluster=None, felb=None,
+           aac_federation=None, system=None, check_mode=False, force=False):
     """
     Creating a new support file
     """
+    json_data = {}
+    json_data['comment'] = comment
+    min_version = True
+
+    if 'version' in isamAppliance.facts and isamAppliance.facts['version'] is not None:
+        if tools.version_compare(isamAppliance.facts['version'], requires_version) < 0:
+            min_version = False
+
+    if min_version is True:
+        if wrp != None:
+            json_data['wrp'] = wrp
+
+        if isam_runtime != None:
+            json_data['isam_runtime'] = isam_runtime
+
+        if lmi != None:
+            json_data['lmi'] = lmi
+
+        if cluster != None:
+            json_data['cluster'] = cluster
+
+        if felb != None:
+            json_data['felb'] = felb
+
+        if aac_federation != None:
+            json_data['aac_federation'] = aac_federation
+
+        if system != None:
+            json_data['system'] = system
+
     if force is True or _check(isamAppliance, comment=comment) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post("Creating a new support file", uri,
-                                             {
-                                                 'comment': comment
-                                             })
+            return isamAppliance.invoke_post("Creating a new support file",
+                                             "{0}/".format(uri),
+                                             json_data,
+                                             requires_modules=requires_modules,
+                                             requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -49,11 +99,11 @@ def _check(isamAppliance, comment='', id=None):
             if sups['comment'] == comment:
                 return True
 
-#        if isinstance(ret_obj['data'], list):
-#            # check only latest comment
-#            sup_file = min(ret_obj['data'], key=lambda sup: sup['index'])
-#            if sup_file['comment'] == comment:
-#                return True
+    #        if isinstance(ret_obj['data'], list):
+    #            # check only latest comment
+    #            sup_file = min(ret_obj['data'], key=lambda sup: sup['index'])
+    #            if sup_file['comment'] == comment:
+    #                return True
 
     return False
 

@@ -67,12 +67,12 @@ def update(isamAppliance, uuid, name, trapAddress, trapCommunity, trapNotificati
     Update a specific snmp object
     """
     if force is True or (
-                    _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, trapAddress,
-                                                                    trapCommunity, trapNotificationType, trapVersion,
-                                                                    trapPort, objType, username, authEnabled, authType,
-                                                                    authPassPhrase, privEnabled, privType,
-                                                                    privPassPhrase, informSnmpEngineID, informTimeout,
-                                                                    comment) is False):
+            _exists(isamAppliance, uuid) is True and _check(isamAppliance, uuid, name, trapAddress,
+                                                            trapCommunity, trapNotificationType, trapVersion,
+                                                            trapPort, objType, username, authEnabled, authType,
+                                                            authPassPhrase, privEnabled, privType,
+                                                            privPassPhrase, informSnmpEngineID, informTimeout,
+                                                            comment) is False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

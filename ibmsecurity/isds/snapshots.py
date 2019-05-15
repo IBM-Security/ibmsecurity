@@ -62,14 +62,12 @@ def apply(isdsAppliance, id, check_mode=False, force=False):
     Apply a snapshot
     """
     uri = "/snapshots/apply/" + id
-    print "APPLY"
-    print uri
     if force is True or _check(isdsAppliance, id=id) is True:
         if check_mode is True:
             return isdsAppliance.create_return_object(changed=True)
         else:
             return isdsAppliance.invoke_post("Applying snapshot", uri,
-                                            {"authenticity_token":"KRVlgWbaS4GCOxfZcw+hkrPH2fVB1Vi+k8cayf0y9T4"})
+                                             {"authenticity_token": "KRVlgWbaS4GCOxfZcw+hkrPH2fVB1Vi+k8cayf0y9T4"})
 
     return isdsAppliance.create_return_object()
 
@@ -100,6 +98,7 @@ def download_latest(isdsAppliance, dir='.', check_mode=False, force=False):
     filename = os.path.join(dir, file)
 
     return download(isdsAppliance, filename, id, check_mode, force)
+
 
 def upload(isdsAppliance, filename, check_mode=False, force=False):
     """
@@ -157,6 +156,7 @@ def compare(isdsAppliance1, isdsAppliance2):
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['id', 'filename'])
 
+
 def _check(isdsAppliance, comment='', id=None, fn=None):
     """
     Check if the last created snapshot has the exact same comment or id exists
@@ -181,4 +181,3 @@ def _check(isdsAppliance, comment='', id=None, fn=None):
                 return True
 
     return False
-

@@ -133,7 +133,7 @@ def set(isamAppliance, client_realm, server_realm=None, intermediate_realm=None,
     # check if client realm exists, if it does not exit with warning message
     if ca_paths.search(isamAppliance, client_realm=client_realm)['data'] == {}:
         return isamAppliance.create_return_object(
-                warnings="Client_realm: {0}, does not exist".format(client_realm))
+            warnings="Client_realm: {0}, does not exist".format(client_realm))
     else:
         logger.info("Client Realm {0} exists, requesting to update its property.".format(client_realm))
         ret_obj = ca_paths.get(isamAppliance, client_realm)

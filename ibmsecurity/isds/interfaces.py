@@ -11,6 +11,7 @@ def get_all(isdsAppliance, check_mode=False, force=False):
     """
     return isdsAppliance.invoke_get("Retrieving all interfaces", "/widgets/mgmtinterface")
 
+
 def get_all_app(isdsAppliance, check_mode=False, force=False):
     """
     Retrieving all application interfaces
@@ -18,13 +19,16 @@ def get_all_app(isdsAppliance, check_mode=False, force=False):
     """
     return isdsAppliance.invoke_get("Retrieving all application interfaces", "/application_interfaces")
 
+
 def get(isdsAppliance, uuid, check_mode=False, force=False):
     """
     Retrieving a single interface
     """
     return isdsAppliance.invoke_get("Retrieving a single interface", "/application_interfaces/" + uuid + "/addresses/1")
 
-def add(isdsAppliance, address, netmask, network_type, ipFqdn, prefix="", interface="P.1", check_mode=False, force=False):
+
+def add(isdsAppliance, address, netmask, network_type, ipFqdn, prefix="", interface="P.1", check_mode=False,
+        force=False):
     """
     Adding an address to an interface
     """
@@ -35,10 +39,10 @@ def add(isdsAppliance, address, netmask, network_type, ipFqdn, prefix="", interf
             "Creating a new address for an interface",
             "/application_interfaces/" + interface + "/addresses",
             {
-		'address': address,
-		'netmask': netmask,
- 		'type'   : network_type,
-		'ipFqdn' : ipFqdn
+                'address': address,
+                'netmask': netmask,
+                'type': network_type,
+                'ipFqdn': ipFqdn
             })
 
 

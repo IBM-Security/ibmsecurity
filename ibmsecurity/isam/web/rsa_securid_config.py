@@ -51,18 +51,18 @@ def _check(isamAppliance):
 
 def test(isamAppliance, username, passcode, check_mode=False, force=False):
     """
-    Test RSA Configuration with username/passcode    
+    Test RSA Configuration with username/passcode
     """
     if _check(isamAppliance) is False:
         return isamAppliance.create_return_object(warnings=["Valid configuration not found, test skipped."])
     else:
         ret_obj = isamAppliance.invoke_post("Test RSA Configuration with username/passcode", "{0}/test".format(uri),
-                                              {
-                                                  'username': username,
-                                                  'passcode': passcode
-                                              },
-                                              requires_modules=requires_modules,
-                                              requires_version=requires_version, ignore_error=True)
+                                            {
+                                                'username': username,
+                                                'passcode': passcode
+                                            },
+                                            requires_modules=requires_modules,
+                                            requires_version=requires_version, ignore_error=True)
         if ret_obj['changed'] is True:
             ret_obj['changed'] = False
 

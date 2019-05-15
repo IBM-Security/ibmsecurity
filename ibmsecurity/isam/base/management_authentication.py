@@ -109,6 +109,21 @@ def disable(isamAppliance, check_mode=False, force=False):
                force=force)
 
 
+def test(isamAppliance, userid, password, check_mode=False, force=False):
+    """
+    Testing the management authentication
+    """
+    ret_obj = isamAppliance.invoke_post("Testing the management authentication",
+                                        "/isam/management_authentication/",
+                                        {
+                                            'user': userid,
+                                            'password': password}
+                                        )
+    ret_obj['changed'] = False
+
+    return ret_obj
+
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare management authentication settings

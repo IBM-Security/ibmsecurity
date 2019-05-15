@@ -14,9 +14,9 @@ def get_all(isamAppliance, isamUser, admin_domain='Default'):
                                         "/isam/pdadmin/poplistext/v1", {
                                             "admin_id": isamUser.username,
                                             "admin_pwd": isamUser.password,
-#                                            "pop_name": pop_name,
-                                           # "pop_attribute_name": pop_attribute_name,
-                                           # "pop_attribute_value": pop_attribute_value,
+                                            # "pop_name": pop_name,
+                                            # "pop_attribute_name": pop_attribute_name,
+                                            # "pop_attribute_value": pop_attribute_value,
                                             "admin_domain": admin_domain
                                         })
     ret_obj['changed'] = False
@@ -33,6 +33,26 @@ def get(isamAppliance, isamUser, pop_name, admin_domain='Default'):
                                             "admin_id": isamUser.username,
                                             "admin_pwd": isamUser.password,
                                             "pop_name": pop_name,
+                                            "admin_domain": admin_domain
+                                        })
+    ret_obj['changed'] = False
+
+    return ret_obj
+
+
+def get_pop_list(isamAppliance, isamUser, object=None, pop_name=None, pop_attribute_name=None, pop_attribute_value=None,
+                 admin_domain='Default'):
+    """
+    Retrieve a list of protected objects
+    """
+    ret_obj = isamAppliance.invoke_post("Retrieve a list of protected objects",
+                                        "/isam/pdadmin/popfindext/v1", {
+                                            "admin_id": isamUser.username,
+                                            "admin_pwd": isamUser.password,
+                                            "object": object,
+                                            "pop_name": pop_name,
+                                            "pop_attribute_name": pop_attribute_name,
+                                            "pop_attribute_value": pop_attribute_value,
                                             "admin_domain": admin_domain
                                         })
     ret_obj['changed'] = False

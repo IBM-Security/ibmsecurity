@@ -48,21 +48,23 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
 
     return ret_obj
 
-def set_by_address(isamAppliance, address, port, secure,check_mode=False, force=False):
+
+def set_by_address(isamAppliance, address, port, secure, check_mode=False, force=False):
     ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
     uuid = None
 
     for intfc in ret_obj['data']['interfaces']:
         for intfc_adr in intfc['ipv4']['addresses']:
             if intfc_adr['address'] == address:
-                uuid = "{0}.{1}".format(intfc['uuid'],intfc_adr['uuid'])
+                uuid = "{0}.{1}".format(intfc['uuid'], intfc_adr['uuid'])
                 break
         for intfc_adr in intfc['ipv6']['addresses']:
             if intfc_adr['address'] == address:
-                uuid = "{0}.{1}".format(intfc['uuid'],intfc_adr['uuid'])
+                uuid = "{0}.{1}".format(intfc['uuid'], intfc_adr['uuid'])
                 break
-    
+
     return set(isamAppliance, uuid, port, secure, check_mode, force)
+
 
 def _check(isamAppliance, interface, port):
     """

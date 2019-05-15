@@ -1,10 +1,11 @@
 import logging
-from user import User
+from .user import User
 
-class ISAMUser(User) :
+
+class ISAMUser(User):
     super_user = "sec_master"
-    
-    def __init__(self, password, username = None):
+
+    def __init__(self, password, username=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating a user')
 

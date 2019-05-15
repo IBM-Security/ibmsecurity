@@ -3,6 +3,7 @@ from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
+
 def get_network(isdsAppliance, application_interface, statistics_duration, check_mode=False, force=False):
     """
     Retrieving the Application Interface Statistics
@@ -11,6 +12,7 @@ def get_network(isdsAppliance, application_interface, statistics_duration, check
                                     "/analysis/interface_statistics{0}".format(
                                         tools.create_query_string(prefix=application_interface,
                                                                   timespan=statistics_duration)))
+
 
 def get_cpu(isdsAppliance, statistics_duration, check_mode=False, force=False):
     """

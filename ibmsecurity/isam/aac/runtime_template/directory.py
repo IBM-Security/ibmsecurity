@@ -1,8 +1,8 @@
 import logging
 import ibmsecurity.utilities.tools
-import os.path
 
 logger = logging.getLogger(__name__)
+
 
 def get_all(isamAppliance, check_mode=False, force=False, ignore_error=False):
     """
@@ -11,21 +11,25 @@ def get_all(isamAppliance, check_mode=False, force=False, ignore_error=False):
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
                                     "/mga/template_files?recursive=yes", ignore_error=ignore_error)
 
-def get(isamAppliance, path, check_mode=False, force=False, ignore_error=False):
+
+def get(isamAppliance, path, recursive=None, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files/{0}?recursive=yes".format(path), ignore_error=ignore_error)
+                                    "/mga/template_files/{}/{}".format(path,
+                                                                     ibmsecurity.utilities.tools.create_query_string(
+                                                                         recursive=recursive)))
 
 
 def _check(isamAppliance, id):
     ret_obj = get_all(isamAppliance, ignore_error=True)
-  
+
     if (ret_obj['rc'] != 404 or ret_obj['rc'] != 400):
         return _parse_id(ret_obj['data'], id)
     else:
-      return None
+        return None
+
 
 def _parse_id(contents, dir_name):
     """
@@ -53,6 +57,7 @@ def _parse_id(contents, dir_name):
 
     return None
 
+
 def create(isamAppliance, path, name, check_mode=False, force=False):
     """
     Creating a directory in the runtime template files directory
@@ -68,10 +73,10 @@ def create(isamAppliance, path, name, check_mode=False, force=False):
     id = path + "/" + name
     check_dir = _check(isamAppliance, id)
     if check_dir != None:
-        warnings.append("Directory {0} exists in path {1}. Ignoring create.".format(name,path))
+        warnings.append("Directory {0} exists in path {1}. Ignoring create.".format(name, path))
 
     if force is True or check_dir == None:
-        if check_mode is True:          
+        if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
@@ -132,8 +137,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     warnings = []
     check_dir = _check(isamAppliance, id)
     if check_dir == None:
-      warnings.append("Directory {0} does not exist. Ignoring delete.".format(id))
-      
+        warnings.append("Directory {0} does not exist. Ignoring delete.".format(id))
+
     if force is True or check_dir != None:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -157,33 +162,33 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
     :return:
     """
     warnings = []
-    
+
     try:
-      split_dir = id.split('/')
-      path = split_dir[:-1]
-      new_path = '/'.join([str(x) for x in path]) + "/" + new_name
+        split_dir = id.split('/')
+        path = split_dir[:-1]
+        new_path = '/'.join([str(x) for x in path]) + "/" + new_name
 
     except:
-      logger.info("New path can't be build from id: {0} and new_name: {1}.".format(id,new_name))
+        logger.info("New path can't be build from id: {0} and new_name: {1}.".format(id, new_name))
 
     if force is False:
-      new_dir_id = _check(isamAppliance, new_path)
-      dir_id = _check(isamAppliance, id)
+        new_dir_id = _check(isamAppliance, new_path)
+        dir_id = _check(isamAppliance, id)
 
     if new_dir_id != None:
-      warnings.append("Directory {0} does already exist. Ignoring renameing.".format(new_path))      
+        warnings.append("Directory {0} does already exist. Ignoring renameing.".format(new_path))
 
     if force is True or (dir_id != None and new_dir_id == None):
-      if check_mode is True:
-          return isamAppliance.create_return_object(changed=True)
-      else:
-          return isamAppliance.invoke_put(
-              "Renaming a directory in the runtime template files directory",
-              "/mga/template_files/{0}".format(id),
-              {
-                  'new_name': new_name,
-                  'type': 'directory'
-              })
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put(
+                "Renaming a directory in the runtime template files directory",
+                "/mga/template_files/{0}".format(id),
+                {
+                    'new_name': new_name,
+                    'type': 'directory'
+                })
 
     return isamAppliance.create_return_object(warnings=warnings)
 

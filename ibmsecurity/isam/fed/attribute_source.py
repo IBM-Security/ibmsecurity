@@ -40,7 +40,7 @@ def _get(isamAppliance, id):
     :return:
     """
     return isamAppliance.invoke_get("Retrieve a specific attribute source",
-                                    "{0}/{2}".format(uri, id),
+                                    "{}/{}".format(uri, id),
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 

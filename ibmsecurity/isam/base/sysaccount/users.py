@@ -87,6 +87,23 @@ def modify(isamAppliance, id, password, old_password=None, check_mode=False, for
     return isamAppliance.create_return_object()
 
 
+def modify_self(isamAppliance, password, old_password, check_mode=False, force=False):
+    """
+    Change the current user's password
+    """
+    if force is True or password != old_password:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put("Change password", "/sysaccount/self/v1",
+                                            {
+                                                'password': password,
+                                                'old_password': old_password
+                                            })
+
+    return isamAppliance.create_return_object()
+
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare the list of users between two appliances

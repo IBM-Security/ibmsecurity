@@ -27,21 +27,23 @@ def get_all_logs(isamAppliance, instance_id, component_id, check_mode=False, for
     """
     return isamAppliance.invoke_get("Retrieving all trace log files for a component - Reverse Proxy",
                                     "{0}/{1}/tracing/{2}/trace_files".format(uri,
-                                                                         instance_id,
-                                                                         component_id))
+                                                                             instance_id,
+                                                                             component_id))
 
 
-def get(isamAppliance, instance_id, component_id, file_id, options=None, size=None, start=None, check_mode=False, force=False):
+def get(isamAppliance, instance_id, component_id, file_id, options=None, size=None, start=None, check_mode=False,
+        force=False):
     """
     Retrieving snippet of a trace log file for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving snippet of a trace log file - Reverse Proxy",
                                     "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,
-                                                                             instance_id,
-                                                                             component_id,
-                                                                             file_id,
-                                                                             tools.create_query_string(
-                                                options=options, start=start, size=size)))
+                                                                                 instance_id,
+                                                                                 component_id,
+                                                                                 file_id,
+                                                                                 tools.create_query_string(
+                                                                                     options=options, start=start,
+                                                                                     size=size)))
 
 
 def export_file(isamAppliance, instance_id, component_id, file_id, filename, check_mode=False, force=False):
@@ -53,10 +55,10 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filename, che
     if force is True or (os.path.exists(filename) is False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file("Exporting a Reverse Proxy trace log file.",
-                                    "{0}/{1}/tracing/{2}/trace_files/{3}?export".format(uri,
-                                                                             instance_id,
-                                                                             component_id,
-                                                                             file_id),filename)
+                                                 "{0}/{1}/tracing/{2}/trace_files/{3}?export".format(uri,
+                                                                                                     instance_id,
+                                                                                                     component_id,
+                                                                                                     file_id), filename)
 
     return isamAppliance.create_return_object()
 
@@ -70,19 +72,17 @@ def set(isamAppliance, instance_id, component_id, level, flush_interval,
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_put(
-                "Modify trace settings for a component",
-                "{0}/{1}/tracing/{2}".format(uri,
-                                                instance_id,
-                                                component_id),
-                {
-                    'level': level,
-                    'flush_interval': flush_interval,
-                    'rollover_size': rollover_size,
-                    'max_rollover_files': max_rollover_files,
-                    'compress': compress
-                })
-
-    return isamAppliance.create_return_object()
+            "Modify trace settings for a component",
+            "{0}/{1}/tracing/{2}".format(uri,
+                                         instance_id,
+                                         component_id),
+            {
+                'level': level,
+                'flush_interval': flush_interval,
+                'rollover_size': rollover_size,
+                'max_rollover_files': max_rollover_files,
+                'compress': compress
+            })
 
 
 def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, force=False):
@@ -91,7 +91,7 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
     """
     if force is False:
         try:
-            ret_obj = get_default_snippet(isamAppliance, instance_id, component_id, file_id)
+            ret_obj = get(isamAppliance, instance_id, component_id, file_id)
             delete_required = True  # Exception thrown if the file is empty
         except:
             delete_required = False
@@ -103,9 +103,9 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
             return isamAppliance.invoke_delete(
                 "Deleting a trace log file",
                 "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,
-                                                        instance_id,
-                                                        component_id,
-                                                        file_id))
+                                                             instance_id,
+                                                             component_id,
+                                                             file_id))
 
     return isamAppliance.create_return_object()
 
@@ -128,7 +128,40 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
             return isamAppliance.invoke_delete(
                 "Deleting all trace log files",
                 "{0}/{1}/tracing/{2}/trace_files".format(uri,
-                                                        instance_id,
-                                                        component_id))
+                                                         instance_id,
+                                                         component_id))
+
+    return isamAppliance.create_return_object()
+
+
+def delete_multiple_files(isamAppliance, instance_id, component_id, files, check_mode=False, force=False):
+    """
+    Deleting multiple trace files for a component
+    """
+    delete_required = False
+    files_to_delete = []
+
+    ret_obj = get_all_logs(isamAppliance, instance_id, component_id)
+
+    for obj1 in files:
+        for obj2 in ret_obj['data']:
+            if obj1['name'] == obj2['id']:
+                files_to_delete.append(obj1)
+                delete_required = True
+
+    if force is True or delete_required is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            if len(files_to_delete) == 1:
+                return delete(isamAppliance, instance_id, component_id, files_to_delete[0]['name'])
+            else:
+                return isamAppliance.invoke_put(
+                    "Deleting multiple trace files for a component",
+                    "{0}/{1}/tracing/{2}/trace_files/?action=delete".format(uri, instance_id, component_id),
+                    {
+                        'files': files_to_delete
+                    }
+                )
 
     return isamAppliance.create_return_object()

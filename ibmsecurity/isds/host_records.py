@@ -47,7 +47,7 @@ def delete(isdsAppliance, hostname, ip_addr, check_mode=False, force=False):
         else:
             return isdsAppliance.invoke_delete(
                 "Removing host record",
-                "/host_records/"+ip_addr,
+                "/host_records/" + ip_addr,
                 {
                 })
     return isdsAppliance.create_return_object()

@@ -112,27 +112,29 @@ def _check_import(isamAppliance, filename):
         logger.info("runtime template files {} differ from the server content. Updating runtime template files necessary.".format(filename))
         return True
 
-def check(isamAppliance, id, type, check_mode=False, force=False):
-  ret_obj = None
-  
-  if(type.lower() == 'directory'):
-    ret_obj = directory._check(isamAppliance, id)
-  elif(type.lower() == 'file'):
-    ret_obj = file._check(isamAppliance, id)
-  else:
-    type = 'unknown'
 
-  name = os.path.basename(id)
-  path = os.path.dirname(id)
-  
-  data = {
-      'id': ret_obj,
-      'path': path,
-      'name': name,
-      'type': type
-  }
-    
-  return isamAppliance.create_return_object(data=data)
+def check(isamAppliance, id, type, check_mode=False, force=False):
+    ret_obj = None
+
+    if (type.lower() == 'directory'):
+        ret_obj = directory._check(isamAppliance, id)
+    elif (type.lower() == 'file'):
+        ret_obj = file._check(isamAppliance, id)
+    else:
+        type = 'unknown'
+
+    name = os.path.basename(id)
+    path = os.path.dirname(id)
+
+    data = {
+        'id': ret_obj,
+        'path': path,
+        'name': name,
+        'type': type
+    }
+
+    return isamAppliance.create_return_object(data=data)
+
 
 def delete(isamAppliance, id, type, check_mode=False, force=False):
     """

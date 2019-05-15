@@ -4,8 +4,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 module_uri = "/isam/felb/configuration/ha"
-requires_module = None
+requires_modules = None
 requires_version = None
+
+
+def get(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieving HA configuration
+    """
+    return isamAppliance.invoke_get("Retrieving HA configuration", module_uri,
+                                    requires_version=requires_version, requires_modules=requires_modules)
 
 
 def disable(isamAppliance, check_mode=False, force=False):
@@ -16,9 +24,9 @@ def disable(isamAppliance, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete("Disabling HA", "{0}".format(module_uri),
+            return isamAppliance.invoke_delete("Disabling HA", module_uri,
                                                requires_version=requires_version,
-                                               requires_modules=requires_module)
+                                               requires_modules=requires_modules)
     else:
         return isamAppliance.create_return_object()
 
@@ -33,7 +41,7 @@ def enable(isamAppliance, is_primary, interface, remote, port, health_check_inte
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post("Enabling HA", "{0}".format(module_uri),
+            return isamAppliance.invoke_post("Enabling HA", module_uri,
                                              {
                                                  "is_primary": is_primary,
                                                  "interface": interface,
@@ -41,17 +49,9 @@ def enable(isamAppliance, is_primary, interface, remote, port, health_check_inte
                                                  "port": port,
                                                  "health_check_interval": health_check_interval,
                                                  "health_check_timeout": health_check_timeout
-                                             }, requires_version=requires_version, requires_modules=requires_module)
+                                             }, requires_version=requires_version, requires_modules=requires_modules)
     else:
         return isamAppliance.create_return_object()
-
-
-def get(isamAppliance, check_mode=False, force=False):
-    """
-    Retrieving HA configuration
-    """
-    return isamAppliance.invoke_get("Retrieving HA configuration", "{0}".format(module_uri),
-                                    requires_version=requires_version, requires_modules=requires_module)
 
 
 def update(isamAppliance, is_primary, interface, remote, port, health_check_interval,
@@ -77,7 +77,7 @@ def update(isamAppliance, is_primary, interface, remote, port, health_check_inte
                                                 "health_check_interval": health_check_interval,
                                                 "health_check_timeout": health_check_timeout
 
-                                            }, requires_modules=requires_module, requires_version=requires_version)
+                                            }, requires_modules=requires_modules, requires_version=requires_version)
     else:
         return isamAppliance.create_return_object()
 
@@ -136,7 +136,7 @@ def _check_disable(isamAppliance):
 
 def compare(isamAppliance1, isamAppliance2):
     """
-    Compare cluster configuration between two appliances
+    Compare FELB HA configuration between two appliances
     """
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)

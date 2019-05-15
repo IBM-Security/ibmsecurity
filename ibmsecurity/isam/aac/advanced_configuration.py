@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/override-configs"
-requires_modules = ["mga"]
+requires_modules = ["mga", "federation"]
 requires_version = None
 
 

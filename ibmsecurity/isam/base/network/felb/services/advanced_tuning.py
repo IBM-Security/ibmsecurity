@@ -77,11 +77,12 @@ def update(isamAppliance, service_name, attribute_name, attribute_value, check_m
             return isamAppliance.invoke_put("Updating a service attribute",
                                             "{0}{1}/attributes/{2}".format(module_uri, service_name, attribute_name),
                                             {
-                                              "value": attribute_value
+                                                "value": attribute_value
                                             },
                                             requires_modules=requires_modules, requires_version=requires_versions)
     else:
         return isamAppliance.create_return_object()
+
 
 def set(isamAppliance, service_name, attribute_name, attribute_value, check_mode=False, force=False):
     """
@@ -94,6 +95,7 @@ def set(isamAppliance, service_name, attribute_name, attribute_value, check_mode
         return add(isamAppliance, service_name, attribute_name, attribute_value, check_mode, force)
 
     return update(isamAppliance, service_name, attribute_name, attribute_value, check_mode, force)
+
 
 def compare(isamAppliance1, isamAppliance2):
     """

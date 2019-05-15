@@ -178,8 +178,8 @@ def _check(isamAppliance, name, chainItems, description, new_name=None):
         if description is not None:
             json_data['description'] = description
         if (new_name is not None and ret_obj['data']['name'] != name) or (
-                        description is not None and ret_obj['data']['description'] != description) or (
-                    _flatten_chain(chainItems) != _flatten_chain(ret_obj['data']['chainItems'])):
+                description is not None and ret_obj['data']['description'] != description) or (
+                _flatten_chain(chainItems) != _flatten_chain(ret_obj['data']['chainItems'])):
             logger.info("Changes detected, update needed.")
             update_required = True
         else:
