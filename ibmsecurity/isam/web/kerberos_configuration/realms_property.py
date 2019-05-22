@@ -195,6 +195,6 @@ def set(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=F
     ret_obj = search(isamAppliance, realm, propname, subsection)
 
     if ret_obj["data"] == {}:
-        return add(isamAppliance, realm, propname, propvalue, subsection, check_mode, force)
+        return add(isamAppliance, realm, propname, propvalue, subsection, check_mode, force=True)
 
     return update(isamAppliance, realm, propname, propvalue, subsection, check_mode, force)
