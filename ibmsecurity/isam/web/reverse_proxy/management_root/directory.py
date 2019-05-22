@@ -5,12 +5,21 @@ import os.path
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance, instance_id, check_mode=False, force=False):
+def get(isamAppliance, instance_id, dir_name='', recursive=True, check_mode=False, force=False):
     """
-    Retrieving the current administration pages root contents
+    Retrieving the current administration pages contents of a directory.
+    Parameter variables have the following behavior:
+        dir_name and recursive not set => recursively list from root directory (default behavior)
+        dir_name only set => list recursively from dir_name and below
+        recursive set to False => directory listing of dir_name (which defaults to root)
     """
-    return isamAppliance.invoke_get("Retrieving the current administration pages root contents",
-                                    "/wga/reverseproxy/{0}/management_root?recursive=yes".format(instance_id))
+    if recursive:
+        return isamAppliance.invoke_get("Retrieving the current administration pages root contents",
+                                        "/wga/reverseproxy/{0}/management_root/{1}?recursive=yes".format(instance_id,
+                                                                                                         dir_name))
+    else:
+        return isamAppliance.invoke_get("Retrieving the current administration pages root contents",
+                                        "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, dir_name))
 
 
 def _check(isamAppliance, instance_id, id, name):
