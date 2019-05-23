@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 
 uri = "/mga/template_files"
 
+requires_modules = ["mga", "federation"]
+requires_version = None
+
 
 def export_file(isamAppliance, filename, check_mode=False, force=False):
     """
@@ -19,7 +22,8 @@ def export_file(isamAppliance, filename, check_mode=False, force=False):
             return isamAppliance.invoke_get_file(
                 "Export all Runtime Template Files",
                 "{0}/?export=true".format(uri),
-                filename, no_headers=True)
+                filename, no_headers=True, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -43,7 +47,8 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
             ],
             {
                 "force": force
-            }, json_response=False)
+            }, json_response=False, requires_modules=requires_modules,
+            requires_version=requires_version)
 
 
 def check(isamAppliance, id, type, check_mode=False, force=False):

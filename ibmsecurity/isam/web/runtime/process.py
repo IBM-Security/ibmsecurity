@@ -28,7 +28,7 @@ def _check(isamAppliance):
 
 def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", ldap_host=None, ldap_port=None,
            ldap_dn=None, ldap_pwd=None, ldap_ssl_db=None, ldap_ssl_label=None, ldap_suffix=None, clean_ldap=False,
-           domain="Default", admin_cert_lifetime="1460", isam_host=None, isam_port="7135",
+           domain="Default", admin_cert_lifetime="1460", ssl_compliance="none", isam_host=None, isam_port="7135",
            check_mode=False, force=False):
     """
     Configure Runtime Component
@@ -54,6 +54,7 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
                                                  "domain": domain,
                                                  "admin_pwd": admin_pwd,
                                                  "admin_cert_lifetime": admin_cert_lifetime,
+                                                 "ssl_compliance": ssl_compliance,
                                                  "isam_host": isam_host,
                                                  "isam_port": isam_port
                                              })
