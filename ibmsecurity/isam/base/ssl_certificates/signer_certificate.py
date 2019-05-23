@@ -103,9 +103,16 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     """
     import urllib
 
+    try:
+      # Assume Python3 and import package
+      from urllib.parse import quote
+    except ImportError:
+      # Now try to import Python2 package
+      from urllib import quote
+  
     # URL being encoded primarily to handle spaces and other special characers in them
     f_uri = "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id)
-    full_uri = urllib.quote(f_uri)
+    full_uri = quote(f_uri)
     
     if force is True or _check(isamAppliance, kdb_id, cert_id) is True:
         if check_mode is True:
