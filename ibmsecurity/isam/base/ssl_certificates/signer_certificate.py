@@ -105,9 +105,18 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            # URL being encoded primarily to handle spaces and other special characers in them
+            f_uri = "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id)
+            full_uri = quote(f_uri)
             return isamAppliance.invoke_delete(
-                "Deleting a signer certificate from a certificate database",
-                "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id))
+                "Deleting a signer certificate from a certificate database", full_uri)
 
     return isamAppliance.create_return_object()
 

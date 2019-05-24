@@ -11,7 +11,7 @@ import ibmsecurity.isam.web.kerberos_configuration.realms as realms
 import ibmsecurity.isam.web.kerberos_configuration.realms_subsection as subsections
 
 
-def search(isamAppliance, realm, propname, subsection=None, check_mode=False, force=False):
+def search(isamAppliance, realm, propname, subsection=None, includeValuesInLine='yes', check_mode=False, force=False):
     """
     Search kerberos realm property by name
     """
@@ -22,7 +22,10 @@ def search(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
         uriprop = "{0}/{1}".format(realm, subsection)
 
     logger.info("property to search under: {0} where property is: {1}".format(uriprop, propname))
-    ret_obj = realms._get(isamAppliance, uriprop)
+    ret_obj = isamAppliance.invoke_get("Retrieve realm configuration", "{0}/{1}{2}".format(uri, realm, 
+      tools.create_query_string(includeValuesInLine=includeValuesInLine)),
+      requires_modules=requires_modules, requires_version=requires_version)
+
     return_obj = isamAppliance.create_return_object()
     return_obj["warnings"] = ret_obj["warnings"]
 
@@ -47,7 +50,7 @@ def _check(isamAppliance, realm, propname, propvalue, subsection=None):
 
     propstring = "{0} = {1}".format(propname, propvalue)
 
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
+    ret_obj = search(isamAppliance, realm, propname, subsection)
     logger.debug("Looking for existing kerberos property {0} in {1}".format(propname, ret_obj['data']))
     if ret_obj['data'] != {}:
         if ret_obj['data'] == propstring:
@@ -108,7 +111,7 @@ def delete(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
         uriprop = "{0}/{1}".format(realm, subsection)
 
     logger.debug(" Remove param uri = {0}/{1}/{2}".format(uri, uriprop, propname))
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
+    ret_obj = search(isamAppliance, realm, propname, subsection)
 
     if ret_obj['data'] == {} and force is False:
         return isamAppliance.create_return_object(
@@ -141,7 +144,7 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
         return isamAppliance.create_return_object(
             warnings=["Subsection: {0}/{1} does not exists.".format(realm, subsection)])
 
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
+    ret_obj = search(isamAppliance, realm, propname, subsection)
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
@@ -174,3 +177,24 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             warnings=warnings)
     return isamAppliance.create_return_object(warnings=warnings)
+
+def set(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=False, force=False):
+    """
+    Set kerberos realm property
+
+    :param isamAppliance:
+    :return:
+    """
+    if realms.search(isamAppliance, realm) == {}:
+        return isamAppliance.create_return_object(warnings=["Realm: {0} does not exists: ".format(realm)])
+
+    if subsection is not None and subsections._check(isamAppliance, realm, subsection) is False:
+        return isamAppliance.create_return_object(
+            warnings=["Subsection: {0}/{1} does not exists.".format(realm, subsection)])
+
+    ret_obj = search(isamAppliance, realm, propname, subsection)
+
+    if ret_obj["data"] == {}:
+        return add(isamAppliance, realm, propname, propvalue, subsection, check_mode, force=True)
+
+    return update(isamAppliance, realm, propname, propvalue, subsection, check_mode, force)
