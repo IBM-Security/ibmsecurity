@@ -3,13 +3,18 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga", "federation"]
+requires_version = None
+
 
 def get_all(isamAppliance, check_mode=False, force=False, ignore_error=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files?recursive=yes", ignore_error=ignore_error)
+                                    "/mga/template_files?recursive=yes", ignore_error=ignore_error,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, path, recursive=None, check_mode=False, force=False):
@@ -18,8 +23,10 @@ def get(isamAppliance, path, recursive=None, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
                                     "/mga/template_files/{}/{}".format(path,
-                                                                     ibmsecurity.utilities.tools.create_query_string(
-                                                                         recursive=recursive)))
+                                                                       ibmsecurity.utilities.tools.create_query_string(
+                                                                           recursive=recursive)),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def _check(isamAppliance, id):
@@ -85,7 +92,8 @@ def create(isamAppliance, path, name, check_mode=False, force=False):
                 {
                     'dir_name': name,
                     'type': 'dir'
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -111,7 +119,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a directory in the runtime template files directory",
-                "/mga/template_files/{0}".format(id))
+                "/mga/template_files/{0}".format(id), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -133,7 +142,6 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
         split_dir = id.split('/')
         path = split_dir[:-1]
         new_path = '/'.join([str(x) for x in path]) + "/" + new_name
-
     except:
         logger.info("New path can't be build from id: {0} and new_name: {1}.".format(id, new_name))
 
@@ -154,7 +162,8 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
                 {
                     'new_name': new_name,
                     'type': 'directory'
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
