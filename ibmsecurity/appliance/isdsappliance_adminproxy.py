@@ -5,6 +5,7 @@ import logging
 from ibmsecurity.appliance.ibmappliance import IBMAppliance
 from ibmsecurity.appliance.isdsappliance import ISDSAppliance
 from ibmsecurity.appliance.ibmappliance import IBMError
+from ibmsecurity.utilities.tools import basestring
 
 
 class ISDSApplianceAdminProxy(ISDSAppliance):

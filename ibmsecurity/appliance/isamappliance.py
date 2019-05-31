@@ -6,6 +6,7 @@ from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
 from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import basestring
 
 
 class ISAMAppliance(IBMAppliance):
@@ -450,7 +451,7 @@ class ISAMAppliance(IBMAppliance):
 
         args = {}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'json' and value != {}:
                 json_data = json.dumps(value)
                 self.logger.debug("Input json Data: " + json_data)

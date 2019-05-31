@@ -1,6 +1,7 @@
 import logging
 import ibmsecurity.utilities.tools
 import ibmsecurity.isam.base.network.interfaces
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 

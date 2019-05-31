@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 

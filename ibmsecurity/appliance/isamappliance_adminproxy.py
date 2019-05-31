@@ -5,6 +5,7 @@ import logging
 from .ibmappliance import IBMAppliance
 from .isamappliance import ISAMAppliance
 from .ibmappliance import IBMError
+from ibmsecurity.utilities.tools import basestring
 
 
 class ISAMApplianceAdminProxy(ISAMAppliance):

@@ -13,6 +13,7 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.7',
         'License :: IBM :: Apache',
         'Operating System :: OS Independent',
         'Development Status :: GA',
@@ -22,7 +23,6 @@ setup(
     ],
     zip_safe = False,
     install_requires = [
-        'importlib',
         'requests'
     ]
 )

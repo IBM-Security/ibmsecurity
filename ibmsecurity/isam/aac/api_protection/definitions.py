@@ -1,6 +1,7 @@
 import logging
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.aac import access_policy
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
