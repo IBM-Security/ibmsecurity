@@ -101,7 +101,7 @@ def _check_import(isamAppliance, id, filepath, check_mode=False):
     tmpdir = get_random_temp_dir()
     tmp_original_file = os.path.join(tmpdir, os.path.basename("tempfile.txt"))
 
-    export_file(isamAppliance, id=id, filepath=tmp_original_file, check_mode=False, force=True)
+    export_file(isamAppliance, id=id, filepath=tmp_original_file)
 
     if files_same(tmp_original_file, filepath):
         logger.debug("files are the same, so we don't want to do anything")
