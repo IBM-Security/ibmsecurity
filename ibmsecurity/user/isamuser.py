@@ -6,7 +6,7 @@ class ISAMUser(User) :
     
     def __init__(self, password, username = None):
         self.logger = logging.getLogger(__name__)
-        self.logger.debug('Creating a user')
+        #self.logger.debug('Creating a user')
 
         if username is None:
             User.__init__(self, password=password, username=self.super_user)

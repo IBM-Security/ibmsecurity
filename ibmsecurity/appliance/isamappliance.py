@@ -1,5 +1,6 @@
 import json
 import requests
+import traceback
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
@@ -514,15 +515,20 @@ class ISAMAppliance(IBMAppliance):
         """
         # Fact collection will abort on any exception
         try:
+            #self.logger.info("Get version")
             self.get_version()
+            #self.logger.info("Version: " + str(self.facts['version']))
 
             # Check if appliance is setup before collecting Activation information
             import ibmsecurity.isam.base.setup_complete
             ret_obj = ibmsecurity.isam.base.setup_complete.get(self)
             if ret_obj['data'].get('configured') is True:
+                #self.logger.info("Appliance configured")
                 self.get_activations()
+                #self.logger.info("Activations: " + str(self.facts['activations']))
         # Exceptions like those connection related will be ignored
-        except:
+        except Exception as e:
+            self.logger.error( traceback.print_exc() )
             pass
 
     def get_version(self):
@@ -556,6 +562,7 @@ class ISAMAppliance(IBMAppliance):
                     self.facts['firmware_label'] = ret_obj['data']['firmware_label']
 
         except IBMError:
+            self.logger.error( traceback.print_exc() )
             try:
                 ret_obj = ibmsecurity.isam.base.firmware.get(self)
                 for partition in ret_obj['data']:
@@ -564,6 +571,7 @@ class ISAMAppliance(IBMAppliance):
                         self.facts['version'] = ver[-1]
                 self.facts['model'] = "Appliance"
             except:
+                self.logger.error( traceback.print_exc() )
                 pass
         return
 
