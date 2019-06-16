@@ -71,7 +71,7 @@ def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=N
     """
     update_needed = False
     json_data = {}
-    if isinstance(enabled, basestring):
+    if isinstance(enabled, str):
         if enabled.lower() == 'true':
             enabled = True
         else:

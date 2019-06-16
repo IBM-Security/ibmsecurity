@@ -38,7 +38,7 @@ def add(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
     """
     Add configuration entry by stanza - Authorization Server
     """
-    if isinstance(entries, basestring):
+    if isinstance(entries, str):
         import ast
         entries = ast.literal_eval(entries)
 
@@ -82,7 +82,7 @@ def set(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
 
     Smart enough to update only that which is needed.
     """
-    if isinstance(entries, basestring):
+    if isinstance(entries, str):
         import ast
         entries = ast.literal_eval(entries)
 

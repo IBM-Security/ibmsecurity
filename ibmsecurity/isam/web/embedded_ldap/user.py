@@ -38,7 +38,7 @@ def add(isamAppliance, id, password, groups=None, check_mode=False, force=False)
                 "password": password
             }
             if groups is not None:
-                if isinstance(groups, basestring):
+                if isinstance(groups, str):
                     import ast
                     groups = ast.literal_eval(groups)
                 json_data['groups'] = groups

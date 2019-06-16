@@ -40,7 +40,7 @@ def get(isamAppliance, server, port, protocol, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, basestring):
+    if isinstance(port, str):
         port=int(port)
 
     return_obj = isamAppliance.create_return_object()
@@ -59,7 +59,7 @@ def delete(isamAppliance, server, port, protocol, check_mode=False, force=False)
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, basestring):
+    if isinstance(port, str):
         port=int(port)
 
     existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)
@@ -79,7 +79,7 @@ def set(isamAppliance, server, port, protocol='udp', debug=False, keyfile=None, 
         client_certificate=None, permitted_peers=None, sources=[], check_mode=False, force=False):
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, basestring):
+    if isinstance(port, str):
         port=int(port)
 
     warnings = []

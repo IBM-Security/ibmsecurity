@@ -1,5 +1,5 @@
 import logging
-from user import User
+from .user import User
 
 class ISAMUser(User) :
     super_user = "sec_master"

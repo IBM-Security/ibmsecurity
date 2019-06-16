@@ -174,12 +174,12 @@ def _check(isamAppliance, id, config, enabled, type, verbose):
         else:
             cfg['value'] = str(cfg['value'])
     # Ensure boolean variables are set correctly
-    if isinstance(verbose, basestring):
+    if isinstance(verbose, str):
         if verbose.lower() == "true":
             verbose = True
         else:
             verbose = False
-    if isinstance(enabled, basestring):
+    if isinstance(enabled, str):
         if enabled.lower() == "true":
             enabled = True
         else:

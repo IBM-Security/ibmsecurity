@@ -10,7 +10,7 @@ class ISDSAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISDSAppliance')
-        if isinstance(lmi_port, basestring):
+        if isinstance(lmi_port, str):
             self.lmi_port = int(lmi_port)
         else:
             self.lmi_port = lmi_port
