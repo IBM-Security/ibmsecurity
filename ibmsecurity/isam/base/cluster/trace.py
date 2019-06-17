@@ -14,7 +14,7 @@ def get(isamAppliance, check_mode=False, force=False):
 def _check(isamAppliance, dsc):
     ret_obj = get(isamAppliance)
 
-    if isinstance(dsc, basestring):
+    if isinstance(dsc, str):
         import ast
         dsc = ast.literal_eval(dsc)
 

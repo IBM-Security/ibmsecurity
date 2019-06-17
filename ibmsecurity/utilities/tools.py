@@ -99,11 +99,11 @@ def random_password(length=12, allow_special=True):
     myrg = random.SystemRandom()
 
     # If you want non-English characters, remove the [0:52]
-    alphabet = string.letters[0:52] + string.digits
+    alphabet = string.ascii_letters[0:52] + string.digits
     if allow_special is True:
         alphabet = alphabet + "!@#$%^&*()"
 
-    pw = str().join(myrg.choice(alphabet) for _ in xrange(length))
+    pw = str().join(myrg.choice(alphabet) for _ in range(length))
 
     return pw
 
@@ -244,4 +244,4 @@ def version_compare(version1, version2):
         v = re.sub(r'_b\d+$', '', v)
         return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
 
-    return cmp(normalize(version1), normalize(version2))
+    return normalize(version1) == normalize(version2)

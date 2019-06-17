@@ -82,7 +82,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if hvdb_driver_type is not None:
         cluster_json["hvdb_driver_type"] = hvdb_driver_type
     if hvdb_solid_tc is not None:
-        if (isinstance(hvdb_solid_tc, basestring)):
+        if (isinstance(hvdb_solid_tc, str)):
             import ast
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
         cluster_json["hvdb_solid_tc"] = hvdb_solid_tc
@@ -108,7 +108,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_driver_type is not None:
         cluster_json["cfgdb_driver_type"] = cfgdb_driver_type
     if cfgdb_solid_tc is not None:
-        if (isinstance(cfgdb_solid_tc, basestring)):
+        if (isinstance(cfgdb_solid_tc, str)):
             import ast
             cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
         cluster_json["cfgdb_solid_tc"] = cfgdb_solid_tc

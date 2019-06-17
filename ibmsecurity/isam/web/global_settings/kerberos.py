@@ -214,7 +214,7 @@ def set_realm_param(isamAppliance, realm, paramuri, paramname, paramvalue, check
         if param_exists_flag is True:
             ret_obj = remove_kerberos_param(isamAppliance, realm, paramuri, paramname, paramvalue, check_mode, force)
 
-        if isinstance(paramvalue, basestring): 
+        if isinstance(paramvalue, str): 
             return isamAppliance.invoke_post(description="Add kerberos param", uri="{0}/{1}".format(uri, paramuri),
                                              data={
                                                  "name": paramname,
@@ -257,7 +257,7 @@ def set_domain_realm(isamAppliance, realm, paramuri, paramname, paramvalue, chec
 
     else:
 
-        if isinstance(paramvalue, basestring): 
+        if isinstance(paramvalue, str): 
             param_exists_flag = _check_param(isamAppliance, paramuri, paramvalue, paramvalue)
             if param_exists_flag is True and force is False:
                 return isamAppliance.create_return_object(warnings=["Found domain realm: {0} - {1}. Ignoring update.".format(paramvalue,realm)])

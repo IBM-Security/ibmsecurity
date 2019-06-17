@@ -31,7 +31,7 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
     """
 
     # Make sure if only one hostname is entered that it is an array
-    if isinstance(hostnames, basestring):
+    if isinstance(hostnames, str):
         hostnames = [hostnames]
 
     ret_obj = isamAppliance.create_return_object()
@@ -71,7 +71,7 @@ def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
     """
 
     # Make sure if only one hostname is entered that it is an array
-    if isinstance(hostnames, basestring):
+    if isinstance(hostnames, str):
         hostnames = [hostnames]
 
     ret_obj = isamAppliance.create_return_object()

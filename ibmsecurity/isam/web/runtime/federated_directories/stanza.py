@@ -37,7 +37,7 @@ def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=Fa
     """
     Create a new federated directory
     """
-    if (isinstance(suffix, basestring)):
+    if (isinstance(suffix, str)):
         import ast
         suffix = ast.literal_eval(suffix)
 

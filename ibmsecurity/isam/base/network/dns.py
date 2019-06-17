@@ -17,7 +17,7 @@ def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=
     """
     Update date/time settings (set NTP server and timezone)
     """
-    if isinstance(auto, basestring):
+    if isinstance(auto, str):
         if auto.lower() == 'true':
             auto = True
         else:

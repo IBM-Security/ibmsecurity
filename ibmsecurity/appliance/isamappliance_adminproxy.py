@@ -15,7 +15,7 @@ class ISAMApplianceAdminProxy(ISAMAppliance):
         self.adminProxyHostname = adminProxyHostname
         
         # Type checking and tranformation to safely reuse this variable later on
-        if isinstance(adminProxyPort, basestring):
+        if isinstance(adminProxyPort, str):
             self.adminProxyPort = int(adminProxyPort)
         else:
             self.adminProxyPort = adminProxyPort

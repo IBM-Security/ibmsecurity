@@ -29,13 +29,13 @@ def add(isamAppliance, address, enabled=True, maskOrPrefix=None, gateway=None, l
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
     if maskOrPrefix is None:
         maskOrPrefix = ""
-    if isinstance(maskOrPrefix, basestring):
+    if isinstance(maskOrPrefix, str):
         if maskOrPrefix.lower() == 'none':
             maskOrPrefix = ""
-    if isinstance(table, basestring):
+    if isinstance(table, str):
         if table.lower() == 'none':
             table = None
-    if isinstance(metric, basestring):
+    if isinstance(metric, str):
         if metric.lower() == 'none':
             metric = None
         else:
@@ -82,18 +82,18 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
         address = new_address
     if maskOrPrefix is None:
         maskOrPrefix = ''
-    if isinstance(maskOrPrefix, basestring):
+    if isinstance(maskOrPrefix, str):
         if maskOrPrefix.lower() == 'none':
             maskOrPrefix = ''
-    if isinstance(table, basestring):
+    if isinstance(table, str):
         if table.lower() == 'none':
             table = None
-    if isinstance(metric, basestring):
+    if isinstance(metric, str):
         if metric.lower() == 'none':
             metric = None
         else:
             metric = int(metric)
-    if isinstance(enabled, basestring):
+    if isinstance(enabled, str):
         if enabled.lower() == 'true':
             enabled = True
         else:

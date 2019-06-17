@@ -38,7 +38,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     """
     Adding a configuration entry or entries by stanza - Reverse Proxy
     """
-    if isinstance(entries, basestring):
+    if isinstance(entries, str):
         import ast
         entries = ast.literal_eval(entries)
 
@@ -82,7 +82,7 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 
     Smart enough to update only that which is needed.
     """
-    if isinstance(entries, basestring):
+    if isinstance(entries, str):
         import ast
         entries = ast.literal_eval(entries)
 
@@ -165,8 +165,8 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
             # URL encode
-            import urllib
-            full_uri = urllib.quote(ruri)
+            import urllib.parse
+            full_uri = urllib.parse.quote(ruri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 
