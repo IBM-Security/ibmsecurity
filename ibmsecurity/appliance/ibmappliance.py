@@ -38,8 +38,7 @@ class IBMResponse(dict):
         return True
 
 
-class IBMAppliance:
-    __metaclass__ = ABCMeta
+class IBMAppliance(metaclass=ABCMeta):
 
     def __init__(self, hostname, user):
         self.logger = logging.getLogger(__name__)
