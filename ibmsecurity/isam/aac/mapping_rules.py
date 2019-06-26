@@ -217,6 +217,8 @@ def import_file(isamAppliance, name, filename, check_mode=False, force=False):
     Import a mapping rule (replace)
     """
     update_required = False
+    import os
+    logger.info("cwd = " + str(os.getcwd() ))
     if force is False:
         ret_obj = search(isamAppliance, name)
         if ret_obj['data'] != {}:
