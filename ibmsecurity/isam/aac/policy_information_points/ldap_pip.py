@@ -37,8 +37,8 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
                                                 requires_version=requires_version
                                                 )
         except IBMError as e:
-            if "404" in e[0]:
-                response = isamAppliance.create_return_object(rc=404, data=e[1])
+            if "404" in e.args[0]:
+                response = isamAppliance.create_return_object(rc=404, data=e.args[1])
             else:
                 raise
 
@@ -98,10 +98,11 @@ def add(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serverCo
                 )
 
             except IBMError as e:
-                if "400" in e[0]:
-                    response = isamAppliance.create_return_object(rc=400, data=e[1])
-                elif "409" in e[0]:
-                    response = isamAppliance.create_return_object(rc=409, data=e[1])
+                logger.exception(e)
+                if "400" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=400, data=e.args[1])
+                elif "409" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=409, data=e.args[1])
                 else:
                     raise
 
@@ -126,8 +127,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
                     requires_modules=requires_modules, requires_version=requires_version
                 )
             except IBMError as e:
-                if "404" in e[0]:
-                    response = isamAppliance.create_return_object(rc=404, data=e[1])
+                if "404" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=404, data=e.args[1])
                 else:
                     raise
 
@@ -160,8 +161,8 @@ def update(isamAppliance, name, searchBaseDN, searchFilter, searchTimeout, serve
                 "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules,
                 requires_version=requires_version)
         except IBMError as e:
-            if "400" in e[0]:
-                response = isamAppliance.create_return_object(rc=400, data=e[1])
+            if "400" in e.args[0]:
+                response = isamAppliance.create_return_object(rc=400, data=e.args[1])
             else:
                 raise
 
