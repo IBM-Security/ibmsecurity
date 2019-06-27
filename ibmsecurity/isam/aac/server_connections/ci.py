@@ -65,10 +65,10 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
 
 
             except IBMError as e:
-                if "400" in e[0]:
-                    response = isamAppliance.create_return_object(rc=400, data=e[1]);
-                elif "409" in e[0]:
-                    response = isamAppliance.create_return_object(rc=409, data=e[1]);
+                if "400" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=400, data=e.args[1]);
+                elif "409" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=409, data=e.args[1]);
                 else:
                     raise;
 
@@ -107,8 +107,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
                     "/mga/server_connections/ci/{0}/v1".format(id), requires_modules=requires_modules,
                     requires_version=requires_version)
             except IBMError as e:
-                if "404" in e[0]:
-                    response = isamAppliance.create_return_object(rc=404, data=e[1]);
+                if "404" in e.args[0]:
+                    response = isamAppliance.create_return_object(rc=404, data=e.args[1]);
                 else:
                     raise;
 
@@ -133,8 +133,8 @@ def update(isamAppliance, id, connection, description='', locked=False, name=Non
                 "/mga/server_connections/ci/{0}/v1".format(id), json_data, requires_modules=requires_modules,
                 requires_version=requires_version)
         except IBMError as e:
-            if "400" in e[0]:
-                response = isamAppliance.create_return_object(rc=400, data=e[1]);
+            if "400" in e.args[0]:
+                response = isamAppliance.create_return_object(rc=400, data=e.args[1]);
             else:
                 raise;
 
