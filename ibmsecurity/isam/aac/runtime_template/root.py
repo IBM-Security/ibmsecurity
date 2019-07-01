@@ -121,15 +121,15 @@ def _check_import(isamAppliance, filename):
 def check(isamAppliance, id, type, check_mode=False, force=False):
     ret_obj = None
 
+    name = os.path.basename(id)
+    path = os.path.dirname(id)
+
     if (type.lower() == 'directory'):
         ret_obj = directory._check(isamAppliance, id)
     elif (type.lower() == 'file'):
-        ret_obj = file._check(isamAppliance, id)
+        ret_obj = file._check(isamAppliance, path, name)
     else:
         type = 'unknown'
-
-    name = os.path.basename(id)
-    path = os.path.dirname(id)
 
     data = {
         'id': ret_obj,
@@ -152,7 +152,11 @@ def delete(isamAppliance, id, type, check_mode=False, force=False):
     :param force:
     :return:
     """
+    
+    name = os.path.basename(id)
+    path = os.path.dirname(id)
+    
     if(type.lower() == 'directory'):
       return directory.delete(isamAppliance, id, check_mode, force)
     elif(type.lower() == 'file'):
-      return file.delete(isamAppliance, id, check_mode, force)
+      return file.delete(isamAppliance, path, name, check_mode, force)
