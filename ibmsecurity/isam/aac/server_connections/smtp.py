@@ -66,6 +66,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            ret_obj = _get_id(isamAppliance, name=name)
+            id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a SMTP server connection",
                 "/mga/server_connections/smtp/{0}/v1".format(id))
@@ -87,6 +89,8 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
                                  connectionManager=connectionManager)
         if new_name is not None:  # Rename condition
             json_data['name'] = new_name
+        ret_obj = _get_id(isamAppliance, name=name)
+        id = ret_obj['data']
         return isamAppliance.invoke_put(
             "Modifying a SMTP server connection",
             "/mga/server_connections/smtp/{0}/v1".format(id), json_data)
