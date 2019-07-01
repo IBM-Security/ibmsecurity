@@ -67,6 +67,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            ret_obj = search(isamAppliance, name)
+            id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a JDBC server connection",
                 "/mga/server_connections/jdbc/{0}/v1".format(id))
