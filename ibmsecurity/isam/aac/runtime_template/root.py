@@ -106,15 +106,19 @@ def _check_import(isamAppliance, filename):
     tempfile =  os.path.join(tempdir, tempfilename)
     export_file(isamAppliance, tempfile)
     
-    identical = files_same_zip_content(filename,tempfile)
+    if os.path.exists(tempfile):
+      identical = files_same_zip_content(filename,tempfile)
     
-    shutil.rmtree(tempdir)
-    if identical:
-        logger.info("runtime template files {} are identical with the server content. No update necessary.".format(filename))
-        return False
+      shutil.rmtree(tempdir)
+      if identical:
+          logger.info("runtime template files {} are identical with the server content. No update necessary.".format(filename))
+          return False
+      else:
+          logger.info("runtime template files {} differ from the server content. Updating runtime template files necessary.".format(filename))
+          return True
     else:
-        logger.info("runtime template files {} differ from the server content. Updating runtime template files necessary.".format(filename))
-        return True
+      logger.info("missing zip file from server. Comparison skipped.")
+      return False
 
 
 
