@@ -26,7 +26,11 @@ def add(isamAppliance, address, enabled=True, maskOrPrefix=None, gateway=None, l
     """
     Creating a static route
     """
+    warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
+    if interfaceUUID is None and label is not None:
+        warnings.append("Interface {0} not found, Add static route is not supported.".format(label))
+        return isamAppliance.create_return_object(changed=False, warnings=warnings)
     if maskOrPrefix is None:
         maskOrPrefix = ""
     if isinstance(maskOrPrefix, basestring):
@@ -69,7 +73,11 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
     """
     Updating a static route
     """
+    warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
+    if interfaceUUID is None and label is not None:
+        warnings.append("Interface {0} not found, Update static route is not supported.".format(label))
+        return isamAppliance.create_return_object(changed=False, warnings=warnings)
     uuid = _get_uuid(isamAppliance, address, interfaceUUID)
     if uuid is None:
         logger.info("Unable to find Static Route to modify: {0} / {1}".format(address, interfaceUUID))
@@ -148,7 +156,11 @@ def delete(isamAppliance, address, label, vlanId=None, check_mode=False, force=F
     """
     Delete a static route
     """
+    warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
+    if interfaceUUID is None and label is not None:
+        warnings.append("Interface {0} not found, Delete static route is not supported.".format(label))
+        return isamAppliance.create_return_object(changed=False, warnings=warnings)
     uuid = _get_uuid(isamAppliance, address, interfaceUUID)
 
     if force is True or uuid is not None:
