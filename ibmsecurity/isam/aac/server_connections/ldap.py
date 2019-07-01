@@ -89,6 +89,8 @@ def update(isamAppliance, connection, description='', locked=False, connectionMa
                                  connection=connection, connectionManager=connectionManager)
         if new_name is not None:  # Rename condition
             json_data['name'] = new_name
+        ret_obj = _get_id(isamAppliance, name=name)
+        id = ret_obj['data']
         return isamAppliance.invoke_put(
             "Modifying an LDAP server connection",
             "/mga/server_connections/ldap/{0}/v1".format(id), json_data)
