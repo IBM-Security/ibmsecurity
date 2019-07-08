@@ -77,7 +77,7 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     """
     Set a configuration entry or entries by stanza - Reverse Proxy
 
-    Note: entries has to be [['key', 'value1'], ['key', 'value2]], cannot provide [['key', ['value1', 'value2']]]
+    Note: entries has to be [['key', 'value1'], ['key', 'value2']], cannot provide [['key', ['value1', 'value2']]]
     get() returns the second format - thus lots of logic to handle this discrepancy.
 
     Smart enough to update only that which is needed.
