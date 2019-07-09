@@ -110,10 +110,10 @@ def add(isamAppliance, name, uri, description="", attributes=None, properties=No
                         logger.info("Found EmailMessage.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                     elif property['key'] == "ScimConfig.serverConnection":
                         id = ws.search(isamAppliance, property['value'])['data']
-                        logger.info("Found ScimConfig.serverConnection by name[{0}] with uuid[{}]".format(property['value'], id))
+                        logger.info("Found ScimConfig.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                     elif property['key'] == "CI.serverConnection":
                         id = ci._get_id(isamAppliance, property['value'])['data']
-                        logger.info("Found CI.serverConnection by name[{0}] with uuid[{}]".format(property['value'], id))
+                        logger.info("Found CI.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                     if id != {}:
                         property['value'] = id
                 json_data['properties'] = properties
@@ -222,10 +222,10 @@ def _check(isamAppliance, name, description, attributes, properties, predefined,
                     logger.info("Found EmailMessage.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                 elif property['key'] == "ScimConfig.serverConnection":
                     id = ws.search(isamAppliance, property['value'])['data']
-                    logger.info("Found ScimConfig.serverConnection by name[{0}] with uuid[{}]".format(property['value'], id))
+                    logger.info("Found ScimConfig.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                 elif property['key'] == "CI.serverConnection":
                     id = ci._get_id(isamAppliance, property['value'])['data']
-                    logger.info("Found CI.serverConnection by name[{0}] with uuid[{}]".format(property['value'], id))
+                    logger.info("Found CI.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
                 if id != {}:
                     property['value'] = id
             json_data['properties'] = properties
