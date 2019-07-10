@@ -69,7 +69,7 @@ def _check(isamAppliance, service_json):
     logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
     logger.debug("JSON to Apply: {0}".format(service_json))
 
-    for key, value in service_json.iteritems():
+    for key, value in service_json.items():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(
