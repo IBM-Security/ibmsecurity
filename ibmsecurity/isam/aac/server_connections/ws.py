@@ -117,15 +117,16 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
         if 'uuid' in ret_obj['data']:
             del ret_obj['data']['uuid']
 
+        if 'password' in connection:
+            warnings.append("Since existing password cannot be read - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
+            connection.pop('password', None)
+
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
         logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
         logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
-        if sorted_ret_obj != sorted_json_data:
-            needs_update = True
 
-        if 'password' in connection:
-            warnings.append("Since existing password cannot be read - this call will not be idempotent.")
+        if sorted_ret_obj != sorted_json_data:
             needs_update = True
 
     if force is True or needs_update is True:
