@@ -33,7 +33,7 @@ def get(isamAppliance, id, variable_names=None, check_mode=False, force=False):
                 query_str = '?'
             else:
                 query_str += '&'
-            for key, value in var.iteritems():
+            for key, value in var.items():
                 query_str += "{0}={1}".format(key, value)
 
     return isamAppliance.invoke_get("Retrieve a connector instruction set",

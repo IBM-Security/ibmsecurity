@@ -149,7 +149,7 @@ def _check(isamAppliance, cluster_json):
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
     logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
-    for key, value in cluster_json.iteritems():
+    for key, value in cluster_json.items():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(

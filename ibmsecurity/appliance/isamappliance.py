@@ -447,7 +447,7 @@ class ISAMAppliance(IBMAppliance):
 
         args = {}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'json' and value != {}:
                 json_data = json.dumps(value)
                 self.logger.debug("Input json Data: " + json_data)
