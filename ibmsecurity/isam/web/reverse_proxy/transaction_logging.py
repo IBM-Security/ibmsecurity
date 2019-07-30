@@ -19,7 +19,7 @@ def get(isamAppliance, instance_id, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
-def get_log_files(isamAppliance, instance_id, component_id, check_mode=False, force=False):
+def get_files(isamAppliance, instance_id, component_id, check_mode=False, force=False):
     """
     Retrieving all transaction log files for a component
 
@@ -108,7 +108,7 @@ def delete_unused(isamAppliance, instance_id, component_id, check_mode=False, fo
     Deleting the unused transaction logging data file and rollover files for a component
     """
 
-    ret_obj = get_log_files(isamAppliance, instance_id=instance_id, component_id=component_id)
+    ret_obj = get_files(isamAppliance, instance_id=instance_id, component_id=component_id)
 
     if force is True or ret_obj['data'] != []:
         if check_mode is True:
@@ -144,7 +144,7 @@ def delete_multiple_files(isamAppliance, instance_id, component_id, files, check
     delete_required = False
     files_to_delete = []
 
-    ret_obj = get_log_files(isamAppliance, instance_id, component_id)
+    ret_obj = get_files(isamAppliance, instance_id, component_id)
 
     for obj1 in files:
         for obj2 in ret_obj['data']:
@@ -202,7 +202,7 @@ def _check_file(isamAppliance, instance_id, component_id, file_id):
     """
     Check to see if the file_id exists or not
     """
-    ret_obj = get_log_files(isamAppliance, instance_id, component_id)
+    ret_obj = get_files(isamAppliance, instance_id, component_id)
 
     for obj in ret_obj['data']:
         if obj['id'] == file_id:

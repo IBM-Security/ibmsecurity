@@ -1,4 +1,4 @@
-def get_records(isamAppliance, check_mode=False, force=False):
+def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve a list of all update history records
     """

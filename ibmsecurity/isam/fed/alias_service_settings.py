@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 # URI for this module
 uri = "/iam/access/v8/alias_settings"
 requires_modules = ["federation"]
-requires_version = "9.0.1.0"
+requires_version = "9.0.6.0"
 
 
 def get(isamAppliance, check_mode=False, force=False):

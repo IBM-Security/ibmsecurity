@@ -5,7 +5,7 @@ from ibmsecurity.utilities.tools import json_sort
 
 logger = logging.getLogger(__name__)
 uri = "/mga/server_connections/isamruntime"
-requires_modules = ["mga"]
+requires_modules = ["mga", "federation"]
 requires_version = "9.0.5.0"
 
 
@@ -18,32 +18,32 @@ def get_all(isamAppliance, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
-def get(isamAppliance, connectionUUID, check_mode=False, force=False):
+def get(isamAppliance, name=None, check_mode=False, force=False):
     """
-    Retrieving a list of all ISAM Runtime server connections
+    Retrieving an ISAM Runtime server connection
     """
-    return isamAppliance.invoke_get("Retrieving a list of all ISAM Runtime server connections",
-                                    "{0}/{1}/v1".format(uri, connectionUUID),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+
+    ret_obj = search(isamAppliance, name=name)
+    id = ret_obj['data']
+
+    if id == {}:
+        return isamAppliance.create_return_object()
+    else:
+        return isamAppliance.invoke_get("Retrieving an ISAM Runtime server connection",
+                                        "{0}/{1}/v1".format(uri, id),
+                                        requires_modules=requires_modules, requires_version=requires_version)
 
 
-def add(isamAppliance, name, connection, locked=False, description=None, type="isamruntime", check_mode=False,
+def add(isamAppliance, name, connection, description="", locked=False, type="isamruntime", check_mode=False,
         force=False):
     """
     Creating an ISAM Runtime server connection
     """
 
-    ret_obj = search(isamAppliance, name, check_mode=False, force=False)
-    uuid = ret_obj['data']
-
-    if uuid != {}:
-        logger.info("isamruntime '{0}' already exists.  Skipping add.".format(name))
-
-    if force is True or uuid == {}:
+    if force is True or _check_exists(isamAppliance, name=name) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-
             return isamAppliance.invoke_post(
                 "Creating an ISAM Runtime server connection",
                 "{0}/v1".format(uri),
@@ -109,7 +109,6 @@ def update(isamAppliance, name, connection, locked=False, description=None, type
     if force is True or update_required is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
-
         else:
 
             return isamAppliance.invoke_put(
@@ -136,7 +135,7 @@ def set(isamAppliance, name, locked=False, connection=None, description=None, ty
     if uuid == {}:
         # If no uuid was found, Force the add
         return add(isamAppliance, name=name, locked=locked, connection=connection, description=description,
-                   check_mode=check_mode, force=force)
+                   check_mode=check_mode, force=True)
     else:
         # Update isamruntime
         return update(isamAppliance, name=name, locked=locked, connection=connection, description=description,
@@ -197,3 +196,16 @@ def search(isamAppliance, name, force=False, check_mode=False):
             ret_obj_new['data'] = obj['uuid']
 
     return ret_obj_new
+
+
+def _check_exists(isamAppliance, name=None, id=None):
+    """
+    Check if ISAM runtime Connection already exists
+    """
+    ret_obj = get_all(isamAppliance)
+
+    for obj in ret_obj['data']:
+        if (name is not None and obj['name'] == name) or (id is not None and obj['uuid'] == id):
+            return True
+
+    return False

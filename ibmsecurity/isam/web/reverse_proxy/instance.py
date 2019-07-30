@@ -163,7 +163,7 @@ def execute(isamAppliance, id, operation="restart", check_mode=False, force=Fals
     return isamAppliance.create_return_object()
 
 
-def execute_multiple_instances(isamAppliance, instances, operation, check_mode=False, force=False):
+def execute_multiples(isamAppliance, instances, operation, check_mode=False, force=False):
     """
     Stopping, starting, or restarting multiple instances
 
