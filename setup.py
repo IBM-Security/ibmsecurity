@@ -13,7 +13,7 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'License :: IBM :: Apache',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Development Status :: GA',
         'Environment :: Console',
