@@ -14,6 +14,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def json_sort(json_data):
     if isinstance(json_data, dict):
         return sorted((key, json_sort(value)) for key, value in json_data.items())
