@@ -51,7 +51,7 @@ def connect(isamAppliance, server, port, ssl=True, timeout=60, key=None, showcer
         'tlsextdebug': tlsextdebug
     }
 
-    for k, value in default_data.iteritems():
+    for k, value in default_data.items():
         if value is not None:
             json_data[k] = value
 

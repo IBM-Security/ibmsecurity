@@ -1,6 +1,7 @@
 import logging
 from ibmsecurity.isam.base.remote_syslog import forwarder
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 

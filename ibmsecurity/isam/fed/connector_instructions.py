@@ -26,14 +26,15 @@ def get(isamAppliance, id, variable_names=None, check_mode=False, force=False):
 
     TODO: test variable_names...
     """
-    query_str = None
+    query_str = ""
     if variable_names is not None:
         for var in variable_names:
-            if query_str is None:
+            if query_str == "":
                 query_str = '?'
             else:
                 query_str += '&'
-            for key, value in var.iteritems():
+
+            for key, value in var.items():
                 query_str += "{0}={1}".format(key, value)
 
     return isamAppliance.invoke_get("Retrieve a connector instruction set",

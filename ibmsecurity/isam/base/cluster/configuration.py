@@ -2,6 +2,7 @@ import logging
 import copy
 import ibmsecurity.utilities.tools
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +166,7 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
     else:
         temp = cluster_json
 
-    for key, value in temp.iteritems():
+    for key, value in temp.items():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(

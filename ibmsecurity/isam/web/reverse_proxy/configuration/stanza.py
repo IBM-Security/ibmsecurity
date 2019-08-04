@@ -78,7 +78,7 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
         entries[stanza] = {}
         stanza_entries = ibmsecurity.isam.web.reverse_proxy.configuration.entry.get_all(isamAppliance1, reverseproxy_id,
                                                                                         stanza)
-        for k, v in stanza_entries['data'].iteritems():
+        for k, v in stanza_entries['data'].items():
             if k not in ignore_entries:
                 entries[stanza][str(k)] = v
     ret_obj1['data'] = entries
@@ -89,7 +89,7 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
         entries[stanza] = {}
         stanza_entries = ibmsecurity.isam.web.reverse_proxy.configuration.entry.get_all(isamAppliance2, reverseproxy_id,
                                                                                         stanza)
-        for k, v in stanza_entries['data'].iteritems():
+        for k, v in stanza_entries['data'].items():
             if k not in ignore_entries:
                 entries[stanza][str(k)] = v
     ret_obj2['data'] = entries

@@ -65,7 +65,7 @@ def _check_license(isamAppliance, license):
         node = tree.find(path)
         if node is not None:
             ocnnumber = node.text
-            for item, value in ret_obj['data'].iteritems():
+            for item, value in ret_obj['data'].items():
                 if 'ocn' in value and value['ocn'] == ocnnumber:
                     return True
         else:
