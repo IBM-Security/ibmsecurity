@@ -585,7 +585,7 @@ class ISAMAppliance(IBMAppliance):
         self.facts['activations'] = []
         import ibmsecurity.isam.base.activation
 
-        ret_obj = ibmsecurity.isam.base.activation.get(self)
+        ret_obj = ibmsecurity.isam.base.activation.get_all(self)
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])
