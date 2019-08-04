@@ -1,6 +1,7 @@
 import logging
 from ibmsecurity.appliance.ibmappliance import IBMError
 from ibmsecurity.utilities.tools import json_compare
+from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
