@@ -1,9 +1,12 @@
 import logging
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get(isamAppliance, state_id, check_mode=False, force=False):
     """

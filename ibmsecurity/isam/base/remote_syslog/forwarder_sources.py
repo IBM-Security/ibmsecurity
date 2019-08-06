@@ -1,10 +1,13 @@
 import logging
 from ibmsecurity.isam.base.remote_syslog import forwarder
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get_all(isamAppliance, server, port, protocol, check_mode=False, force=False):
     """

@@ -1,7 +1,6 @@
 import logging
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.aac import access_policy
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +9,10 @@ uri = "/iam/access/v8/definitions"
 requires_modules = ["mga", "federation"]
 requires_version = None
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """

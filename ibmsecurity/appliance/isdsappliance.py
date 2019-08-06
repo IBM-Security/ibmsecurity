@@ -5,8 +5,11 @@ import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import basestring
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 class ISDSAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):

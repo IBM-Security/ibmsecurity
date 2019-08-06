@@ -1,8 +1,11 @@
 import logging
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get(isamAppliance, check_mode=False, force=False):
     """

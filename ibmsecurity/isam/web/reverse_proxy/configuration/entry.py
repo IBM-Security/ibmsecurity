@@ -1,6 +1,10 @@
 import logging
 import ibmsecurity.utilities.tools
-from ibmsecurity.utilities.tools import basestring
+
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 logger = logging.getLogger(__name__)
 

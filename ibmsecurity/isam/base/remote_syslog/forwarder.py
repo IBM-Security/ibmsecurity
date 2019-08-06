@@ -1,6 +1,5 @@
 import logging
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +8,10 @@ uri = "/isam/rsyslog_forwarder"
 requires_modules = None
 requires_version = "9.0.2.1"
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """

@@ -1,5 +1,4 @@
 import logging
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
@@ -7,6 +6,10 @@ uri = "/mga/user_registry/users"
 requires_modules = ["mga", "federation"]
 requires_version = None
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
