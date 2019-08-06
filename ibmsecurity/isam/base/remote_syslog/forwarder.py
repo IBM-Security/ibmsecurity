@@ -13,6 +13,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieve the current remote syslog forwarding policy

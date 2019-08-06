@@ -12,6 +12,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 class ISAMApplianceAdminProxy(ISAMAppliance):
     def __init__(self, adminProxyHostname, user, hostname, adminProxyProtocol='https', adminProxyPort=443,
                  adminProxyApplianceShortName=False):

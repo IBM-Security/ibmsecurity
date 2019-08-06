@@ -14,6 +14,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve the current cluster configuration

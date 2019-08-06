@@ -12,6 +12,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
         self.logger = logging.getLogger(__name__)

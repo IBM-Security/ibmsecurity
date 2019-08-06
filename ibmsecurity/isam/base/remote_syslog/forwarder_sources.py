@@ -9,6 +9,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def get_all(isamAppliance, server, port, protocol, check_mode=False, force=False):
     """
     Retrieve the remote syslog forwarding sources

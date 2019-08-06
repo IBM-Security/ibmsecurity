@@ -8,6 +8,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def get(isamAppliance, state_id, check_mode=False, force=False):
     """
     Get a grant

@@ -11,6 +11,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving a list of all current users in the registry

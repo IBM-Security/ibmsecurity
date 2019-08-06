@@ -9,6 +9,7 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+
 def add(isamAppliance, label, vlanId, name='', enabled=False, comment='', overrideSubnetChecking=False, bondedTo='',
         bondingMode=None, check_mode=False, force=False):
     """
