@@ -5,8 +5,12 @@ import logging
 from .ibmappliance import IBMAppliance
 from .isamappliance import ISAMAppliance
 from .ibmappliance import IBMError
-from ibmsecurity.utilities.tools import basestring
+from ibmsecurity.utilities import tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 class ISAMApplianceAdminProxy(ISAMAppliance):
     def __init__(self, adminProxyHostname, user, hostname, adminProxyProtocol='https', adminProxyPort=443,

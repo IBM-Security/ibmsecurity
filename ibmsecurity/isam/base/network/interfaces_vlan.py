@@ -1,10 +1,13 @@
 import logging
 import ibmsecurity.utilities.tools
 import ibmsecurity.isam.base.network.interfaces
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def add(isamAppliance, label, vlanId, name='', enabled=False, comment='', overrideSubnetChecking=False, bondedTo='',
         bondingMode=None, check_mode=False, force=False):

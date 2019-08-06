@@ -2,7 +2,6 @@ import logging
 import copy
 import ibmsecurity.utilities.tools
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import basestring
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +9,10 @@ uri = "/isam/cluster/v2"
 requires_modules = None
 requires_version = None
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 def get(isamAppliance, check_mode=False, force=False):
     """
