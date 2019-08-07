@@ -27,18 +27,20 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 
 def set(isamAppliance, name, connection, type, jndiId, description='', locked=False, connectionManager=None,
-        check_mode=False, force=False):
+        new_name=None, check_mode=False, force=False):
     """
     Creating or Modifying an JDBC server connection
     """
     if _check_exists(isamAppliance, name=name) is False:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name, connection, type, jndiId, description, locked, connectionManager, check_mode,
-                   True)
+        return add(isamAppliance, name=name, connection=connection, type=type, jndiId=jndiId, description=description,
+                   locked=locked, connectionManager=connectionManager, check_mode=check_mode,
+                   force=True)
     else:
         # Update request
-        return update(isamAppliance, name, connection, type, jndiId, description, locked, connectionManager, None,
-                      check_mode, force)
+        return update(isamAppliance=isamAppliance, name=name, connection=connection, type=type, jndiId=jndiId,
+                      description=description, locked=locked, connectionManager=connectionManager, new_name=new_name,
+                      check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, connection, type, jndiId, description='', locked=False, connectionManager=None,
@@ -59,7 +61,7 @@ def add(isamAppliance, name, connection, type, jndiId, description='', locked=Fa
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, name=None, check_mode=False, force=False):
+def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting a JDBC server connection
     """
@@ -67,6 +69,8 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            ret_obj = search(isamAppliance, name=name)
+            id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a JDBC server connection",
                 "/mga/server_connections/jdbc/{0}/v1".format(id))
@@ -81,18 +85,23 @@ def update(isamAppliance, name, connection, type, jndiId, description='', locked
 
     Use new_name to rename the connection, cannot compare password so update will take place everytime
     """
-    if check_mode is True:
-        return isamAppliance.create_return_object(changed=True)
-    else:
-        json_data = _create_json(name=name, description=description, locked=locked, type=type,
-                                 connection=connection, connectionManager=connectionManager, jndiId=jndiId)
-        ret_obj = search(isamAppliance, name)
-        id = ret_obj['data']
-        if new_name is not None:  # Rename condition
-            json_data['name'] = new_name
-        return isamAppliance.invoke_put(
-            "Modifying a JDBC server connection",
-            "/mga/server_connections/jdbc/{0}/v1".format(id), json_data)
+
+    if force is True or _check_exists(isamAppliance, name):
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            json_data = _create_json(name=name, description=description, locked=locked, type=type,
+                                     connection=connection, connectionManager=connectionManager, jndiId=jndiId)
+            ret_obj = search(isamAppliance, name)
+            id = ret_obj['data']
+
+            if new_name is not None:  # Rename condition
+                json_data['name'] = new_name
+
+            return isamAppliance.invoke_put("Modifying a JDBC server connection",
+                                            "/mga/server_connections/jdbc/{0}/v1".format(id), json_data)
+
+    return isamAppliance.create_return_object()
 
 
 def _create_json(name, description, locked, type, jndiId, connection, connectionManager):
