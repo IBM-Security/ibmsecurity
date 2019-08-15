@@ -309,7 +309,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         http2_junction=None, http2_proxy=None, sni_name=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
-    TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
+    TODO: Compare all the parameters in the function - BA are some that are not being compared
     """
     warnings = []
     add_required = False
@@ -500,6 +500,24 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         sni_name = None
                     else:
                         jct_json['sni_name'] = sni_name
+                if insert_ltpa_cookies is not None:
+                    if insert_ltpa_cookies != 'no':
+                        jct_json['insert_ltpa_cookies'] = insert_ltpa_cookies
+
+                        if ltpa_keyfile is not None:
+                            jct_json['ltpa_keyfile'] = ltpa_keyfile
+
+                        if version_two_cookies is not None:
+                            jct_json['version_two_cookies'] = version_two_cookies
+
+                        if ltpa_keyfile_password is not None:
+                            if not force:
+                                logger.debug("Skipping ltpa_keyfile_password for idempotency.")
+                                warnings.append("Module can not compare ltpa_keyfile_password with server. Skipping parameter for idempotency. Force update of ltpa_keyfile_password by setting force=true.")
+                                if 'ltpa_keyfile_password' in exist_jct:
+                                    del exist_jct['ltpa_keyfile_password']
+                            else:
+                                jct_json['ltpa_keyfile_password'] = ltpa_keyfile_password
 
                 # TODO: Not sure of how to match following attributes! Need to revisit.
                 # TODO: Not all function parameters are being checked - need to add!
