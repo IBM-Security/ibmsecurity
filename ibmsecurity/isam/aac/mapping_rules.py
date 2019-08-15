@@ -78,9 +78,9 @@ def set(isamAppliance, name, category, filename=None, content=None, upload_filen
         else:
             filename = _extract_filename(upload_filename)
     if _check(isamAppliance, name=name) is False:
-        # Force the add - we already know connection does not exist
+        # need to check for duplicate filename constraint violations on add
         return add(isamAppliance, name=name, filename=filename, content=content, category=category,
-                   check_mode=check_mode, force=True)
+                   check_mode=check_mode, force=force)
     else:
         # Update request
         return update(isamAppliance, name=name, content=content, check_mode=check_mode, force=force)
@@ -90,7 +90,7 @@ def add(isamAppliance, name, filename=None, content=None, category="OAUTH", chec
     """
     Add a mapping rule
     """
-    if force is True or _check(isamAppliance, name) is False:
+    if force is True or _check(isamAppliance, name=name, filename=filename) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -106,7 +106,7 @@ def add(isamAppliance, name, filename=None, content=None, category="OAUTH", chec
                     "category": category
                 })
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(rc=1, warnings=["mapping rule {} could not be added.".format(name)])
 
 
 def delete(isamAppliance, name, check_mode=False, force=False):
@@ -245,14 +245,17 @@ def import_file(isamAppliance, name, filename, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, name):
+def _check(isamAppliance, name, filename=None):
     """
-    Check if Mapping Rules already exists
+    Check if Mapping Rules already exists based on the name and filename
     """
     ret_obj = get_all(isamAppliance)
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
+            return True
+        if filename is not None and obj['fileName'] == filename:
+            logger.warning("Found mapping rule [{}] with same filename[{}]. This filename violates duplicate key value unique constraint. Choose another filename for [{}] or delete corresponding mapping rule [{}] to solve this".format(obj['name'],filename,filename,obj['name']))
             return True
 
     return False
