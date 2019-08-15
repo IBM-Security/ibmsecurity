@@ -1,5 +1,5 @@
 import logging
-import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +95,40 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
 
     Use new_name to rename the connection, cannot compare password so update will take place everytime
     """
+    ret_obj = get(isamAppliance, name)
+    warnings = ret_obj["warnings"]
 
-    if force is True or _check_exists(isamAppliance, name):
+    if ret_obj["data"] == {}:
+        warnings.append("Web Service connection {0} not found, skipping update.".format(name))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        id = ret_obj["data"]["uuid"]
+
+    needs_update = False
+
+    json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
+    if new_name is not None:  # Rename condition
+        json_data['name'] = new_name
+
+    if force is not True:
+        if 'uuid' in ret_obj['data']:
+            del ret_obj['data']['uuid']
+
+        if 'password' in connection:
+            warnings.append("Since existing password cannot be read for ws connections - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
+            connection.pop('password', None)
+
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+
+        if sorted_ret_obj != sorted_json_data:
+            needs_update = True
+
+    if force is True or needs_update is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
             if new_name is not None:  # Rename condition
@@ -120,12 +150,10 @@ def set(isamAppliance, name, connection, description='', locked=False, new_name=
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance=isamAppliance, name=name, connection=connection, description=description,
-                   locked=locked, check_mode=check_mode, force=True)
+        return add(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, check_mode=check_mode, force=True)
     else:
         # Update request
-        return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description,
-                      locked=locked, new_name=new_name, check_mode=check_mode, force=force)
+        return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, new_name=new_name, check_mode=check_mode, force=force)
 
 
 def _create_json(name, description, locked, connection):
