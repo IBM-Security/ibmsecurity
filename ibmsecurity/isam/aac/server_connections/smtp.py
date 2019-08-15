@@ -14,11 +14,11 @@ def get_all(isamAppliance, check_mode=False, force=False):
                                     "/mga/server_connections/smtp/v1")
 
 
-def get(isamAppliance, name=None, check_mode=False, force=False):
+def get(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieving a SMTP server connection
     """
-    ret_obj = _get_id(isamAppliance, name=name)
+    ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
 
     if id == {}:
@@ -28,18 +28,16 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
                                         "/mga/server_connections/smtp/{0}/v1".format(id))
 
 
-def set(isamAppliance, name, connection, description='', locked=False, connectionManager=None, check_mode=False,
-        force=False):
+def set(isamAppliance, name, connection, description='', locked=False, connectionManager=None, new_name=None, check_mode=False, force=False):
     """
     Creating or Modifying an SMTP server connection
     """
     if _check_exists(isamAppliance, name=name) is False:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name, connection, description, locked, connectionManager, check_mode, True)
+        return add(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, connectionManager=connectionManager, check_mode=check_mode, force=True)
     else:
         # Update request
-        return update(isamAppliance, name, connection, description, locked, connectionManager, None,
-                      check_mode, force)
+        return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, connectionManager=connectionManager, new_name=new_name, check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, connection, description='', locked=False, connectionManager=None, check_mode=False,
@@ -60,7 +58,7 @@ def add(isamAppliance, name, connection, description='', locked=False, connectio
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, name=None, check_mode=False, force=False):
+def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting a SMTP server connection
     """
@@ -68,7 +66,7 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            ret_obj = _get_id(isamAppliance, name=name)
+            ret_obj = search(isamAppliance, name=name)
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a SMTP server connection",
@@ -103,7 +101,7 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
         if 'uuid' in ret_obj['data']:
             del ret_obj['data']['uuid']
         if 'password' in connection:
-            warnings.append("Since existing password cannot be read - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
+            warnings.append("Since existing password cannot be read for smtp connections - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
             connection.pop('password', None)
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
@@ -144,7 +142,7 @@ def _create_json(name, description, locked, connection, connectionManager):
     return json
 
 
-def _get_id(isamAppliance, name):
+def search(isamAppliance, name):
     """
     Retrieve UUID for named SMTP connection
     """

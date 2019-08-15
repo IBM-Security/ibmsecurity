@@ -69,7 +69,7 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, name=None, check_mode=False, force=False):
+def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting a Web Service connection
     """
@@ -118,7 +118,7 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
             del ret_obj['data']['uuid']
 
         if 'password' in connection:
-            warnings.append("Since existing password cannot be read - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
+            warnings.append("Since existing password cannot be read for ws connections - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new password.")
             connection.pop('password', None)
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
@@ -141,17 +141,16 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def set(isamAppliance, name, connection, description='', locked=False, check_mode=False, force=False):
+def set(isamAppliance, name, connection, description='', locked=False, new_name=None, check_mode=False, force=False):
     """
     Creating or Modifying a Web Service connection
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name, connection, description, locked, check_mode, True)
+        return add(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, check_mode=check_mode, force=True)
     else:
         # Update request
-        return update(isamAppliance, connection, description, locked, name, None,
-                      check_mode, force)
+        return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, new_name=new_name, check_mode=check_mode, force=force)
 
 
 def _create_json(name, description, locked, connection):

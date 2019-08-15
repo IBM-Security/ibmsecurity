@@ -14,11 +14,11 @@ def get_all(isamAppliance, check_mode=False, force=False):
                                     "/mga/server_connections/ldap/v1")
 
 
-def get(isamAppliance, name=None, check_mode=False, force=False):
+def get(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieving an LDAP server connection
     """
-    ret_obj = _get_id(isamAppliance, name=name)
+    ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
 
     if id == {}:
@@ -29,17 +29,16 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
 
 
 def set(isamAppliance, name, connection, description='', locked=False, connectionManager=None, servers=None,
-        check_mode=False, force=False):
+        new_name=None, check_mode=False, force=False):
     """
     Creating or Modifying an LDAP server connection
     """
     if _check_exists(isamAppliance, name=name) is False:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name, connection, description, locked, connectionManager, servers, check_mode, True)
+        return add(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, connectionManager=connectionManager, servers=servers, check_mode=check_mode, force=True)
     else:
         # Update request
-        return update(isamAppliance, connection, description, locked, connectionManager, servers, name, None,
-                      check_mode, force)
+        return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description, locked=locked, connectionManager=connectionManager, servers=servers, new_name=new_name, check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, connection, description='', locked=False, connectionManager=None, servers=None,
@@ -60,7 +59,7 @@ def add(isamAppliance, name, connection, description='', locked=False, connectio
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, name=None, check_mode=False, force=False):
+def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting an LDAP server connection
     """
@@ -68,7 +67,7 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            ret_obj = _get_id(isamAppliance, name=name)
+            ret_obj = search(isamAppliance, name=name)
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting an LDAP server connection",
@@ -77,7 +76,7 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, connection, description='', locked=False, connectionManager=None, servers=None, name=None,
+def update(isamAppliance, name, connection, description='', locked=False, connectionManager=None, servers=None,
            new_name=None, check_mode=False, force=False):
     """
     Modifying an LDAP server connection
@@ -104,7 +103,7 @@ def update(isamAppliance, connection, description='', locked=False, connectionMa
         if 'uuid' in ret_obj['data']:
             del ret_obj['data']['uuid']
         if 'bindPwd' in connection:
-            warnings.append("Since existing bindPwd cannot be read - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new bindPwd.")
+            warnings.append("Since existing bindPwd cannot be read for ldap connections - this parameter will be ignored for idempotency. Add 'force' parameter to update the connection with a new bindPwd.")
             connection.pop('bindPwd', None)
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
@@ -146,7 +145,7 @@ def _create_json(name, description, locked, servers, connection, connectionManag
     return json
 
 
-def _get_id(isamAppliance, name):
+def search(isamAppliance, name):
     """
     Retrieve UUID for named LDAP connection
     """
