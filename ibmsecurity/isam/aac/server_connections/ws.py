@@ -1,5 +1,5 @@
 import logging
-from ibmsecurity.utilities import tools
+import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
@@ -75,28 +75,25 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     """
     ret_obj = search(isamAppliance, name, check_mode=check_mode, force=force)
     id = ret_obj["data"]
-    warnings = ret_obj["warnings"]
 
-    if id == {}:
-        logger.info("Web Service connection {0} not found, skipping delete.".format(name))
-    else:
+    if force is True or _check_exists(isamAppliance, name=name) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a Web Service connection",
                 "{0}/{1}/v1".format(uri, id), requires_modules=requires_modules,
-                requires_version=requires_version, warnings=warnings)
+                requires_version=requires_version)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, connection, description='', locked=False, name=None, new_name=None,
+def update(isamAppliance, name, connection, description='', locked=False, new_name=None,
            check_mode=False, force=False):
     """
     Modifying a Web Service connection
 
-    Use new_name to rename the connection
+    Use new_name to rename the connection, cannot compare password so update will take place everytime
     """
     ret_obj = get(isamAppliance, name)
     warnings = ret_obj["warnings"]
@@ -129,16 +126,22 @@ def update(isamAppliance, connection, description='', locked=False, name=None, n
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
 
-    if force is True or needs_update is True:
+    if force is True or _check_exists(isamAppliance, name):
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
+            json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
+            if new_name is not None:  # Rename condition
+                json_data['name'] = new_name
+
+            ret_obj = search(isamAppliance, name=name)
+            id = ret_obj['data']
             return isamAppliance.invoke_put(
                 "Modifying a Web Service connection",
                 "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
-                requires_version=requires_version, warnings=warnings)
+                requires_version=requires_version)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
 def set(isamAppliance, name, connection, description='', locked=False, new_name=None, check_mode=False, force=False):
@@ -182,3 +185,16 @@ def compare(isamAppliance1, isamAppliance2):
         del obj['uuid']
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['uuid'])
+
+
+def _check_exists(isamAppliance, name=None, id=None):
+    """
+    Check if WS Connection already exists
+    """
+    ret_obj = get_all(isamAppliance)
+
+    for obj in ret_obj['data']:
+        if (name is not None and obj['name'] == name) or (id is not None and obj['uuid'] == id):
+            return True
+
+    return False

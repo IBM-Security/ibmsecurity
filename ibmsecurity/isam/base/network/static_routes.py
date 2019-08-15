@@ -4,6 +4,11 @@ import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """

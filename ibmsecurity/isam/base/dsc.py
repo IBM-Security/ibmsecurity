@@ -44,7 +44,7 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
+def _check(isamAppliance, cluster_json):
     """
     Check if provided json values match the configuration on appliance
 

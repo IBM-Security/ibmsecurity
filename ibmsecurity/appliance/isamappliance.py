@@ -7,6 +7,11 @@ from .ibmappliance import IBMError
 from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
@@ -450,7 +455,7 @@ class ISAMAppliance(IBMAppliance):
 
         args = {}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'json' and value != {}:
                 json_data = json.dumps(value)
                 self.logger.debug("Input json Data: " + json_data)
@@ -585,7 +590,7 @@ class ISAMAppliance(IBMAppliance):
         self.facts['activations'] = []
         import ibmsecurity.isam.base.activation
 
-        ret_obj = ibmsecurity.isam.base.activation.get(self)
+        ret_obj = ibmsecurity.isam.base.activation.get_all(self)
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])

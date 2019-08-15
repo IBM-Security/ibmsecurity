@@ -24,7 +24,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        return isamAppliance.create_return_object(1)
+        return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving a CI server connection",
                                         "/mga/server_connections/ci/{0}/v1".format(id),
@@ -95,11 +95,11 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
         id = ret_obj["data"]["uuid"]
 
     needs_update = False
-    
+
     json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
     if new_name is not None:  # Rename condition
         json_data['name'] = new_name
-    
+
     if force is not True:
         if 'uuid' in ret_obj['data']:
             del ret_obj['data']['uuid']
@@ -114,7 +114,7 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
 
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
-    
+
     if force is True or needs_update is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)

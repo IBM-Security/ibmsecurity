@@ -30,6 +30,26 @@ def _get_template(isamAppliance):
                                     "/wga_templates/dynurl_template.json")
 
 
+def export_template(isamAppliance, filename, check_mode=False, force=False):
+    """
+    Exporting the DynURL configuration file template
+    """
+
+    if os.path.exists(filename) is True:
+        logger.info("File '{0}' already exists.  Skipping export.".format(filename))
+        return isamAppliance.create_return_object()
+
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_get_file(
+            "Exporting the DynURL configuration file template",
+            "/wga_templates/dynurl_template?export",
+            filename)
+
+    return isamAppliance.create_return_object()
+
+
 def add(isamAppliance, name, dynurl_config_data=None, check_mode=False, force=False):
     """
     Add a URL Mapping
