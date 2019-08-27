@@ -1,5 +1,6 @@
 import logging
 import os.path
+import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +21,37 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
                                     "/isam/ssl_certificates/{0}/personal_cert/{1}".format(kdb_id, cert_id))
 
 
-def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='1024', check_mode=False, force=False):
+def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='1024', signature_algorithm='',
+             check_mode=False, force=False):
     """
     Generating a self-signed personal certificate in a certificate database
     """
+
+    warnings = []
+
+    if signature_algorithm is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
+            warnings.append("Appliance at version: {0}, signature_algorithm is not supported. Needs 9.0.2.0 or higher. "
+                            "Ignoring signature_algorithm for this call".format(isamAppliance.facts["version"]))
+            json_obj = {
+                "operation": 'generate',
+                "label": label,
+                "dn": dn,
+                "expire": expire,
+                'default': default,
+                'size': size
+            }
+        else:
+            json_obj = {
+                "operation": 'generate',
+                "label": label,
+                "dn": dn,
+                "expire": expire,
+                'default': default,
+                'size': size,
+                'signature_algorithm': signature_algorithm
+            }
+
     if force is True or _check(isamAppliance, kdb_id, label) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -31,16 +59,11 @@ def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size=
             return isamAppliance.invoke_post(
                 "Generating a self-signed personal certificate in a certificate database",
                 "/isam/ssl_certificates/{0}/personal_cert".format(kdb_id),
-                {
-                    "operation": 'generate',
-                    "label": label,
-                    "dn": dn,
-                    "expire": expire,
-                    'default': default,
-                    'size': size
-                })
+                json_obj,
+                warnings=warnings
+            )
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
 
 def set(isamAppliance, kdb_id, cert_id, default='no', check_mode=False, force=False):
