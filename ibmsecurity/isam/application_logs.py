@@ -12,12 +12,13 @@ def get_all(isamAppliance, file_path='', recursive='yes', flat_details=None, che
     Retrieving the contents of a directory from the application log files area
 
     flat_details - takes 'yes' or 'no'
+    file_path - use the "path" value obtained when run with flat_details = 'yes'
     """
     return isamAppliance.invoke_get("Retrieving the contents of a directory from the application log files area",
-                                    "{0}/{1}/{2}".format(uri, file_path,
-                                                         tools.create_query_string(
-                                                             recursive=recursive,
-                                                             flat_details=flat_details)))
+                                    "{0}/{1}{2}".format(uri, file_path,
+                                                        tools.create_query_string(
+                                                            recursive=recursive,
+                                                            flat_details=flat_details)))
 
 
 def get(isamAppliance, file_path, length=None, start=None, check_mode=False, force=False):
