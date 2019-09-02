@@ -44,13 +44,15 @@ class Container(object):
     a wrapper to the service specific Container objects.
     """
 
-    def __init__(self):
+    config_volume_path = "/var/iag/config"
+
+    def __init__(self, config_file = None):
         super(Container, self).__init__()
 
         if run_kubernetes():
             self.client_ = KubernetesContainer()
         else:
-            self.client_ = DockerContainer()
+            self.client_ = DockerContainer(config_file)
 
     def setEnv(self, name, value):
         """
@@ -137,10 +139,11 @@ class DockerContainer(object):
     the specified configuration information.
     """
 
-    def __init__(self):
+    def __init__(self, config_file):
         super(DockerContainer, self).__init__()
 
         self.env_       = {}
+        self.cfgFile_   = config_file
         self.client_    = docker.from_env()
         self.container_ = None
 
@@ -164,9 +167,16 @@ class DockerContainer(object):
             raise Exception(
                     "A container has already been started in this object.")
 
+        volumes = []
+
+        if self.cfgFile_ is not None:
+            volumes.append("{0}:{1}/config.yaml".format(
+                                self.cfgFile_, Container.config_volume_path))
+
         self.container_ = self.client_.containers.run(image, auto_remove=True, 
                                 environment=self.env_, detach=True,
-                                publish_all_ports=True)
+                                publish_all_ports=True,
+                                volumes = volumes)
 
     def reload(self):
         """
