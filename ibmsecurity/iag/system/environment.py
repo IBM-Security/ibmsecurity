@@ -17,7 +17,7 @@ from functools import reduce
 
 logger  = logging.getLogger(__name__)
 
-class Config(object):
+class Environment(object):
     """
     This class is used to manage access to the configuration data for the
     test run.
@@ -29,9 +29,9 @@ class Config(object):
     config_ = None
 
     def __init__(self):
-        super(Config, self).__init__()
+        super(Environment, self).__init__()
 
-        Config.loadConfig()
+        Environment.loadConfig()
 
     @staticmethod
     def get(path):
@@ -48,10 +48,10 @@ class Config(object):
 
         # If the path is not available as an environment variable we now 
         # check to see if it is contained in our configuration files.
-        Config.loadConfig()
+        Environment.loadConfig()
 
         value = reduce(lambda acc, nxt: acc[nxt], path.split("."), 
-                        Config.config_)
+                        Environment.config_)
 
         if value is None:
             message = "The {0} configuration value is missing!".format(path)
@@ -69,7 +69,7 @@ class Config(object):
         into a static variable so that we only perform the load a single time.
         """
 
-        if Config.config_ is None:
+        if Environment.config_ is None:
             # We always load our default yaml file, but can also be instructed
             # to augment this configuration with an additional yaml file.  This
             # allows us to specify a yaml file which over-rides certain
@@ -82,17 +82,17 @@ class Config(object):
             if "CONFIG_FILE" in os.environ:
                 config_files.append(os.environ['CONFIG_FILE'])
 
-            Config.config_ = {}
+            Environment.config_ = {}
 
             for config_file in config_files:
                 if os.path.isfile(config_file):
                     with open(config_file, 'r') as stream:
                         try:
-                            Config.config_.update(yaml.safe_load(stream))
+                            Environment.config_.update(yaml.safe_load(stream))
 
                         except yaml.YAMLError as exc:
                             logger.critical(exc)
                             sys.exit(1)
 
-            logger.debug("Configuration: {0}".format(Config.config_))
+            logger.debug("Configuration: {0}".format(Environment.config_))
 

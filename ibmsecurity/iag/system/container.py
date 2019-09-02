@@ -15,8 +15,8 @@ import time
 import requests
 import urllib3
 
-from ibmsecurity.iag.system.command import Command
-from ibmsecurity.iag.system.config  import Config
+from ibmsecurity.iag.system.command     import Command
+from ibmsecurity.iag.system.environment import Environment
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +57,8 @@ class Container(object):
             sys.exit(1)
 
         image  = "{0}:{1}".format(
-                    Config().get("image.name"),
-                    Config().get("image.tag"))
+                    Environment().get("image.name"),
+                    Environment().get("image.tag"))
 
         logger.info("Starting the container from {0}".format(image))
 
@@ -123,7 +123,7 @@ class Container(object):
                 [0]['HostIp']
 
         if ipaddr == "0.0.0.0":
-            ipaddr = Config.get("container.ip")
+            ipaddr = Environment.get("container.ip")
 
         return ipaddr
 
