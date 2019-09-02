@@ -63,6 +63,14 @@ class Container(object):
 
         self.client_.setEnv(name, value)
 
+    def addSecretToEnv(self, name):
+        """
+        Make an pre-created secret available to the container as an
+        environment variable.
+        """
+
+        self.client_.addSecretToEnv(name)
+
     def startContainer(self):
         """
         The following command is used to start the IAG container using the
@@ -154,6 +162,14 @@ class DockerContainer(object):
         IAG container.
         """
         self.env_[name] = value
+
+    def addSecretToEnv(self, name):
+        """
+        Make an pre-created secret available to the container as an
+        environment variable.  Please note that secrets are not
+        supported under Docker and so we raise an Exception here.
+        """
+        raise Exception("Secrets are not supported under Docker.")
 
     def startContainer(self, image):
         """
@@ -254,6 +270,7 @@ class KubernetesContainer(object):
         kubernetes.config.load_kube_config()
 
         self.env_            = []
+        self.secrets_        = []
         self.config_file_    = config_file
         self.apps_api_       = kubernetes.client.AppsV1Api()
         self.core_api_       = kubernetes.client.CoreV1Api()
@@ -275,6 +292,18 @@ class KubernetesContainer(object):
         self.env_.append(kubernetes.client.V1EnvVar(
                             name  = name,
                             value = value))
+
+    def addSecretToEnv(self, name):
+        """
+        Make an pre-created secret available to the container as
+        environment variables.
+        """
+
+        self.secrets_.append(kubernetes.client.V1EnvFromSource(
+                secret_ref = kubernetes.client.V1SecretEnvSource(
+                    name = name
+                )
+        ))
 
     def startContainer(self, image):
         """
@@ -478,7 +507,8 @@ class KubernetesContainer(object):
             ports         = [
                     kubernetes.client.V1ContainerPort(container_port=8443)],
             env           = self.env_,
-            volume_mounts = volume_mounts
+            volume_mounts = volume_mounts,
+            env_from      = self.secrets_
         )
 
         # Create the secret which is used when pulling the IAG image.
