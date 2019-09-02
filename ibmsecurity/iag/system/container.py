@@ -33,6 +33,7 @@ def run_kubernetes():
 
 if run_kubernetes():
     import kubernetes
+    import uuid
 else:
     import docker
 
@@ -50,7 +51,7 @@ class Container(object):
         super(Container, self).__init__()
 
         if run_kubernetes():
-            self.client_ = KubernetesContainer()
+            self.client_ = KubernetesContainer(config_file)
         else:
             self.client_ = DockerContainer(config_file)
 
@@ -243,23 +244,27 @@ class KubernetesContainer(object):
     the specified configuration information.
     """
 
-    # The name of our deployment.
-    __deploymentName = "iag-test"
+    # The name of the key within the configuration map which holds our
+    # configuration file.
+    __config_map_key = "config.yaml"
 
-    def __init__(self):
+    def __init__(self, config_file):
         super(KubernetesContainer, self).__init__()
 
         kubernetes.config.load_kube_config()
 
-        self.env_       = []
-        self.apps_api_  = kubernetes.client.AppsV1Api()
-        self.core_api_  = kubernetes.client.CoreV1Api()
-        self.namespace_ = Config.get("kubernetes.namespace")
-        self.port_      = None
+        self.env_            = []
+        self.config_file_    = config_file
+        self.apps_api_       = kubernetes.client.AppsV1Api()
+        self.core_api_       = kubernetes.client.CoreV1Api()
+        self.namespace_      = Environment.get("kubernetes.namespace")
+        self.port_           = None
+        self.deploymentName_ = "iag-{0}".format(uuid.uuid1())
+        self.configmapName_  = "iag.config.{0}".format(uuid.uuid1())
 
         logger.info("Using a kubernetes public IP of {0}.  Use the "
             "kubernetes.ip configuration entry to change the IP to suit "
-            "your environment.".format(Config.get("kubernetes.ip")))
+            "your environment.".format(Environment.get("kubernetes.ip")))
 
     def setEnv(self, name, value):
         """
@@ -284,6 +289,17 @@ class KubernetesContainer(object):
             raise Exception(
                     "A container has already been started in this object.")
 
+        # If the configuration file has been specified we need to first
+        # create the configmap.
+        if self.config_file_ is not None:
+            api_response = self.core_api_.create_namespaced_config_map(
+                namespace = self.namespace_,
+                body      = self.__createConfigMap()
+            )
+
+            logger.debug("ConfigMap created: status='{0}'".format(
+                        api_response))
+
         # Create the deployment.
         deployment = self.__createDeploymentObject(image)
 
@@ -299,11 +315,11 @@ class KubernetesContainer(object):
                     api_version = "v1",
                     kind        = "Service",
                     metadata    = kubernetes.client.V1ObjectMeta(
-                        name = self.__deploymentName
+                        name = self.deploymentName_
                     ),
                     spec        = kubernetes.client.V1ServiceSpec(
                         type     = "NodePort",
-                        selector = { "app" : self.__deploymentName },
+                        selector = { "app" : self.deploymentName_ },
                         ports    = [ kubernetes.client.V1ServicePort(
                                 port = 8443
                         )]
@@ -348,7 +364,7 @@ class KubernetesContainer(object):
 
             raise Exception("The container is not currently running!")
 
-        return Config.get("kubernetes.ip")
+        return Environment.get("kubernetes.ip")
 
     def stopContainer(self):
         """
@@ -357,7 +373,7 @@ class KubernetesContainer(object):
 
         if self.port_ is not None:
             logger.info("Stopping the deployment: {0}".format(
-                                            self.__deploymentName))
+                                            self.deploymentName_))
 
             try: 
                 # Grab the log file of the pod.  The first thing to do is 
@@ -365,7 +381,7 @@ class KubernetesContainer(object):
                 # the pod.
                 api_response = self.core_api_.list_namespaced_pod(
                     self.namespace_,
-                    label_selector = "app = {0}".format(self.__deploymentName))
+                    label_selector = "app = {0}".format(self.deploymentName_))
 
                 api_response = self.core_api_.read_namespaced_pod_log(
                                 api_response.items[0].metadata.name, 
@@ -378,59 +394,113 @@ class KubernetesContainer(object):
                     format(e))
 
             # Now we can delete the deployment and service.
-            api_response = self.apps_api_.delete_namespaced_deployment(
-                        name      = self.__deploymentName,
+            try:
+                api_response = self.apps_api_.delete_namespaced_deployment(
+                        name      = self.deploymentName_,
                         namespace = self.namespace_,
                         body      = kubernetes.client.V1DeleteOptions(
                             propagation_policy   = 'Foreground',
                             grace_period_seconds = 5
                         ))
 
-            logger.debug("Deployment deleted: status={0}".format(
+                logger.debug("Deployment deleted: status={0}".format(
                                                 api_response.status))
+            except Exception as exc:
+                logger.error(exc)
+                
 
-            api_response = self.core_api_.delete_namespaced_service(
-                        name      = self.__deploymentName,
+            try:
+                api_response = self.core_api_.delete_namespaced_service(
+                        name      = self.deploymentName_,
                         namespace = self.namespace_,
                         body      = kubernetes.client.V1DeleteOptions(
                             propagation_policy   = 'Foreground',
                             grace_period_seconds = 5
                         ))
 
-            logger.debug("Service deleted: status={0}".format(
+                logger.debug("Service deleted: status={0}".format(
                                                 api_response.status))
+            except Exception as exc:
+                logger.error(exc)
+
+            # Delete the configmap.
+            try:
+                if self.config_file_ is not None:
+                    api_response = self.core_api_.delete_namespaced_config_map(
+                        name      = self.configmapName_,
+                        namespace = self.namespace_,
+                        body      = kubernetes.client.V1DeleteOptions(
+                            propagation_policy   = 'Foreground',
+                            grace_period_seconds = 5
+                        ))
+
+                    logger.debug("Configmap deleted: status={0}".format(
+                                                api_response))
+            except Exception as exc:
+                logger.error(exc)
 
             self.port_ = None
 
     def __createDeploymentObject(self, image):
+        """
+        Create the deployment object for IAG.
+        """
+
+        # If a configuration file has been specified we want to mount the
+        # configmap.
+        volumes       = []
+        volume_mounts = []
+
+        if self.config_file_ is not None:
+            volumes.append(kubernetes.client.V1Volume(
+                    config_map = kubernetes.client.V1ConfigMapVolumeSource(
+                            items = [
+                                kubernetes.client.V1KeyToPath(
+                                    path = "config.yaml",
+                                    key  = self.__config_map_key
+                                )
+                            ],
+                            name = self.configmapName_
+                    ),
+                    name = self.deploymentName_
+            ))
+
+            volume_mounts.append(kubernetes.client.V1VolumeMount(
+                mount_path = Container.config_volume_path,
+                name       = self.deploymentName_
+            ))
+
 
         # Create the pod template container
         container = kubernetes.client.V1Container(
-            name  = self.__deploymentName,
-            image = image,
-            ports = [kubernetes.client.V1ContainerPort(container_port=8443)],
-            env   = self.env_
+            name          = self.deploymentName_,
+            image         = image,
+            ports         = [
+                    kubernetes.client.V1ContainerPort(container_port=8443)],
+            env           = self.env_,
+            volume_mounts = volume_mounts
         )
 
         # Create the secret which is used when pulling the IAG image.
         secret = kubernetes.client.V1LocalObjectReference(
-                            name = Config.get("kubernetes.image_pull_secret")
+                        name = Environment.get("kubernetes.image_pull_secret")
         )
 
         # Create and configurate a spec section
         template = kubernetes.client.V1PodTemplateSpec(
             metadata = kubernetes.client.V1ObjectMeta( 
-                            labels = {"app": self.__deploymentName}),
+                            labels = {"app": self.deploymentName_}),
             spec     = kubernetes.client.V1PodSpec(
                             containers         = [ container ],
-                            image_pull_secrets = [ secret ])
+                            image_pull_secrets = [ secret ],
+                            volumes            = volumes )
         )
 
         # Create the specification of the deployment
         spec = kubernetes.client.V1DeploymentSpec(
             replicas = 1,
             template = template,
-            selector = {'matchLabels': {'app': self.__deploymentName}}
+            selector = {'matchLabels': {'app': self.deploymentName_}}
         )
 
         # Instantiate the deployment object
@@ -438,8 +508,36 @@ class KubernetesContainer(object):
             api_version = "apps/v1",
             kind        = "Deployment",
             metadata    = kubernetes.client.V1ObjectMeta(
-                                    name = self.__deploymentName),
+                                    name = self.deploymentName_),
             spec        = spec)
 
         return deployment
+
+    def __createConfigMap(self):
+        """
+        Create the configuration map which holds the configuration file
+        contents.
+        """
+
+        metadata = kubernetes.client.V1ObjectMeta(
+            annotations                   = { 'app': self.deploymentName_ },
+            deletion_grace_period_seconds = 30,
+            labels                        = { 'app' : self.deploymentName_ },
+            name                          = self.configmapName_,
+            namespace                     = self.namespace_
+        )
+
+        # Get the file content.
+        with open(self.config_file_, 'r') as f:
+            file_content = f.read()
+
+        # Instantiate the configmap object
+        configmap = kubernetes.client.V1ConfigMap(
+                        api_version = "v1",
+                        kind        = "ConfigMap",
+                        data        = { self.__config_map_key: file_content },
+                        metadata    = metadata
+                    )
+
+        return configmap
 
