@@ -14,6 +14,7 @@ import time
 import requests
 import urllib3
 import os
+import yaml
 
 from ibmsecurity.iag.system.command     import Command
 from ibmsecurity.iag.system.environment import Environment
@@ -37,6 +38,13 @@ if run_kubernetes():
 else:
     import docker
 
+class VersionException(Exception):
+    """
+    This exception will be raised if the configuration version is greater 
+    than the version of the IAG container.
+    """
+    pass
+
 class Container(object):
     """
     This class is used to manage the IAG container.  It will
@@ -48,7 +56,26 @@ class Container(object):
     config_volume_path = "/var/iag/config"
 
     def __init__(self, config_file = None):
+        """
+        Initialize this class.  Note that a VersionException will be raised
+        if the version number contained within the configuration file is
+        greater than the version number of the requested IAG image.
+        """
+
         super(Container, self).__init__()
+
+        # If a configuration file is specified we need to ensure that the
+        # IAG version supports the version of the specified configuration
+        # file.
+        if config_file is not None:
+            with open(config_file, 'r') as stream:
+                data = yaml.safe_load(stream)
+
+                if data['version'] > Environment().get("image.tag"):
+                    raise VersionException(
+                        "The configuration file is not supported "
+                        "with the specified image version: {0}".format(
+                            Environment().get("image.tag")))
 
         if run_kubernetes():
             self.client_ = KubernetesContainer(config_file)
