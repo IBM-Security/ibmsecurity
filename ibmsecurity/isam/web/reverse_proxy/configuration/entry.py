@@ -106,10 +106,10 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
                 process_entry = True
                 for val in cur_value:
                     # Force delete of existing values, new values will be added
-                    delete(isamAppliance, reverseproxy_id, stanza_id, entry[0], val, check_mode, True)
                     logger.info(
                         'Deleting entry, will be re-added: {0}/{1}/{2}/{3}'.format(reverseproxy_id, stanza_id, entry[0],
                                                                                    val))
+                    delete(isamAppliance, reverseproxy_id, stanza_id, entry[0], val, check_mode, True)
             if process_entry is True:
                 if isinstance(entry[1], list):
                     for v in entry[1]:
