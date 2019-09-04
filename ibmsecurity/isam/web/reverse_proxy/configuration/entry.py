@@ -170,8 +170,14 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
             # URL encode
-            import urllib.parse
-            full_uri = urllib.parse.quote(ruri)
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            full_uri = quote(ruri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 
