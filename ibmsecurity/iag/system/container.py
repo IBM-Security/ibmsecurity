@@ -128,7 +128,7 @@ class Container(object):
             try:
                 requests.get("https://{0}:{1}".format(
                         self.ipaddr(), self.port()), 
-                        verify=False, allow_redirects=False)
+                        verify=False, allow_redirects=False, timeout=2)
 
                 running = True
             except:
@@ -294,7 +294,10 @@ class KubernetesContainer(object):
     def __init__(self, config_file):
         super(KubernetesContainer, self).__init__()
 
-        kubernetes.config.load_kube_config()
+        if "KUBERNETES_SERVICE_PORT" in os.environ:
+            kubernetes.config.load_incluster_config()
+        else:
+            kubernetes.config.load_kube_config()
 
         self.env_            = []
         self.secrets_        = []
