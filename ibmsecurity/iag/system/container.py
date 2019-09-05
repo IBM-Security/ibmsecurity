@@ -369,6 +369,9 @@ class KubernetesContainer(object):
         logger.debug("Deployment created: status='{0}'".format(
                         api_response.status))
 
+        service_type = "ClusterIP" if "KUBERNETES_SERVICE_PORT" in os.environ \
+                    else "NodePort"
+
         # Create the service.
         service = kubernetes.client.V1Service(
                     api_version = "v1",
@@ -377,7 +380,7 @@ class KubernetesContainer(object):
                         name = self.deploymentName_
                     ),
                     spec        = kubernetes.client.V1ServiceSpec(
-                        type     = "NodePort",
+                        type     = service_type,
                         selector = { "app" : self.deploymentName_ },
                         ports    = [ kubernetes.client.V1ServicePort(
                                 port = 8443
@@ -389,7 +392,8 @@ class KubernetesContainer(object):
                             body      = service,
                             namespace = self.namespace_)
 
-        self.port_ = api_response.spec.ports[0].node_port
+        self.port_ = 8443 if "KUBERNETES_SERVICE_PORT" in os.environ \
+                        else api_response.spec.ports[0].node_port
 
         logger.debug("Service created: status='{0}'".format(
                         api_response.status))
@@ -423,7 +427,8 @@ class KubernetesContainer(object):
 
             raise Exception("The container is not currently running!")
 
-        return Environment.get("kubernetes.ip")
+        return self.deploymentName_ if "KUBERNETES_SERVICE_PORT" in os.environ \
+                else Environment.get("kubernetes.ip")
 
     def stopContainer(self):
         """
