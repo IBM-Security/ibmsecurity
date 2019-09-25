@@ -42,7 +42,6 @@ def add(isamAppliance, extension, config_data=None, third_party_package=None, ch
     try:
         id = inspect(isamAppliance, extension)
     except Exception as e:
-        print e
         return isamAppliance.create_return_object(warnings=e)
 
     if config_data:
@@ -114,7 +113,6 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
                         files[third_party] = (tools.path_leaf(file), open(file, 'rb'))
                         counter = counter + 1
 
-            print files
             return _invoke_post_files(isamAppliance, description="Update an Extension",
                                       uri="{0}/{1}".format(uri, extId), files=files, requires_modules=requires_modules,
                                       json_response=False)
