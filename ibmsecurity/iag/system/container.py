@@ -183,6 +183,10 @@ class DockerContainer(object):
         self.client_    = docker.from_env()
         self.container_ = None
 
+    def __del__(self):
+        print("Removing container")
+        self.stopContainer()
+
     def setEnv(self, name, value):
         """
         Set an environment variable which will be used when starting the
@@ -217,7 +221,7 @@ class DockerContainer(object):
             volumes.append("{0}:{1}/config.yaml".format(
                                 self.cfgFile_, Container.config_volume_path))
 
-        self.container_ = self.client_.containers.run(image, auto_remove=True, 
+        self.container_ = self.client_.containers.run(image,
                                 environment=self.env_, detach=True,
                                 publish_all_ports=True,
                                 volumes = volumes)
@@ -277,6 +281,8 @@ class DockerContainer(object):
                                     self.container_.logs().decode("utf-8")))
 
             self.container_.stop()
+
+            self.container_.remove()
 
             self.container_ = None
 
