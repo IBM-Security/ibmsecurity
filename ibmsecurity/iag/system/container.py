@@ -55,7 +55,7 @@ class Container(object):
 
     config_volume_path = "/var/iag/config"
 
-    def __init__(self, config_file = None):
+    def __init__(self, config_file = None, volume = None):
         """
         Initialize this class.  Note that a VersionException will be raised
         if the version number contained within the configuration file is
@@ -80,7 +80,7 @@ class Container(object):
         if run_kubernetes():
             self.client_ = KubernetesContainer(config_file)
         else:
-            self.client_ = DockerContainer(config_file)
+            self.client_ = DockerContainer(config_file=config_file, volume=volume)
 
     def setEnv(self, name, value):
         """
@@ -139,6 +139,8 @@ class Container(object):
             message = "The container failed to start within the allocated time."
             logger.critical(message)
 
+            logger.critical(self.client_.container_.logs())
+
             raise Exception(message)
 
         logger.info("The container has started")
@@ -175,13 +177,19 @@ class DockerContainer(object):
     the specified configuration information.
     """
 
-    def __init__(self, config_file):
+    def __init__(self, config_file=None, volume=None):
         super(DockerContainer, self).__init__()
 
         self.env_       = {}
         self.cfgFile_   = config_file
+        self.volume_    = volume
         self.client_    = docker.from_env()
         self.container_ = None
+
+    def __del__(self):
+        if (self.container_ is not None):
+            self.container_.stop()
+            self.container_.remove()
 
     def setEnv(self, name, value):
         """
@@ -216,8 +224,11 @@ class DockerContainer(object):
         if self.cfgFile_ is not None:
             volumes.append("{0}:{1}/config.yaml".format(
                                 self.cfgFile_, Container.config_volume_path))
+        if self.volume_ is not None:
+            volumes.append("{0}:{1}".format(
+                self.volume_, Container.config_volume_path))
 
-        self.container_ = self.client_.containers.run(image, auto_remove=True, 
+        self.container_ = self.client_.containers.run(image, auto_remove=True,
                                 environment=self.env_, detach=True,
                                 publish_all_ports=True,
                                 volumes = volumes)
