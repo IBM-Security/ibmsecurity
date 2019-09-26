@@ -55,7 +55,7 @@ class Container(object):
 
     config_volume_path = "/var/iag/config"
 
-    def __init__(self, config_file = None, volume = None):
+    def __init__(self, config_file = None):
         """
         Initialize this class.  Note that a VersionException will be raised
         if the version number contained within the configuration file is
@@ -80,7 +80,7 @@ class Container(object):
         if run_kubernetes():
             self.client_ = KubernetesContainer(config_file)
         else:
-            self.client_ = DockerContainer(config_file=config_file, volume=volume)
+            self.client_ = DockerContainer(config_file=config_file)
 
     def setEnv(self, name, value):
         """
@@ -177,12 +177,11 @@ class DockerContainer(object):
     the specified configuration information.
     """
 
-    def __init__(self, config_file=None, volume=None):
+    def __init__(self, config_file=None):
         super(DockerContainer, self).__init__()
 
         self.env_       = {}
         self.cfgFile_   = config_file
-        self.volume_    = volume
         self.client_    = docker.from_env()
         self.container_ = None
 
@@ -221,12 +220,17 @@ class DockerContainer(object):
 
         volumes = []
 
-        if self.cfgFile_ is not None:
-            volumes.append("{0}:{1}/config.yaml".format(
-                                self.cfgFile_, Container.config_volume_path))
-        if self.volume_ is not None:
-            volumes.append("{0}:{1}".format(
-                self.volume_, Container.config_volume_path))
+        if Environment.is_container_context():
+            volumes = {
+                Environment.volume_name_: {
+                    "bind": Container.config_volume_path,
+                    "mode": "rw"
+                }
+            }
+        elif self.cfgFile_ is not None:
+            volumes = ["{0}:{1}/config.yaml".format(
+                                self.cfgFile_, Container.config_volume_path)]
+
 
         self.container_ = self.client_.containers.run(image, auto_remove=True,
                                 environment=self.env_, detach=True,

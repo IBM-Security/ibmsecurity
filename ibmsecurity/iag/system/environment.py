@@ -28,6 +28,11 @@ class Environment(object):
     # load the configuration a single time.
     config_ = None
 
+    volume_name_ = "iag_config"
+
+    iag_user = 5001
+    iag_group = 1000
+
     def __init__(self):
         super(Environment, self).__init__()
 
@@ -96,3 +101,5 @@ class Environment(object):
 
             logger.debug("Configuration: {0}".format(Environment.config_))
 
+    def is_container_context():
+        return os.environ.get('IS_CONTAINER', "false") == "true"

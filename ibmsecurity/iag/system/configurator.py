@@ -19,6 +19,8 @@ from ibmsecurity.iag.system.config.logging_v1  import LoggingV1
 from ibmsecurity.iag.system.config.advanced_v1 import AdvancedV1
 from ibmsecurity.iag.system.config.identity_v1 import IdentityV1
 from ibmsecurity.iag.system.config.application_v1 import ApplicationV1
+from ibmsecurity.iag.system.environment import Environment
+from ibmsecurity.iag.system.container import Container
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +93,10 @@ class Configurator(object):
         # If we have not been provided with a file name we create a file name
         # now.
         if filename is None:
-            fd, filename = mkstemp(suffix = ".yml")
+            dir = Container.config_volume_path if Environment.is_container_context() else None
+            fd, filename = mkstemp(suffix = ".yml", dir=dir)
+            if Environment.is_container_context():
+                os.fchown(fd, Environment.iag_user, Environment.iag_group)
             os.close(fd)
 
         # Write the data.
