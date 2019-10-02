@@ -25,35 +25,39 @@ class LoggingV1(Base):
     """
 
     def __init__(self,
-                    components  = None,
-                    statistics  = None,
-                    tracing     = None,
-                    transaction = None):
+                    components     = None,
+                    req_log_format = None,
+                    statistics     = None,
+                    tracing        = None,
+                    transaction    = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param components  : An array of 
-                             ibmsecurity.iag.system.config.LoggingComponent
-                             objects to indicate which logging components should
-                             be enabled.
-        @param statistics  : An array of 
-                             ibmsecurity.iag.system.config.LoggingStatistic 
-                             objects which control which statistics will be
-                             gathered.
-        @param tracing     : An array of
-                             ibmsecurity.iag.system.config.tracing objects
-                             which control which trace levels will be set.
-        @param transaction : An ibmsecurity.iag.system.config.transaction
-                             object which can be used to enable transaction
-                             logging.
+        @param components    : An array of 
+                               ibmsecurity.iag.system.config.LoggingComponent
+                               objects to indicate which logging components 
+                               should be enabled.
+        @param req_log_format: The format for the request log.  See the
+                               documentation for the format of this entry.
+        @param statistics    : An array of 
+                               ibmsecurity.iag.system.config.LoggingStatistic 
+                               objects which control which statistics will be
+                               gathered.
+        @param tracing       : An array of
+                               ibmsecurity.iag.system.config.tracing objects
+                               which control which trace levels will be set.
+        @param transaction   : An ibmsecurity.iag.system.config.transaction
+                               object which can be used to enable transaction
+                               logging.
         """
 
         super(LoggingV1, self).__init__()
 
-        self.components  = self._checkList(LoggingComponentV1, components)
-        self.statistics  = self._checkList(LoggingStatisticV1, statistics)
-        self.tracing     = self._checkList(TracingV1, tracing)
-        self.transaction = self._check(TransactionV1, transaction)
+        self.req_log_format = Simple(str, req_log_format)
+        self.components     = self._checkList(LoggingComponentV1, components)
+        self.statistics     = self._checkList(LoggingStatisticV1, statistics)
+        self.tracing        = self._checkList(TracingV1, tracing)
+        self.transaction    = self._check(TransactionV1, transaction)
 
     def version(self):
         """
@@ -68,10 +72,8 @@ class LoggingComponentV1(AutoNumber):
     This class is used to represent a single logging component.
     """
 
-    audit_azn  = ()
-    http_req   = ()
-    http_agent = ()
-    http_ref   = ()
+    audit_azn    = ()
+    audit_authn  = ()
 
     def version(self):
         """
