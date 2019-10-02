@@ -21,7 +21,7 @@ from ibmsecurity.iag.system.config.file import File
 
 ##############################################################################
 
-class FrontendV1(Base):
+class ServerV1(Base):
     """
     This class is used to represent the front-end configuration of an IAG
     container.
@@ -55,7 +55,7 @@ class FrontendV1(Base):
                                 applications are enabled.
         """
 
-        super(FrontendV1, self).__init__()
+        super(ServerV1, self).__init__()
 
         self.ssl            = self._check(SSLV1, ssl)
         self.session        = self._check(SessionV1, session)
@@ -303,6 +303,7 @@ class WebSocketV1(Base):
 
     def __init__(self,
                     max_worker_threads   = 50,
+                    idle_worker_threads  = 0,
                     app_read_timeout     = 120,
                     app_write_timeout    = 20,
                     client_read_timeout  = 120,
@@ -312,6 +313,8 @@ class WebSocketV1(Base):
 
         @param max_worker_threads:   The number of worker threads to allocate
                                      to the container.
+        @param idle_worker_threads:  The minimum number of worker threads to keep
+                                     allocated when idle.
         @param app_read_timeout:     The maximum length of time spent trying
                                      to read from an application.
         @param app_write_timeout:    The maximum length of time spent trying
@@ -325,7 +328,8 @@ class WebSocketV1(Base):
         super(WebSocketV1, self).__init__()
 
         self.worker_threads = {
-            "max" : Simple(int, max_worker_threads)
+            "max" : Simple(int, max_worker_threads),
+            "idle": Simple(int, idle_worker_threads)
         }
 
         self.timeouts = {
