@@ -101,7 +101,9 @@ try:
     #
 
     logging = LoggingV1(
-                    components =  [ LoggingComponentV1.audit_azn ],
+                    components =  [ LoggingComponentV1.audit_azn, 
+                                            LoggingComponentV1.audit_authn ],
+                    req_log_format = "%h %l %u %t \"%r\" %s %b",
                     statistics =  [ LoggingStatisticV1(
                                             component = "pdweb.https") ],
                     tracing    =  [ TracingV1(
