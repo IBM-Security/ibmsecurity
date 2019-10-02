@@ -19,14 +19,14 @@ from ibmsecurity.iag.system.configurator import Configurator
 
 from ibmsecurity.iag.system.config.file        import File
 
-from ibmsecurity.iag.system.config.frontend_v1 import FrontendV1
-from ibmsecurity.iag.system.config.frontend_v1 import SSLV1
-from ibmsecurity.iag.system.config.frontend_v1 import SSLCipherV1
-from ibmsecurity.iag.system.config.frontend_v1 import SessionV1
-from ibmsecurity.iag.system.config.frontend_v1 import SharedSessionV1
-from ibmsecurity.iag.system.config.frontend_v1 import WebSocketV1
-from ibmsecurity.iag.system.config.frontend_v1 import AppV1
-from ibmsecurity.iag.system.config.frontend_v1 import AppNames
+from ibmsecurity.iag.system.config.server_v1 import ServerV1
+from ibmsecurity.iag.system.config.server_v1 import SSLV1
+from ibmsecurity.iag.system.config.server_v1 import SSLCipherV1
+from ibmsecurity.iag.system.config.server_v1 import SessionV1
+from ibmsecurity.iag.system.config.server_v1 import SharedSessionV1
+from ibmsecurity.iag.system.config.server_v1 import WebSocketV1
+from ibmsecurity.iag.system.config.server_v1 import AppV1
+from ibmsecurity.iag.system.config.server_v1 import AppNames
 
 from ibmsecurity.iag.system.config.logging_v1  import LoggingV1
 from ibmsecurity.iag.system.config.logging_v1  import LoggingComponentV1
@@ -89,7 +89,7 @@ try:
     session    = SessionV1(shared_session = SharedSessionV1(secret = cert))
     ssl        = SSLV1(certificate = cert, ciphers = ciphers)
     apps       = [ AppV1(app_name = AppNames.cred_viewer, app_path = "/creds") ]
-    frontend   = FrontendV1(
+    server     = ServerV1(
                         worker_threads = 200, 
                         ssl            = ssl, 
                         websocket      = web_socket, 
@@ -261,7 +261,7 @@ try:
         os.remove(outFile)
 
     config = Configurator(
-                    frontend    = frontend, 
+                    server      = server,
                     logging     = logging, 
                     advanced    = advanced,
                     application = applications,
