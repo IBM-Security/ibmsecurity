@@ -105,12 +105,14 @@ try:
                                             LoggingComponentV1.audit_authn ],
                     req_log_format = "%h %l %u %t \"%r\" %s %b",
                     statistics =  [ LoggingStatisticV1(
-                                            component = "pdweb.https",
-                                            file_name = "statistics.log") ],
+                                    component = "pdweb.https",
+                                    file_name = "/var/tmp/statistics.log") ],
                     tracing    =  [ TracingV1(
-                                            component = "pdweb.snoop", 
-                                            level     = 9) ],
-                    transaction = TransactionV1(file_name = "transaction.log") 
+                                    component = "pdweb.snoop", 
+                                    file_name = "/var/tmp/tracing.log",
+                                    level     = 9) ],
+                    transaction = TransactionV1(
+                                    file_name = "/var/tmp/transaction.log") 
                 )
 
     #

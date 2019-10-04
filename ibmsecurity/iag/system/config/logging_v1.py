@@ -136,11 +136,13 @@ class TracingV1(Base):
     within an IAG container.
     """
 
-    def __init__(self, component, level):
+    def __init__(self, component, file_name, level):
         """
         Initialise this class instance.  The parameters are as follows:
 
         @param component : The name of the tracing component.
+        @param file_name : The name of the file to which the tracing will
+                           be written.
         @param level     : The level at which the tracing component will be
                            enabled.
         """
@@ -148,6 +150,7 @@ class TracingV1(Base):
         super(TracingV1, self).__init__()
 
         self.component = Simple(str, component)
+        self.file_name = Simple(str, file_name)
         self.level     = Simple(int, level)
 
     def version(self):
