@@ -56,6 +56,9 @@ from ibmsecurity.iag.system.config.application_v1 import HealthCheckRuleV1
 from ibmsecurity.iag.system.config.application_v1 import ContentInjectionV1
 from ibmsecurity.iag.system.config.application_v1 import CookieJarV1
 
+from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationV1
+from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationRuleV1
+
 ##############################################################################
 # This file is used to excercise the IAG configurator python class.
 
@@ -255,6 +258,11 @@ try:
             )
     ]
 
+    authorization = AuthorizationV1(rules=[
+        AuthorizationRuleV1("administrators", "(any groupIds = \"administrator\")"),
+        AuthorizationRuleV1("users", "(all authenticationLevels > \"0\")"),
+    ])
+
     #
     # Write the configuration file.
     #
@@ -263,11 +271,12 @@ try:
         os.remove(outFile)
 
     config = Configurator(
-                    server      = server,
-                    logging     = logging, 
-                    advanced    = advanced,
-                    application = applications,
-                    identity    = identity)
+                    server        = server,
+                    logging       = logging,
+                    advanced      = advanced,
+                    application   = applications,
+                    authorization = authorization,
+                    identity      = identity)
 
     config.write(outFile)
 

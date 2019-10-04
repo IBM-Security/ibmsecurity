@@ -50,9 +50,9 @@ class Configurator(object):
         @param application   : An array of ibmsecurity.iag.system.config.Application
                                objects which define the applications that will be
                                protected by the IAG.
-        @param authorization : An ibmsecurity.iag.system.config.Application
-                               objects which define the applications that will be
-                               protected by the IAG.
+        @param authorization : An ibmsecurity.iag.system.config.Authorization
+                               object which contains an array of authorization
+                               rules which may be referenced by applications.
         @param logging       : An ibmsecurity.iag.system.config.Logging object
                                which defines the logging to be used by the IAG.
         @param advanced      : An ibmsecurity.iag.system.config.Advanced object
@@ -65,7 +65,7 @@ class Configurator(object):
         self.server        = self.__validate(ServerV1, server)
         self.identity      = self.__validate(IdentityV1, identity)
         self.application   = self.__validateList(ApplicationV1, application)
-        self.authorization = self.__validateList(AuthorizationV1, authorization)
+        self.authorization = self.__validate(AuthorizationV1, authorization)
         self.logging       = self.__validate(LoggingV1, logging)
         self.advanced      = self.__validate(AdvancedV1, advanced)
 
