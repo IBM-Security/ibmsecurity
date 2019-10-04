@@ -101,12 +101,15 @@ class LoggingStatisticV1(Base):
 
     def __init__(self,
                     component,
+                    file_name,
                     interval  = 30,
                     count     = 5):
         """
         Initialise this class instance.  The parameters are as follows:
 
         @param component : The name of the statistics component.
+        @param file_name : The name of the file to which the statistics will
+                           be written.
         @param interval  : The interval at which the statistics will be
                            gathered.
         @param count     : The number of intervals to gather statistics for.
@@ -115,6 +118,7 @@ class LoggingStatisticV1(Base):
         super(LoggingStatisticV1, self).__init__()
 
         self.component = Simple(str, component)
+        self.file_name = Simple(str, file_name)
         self.interval  = Simple(int, interval)
         self.count     = Simple(int, count)
 
