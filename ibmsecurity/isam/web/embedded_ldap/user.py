@@ -1,5 +1,10 @@
 import logging
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 uri = "/mga/user_registry/users"

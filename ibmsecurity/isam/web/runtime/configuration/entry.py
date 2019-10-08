@@ -1,6 +1,11 @@
 import logging
 import ibmsecurity.utilities.tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 # URI for this module
@@ -153,8 +158,8 @@ def delete(isamAppliance, resource_id, stanza_id, entry_id, value_id='', check_m
             # URL being encoded primarily to handle spaces in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, resource_id, stanza_id,
                                                                                        entry_id, value_id)
-            import urllib
-            full_uri = urllib.quote(f_uri)
+            import urllib.parse
+            full_uri = urllib.parse.quote(f_uri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Runtime Environment", full_uri)
 

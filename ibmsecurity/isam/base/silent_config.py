@@ -57,7 +57,7 @@ def _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_add
     }
 
     post_data = ""
-    for k, value in json_data.iteritems():
+    for k, value in json_data.items():
         if value is not None:
             post_data = "{0}{1}={2}&".format(post_data, k, value)
 

@@ -9,6 +9,11 @@ import re
 
 logger = logging.getLogger(__name__)
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 def json_sort(json_data):
     if isinstance(json_data, dict):
@@ -99,11 +104,11 @@ def random_password(length=12, allow_special=True):
     myrg = random.SystemRandom()
 
     # If you want non-English characters, remove the [0:52]
-    alphabet = string.letters[0:52] + string.digits
+    alphabet = string.ascii_letters[0:52] + string.digits
     if allow_special is True:
         alphabet = alphabet + "!@#$%^&*()"
 
-    pw = str().join(myrg.choice(alphabet) for _ in xrange(length))
+    pw = str().join(myrg.choice(alphabet) for _ in range(length))
 
     return pw
 
@@ -245,4 +250,9 @@ def version_compare(version1, version2):
         v = re.sub(r'_b\d+$', '', v)
         return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
 
-    return cmp(normalize(version1), normalize(version2))
+    if normalize(version1) == normalize(version2):
+        return 0
+    elif normalize(version1) > normalize(version2):
+        return 1
+    elif normalize(version1) < normalize(version2):
+        return -1

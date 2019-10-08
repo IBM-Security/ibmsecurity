@@ -1,6 +1,11 @@
 import logging
 from ibmsecurity.utilities import tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 # URI for this module
@@ -85,7 +90,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, warnings=[]):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, warnings=[]):
     """
     Creating a standard or virtual junction
 
@@ -140,6 +145,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param http2_junction:
     :param http2_proxy:
     :param sni_name:
+    :param description:
     :return:
     """
     if force is True or _check(isamAppliance, reverseproxy_id, junction_point) is False:
@@ -257,6 +263,13 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             isamAppliance.facts["version"], sni_name))
                 else:
                     jct_json['sni_name'] = sni_name
+            if description is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(
+                            isamAppliance.facts["version"], description))
+                else:
+                    jct_json['description'] = description
 
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
@@ -301,7 +314,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -495,6 +508,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         sni_name = None
                     else:
                         jct_json['sni_name'] = sni_name
+                if description is not None:
+                    if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                        warnings.append(
+                            "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(
+                                isamAppliance.facts["version"], description))
+                        description = None
+                    else:
+                        jct_json['description'] = description
 
                 # TODO: Not sure of how to match following attributes! Need to revisit.
                 # TODO: Not all function parameters are being checked - need to add!
@@ -539,7 +560,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
-                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, warnings=warnings)
+                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
@@ -550,7 +571,6 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
     """
     if reverseproxy_id2 is None or reverseproxy_id2 == '':
         reverseproxy_id2 = reverseproxy_id
-
     ret_obj1 = get_all(isamAppliance1, reverseproxy_id)
     ret_obj2 = get_all(isamAppliance2, reverseproxy_id2)
 
