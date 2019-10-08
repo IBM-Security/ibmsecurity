@@ -8,6 +8,11 @@ uri = "/isam/rsyslog_forwarder"
 requires_modules = None
 requires_version = "9.0.2.1"
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """

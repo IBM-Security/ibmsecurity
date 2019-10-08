@@ -22,9 +22,10 @@ def search(isamAppliance, realm, propname, subsection=None, includeValuesInLine=
         uriprop = "{0}/{1}".format(realm, subsection)
 
     logger.info("property to search under: {0} where property is: {1}".format(uriprop, propname))
-    ret_obj = isamAppliance.invoke_get("Retrieve realm configuration", "{0}/{1}{2}".format(uri, realm, 
-      tools.create_query_string(includeValuesInLine=includeValuesInLine)),
-      requires_modules=requires_modules, requires_version=requires_version)
+    ret_obj = isamAppliance.invoke_get("Retrieve realm configuration", "{0}/{1}{2}".format(uri, realm,
+                                                                                           tools.create_query_string(
+                                                                                               includeValuesInLine=includeValuesInLine)),
+                                       requires_modules=requires_modules, requires_version=requires_version)
 
     return_obj = isamAppliance.create_return_object()
     return_obj["warnings"] = ret_obj["warnings"]
@@ -177,6 +178,7 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             warnings=warnings)
     return isamAppliance.create_return_object(warnings=warnings)
+
 
 def set(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=False, force=False):
     """

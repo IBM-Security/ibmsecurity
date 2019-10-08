@@ -9,6 +9,11 @@ uri = "/isam/cluster/v2"
 requires_modules = None
 requires_version = None
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -165,7 +170,7 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
     else:
         temp = cluster_json
 
-    for key, value in temp.iteritems():
+    for key, value in temp.items():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(

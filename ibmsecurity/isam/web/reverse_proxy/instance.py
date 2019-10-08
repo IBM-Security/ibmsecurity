@@ -163,6 +163,73 @@ def execute(isamAppliance, id, operation="restart", check_mode=False, force=Fals
     return isamAppliance.create_return_object()
 
 
+def execute_multiples(isamAppliance, instances, operation, check_mode=False, force=False):
+    """
+    Stopping, starting, or restarting multiple instances
+
+    :param isamAppliance:
+    :param operation:
+    :return:
+    """
+    ret_obj = get(isamAppliance)
+    new_instances = []
+
+    for instance in instances:
+        for rp in ret_obj['data']:
+            if rp['id'] == instance['instance_name']:
+                if ((rp['restart'] == "true" and operation == "restart") or
+                        (rp['started'] == 'yes' and operation == "stop") or
+                        (rp['started'] == 'no' and operation == "start")):
+                    new_instances.append(instance)
+
+    if force is True or len(new_instances) >= 1:
+
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        elif len(new_instances) > 1:
+            return isamAppliance.invoke_put("Stopping, starting, or restarting multiple instances",
+                                            "{0}".format(uri),
+                                            {
+                                                "operation": operation,
+                                                "instances": new_instances
+                                            },
+                                            requires_modules=requires_modules,
+                                            requires_version=requires_version)
+        elif len(new_instances) == 1:
+            execute(isamAppliance, new_instances[0]['instance_name'], operation=operation, check_mode=check_mode,
+                    force=force)
+
+    return isamAppliance.create_return_object()
+
+
+def obfuscating(isamAppliance, id, pwd, check_mode=False, force=False):
+    """
+    Obfuscating a GSO password
+    Must set gso-obfuscation-key in the config file for the password to be obfuscated.
+    https://www.ibm.com/support/knowledgecenter/SSPREK_9.0.6/com.ibm.isam.doc/wrp_stza_ref/reference/ref_gso_obfuscation_key.html
+    """
+    return isamAppliance.invoke_post("Obfuscating a GSO password",
+                                     "{0}/{1}?action=obfuscate_gso_pwd".format(uri, id),
+                                     {
+                                         "pwd": pwd
+                                     },
+                                     requires_modules=requires_modules, requires_version=requires_version)
+
+
+def renew_cert(isamAppliance, id, isamUser, check_mode=False, force=False):
+    """
+    Renew a reverse proxy instance management certificate
+    """
+    return isamAppliance.invoke_put("Renew a reverse proxy instance management certificate",
+                                    "{0}/{1}".format(uri, id),
+                                    {
+                                        "admin_id": isamUser.username,
+                                        "admin_pwd": isamUser.password,
+                                        "operation": "renew"
+                                    },
+                                    requires_modules=requires_modules, requires_version=requires_version)
+
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare list of reverse proxies between 2 appliances
