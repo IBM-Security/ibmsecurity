@@ -26,7 +26,7 @@ class LoggingV1(Base):
 
     def __init__(self,
                     components     = None,
-                    req_log_format = None,
+                    request_log    = None,
                     statistics     = None,
                     tracing        = None,
                     transaction    = None):
@@ -37,8 +37,9 @@ class LoggingV1(Base):
                                ibmsecurity.iag.system.config.LoggingComponent
                                objects to indicate which logging components 
                                should be enabled.
-        @param req_log_format: The format for the request log.  See the
-                               documentation for the format of this entry.
+        @param request_log:    An ibmsecurity.iag.system.config.request_log
+                               object which controls the format and location
+                               of the request log.  
         @param statistics    : An array of 
                                ibmsecurity.iag.system.config.LoggingStatistic 
                                objects which control which statistics will be
@@ -53,11 +54,11 @@ class LoggingV1(Base):
 
         super(LoggingV1, self).__init__()
 
-        self.req_log_format = Simple(str, req_log_format)
         self.components     = self._checkList(LoggingComponentV1, components)
         self.statistics     = self._checkList(LoggingStatisticV1, statistics)
         self.tracing        = self._checkList(TracingV1, tracing)
         self.transaction    = self._check(TransactionV1, transaction)
+        self.request_log    = self._check(RequestLogV1, request_log)
 
     def version(self):
         """
@@ -187,6 +188,40 @@ class TransactionV1(Base):
         self.max_file_size = Simple(int, max_file_size)
         self.max_files     = Simple(int, max_files)
         self.compress      = Simple(bool, compress)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+        return "19.12"
+
+##############################################################################
+
+class RequestLogV1(Base):
+    """
+    This class is used to represent the configuration of the request logging
+    within an IAG container.
+    """
+
+    def __init__(self,
+                    format    = None,
+                    file_name = None):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param format        : The format of the request log.  If no format
+                               is specified a default format will be used.  See
+                               the documentation for information on how to
+                               construct the format string.
+        @param file_name     : The name of the file which will be generated.
+                               If no file is specified the request log will
+                               be written to stdout.
+        """
+
+        super(RequestLogV1, self).__init__()
+
+        self.format    = Simple(str, format)
+        self.file_name = Simple(str, file_name)
 
     def version(self):
         """

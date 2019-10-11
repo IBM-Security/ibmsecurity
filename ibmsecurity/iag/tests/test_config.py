@@ -33,6 +33,7 @@ from ibmsecurity.iag.system.config.logging_v1  import LoggingComponentV1
 from ibmsecurity.iag.system.config.logging_v1  import LoggingStatisticV1
 from ibmsecurity.iag.system.config.logging_v1  import TracingV1
 from ibmsecurity.iag.system.config.logging_v1  import TransactionV1
+from ibmsecurity.iag.system.config.logging_v1  import RequestLogV1
 
 from ibmsecurity.iag.system.config.advanced_v1 import AdvancedV1
 from ibmsecurity.iag.system.config.advanced_v1 import StanzaV1
@@ -106,7 +107,9 @@ try:
     logging = LoggingV1(
                     components =  [ LoggingComponentV1.audit_azn, 
                                             LoggingComponentV1.audit_authn ],
-                    req_log_format = "%h %l %u %t \"%r\" %s %b",
+                    request_log = RequestLogV1(
+                                    format    = "%h %l %u %t \"%r\" %s %b",
+                                    file_name = "/var/tmp/request.log"),
                     statistics =  [ LoggingStatisticV1(
                                     component = "pdweb.https",
                                     file_name = "/var/tmp/statistics.log") ],
