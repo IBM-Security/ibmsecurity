@@ -209,9 +209,10 @@ try:
                 max_cached_connections = 10,
                 rate_limiting          = [ cert ],
                 policies               = [ PolicyV1(
-                                            "/path",
-                                            [ "GET", "POST" ],
-                                            { "attr_name": "attr_value" }
+                                    path       = "/path",
+                                    methods    = [ "GET", "POST" ],
+                                    attributes = { "attr_name": "attr_value" },
+                                    name       = "test-policy"
                                         )],
                 ssl                    = AppSSLV1(
                                             tlsv1_0        = True,

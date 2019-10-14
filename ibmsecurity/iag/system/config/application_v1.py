@@ -110,7 +110,8 @@ class PolicyV1(Base):
     def __init__(self,
                     path,
                     methods,
-                    attributes):
+                    attributes,
+                    name = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -119,10 +120,12 @@ class PolicyV1(Base):
         @param attributes : A dictionary of attributes which must be
                             matched in the credential in order for the
                             authorization to be granted.
+        @param name       : An optional name for the policy.
         """
 
         super(PolicyV1, self).__init__()
 
+        self.name       = Simple(str, name)
         self.path       = Simple(str, path)
         self.methods    = SimpleList(str, methods)
         self.attributes = Simple(dict, attributes)
