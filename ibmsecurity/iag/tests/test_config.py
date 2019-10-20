@@ -118,7 +118,8 @@ try:
                                     file_name = "/var/tmp/tracing.log",
                                     level     = 9) ],
                     transaction = TransactionV1(
-                                    file_name = "/var/tmp/transaction.log") 
+                                    file_name = "/var/tmp/transaction.log"),
+                    json_logging = False
                 )
 
     #

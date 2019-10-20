@@ -29,7 +29,8 @@ class LoggingV1(Base):
                     request_log    = None,
                     statistics     = None,
                     tracing        = None,
-                    transaction    = None):
+                    transaction    = None,
+                    json_logging   = True):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -50,6 +51,8 @@ class LoggingV1(Base):
         @param transaction   : An ibmsecurity.iag.system.config.transaction
                                object which can be used to enable transaction
                                logging.
+        @param json_logging  : A boolean which indicates whether the logging
+                               records should be written in JSON format or not.
         """
 
         super(LoggingV1, self).__init__()
@@ -59,6 +62,7 @@ class LoggingV1(Base):
         self.tracing        = self._checkList(TracingV1, tracing)
         self.transaction    = self._check(TransactionV1, transaction)
         self.request_log    = self._check(RequestLogV1, request_log)
+        self.json_logging   = Simple(bool, json_logging)
 
     def version(self):
         """
