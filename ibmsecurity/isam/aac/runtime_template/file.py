@@ -80,7 +80,7 @@ def update(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
             return isamAppliance.create_return_object(changed=True)
         else:
             if contents is not None:
-                return isamAppliance.invoke_put_files(
+                return isamAppliance.invoke_put(
                     "Update a file in the runtime template files directory",
                     "/mga/template_files/{0}/{1}".format(path, name),
                     {
