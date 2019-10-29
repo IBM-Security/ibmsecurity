@@ -311,9 +311,9 @@ def _convert_policy_name_to_id(isamAppliance, policies):
             ret_obj = ibmsecurity.isam.aac.api_protection.definitions.search(isamAppliance, name)
             pol_id = ret_obj['data']
             if pol_id != {}:
-                logger.debug("Converting policy set {0} to ID: {1}".format(name, pol_id))
+                logger.debug("Converting api definition {0} to ID: {1}".format(name, pol_id))
             else:
-                logger.warning("Unable to find policy set {0}, skipping.".format(name))
+                logger.warning("Unable to find api definition {0}, skipping.".format(name))
         else:
             from ibmsecurity.appliance.ibmappliance import IBMError
             raise IBMError("999", "Policy specified with unknown type: {0}/{1}".format(type, name))
