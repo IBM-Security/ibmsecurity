@@ -33,7 +33,8 @@ class ServerV1(Base):
                     worker_threads = 100,
                     http2          = True,
                     websocket      = None,
-                    apps           = None):
+                    apps           = None,
+                    failover       = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -53,6 +54,10 @@ class ServerV1(Base):
         @param apps           : An array of ibmsecurity.iag.system.config.App
                                 objects which are used to define which local
                                 applications are enabled.
+        @param failover       : An ibmsecurity.iag.system.config.Failover
+                                object which contains configuration
+                                information for failover support
+                                between multiple IAG containers.
         """
 
         super(ServerV1, self).__init__()
@@ -63,6 +68,7 @@ class ServerV1(Base):
         self.http2          = Simple(bool, http2)
         self.websocket      = self._check(WebSocketV1, websocket)
         self.apps           = self._checkList(AppV1, apps)
+        self.failover       = self._check(FailoverV1, failover)
 
     def version(self):
         """
@@ -225,8 +231,7 @@ class SessionV1(Base):
                     cookie_name      = "IAG_Session",
                     max_sessions     = 4096,
                     timeout          = 3600,
-                    inactive_timeout = 600,
-                    shared_session   = None):
+                    inactive_timeout = 600):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -238,10 +243,6 @@ class SessionV1(Base):
                                   session cache.
         @param inactive_timeout : The maximum length of inactivity for a session
                                   in the session cache.
-        @param shared_session   : An ibmsecurity.iag.system.config.SharedSession
-                                  object which contains configuration
-                                  information for the sharing of sessions 
-                                  between multiple IAG containers.
         """
 
         super(SessionV1, self).__init__()
@@ -250,7 +251,6 @@ class SessionV1(Base):
         self.max_sessions     = Simple(int, max_sessions)
         self.timeout          = Simple(int, timeout)
         self.inactive_timeout = Simple(int, inactive_timeout)
-        self.shared_session   = self._check(SharedSessionV1, shared_session)
 
     def version(self):
         """
@@ -260,32 +260,29 @@ class SessionV1(Base):
 
 ##############################################################################
 
-class SharedSessionV1(Base):
+class FailoverV1(Base):
     """
-    This class is used to represent the shared session configuration of the IAG 
+    This class is used to represent the failover configuration of the IAG 
     container.
     """
 
     def __init__(self,
-                    cookie_name      = "IAG_Shared_Session",
-                    secret           = None,
-                    lifetime         = 60):
+                    cookie_name = "IAG_JWE",
+                    key         = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
         @param cookie_name : The name of the cookie which will house the
-                             shared session identifier.
-        @param secret      : An ibmsecurity.iag.system.config.File object
+                             failover JWE token.
+        @param key         : An ibmsecurity.iag.system.config.File object
                              which contains the key which is used to protect
-                             the session information.
-        @param lifetime    : The maximum lifetime of the shared session.
+                             the JWE.
         """
 
-        super(SharedSessionV1, self).__init__()
+        super(FailoverV1, self).__init__()
 
         self.cookie_name = Simple(str, cookie_name)
-        self.secret      = self._check(File, secret)
-        self.lifetime    = Simple(int, lifetime)
+        self.key         = self._check(File, key)
 
     def version(self):
         """

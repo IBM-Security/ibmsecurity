@@ -23,7 +23,7 @@ from ibmsecurity.iag.system.config.server_v1 import ServerV1
 from ibmsecurity.iag.system.config.server_v1 import SSLV1
 from ibmsecurity.iag.system.config.server_v1 import SSLCipherV1
 from ibmsecurity.iag.system.config.server_v1 import SessionV1
-from ibmsecurity.iag.system.config.server_v1 import SharedSessionV1
+from ibmsecurity.iag.system.config.server_v1 import FailoverV1
 from ibmsecurity.iag.system.config.server_v1 import WebSocketV1
 from ibmsecurity.iag.system.config.server_v1 import AppV1
 from ibmsecurity.iag.system.config.server_v1 import AppNames
@@ -90,7 +90,7 @@ try:
     cert = File(pemFile if pemFile is not None else __file__)
 
     web_socket = WebSocketV1()
-    session    = SessionV1(shared_session = SharedSessionV1(secret = cert))
+    session    = SessionV1()
     ssl        = SSLV1(certificate = cert, ciphers = ciphers)
     apps       = [ AppV1(app_name = AppNames.cred_viewer, app_path = "/creds") ]
     server     = ServerV1(
@@ -98,7 +98,8 @@ try:
                         ssl            = ssl, 
                         websocket      = web_socket, 
                         session        = session, 
-                        apps           = apps)
+                        apps           = apps,
+                        failover       = FailoverV1(key = cert))
 
     #
     # Set up the logging configuration.
