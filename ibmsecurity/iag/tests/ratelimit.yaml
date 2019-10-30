@@ -1,0 +1,6 @@
+# Very simple rule which will only allow three requests per hour from an IP
+
+ip: true
+capacity: 3
+interval: 3600
+reaction: TEMPLATE

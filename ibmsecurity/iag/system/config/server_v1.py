@@ -67,7 +67,7 @@ class ServerV1(Base):
         self.worker_threads = Simple(int, worker_threads)
         self.http2          = Simple(bool, http2)
         self.websocket      = self._check(WebSocketV1, websocket)
-        self.apps           = self._checkList(AppV1, apps)
+        self.apps           = self._check(AppsV1, apps)
         self.failover       = self._check(FailoverV1, failover)
 
     def version(self):
@@ -84,13 +84,44 @@ class SSLV1(Base):
     """
 
     def __init__(self,
+                    front_end     = None,
+                    applications  = None):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param front_end          : SSL configuration for the front-end.
+        @param applications       : SSL configuration for the applications.
+
+        """
+
+        super(SSLV1, self).__init__()
+
+        self.front_end            = self._check(SSLFrontEndV1, front_end)
+        self.applications         = self._check(SSLApplicationsV1, applications)
+
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+        return "19.12"
+
+##############################################################################
+
+class SSLFrontEndV1(Base):
+    """
+    This class is used to represent the SSL configuration of the IAG container
+    front-end.
+    """
+
+    def __init__(self,
                     certificate     = None,
                     tlsv10          = False,
                     tlsv11          = False,
                     tlsv12          = True,
                     tlsv13          = True,
-                    fips_processing = True,
-                    nist_compliance = True,
+                    fips_processing = False,
+                    nist_compliance = False,
                     ciphers         = None):
         """
         Initialise this class instance.  The parameters are as follows:
@@ -110,7 +141,7 @@ class SSLV1(Base):
                                  will be enabled.
         """
 
-        super(SSLV1, self).__init__()
+        super(SSLFrontEndV1, self).__init__()
 
         self.certificate     = self._check(File, certificate)
         self.tlsv10          = Simple(bool, tlsv10)
@@ -221,6 +252,46 @@ class SSLCipherV1(AutoNumber):
 
 ##############################################################################
 
+class SSLApplicationsV1(Base):
+    """
+    This class is used to represent the SSL configuration for applications.
+    """
+
+    def __init__(self,
+                    tlsv10          = False,
+                    tlsv11          = False,
+                    tlsv12          = True,
+                    tlsv13          = True,
+                    fips_processing = True,
+                    nist_compliance = True):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param tlsv10          : Should TLS v1.0 be enabled?
+        @param tlsv11          : Should TLS v1.1 be enabled?
+        @param tlsv12          : Should TLS v1.2 be enabled?
+        @param tlsv13          : Should TLS v1.3 be enabled?
+        @param fips_processing : Should FIPS be enabled?
+        @param nist_compliance : Should the ciphers be NIST compliant?
+        """
+
+        super(SSLApplicationsV1, self).__init__()
+
+        self.tlsv10          = Simple(bool, tlsv10)
+        self.tlsv11          = Simple(bool, tlsv11)
+        self.tlsv12          = Simple(bool, tlsv12)
+        self.tlsv13          = Simple(bool, tlsv13)
+        self.fips_processing = Simple(bool, fips_processing)
+        self.nist_compliance = Simple(bool, nist_compliance)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+        return "19.12"
+
+##############################################################################
+
 class SessionV1(Base):
     """
     This class is used to represent the session configuration of the IAG 
@@ -262,7 +333,7 @@ class SessionV1(Base):
 
 class FailoverV1(Base):
     """
-    This class is used to represent the failover configuration of the IAG 
+    This class is used to represent the failover configuration of the IAG
     container.
     """
 
@@ -348,24 +419,14 @@ class WebSocketV1(Base):
 
 ##############################################################################
 
-class AppNames(Enum):
-    """
-    This enumeration contains a list of all embedded applications supported
-    by the IAG.
-    """
-
-    cred_viewer  = 1
-    azn_decision = 2
-
-##############################################################################
-
-class AppV1(Base):
+class AppsV1(Base):
     """
     This class is used to represent the local applications which can be
     enabled within the IAG container.
     """
 
-    def __init__(self, app_name, app_path):
+    def __init__(self,
+                 cred_viewer = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -374,13 +435,9 @@ class AppV1(Base):
                           available.
         """
 
-        super(AppV1, self).__init__()
+        super(AppsV1, self).__init__()
 
-        self._check(AppNames, app_name)
-
-        attr_name = str(app_name).replace("AppNames.","")
-
-        setattr(self, attr_name, { "path" : Simple(str, app_path) } )
+        self.cred_viewer = self._check(CredViewerAppV1, cred_viewer)
 
     def version(self):
         """
@@ -391,3 +448,31 @@ class AppV1(Base):
 
 ##############################################################################
 
+class CredViewerAppV1(Base):
+    """
+    This class is used to represent the local applications which can be
+    enabled within the IAG container.
+    """
+
+    def __init__(self,
+                 path="creds"):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param app_name : The name of the application to be enabled.
+        @param app_path : The path at which the application will be made
+                          available.
+        """
+
+        super(CredViewerAppV1, self).__init__()
+
+        self.path = Simple(str, path)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+##############################################################################

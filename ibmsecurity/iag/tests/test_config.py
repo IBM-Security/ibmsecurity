@@ -19,14 +19,7 @@ from ibmsecurity.iag.system.configurator import Configurator
 
 from ibmsecurity.iag.system.config.file        import File
 
-from ibmsecurity.iag.system.config.server_v1 import ServerV1
-from ibmsecurity.iag.system.config.server_v1 import SSLV1
-from ibmsecurity.iag.system.config.server_v1 import SSLCipherV1
-from ibmsecurity.iag.system.config.server_v1 import SessionV1
-from ibmsecurity.iag.system.config.server_v1 import FailoverV1
-from ibmsecurity.iag.system.config.server_v1 import WebSocketV1
-from ibmsecurity.iag.system.config.server_v1 import AppV1
-from ibmsecurity.iag.system.config.server_v1 import AppNames
+from ibmsecurity.iag.system.config.server_v1 import *
 
 from ibmsecurity.iag.system.config.logging_v1  import LoggingV1
 from ibmsecurity.iag.system.config.logging_v1  import LoggingComponentV1
@@ -47,15 +40,7 @@ from ibmsecurity.iag.system.config.identity_v1 import IdentityRuleV1
 from ibmsecurity.iag.system.config.identity_v1 import OAuthMethodTypeV1
 from ibmsecurity.iag.system.config.identity_v1 import OAuthIdentityV1
 
-from ibmsecurity.iag.system.config.application_v1 import ApplicationV1
-from ibmsecurity.iag.system.config.application_v1 import PolicyV1 
-from ibmsecurity.iag.system.config.application_v1 import SSLV1 as AppSSLV1
-from ibmsecurity.iag.system.config.application_v1 import HttpTransformationV1
-from ibmsecurity.iag.system.config.application_v1 import CorsPolicyV1
-from ibmsecurity.iag.system.config.application_v1 import HealthCheckV1
-from ibmsecurity.iag.system.config.application_v1 import HealthCheckRuleV1
-from ibmsecurity.iag.system.config.application_v1 import ContentInjectionV1
-from ibmsecurity.iag.system.config.application_v1 import CookieJarV1
+from ibmsecurity.iag.system.config.application_v1 import *
 
 from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationV1
 from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationRuleV1
@@ -91,15 +76,28 @@ try:
 
     web_socket = WebSocketV1()
     session    = SessionV1()
-    ssl        = SSLV1(certificate = cert, ciphers = ciphers)
-    apps       = [ AppV1(app_name = AppNames.cred_viewer, app_path = "/creds") ]
+    ssl        = SSLV1(
+        front_end = SSLFrontEndV1(
+            certificate=cert,
+            #ciphers=ciphers
+        ),
+        applications = SSLApplicationsV1(
+
+        )
+    )
+
+    apps       = AppsV1(
+                       cred_viewer=CredViewerAppV1(
+                                                path="cred-viewer-app")
+    )
     server     = ServerV1(
                         worker_threads = 200, 
                         ssl            = ssl, 
                         websocket      = web_socket, 
                         session        = session, 
-                        apps           = apps,
-                        failover       = FailoverV1(key = cert))
+                        apps           = apps
+                        #failover       = FailoverV1(key = cert))
+    )
 
     #
     # Set up the logging configuration.
@@ -140,24 +138,10 @@ try:
     #
 
 #    identity = IdentityV1(config = OidcCiIdentityV1(
-#                        tenant             = "tenant",
-#                        client_id          = "dummy_client_id",
-#                        client_secret      = "dummy_client_secret",
-#                        redirect_uri_host  = "a.ibm.com",
-#                        response_type      = OidcRspTypesV1.id_token__token,
-#                        response_mode      = OidcRspModesV1.form_post,
-#                        proxy              = "https://proxy:3128",
-#                        scopes             = [ "profile", "email2" ],
-#                        allowed_query_args = [ "arg1", "arg2" ],
-#                        bearer_token_attrs = [
-#                                  IdentityRuleV1(False, "attr_1"), 
-#                                  IdentityRuleV1(True, "*") 
-#                                ],
-#                        id_token_attrs = [
-#                                  IdentityRuleV1(False, "id_attr_1"), 
-#                                  IdentityRuleV1(True, "*") 
-#                                ],
-#                        mapped_identity = "identity"
+#                        tenant             = "xxx",
+#                        client_id          = "xxx",
+#                        client_secret      = "xxx",
+#                        redirect_uri_host  = "iag"
 #                    ))
 
     identity = IdentityV1(config = OAuthIdentityV1(
@@ -205,65 +189,110 @@ try:
 
     applications = [
             ApplicationV1(
-                path                   = "/path_a",
-                hosts                  = [ "127.0.0.1" ],
-                is_transparent         = False,
-                max_cached_connections = 10,
-                rate_limiting          = [ cert ],
-                policies               = [ PolicyV1(
-                                    path       = "/path",
-                                    methods    = [ "GET", "POST" ],
-                                    attributes = { "attr_name": "attr_value" },
-                                    name       = "test-policy"
-                                        )],
-                ssl                    = AppSSLV1(
-                                            tlsv1_0        = True,
-                                            tlsv1_1        = True,
-                                            tlsv1_2        = True,
-                                            tlsv1_3        = True,
-                                            nist_compliant = True),
-                http_transformations   = [ HttpTransformationV1(
-                                            request_match = "GET /abc *",
-                                            rule          = cert
-                                        )],
-                cors_policies          = [ CorsPolicyV1(
-                                            name              = "Cors",
-                                            request_match     = "GET /abc *",
-                                            handle_pre_flight = False,
-                                            allowed_origins   = [ "ibm.com" ],
-                                            allow_credentials = False,
-                                            allowed_headers   = [ "Host" ],
-                                            allowed_methods   = [ "GET" ],
-                                            max_age           = 20,
-                                            exposed_headers   = [ "Exposed" ]
-                                        )],
-                health                  = HealthCheckV1(
-                                            method = "GET",
-                                            uri    = "/health_check.jsp",
-                                            ping_frequency          = 20,
-                                            ping_threshold          = 2,
-                                            recovery_ping_frequency = 20,
-                                            recovery_ping_threshold = 2,
-                                            timeout                 = 10,
-                                            rules                   = [
-                                                HealthCheckRuleV1(False, "5??"),
-                                                HealthCheckRuleV1(True, "*")
-                                            ]
-                                        ),
-                content_injection       = [ ContentInjectionV1(
-                                                path     = "*",
-                                                location = "<div id=\"login\"*",
-                                                data     = cert
-                                        )],
-                cookies                 = CookieJarV1(
-                                                managed = [ "Managed", "L*" ],
-                                                reset = [ "RESET" ]
-                                        )
-
-            ),
-            ApplicationV1(
-                path  = "www.ibm.com",
-                hosts = [ "a.ibm.com", "b.ibm.com" ]
+                path                   = "/static",
+                hosts                  = [
+                    HostV1(
+                        host="10.10.10.200",
+                        port=1337,
+                        ssl=HostSSLV1(
+                            #certificate=cert,
+                            server_dn="cn=ibm,dc=com",
+                            sni="test.ibm.com"
+                        ),
+                        url_style=HostURLStyleV1(
+                            case_insensitive=False,
+                            windows=False
+                        )
+                    )
+                ],
+                app_type = AppTypeV1.tcp,
+                transparent_path = False,
+                stateful=True,
+                http2=None,
+                identity_headers=IdentityHeadersV1(
+                    ip_address=True,
+                    encoding=IdentityHeadersEncodingTypeV1.utf8_bin,
+                    basic_auth=IdentityHeadersBasicAuthTypeV1.supply
+                    #cred="iv_creds"
+                ),
+                cookies=CookiesV1(
+                    #junction_cookies=JunctionCookieV1(
+                    #    position="inhead",
+                    #    type_="xhtml10",
+                    #    ensure_unique=True,
+                    #    preserve_name=True
+                    #),
+                    forward_client_cookie=True
+                ),
+                mutual_auth=MutualAuthV1(
+                    basic_auth=BasicAuthV1(
+                        username="test",
+                        password="passsword"
+                    )
+                ),
+                http_transformations=HttpTransformationV1(
+                    request=[
+                        HTTPTransformationRuleV1(
+                            name="RequestHeaderInjector",
+                            method="*",
+                            url="*",
+                            rule=File("httptrans_req.xsl")
+                        )
+                    ]
+                ),
+                cors=[CorsV1(
+                    name="apiPolicy",
+                    method="*",
+                    url="*",
+                    policy=CorsPolicyV1(
+                        allow_origin=["*"],
+                        handle_pre_flight=True,
+                        allow_header=["X-IBM"],
+                        max_age=3600,
+                        allow_method=["IBMGET"],
+                        allow_credentials=True,
+                        expose_header=["IBMHDR"]
+                    )
+                )],
+                health=None,
+                rate_limiting=[
+                    RateLimitingV1(
+                        name="rl1",
+                        method=["*"],
+                        url="rl1",
+                        rule=File("ratelimit.yaml")
+                    ),
+                    RateLimitingV1(
+                        name="rl2",
+                        method=["*"],
+                        url="rl2",
+                        rule=File("ratelimit.yaml")
+                    )
+                ],
+                content_injection=[
+                    ContentInjectionV1(
+                        name="test",
+                        url="inject",
+                        location="<h3>*",
+                        content=File("snippet.html")
+                    )
+                ],
+                worker_threads=None,
+                policies=[
+                    PolicyV1(
+                        name="test",
+                        method=["GET","PUT"],
+                        url="*",
+                        rule="(any groupIds = \"application owners\")",
+                        action=PolicyActionV1.deny
+                    ),
+                    PolicyV1(
+                        name="administrators",
+                        method=["GET", "PUT"],
+                        url="*",
+                        action=PolicyActionV1.deny
+                    )
+                ]
             )
     ]
 
