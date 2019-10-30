@@ -46,7 +46,6 @@ class ApplicationV1(Base):
                  content_injection=None,
                  worker_threads=None,
                  policies=None):
-
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -105,7 +104,7 @@ class ApplicationV1(Base):
                                       worker threads that may be consumed
                                       by this application. This value is an
                                       ibmsecurity.iag.system.config.WorkerThreads
-        @param policies             : Authorization policies for this application.
+        @param policy               : Authorization policies for this application.
                                       This value is an array of
                                       ibmsecurity.iag.system.config.Policy
         """
@@ -137,6 +136,7 @@ class ApplicationV1(Base):
         """
         return "19.12"
 
+
 ##############################################################################
 
 class AppTypeV1(AutoNumber):
@@ -148,11 +148,11 @@ class AppTypeV1(AutoNumber):
     """
     TCP
     """
-    tcp       = ()
+    tcp = ()
     """
     SSL (TLS)
     """
-    ssl       = ()
+    ssl = ()
     """
     TCP Proxy (requires the proxy_host and proxy_port to be defined in each
     host)
@@ -178,7 +178,7 @@ class AppTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
 
 
 ##############################################################################
@@ -213,7 +213,7 @@ class HostV1(Base):
                                              which the reverse proxy should 
                                              present in the host header for 
                                              requests to this application.
-        @param virtual_host_port           : Port used in conjection with
+        @param virtual_host_port           : Port used in conjunction with
                                              virtual_host.
         @param proxy_host                  : For applications with the app_type
                                              tcp_proxy or ssl_proxy, this
@@ -277,7 +277,7 @@ class HostSSLV1(Base):
 
         super(HostSSLV1, self).__init__()
 
-        self.certificate     = self._check(File, certificate)
+        self.certificate = self._check(File, certificate)
         self.server_dn = Simple(str, server_dn)
         self.sni = Simple(str, sni)
 
@@ -394,6 +394,7 @@ class IdentityHeadersV1(Base):
         """
         return "19.12"
 
+
 ##############################################################################
 
 class IdentityHeadersEncodingTypeV1(AutoNumber):
@@ -412,11 +413,11 @@ class IdentityHeadersEncodingTypeV1(AutoNumber):
     """
     LCP URI
     """
-    lcp_uri  = ()
+    lcp_uri = ()
     """
     LCP Binary
     """
-    lcp_bin  = ()
+    lcp_bin = ()
 
     def version(self):
         """
@@ -432,7 +433,8 @@ class IdentityHeadersEncodingTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -447,7 +449,7 @@ class IdentityHeadersCredTypeV1(AutoNumber):
     "iv_user"   - The user name of the client (login ID). Defaults to 
                   "Unauthenticated" if client is unauthenticated (unknown).
     """
-    iv_user   = ()
+    iv_user = ()
     """
     "iv_user_l" - The distinguished name (DN) of the client.
     """
@@ -455,17 +457,17 @@ class IdentityHeadersCredTypeV1(AutoNumber):
     """
     "iv_groups" - A list of groups to which the client belongs. Consists of 
                   comma separated quoted entries.
-    """    
+    """
     iv_groups = ()
     """
     "iv_creds"  - Encoded opaque data structure that represents a Security 
                   Access Manager credential. 
     """
-    iv_creds  = ()
+    iv_creds = ()
     """
     "all".      - Alias for "iv-user", "iv_groups" and "iv_creds"
     """
-    all       = ()
+    all = ()
 
     def version(self):
         """
@@ -481,7 +483,8 @@ class IdentityHeadersCredTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -524,7 +527,8 @@ class IdentityHeadersBasicAuthTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -643,7 +647,7 @@ class JunctionCookiePositionTypeV1(AutoNumber):
     """
     "inhead"  - injects a <script> block within the document <head>
     """
-    inhead   = ()
+    inhead = ()
     """
     "trailer" - injects a <script> block of JavaScript at the end of the 
                 document
@@ -668,7 +672,8 @@ class JunctionCookiePositionTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -686,7 +691,7 @@ class JunctionCookieVersionTypeV1(AutoNumber):
     "xhtml10" - sets a XHTML1.0 compliant block. (Not compatible with onfocus)
     version: xhtml10
     """
-    xhtml   = ()
+    xhtml = ()
 
     def version(self):
         """
@@ -702,7 +707,8 @@ class JunctionCookieVersionTypeV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -844,6 +850,7 @@ class PolicyV1(Base):
         """
         return "19.12"
 
+
 ##############################################################################
 
 class PolicyActionV1(AutoNumber):
@@ -859,7 +866,7 @@ class PolicyActionV1(AutoNumber):
     """
     Deny access
     """
-    deny   = ()
+    deny = ()
 
     def version(self):
         """
@@ -875,7 +882,8 @@ class PolicyActionV1(AutoNumber):
         if (self.version() > version):
             version = self.version()
 
-        return self.name.replace("_","."), version
+        return self.name.replace("_", "."), version
+
 
 ##############################################################################
 
@@ -907,6 +915,7 @@ class HttpTransformationV1(Base):
         Return the minimal IAG version for this object.
         """
         return "19.12"
+
 
 ##############################################################################
 
@@ -942,6 +951,7 @@ class HTTPTransformationRuleV1(Base):
         """
         return "19.12"
 
+
 ##############################################################################
 
 class CorsV1(Base):
@@ -976,6 +986,7 @@ class CorsV1(Base):
         Return the minimal IAG version for this object.
         """
         return "19.12"
+
 
 ##############################################################################
 
@@ -1199,7 +1210,6 @@ class RateLimitingV1(Base):
                  method,
                  url,
                  rule):
-
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1265,6 +1275,7 @@ class ContentInjectionV1(Base):
         Return the minimal IAG version for this object.
         """
         return "19.12"
+
 
 ##############################################################################
 
