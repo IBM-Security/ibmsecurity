@@ -430,9 +430,10 @@ class AppsV1(Base):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param app_name : The name of the application to be enabled.
-        @param app_path : The path at which the application will be made
-                          available.
+        @param cred_viewer : The credential viewer application. Defining this
+                             parameter will enable the credential viewer app.
+                             This value is an 
+                             ibmsecurity.iag.system.config.CredViewerApp
         """
 
         super(AppsV1, self).__init__()
@@ -450,8 +451,8 @@ class AppsV1(Base):
 
 class CredViewerAppV1(Base):
     """
-    This class is used to represent the local applications which can be
-    enabled within the IAG container.
+    This class is used to represent the credential viewer local application
+    which can be enabled within the IAG container.
     """
 
     def __init__(self,
@@ -459,9 +460,8 @@ class CredViewerAppV1(Base):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param app_name : The name of the application to be enabled.
-        @param app_path : The path at which the application will be made
-                          available.
+        @param path : The path at which the credential viewer application 
+                      will be made available.
         """
 
         super(CredViewerAppV1, self).__init__()
