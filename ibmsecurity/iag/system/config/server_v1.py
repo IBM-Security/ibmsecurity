@@ -274,15 +274,17 @@ class FailoverV1(Base):
 
         @param cookie_name : The name of the cookie which will house the
                              failover JWE token.
-        @param key         : An ibmsecurity.iag.system.config.File object
-                             which contains the key which is used to protect
-                             the JWE.
+        @param key         : The key value which is used to protect the JWE.
+                             The key should be 64 bytes in length.  If it is
+                             more than 64 bytes it will be truncated, and if 
+                             it is less than 64 bytes it will be right
+                             padded with 0's.
         """
 
         super(FailoverV1, self).__init__()
 
         self.cookie_name = Simple(str, cookie_name)
-        self.key         = self._check(File, key)
+        self.key         = Simple(str, key)
 
     def version(self):
         """
