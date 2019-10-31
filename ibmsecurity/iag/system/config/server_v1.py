@@ -434,6 +434,7 @@ class AppsV1(Base):
                              parameter will enable the credential viewer app.
                              This value is an 
                              ibmsecurity.iag.system.config.CredViewerApp
+                             object.
         """
 
         super(AppsV1, self).__init__()

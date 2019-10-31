@@ -62,9 +62,11 @@ class ApplicationV1(Base):
                                       application to be protected resides. This
                                       value is an array of 
                                       ibmsecurity.iag.system.config.Host
+                                      objects.
         @param app_type             : The connection type to the reverse proxy 
                                       will make to this application. This value
                                       is an ibmsecurity.iag.system.config.AppType
+                                      object.
         @param transparent_path     : For path type applications, this will pass 
                                       the entire URL as observed by the reverse 
                                       proxy to the application including the value 
@@ -75,38 +77,49 @@ class ApplicationV1(Base):
                                       server. 
         @param http2                : Settings specific to HTTP/2. This value is
                                       an ibmsecurity.iag.system.config.HTTP2
+                                      object.
         @param identity_headers     : Settings specific to headers containing 
                                       identity data which can be injected by the
                                       reverse proxy. This value is an
                                       ibmsecurity.iag.system.config.IdentityHeaders
+                                      object.
         @param cookies              : Settings specific to the handling of cookies.
-                                      This value is an ibmsecurity.iag.system.config.Cookies
+                                      This value is an 
+                                      ibmsecurity.iag.system.config.Cookies
+                                      object.
         @param mutual_auth          : Settings specific to having the reverse
                                       proxy authenticate with the application
                                       servers. This value is an 
                                       ibmsecurity.iag.system.config.MutualAuth
+                                      object.
         @param http_transformations : Settings for defining HTTP Transformation
                                       Rules. This value is an 
                                       ibmsecurity.iag.system.config.HttpTransformation
+                                      object.
         @param cors                 : Settings specific to Cross Origin Resource
                                       Processing. This value is an array of
-                                      ibmsecurity.iag.system.config.CORS
+                                      ibmsecurity.iag.system.config.CORS objects.
         @param health               : Settings specific to application server
                                       health monitoring. This value is an
                                       ibmsecurity.iag.system.config.Health
-        @param rate_limiting        : Settings for defining rate limiting policies.
-                                      This value is an array of 
+                                      object.
+        @param rate_limiting        : Settings for defining rate limiting 
+                                      policies. This value is an array of 
                                       ibmsecurity.iag.system.config.RateLimting
+                                      objects.
         @param content_injection    : Settings for configuring content injection.
                                       This value is an array of
                                       ibmsecurity.iag.system.config.ContentInjection
+                                      objects.
         @param worker_threads       : Limits can be set on the percentage of 
                                       worker threads that may be consumed
                                       by this application. This value is an
                                       ibmsecurity.iag.system.config.WorkerThreads
+                                      object.
         @param policy               : Authorization policies for this application.
                                       This value is an array of
                                       ibmsecurity.iag.system.config.Policy
+                                      objects.
         """
 
         super(ApplicationV1, self).__init__()
@@ -145,23 +158,19 @@ class AppTypeV1(AutoNumber):
     connection the reverse proxy will make to the application server.
     """
 
-    """
-    TCP
-    """
+    # TCP connection. (No SSL/TLS)
     tcp = ()
-    """
-    SSL (TLS)
-    """
+
+    # SSL (TLS) connection.
     ssl = ()
-    """
-    TCP Proxy (requires the proxy_host and proxy_port to be defined in each
-    host)
-    """
+
+    # TCP proxy connection. Requires the proxy_host and proxy_port to be 
+    # defined in each host.
     tcp_proxy = ()
-    """
-    SSL (TLS) Proxy (requires the proxy_host and proxy_port to be defined in 
-    each host)
-    """
+
+    # SSL (TLS) proxy connection. Requires the proxy_host and proxy_port to 
+    # be defined in each host.
+
     ssl_proxy = ()
 
     def version(self):
@@ -224,9 +233,11 @@ class HostV1(Base):
         @param ssl                         : SSL settings for this application.
                                              This value is an
                                              ibmsecurity.iag.system.config.HostSSL
+                                             object.
         @param url_style                   : URL style for this application.
                                              This value is an
                                              ibmsecurity.iag.system.config.HostURLStyle
+                                             object.
         """
 
         super(HostV1, self).__init__()
@@ -370,15 +381,18 @@ class IdentityHeadersV1(Base):
         @param encoding   : The encoding type to use for any identity headers 
                             passed to the application. This value is an
                             ibmsecurity.iag.system.config.IdentityHeadersEncodingType
+                            object.
         @param basic_auth : Controls whether or not basic authentication 
                             headers presented by clients are forwarded to 
                             applications or not. This value is an
                             ibmsecurity.iag.system.config.IdentityHeadersBasicAuthType
+                            object.
         @param ip_address : Provides the client IP address as a HTTP header in 
                             requests forwarded to the application.
         @param cred       : Provides credential data in HTTP headers in 
                             requests forwarded to the application. This value
                             is an ibmsecurity.iag.system.config.IdentityHeadersCredTypeV1
+                            object.
         """
 
         super(IdentityHeadersV1, self).__init__()
@@ -402,21 +416,16 @@ class IdentityHeadersEncodingTypeV1(AutoNumber):
     This class is used to represent an encoding type for identity headers.
     """
 
-    """
-    UTF8 URI (default)
-    """
+    # URI encoded UTF-8 data. (default)
     utf8_uri = ()
-    """
-    UTF8 Binary
-    """
+
+    # Unencoded UTF-8 data.
     utf8_bin = ()
-    """
-    LCP URI
-    """
+
+    # URI encoded local code page data.
     lcp_uri = ()
-    """
-    LCP Binary
-    """
+
+   # Unencoded local code page data.
     lcp_bin = ()
 
     def version(self):
@@ -445,28 +454,23 @@ class IdentityHeadersCredTypeV1(AutoNumber):
     in request headers to requests forwarded to the application.
     """
 
-    """
-    "iv_user"   - The user name of the client (login ID). Defaults to 
-                  "Unauthenticated" if client is unauthenticated (unknown).
-    """
+
+    # The user name of the client (login ID). Defaults to "Unauthenticated" 
+    # if client is unauthenticated (unknown).
     iv_user = ()
-    """
-    "iv_user_l" - The distinguished name (DN) of the client.
-    """
+
+    # The distinguished name (DN) of the client.
     iv_user_l = ()
-    """
-    "iv_groups" - A list of groups to which the client belongs. Consists of 
-                  comma separated quoted entries.
-    """
+
+    # A list of groups to which the client belongs. Consists of comma 
+    # separated quoted entries.
     iv_groups = ()
-    """
-    "iv_creds"  - Encoded opaque data structure that represents a Security 
-                  Access Manager credential. 
-    """
+
+    # Encoded opaque data structure that represents a Security Access 
+    # Manager credential. 
     iv_creds = ()
-    """
-    "all".      - Alias for "iv-user", "iv_groups" and "iv_creds"
-    """
+
+    # Alias for "iv-user", "iv_groups" and "iv_creds"
     all = ()
 
     def version(self):
@@ -494,23 +498,17 @@ class IdentityHeadersBasicAuthTypeV1(AutoNumber):
     authentication headers.
     """
 
-    """
-    "filter" - The reverse proxy will removes any basic authentication
-               information from client requests before sending them to
-               the application server.
-    """
+    # The reverse proxy will removes any basic authentication information 
+    # from client requests before sending them to the application server.
     filter = ()
-    """
-    "supply" - The reverse proxy will provide the username and the a dummy
-               password to the application server. Use the entry 
-               advanced/config/junction/basicauth-dummy-passwd to set the
-               dummy password.
-    """
+    
+    # The reverse proxy will provide the username and the a dummy password 
+    # to the application server. Use the entry 
+    # advanced/config/junction/basicauth-dummy-passwd to set the dummy password.
     supply = ()
-    """
-    "ignore" - The reverse proxy will pass any basic authentication headers
-               to the application.
-    """
+
+    # The reverse proxy will pass any basic authentication headers to the 
+    # application.
     ignore = ()
 
     def version(self):
@@ -539,9 +537,7 @@ class CookiesV1(Base):
 
     def __init__(self,
                     junction_cookies      = None,
-                    forward_client_cookie = False,
-                    managed               = None,
-                    reset                 = None):
+                    forward_client_cookie = False):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -555,37 +551,17 @@ class CookiesV1(Base):
                                        containing the path which the reverse
                                        proxy served them from. This value is 
                                        an ibmsecurity.iag.system.config.JunctionCookie
+                                       object.
         @param forward_client_cookie : This entry will forward the reverse 
                                        proxy cookie (the one named by 
                                        server/session/cookie_name) to the 
                                        application server.
-        @param managed               : The reverse proxy can manage cookies 
-                                       returned from the application. The 
-                                       reverse proxy will store these cookies 
-                                       and not return them to the client, but 
-                                       will insert them into client requests 
-                                       which are forwarded to the application. 
-                                       This entry is a list of patterns, 
-                                       cookies with names which match any of 
-                                       these patterns will be managed by the 
-                                       reverse proxy.
-        @param reset                 : The reverse proxy can send "clear" 
-                                       (empty and expired) cookies to clients 
-                                       when their session ends. This can 
-                                       effectively remove the cookies from 
-                                       some clients. This entry is a list of 
-                                       patterns, cookies in a client request 
-                                       with names which match any of these 
-                                       patterns will be returned as clear 
-                                       cookies during a logout.
         """
 
         super(CookiesV1, self).__init__()
 
         self.junction_cookie       = self._check(JunctionCookieV1, junction_cookies)
         self.forward_client_cookie = Simple(bool, forward_client_cookie)
-        self.managed               = SimpleList(str, managed)
-        self.reset                 = SimpleList(str, reset)
 
     def version(self):
         """
@@ -612,9 +588,11 @@ class JunctionCookieV1(Base):
         @param position      : Position where the script will be injected.
                                This value is an 
                                ibmsecurity.iag.system.config.JunctionCookiePositionType
+                               object.
         @param version       : Version of the cookie injection script. This 
                                value is an
                                ibmsecurity.iag.system.config.JunctionCookieVersionType
+                               object.
         @param ensure_unique : Inserts the application path or host to ensure 
                                that the cookie is unique.
         @param preserve_name : When the junction cookie is enabled, non-domain 
@@ -644,18 +622,13 @@ class JunctionCookiePositionTypeV1(AutoNumber):
     used by junction cookies.
     """
 
-    """
-    "inhead"  - injects a <script> block within the document <head>
-    """
+    # Injects a <script> block within the document <head>
     inhead = ()
-    """
-    "trailer" - injects a <script> block of JavaScript at the end of the 
-                document
-    """
+
+    # injects a <script> block of JavaScript at the end of the document
     trailer = ()
-    """
-    "default" - injects a <script> block before the document
-    """
+
+    # injects a <script> block before the document
     default = ()
 
     def version(self):
@@ -683,15 +656,11 @@ class JunctionCookieVersionTypeV1(AutoNumber):
     used by junction cookies.
     """
 
-    """
-    "onfocus" - injects JavaScript with an onfocus handler.
-    """
+    # injects JavaScript with an onfocus handler.
     onfocus = ()
-    """
-    "xhtml10" - sets a XHTML1.0 compliant block. (Not compatible with onfocus)
-    version: xhtml10
-    """
-    xhtml = ()
+
+    # sets a XHTML1.0 compliant block. (Not compatible with onfocus)
+    xhtml10 = ()
 
     def version(self):
         """
@@ -728,10 +697,12 @@ class MutualAuthV1(Base):
                                   application using basic authentication.
                                   This value is an
                                   ibmsecurity.iag.system.config.BasicAuth
+                                  object.
         @param certificate_auth : The reverse proxy can authenticate to the 
                                   application using a certificate.
                                   This value is an
                                   ibmsecurity.iag.system.config.CertificateAuth
+                                  object.
         """
 
         super(MutualAuthV1, self).__init__()
@@ -834,6 +805,7 @@ class PolicyV1(Base):
         @param action : If the rule matches, should this request be permitted?
                         This value is an 
                         ibmsecurity.iag.system.config.PolicyAction
+                        object.
         """
 
         super(PolicyV1, self).__init__()
@@ -859,13 +831,10 @@ class PolicyActionV1(AutoNumber):
     authorization policy when the policy rule evaluates to true.
     """
 
-    """
-    Allow access
-    """
+    # Allow access
     permit = ()
-    """
-    Deny access
-    """
+
+    # Deny access
     deny = ()
 
     def version(self):
@@ -902,9 +871,11 @@ class HttpTransformationV1(Base):
         @param request  : A list of transformation rules for requests. This
                           value is an array of 
                           ibmsecurity.iag.system.config.HTTPTransformationRule
+                          objects.
         @param response : A list of transformation rules for responses. This
                           value is an array of 
                           ibmsecurity.iag.system.config.HTTPTransformationRule
+                          objects.
         """
 
         super(HttpTransformationV1, self).__init__()
@@ -973,7 +944,7 @@ class CorsV1(Base):
         @param method : The HTTP methods which this policy will match.
         @patam url    : The URL pattern which this rule will match.
         @param policy : The CORS policy data. This value is an
-                        ibmsecurity.iag.system.config.CorsPolicy
+                        ibmsecurity.iag.system.config.CorsPolicy object.
         """
 
         super(CorsV1, self).__init__()
@@ -1060,7 +1031,7 @@ class HealthV1(Base):
 
         @param ping : The reverse proxy can periodically ping each application 
                       server to determine whether it is running. This value is
-                      an ibmsecurity.iag.system.config.HealthPing
+                      an ibmsecurity.iag.system.config.HealthPing object.
         @param rule : Regular (client initiated) requests can also be observed 
                       to determine the application server health.  This entry 
                       is an ordered list of rules based on the response status 
@@ -1101,7 +1072,7 @@ class HealthPingV1(Base):
         @param url    : Specifies the URL which will periodically be pinged.
         @param policy : Specifies the rules about determining health status
                         based on the ping requests. This value is an
-                        ibmsecurity.iag.system.config.HealthPingPolicy
+                        ibmsecurity.iag.system.config.HealthPingPolicy object.
         """
 
         super(HealthPingV1, self).__init__()
@@ -1143,6 +1114,7 @@ class HealthPingPolicyV1(Base):
                            server can be considered health again after it is
                            determined to be unhealthy. This value is an
                            ibmsecurity.iag.system.config.HealthPingPolicyRecovery
+                           object.
         @param timeout   : Specifies how long the reverse proxy should wait for 
                            responses to ping requests.
         @param rule      : Specifies how to interpret responses to ping 
@@ -1296,12 +1268,12 @@ class WorkerThreadsV1(Base):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param soft_limit : The soft limit, as an integer. This value is 
+        @param soft_limit : The soft limit, as an integer. This value is a
                             percentage.
                             This option causes warning messages to be displayed
                             when the application uses more worker threads than 
                             allowed.
-        @param hard_limit : The hard limit, as an integer. This value is 
+        @param hard_limit : The hard limit, as an integer. This value is a
                             percentage.
                             This option causes warning messages to be displayed 
                             when the application uses more worker threads than 
