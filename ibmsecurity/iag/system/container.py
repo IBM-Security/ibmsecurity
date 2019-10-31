@@ -222,7 +222,7 @@ class DockerContainer(object):
 
         if Environment.is_container_context():
             volumes = {
-                Environment.volume_name_: {
+                Environment.get("docker.volume_name"): {
                     "bind": Container.config_volume_path,
                     "mode": "rw"
                 }

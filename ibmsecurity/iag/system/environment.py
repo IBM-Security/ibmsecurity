@@ -28,8 +28,6 @@ class Environment(object):
     # load the configuration a single time.
     config_ = None
 
-    volume_name_ = "iag_config"
-
     iag_user = 5001
     iag_group = 1000
 
