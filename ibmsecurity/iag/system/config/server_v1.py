@@ -426,7 +426,8 @@ class AppsV1(Base):
     """
 
     def __init__(self,
-                 cred_viewer = None):
+                 cred_viewer  = None,
+                 azn_decision = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -439,7 +440,8 @@ class AppsV1(Base):
 
         super(AppsV1, self).__init__()
 
-        self.cred_viewer = self._check(CredViewerAppV1, cred_viewer)
+        self.cred_viewer  = self._check(CredViewerAppV1, cred_viewer)
+        self.azn_decision = self._check(AznDecisionAppV1, azn_decision)
 
     def version(self):
         """
@@ -457,17 +459,62 @@ class CredViewerAppV1(Base):
     """
 
     def __init__(self,
-                 path="creds"):
+                 path        = "creds",
+                 enable_html = True):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param path : The path at which the credential viewer application 
-                      will be made available.
+        @param path        : The path at which the credential viewer 
+                             application will be made available.
+        @param enable_html : Enables an embedded HTML page which can
+                             render the JSON in a browser.
         """
 
         super(CredViewerAppV1, self).__init__()
 
-        self.path = Simple(str, path)
+        self.path        = Simple(str, path)
+        self.enable_html = Simple(bool, enable_html)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+##############################################################################
+
+class AznDecisionAppV1(Base):
+    """
+    This class is used to represent the authorization decision local 
+    application which can be enabled within the IAG container.
+    """
+
+    def __init__(self,
+                 path               = "azn",
+                 max_cache_size     = 8192,
+                 max_cache_lifetime = 300):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param path               : The path at which the authorization 
+                                    decision application will be made 
+                                    available.
+        @param max_cache_size     : The maximum number of credentials which 
+                                    can be cached.  If the addition of a new 
+                                    credential will exceed this maximum cache 
+                                    size a least-recently-used algorithm will
+                                    be used to remove an older entry, making 
+                                    room for the new credential.
+        @param max_cache_lifetime : The maximum lifetime, in seconds, of an 
+                                    entry in the cache.
+        """
+
+        super(AznDecisionAppV1, self).__init__()
+
+        self.path               = Simple(str, path)
+        self.max_cache_size     = Simple(int, path)
+        self.max_cache_lifetime = Simple(int, path)
 
     def version(self):
         """
