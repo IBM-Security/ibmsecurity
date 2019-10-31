@@ -45,7 +45,7 @@ class ApplicationV1(Base):
                     rate_limiting        = None,
                     content_injection    = None,
                     worker_threads       = None,
-                    policies             = None):
+                    policy               = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -141,7 +141,7 @@ class ApplicationV1(Base):
         self.rate_limiting        = self._checkList(RateLimitingV1, rate_limiting)
         self.content_injection    = self._checkList(ContentInjectionV1, content_injection)
         self.worker_threads       = self._check(WorkerThreadsV1, worker_threads)
-        self.policy               = self._checkList(PolicyV1, policies)
+        self.policy               = self._checkList(PolicyV1, policy)
 
     def version(self):
         """

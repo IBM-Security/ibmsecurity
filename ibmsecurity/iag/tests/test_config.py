@@ -88,14 +88,19 @@ try:
 
     apps       = AppsV1(
                        cred_viewer=CredViewerAppV1(
-                                                path="cred-viewer-app")
+                                                path="cred-viewer-app"),
+                       azn_decision=AznDecisionAppV1(
+                                                path="azn-decision-app",
+                                                max_cache_lifetime=300,
+                                                max_cache_size=3600
+                       )
     )
     server     = ServerV1(
                         worker_threads = 200, 
                         ssl            = ssl, 
                         websocket      = web_socket, 
                         session        = session, 
-                        apps           = apps
+                        apps           = apps,
                         failover       = FailoverV1(key = cert))
 
     #
@@ -187,112 +192,111 @@ try:
     #
 
     applications = [
-            ApplicationV1(
-                path                   = "/static",
-                hosts                  = [
-                    HostV1(
-                        host="10.10.10.200",
-                        port=1337,
-                        ssl=HostSSLV1(
-                            #certificate=cert,
-                            server_dn="cn=ibm,dc=com",
-                            sni="test.ibm.com"
-                        ),
-                        url_style=HostURLStyleV1(
-                            case_insensitive=False,
-                            windows=False
-                        )
-                    )
-                ],
-                app_type = AppTypeV1.tcp,
-                transparent_path = False,
-                stateful=True,
-                http2=None,
-                identity_headers=IdentityHeadersV1(
-                    ip_address=True,
-                    encoding=IdentityHeadersEncodingTypeV1.utf8_bin,
-                    basic_auth=IdentityHeadersBasicAuthTypeV1.supply
-                    #cred="iv_creds"
-                ),
-                cookies=CookiesV1(
-                    #junction_cookies=JunctionCookieV1(
-                    #    position="inhead",
-                    #    type_="xhtml10",
-                    #    ensure_unique=True,
-                    #    preserve_name=True
-                    #),
-                    forward_client_cookie=True
-                ),
-                mutual_auth=MutualAuthV1(
-                    basic_auth=BasicAuthV1(
-                        username="test",
-                        password="passsword"
-                    )
-                ),
-                http_transformations=HttpTransformationV1(
-                    request=[
-                        HTTPTransformationRuleV1(
-                            name="RequestHeaderInjector",
-                            method="*",
-                            url="*",
-                            rule=File("httptrans_req.xsl")
-                        )
-                    ]
-                ),
-                cors=[CorsV1(
-                    name="apiPolicy",
-                    method="*",
-                    url="*",
-                    policy=CorsPolicyV1(
-                        allow_origin=["*"],
-                        handle_pre_flight=True,
-                        allow_header=["X-IBM"],
-                        max_age=3600,
-                        allow_method=["IBMGET"],
-                        allow_credentials=True,
-                        expose_header=["IBMHDR"]
-                    )
-                )],
-                health=None,
-                rate_limiting=[
-                    RateLimitingV1(
-                        name="rl1",
-                        method=["*"],
-                        url="rl1",
-                        rule=File("ratelimit.yaml")
+        ApplicationV1(
+            path                 = "/static",
+            hosts                = [
+                HostV1(
+                    host             = "10.10.10.200",
+                    port             = 1337,
+                    ssl              = HostSSLV1(
+                                         server_dn = "cn=ibm,dc=com",
+                                         sni       = "test.ibm.com"
                     ),
-                    RateLimitingV1(
-                        name="rl2",
-                        method=["*"],
-                        url="rl2",
-                        rule=File("ratelimit.yaml")
+                    url_style        = HostURLStyleV1(
+                                         case_insensitive = False,
+                                         windows          = False
                     )
-                ],
-                content_injection=[
-                    ContentInjectionV1(
-                        name="test",
-                        url="inject",
-                        location="<h3>*",
-                        content=File("snippet.html")
-                    )
-                ],
-                worker_threads=None,
-                policy=[
-                    PolicyV1(
-                        name="test",
-                        method=["GET","PUT"],
-                        url="*",
-                        rule="(any groupIds = \"application owners\")",
-                        action=PolicyActionV1.deny
-                    ),
-                    PolicyV1(
-                        name="administrators",
-                        method=["GET", "PUT"],
-                        url="*",
-                        action=PolicyActionV1.deny
+                )
+            ],
+            app_type             = AppTypeV1.tcp,
+            transparent_path     = False,
+            stateful             = True,
+            http2                = None,
+            identity_headers     = IdentityHeadersV1(
+                ip_address           = True,
+                encoding             = IdentityHeadersEncodingTypeV1.utf8_bin,
+                basic_auth           = IdentityHeadersBasicAuthTypeV1.supply
+                #cred="iv_creds"
+            ),
+            cookies              = CookiesV1(
+                #junction_cookies    = JunctionCookieV1(
+                #    position            = "inhead",
+                #    version             = "xhtml10",
+                #    ensure_unique       = True,
+                #    preserve_name       = True
+                #),
+                forward_client_cookie = True
+            ),
+            mutual_auth          = MutualAuthV1(
+                basic_auth           = BasicAuthV1(
+                    username             = "test",
+                    password             = "passsword"
+                )
+            ),
+            http_transformations = HttpTransformationV1(
+                request              = [
+                    HTTPTransformationRuleV1(
+                        name             = "RequestHeaderInjector",
+                        method           = "*",
+                        url              = "*",
+                        rule             = File("httptrans_req.xsl")
                     )
                 ]
-            )
+            ),
+            cors                 = [CorsV1(
+                name                 = "apiPolicy",
+                method               = "*",
+                url                  = "*",
+                policy               = CorsPolicyV1(
+                    allow_origin         = ["*"],
+                    handle_pre_flight    = True,
+                    allow_header         = ["X-IBM"],
+                    max_age              = 3600,
+                    allow_method         = ["IBMGET"],
+                    allow_credentials    = True,
+                    expose_header        = ["IBMHDR"]
+                )
+            )],
+            health               = None,
+            rate_limiting        = [
+                RateLimitingV1(
+                    name             = "rl1",
+                    method           = ["*"],
+                    url              = "rl1",
+                    rule             = File("ratelimit.yaml")
+                ),
+                RateLimitingV1(
+                    name             = "rl2",
+                    method           = ["*"],
+                    url              = "rl2",
+                    rule             = File("ratelimit.yaml")
+                )
+            ],
+            content_injection    = [
+                ContentInjectionV1(
+                    name             = "test",
+                    url              = "inject",
+                    location         = "<h3>*",
+                    content          = File("snippet.html")
+                )
+            ],
+            worker_threads       = None,
+            policy               = [
+                PolicyV1(
+                    name             = "test",
+                    method           = ["GET","PUT"],
+                    url              = "*",
+                    rule             = "(any groupIds = \"application owners\")",
+                    action           = PolicyActionV1.deny
+                ),
+                PolicyV1(
+                    name             = "administrators",
+                    method           = ["GET", "PUT"],
+                    url              = "*",
+                    action           = PolicyActionV1.deny
+                )
+            ]
+        )
     ]
 
     authorization = AuthorizationV1(rules=[

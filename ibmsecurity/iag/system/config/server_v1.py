@@ -513,8 +513,8 @@ class AznDecisionAppV1(Base):
         super(AznDecisionAppV1, self).__init__()
 
         self.path               = Simple(str, path)
-        self.max_cache_size     = Simple(int, path)
-        self.max_cache_lifetime = Simple(int, path)
+        self.max_cache_size     = Simple(int, max_cache_size)
+        self.max_cache_lifetime = Simple(int, max_cache_lifetime)
 
     def version(self):
         """
