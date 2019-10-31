@@ -28,24 +28,24 @@ class ApplicationV1(Base):
     """
 
     def __init__(self,
-                 path=None,
-                 virtual_host=None,
-                 virtual_host_port=None,
-                 hosts=None,
-                 app_type=None,
-                 transparent_path=True,
-                 stateful=False,
-                 http2=None,
-                 identity_headers=None,
-                 cookies=None,
-                 mutual_auth=None,
-                 http_transformations=None,
-                 cors=None,
-                 health=None,
-                 rate_limiting=None,
-                 content_injection=None,
-                 worker_threads=None,
-                 policies=None):
+                    path                 = None,
+                    virtual_host         = None,
+                    virtual_host_port    = None,
+                    hosts                = None,
+                    app_type             = None,
+                    transparent_path     = True,
+                    stateful             = False,
+                    http2                = None,
+                    identity_headers     = None,
+                    cookies              = None,
+                    mutual_auth          = None,
+                    http_transformations = None,
+                    cors                 = None,
+                    health               = None,
+                    rate_limiting        = None,
+                    content_injection    = None,
+                    worker_threads       = None,
+                    policies             = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -111,24 +111,24 @@ class ApplicationV1(Base):
 
         super(ApplicationV1, self).__init__()
 
-        self.path = Simple(str, path)
-        self.virtual_host = Simple(str, virtual_host)
-        self.virtual_host_port = Simple(str, virtual_host_port)
-        self.hosts = self._checkList(HostV1, hosts)
-        self.app_type = self._check(AppTypeV1, app_type)
-        self.transparent_path = Simple(bool, transparent_path)
-        self.stateful = Simple(bool, stateful)
-        self.http2 = self._check(HTTP2V1, http2)
-        self.identity_headers = self._check(IdentityHeadersV1, identity_headers)
-        self.cookies = self._check(CookiesV1, cookies)
-        self.mutual_auth = self._check(MutualAuthV1, mutual_auth)
+        self.path                 = Simple(str, path)
+        self.virtual_host         = Simple(str, virtual_host)
+        self.virtual_host_port    = Simple(str, virtual_host_port)
+        self.hosts                = self._checkList(HostV1, hosts)
+        self.app_type             = self._check(AppTypeV1, app_type)
+        self.transparent_path     = Simple(bool, transparent_path)
+        self.stateful             = Simple(bool, stateful)
+        self.http2                = self._check(HTTP2V1, http2)
+        self.identity_headers     = self._check(IdentityHeadersV1, identity_headers)
+        self.cookies              = self._check(CookiesV1, cookies)
+        self.mutual_auth          = self._check(MutualAuthV1, mutual_auth)
         self.http_transformations = self._check(HttpTransformationV1, http_transformations)
-        self.cors = self._checkList(CorsV1, cors)
-        self.health = self._check(HealthV1, health)
-        self.rate_limiting = self._checkList(RateLimitingV1, rate_limiting)
-        self.content_injection = self._checkList(ContentInjectionV1, content_injection)
-        self.worker_threads = self._check(WorkerThreadsV1, worker_threads)
-        self.policy = self._checkList(PolicyV1, policies)
+        self.cors                 = self._checkList(CorsV1, cors)
+        self.health               = self._check(HealthV1, health)
+        self.rate_limiting        = self._checkList(RateLimitingV1, rate_limiting)
+        self.content_injection    = self._checkList(ContentInjectionV1, content_injection)
+        self.worker_threads       = self._check(WorkerThreadsV1, worker_threads)
+        self.policy               = self._checkList(PolicyV1, policies)
 
     def version(self):
         """
@@ -190,16 +190,16 @@ class HostV1(Base):
     """
 
     def __init__(self,
-                 host,
-                 port,
-                 virtual_host=None,
-                 virtual_host_port=None,
-                 proxy_host=None,
-                 proxy_port=None,
-                 mutual_ssl_virtual_hostname=None,
-                 mutual_ssl_port=None,
-                 ssl=None,
-                 url_style=None):
+                    host,
+                    port,
+                    virtual_host                = None,
+                    virtual_host_port           = None,
+                    proxy_host                  = None,
+                    proxy_port                  = None,
+                    mutual_ssl_virtual_hostname = None,
+                    mutual_ssl_port             = None,
+                    ssl                         = None,
+                    url_style                   = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -231,16 +231,16 @@ class HostV1(Base):
 
         super(HostV1, self).__init__()
 
-        self.host = Simple(str, host)
-        self.port = Simple(int, port)
-        self.virtual_host = Simple(str, virtual_host)
-        self.virtual_host_port = Simple(int, virtual_host_port)
-        self.proxy_host = Simple(str, proxy_host)
-        self.proxy_port = Simple(int, proxy_port)
+        self.host                        = Simple(str, host)
+        self.port                        = Simple(int, port)
+        self.virtual_host                = Simple(str, virtual_host)
+        self.virtual_host_port           = Simple(int, virtual_host_port)
+        self.proxy_host                  = Simple(str, proxy_host)
+        self.proxy_port                  = Simple(int, proxy_port)
         self.mutual_ssl_virtual_hostname = Simple(str, mutual_ssl_virtual_hostname)
-        self.mutual_ssl_port = Simple(int, mutual_ssl_port)
-        self.ssl = self._check(HostSSLV1, ssl)
-        self.url_style = self._check(HostURLStyleV1, url_style)
+        self.mutual_ssl_port             = Simple(int, mutual_ssl_port)
+        self.ssl                         = self._check(HostSSLV1, ssl)
+        self.url_style                   = self._check(HostURLStyleV1, url_style)
 
     def version(self):
         """
@@ -258,9 +258,9 @@ class HostSSLV1(Base):
     """
 
     def __init__(self,
-                 certificate=None,
-                 server_dn=None,
-                 sni=None):
+                    certificate = None,
+                    server_dn   = None,
+                    sni         = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -278,8 +278,8 @@ class HostSSLV1(Base):
         super(HostSSLV1, self).__init__()
 
         self.certificate = self._check(File, certificate)
-        self.server_dn = Simple(str, server_dn)
-        self.sni = Simple(str, sni)
+        self.server_dn   = Simple(str, server_dn)
+        self.sni         = Simple(str, sni)
 
     def version(self):
         """
@@ -296,8 +296,8 @@ class HostURLStyleV1(Base):
     """
 
     def __init__(self,
-                 case_insensitive=False,
-                 windows=False):
+                    case_insensitive = False,
+                    windows          = False):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -310,7 +310,7 @@ class HostURLStyleV1(Base):
         super(HostURLStyleV1, self).__init__()
 
         self.case_insensitive = Simple(bool, case_insensitive)
-        self.windows = Simple(bool, windows)
+        self.windows          = Simple(bool, windows)
 
     def version(self):
         """
@@ -327,8 +327,8 @@ class HTTP2V1(Base):
     """
 
     def __init__(self,
-                 enabled=False,
-                 sni=None):
+                    enabled = False,
+                    sni     = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -342,7 +342,7 @@ class HTTP2V1(Base):
         super(HTTP2V1, self).__init__()
 
         self.enabled = Simple(bool, enabled)
-        self.sni = Simple(str, sni)
+        self.sni     = Simple(str, sni)
 
     def version(self):
         """
@@ -360,10 +360,10 @@ class IdentityHeadersV1(Base):
     """
 
     def __init__(self,
-                 encoding=None,
-                 basic_auth=None,
-                 ip_address=False,
-                 cred=None):
+                    encoding   = None,
+                    basic_auth = None,
+                    ip_address = False,
+                    cred       = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -383,10 +383,10 @@ class IdentityHeadersV1(Base):
 
         super(IdentityHeadersV1, self).__init__()
 
-        self.encoding = self._check(IdentityHeadersEncodingTypeV1, encoding)
+        self.encoding   = self._check(IdentityHeadersEncodingTypeV1, encoding)
         self.basic_auth = self._check(IdentityHeadersBasicAuthTypeV1, basic_auth)
         self.ip_address = Simple(bool, ip_address)
-        self.cred = self._check(IdentityHeadersCredTypeV1, cred)
+        self.cred       = self._check(IdentityHeadersCredTypeV1, cred)
 
     def version(self):
         """
@@ -538,10 +538,10 @@ class CookiesV1(Base):
     """
 
     def __init__(self,
-                 junction_cookies=None,
-                 forward_client_cookie=False,
-                 managed=None,
-                 reset=None):
+                    junction_cookies      = None,
+                    forward_client_cookie = False,
+                    managed               = None,
+                    reset                 = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -582,10 +582,10 @@ class CookiesV1(Base):
 
         super(CookiesV1, self).__init__()
 
-        self.junction_cookie = self._check(JunctionCookieV1, junction_cookies)
+        self.junction_cookie       = self._check(JunctionCookieV1, junction_cookies)
         self.forward_client_cookie = Simple(bool, forward_client_cookie)
-        self.managed = SimpleList(str, managed)
-        self.reset = SimpleList(str, reset)
+        self.managed               = SimpleList(str, managed)
+        self.reset                 = SimpleList(str, reset)
 
     def version(self):
         """
@@ -602,10 +602,10 @@ class JunctionCookieV1(Base):
     """
 
     def __init__(self,
-                 position=None,
-                 version=False,
-                 ensure_unique=False,
-                 preserve_name=False):
+                    position      = None,
+                    version       = False,
+                    ensure_unique = False,
+                    preserve_name = False):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -624,8 +624,8 @@ class JunctionCookieV1(Base):
 
         super(JunctionCookieV1, self).__init__()
 
-        self.position = self._check(JunctionCookiePositionTypeV1, position)
-        self.version = self._check(JunctionCookieVersionTypeV1, version)
+        self.position      = self._check(JunctionCookiePositionTypeV1, position)
+        self.version       = self._check(JunctionCookieVersionTypeV1, version)
         self.ensure_unique = Simple(bool, ensure_unique)
         self.preserve_name = Simple(bool, preserve_name)
 
@@ -719,8 +719,8 @@ class MutualAuthV1(Base):
     """
 
     def __init__(self,
-                 basic_auth=None,
-                 certificate_auth=None):
+                    basic_auth       = None,
+                    certificate_auth = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -736,7 +736,7 @@ class MutualAuthV1(Base):
 
         super(MutualAuthV1, self).__init__()
 
-        self.basic_auth = self._check(BasicAuthV1, basic_auth)
+        self.basic_auth       = self._check(BasicAuthV1, basic_auth)
         self.certificate_auth = self._check(CertificateAuthV1, certificate_auth)
 
     def version(self):
@@ -755,8 +755,8 @@ class BasicAuthV1(Base):
     """
 
     def __init__(self,
-                 username,
-                 password):
+                    username,
+                    password):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -785,7 +785,7 @@ class CertificateAuthV1(Base):
     """
 
     def __init__(self,
-                 certificate=""):
+                    certificate = ""):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -812,11 +812,11 @@ class PolicyV1(Base):
     """
 
     def __init__(self,
-                 name,
-                 method,
-                 url,
-                 rule=None,
-                 action=None):
+                    name,
+                    method,
+                    url,
+                    rule   = None,
+                    action = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -838,10 +838,10 @@ class PolicyV1(Base):
 
         super(PolicyV1, self).__init__()
 
-        self.name = Simple(str, name)
+        self.name   = Simple(str, name)
         self.method = SimpleList(str, method)
-        self.url = Simple(str, url)
-        self.rule = Simple(str, rule)
+        self.url    = Simple(str, url)
+        self.rule   = Simple(str, rule)
         self.action = self._check(PolicyActionV1, action)
 
     def version(self):
@@ -893,7 +893,9 @@ class HttpTransformationV1(Base):
     application.
     """
 
-    def __init__(self, request=None, response=None):
+    def __init__(self, 
+                 request  = None, 
+                 response = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -907,7 +909,7 @@ class HttpTransformationV1(Base):
 
         super(HttpTransformationV1, self).__init__()
 
-        self.request = self._checkList(HTTPTransformationRuleV1, request)
+        self.request  = self._checkList(HTTPTransformationRuleV1, request)
         self.response = self._checkList(HTTPTransformationRuleV1, response)
 
     def version(self):
@@ -925,10 +927,10 @@ class HTTPTransformationRuleV1(Base):
     """
 
     def __init__(self,
-                 name="",
-                 method="",
-                 url="",
-                 rule=None):
+                    name,
+                    method,
+                    url,
+                    rule   = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -940,10 +942,10 @@ class HTTPTransformationRuleV1(Base):
 
         super(HTTPTransformationRuleV1, self).__init__()
 
-        self.name = Simple(str, name)
+        self.name   = Simple(str, name)
         self.method = Simple(str, method)
-        self.url = Simple(str, url)
-        self.rule = self._check(File, rule)
+        self.url    = Simple(str, url)
+        self.rule   = self._check(File, rule)
 
     def version(self):
         """
@@ -960,10 +962,10 @@ class CorsV1(Base):
     """
 
     def __init__(self,
-                 name,
-                 method,
-                 url,
-                 policy=None):
+                    name,
+                    method,
+                    url,
+                    policy = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -976,9 +978,9 @@ class CorsV1(Base):
 
         super(CorsV1, self).__init__()
 
-        self.name = Simple(str, name)
+        self.name   = Simple(str, name)
         self.method = Simple(str, method)
-        self.url = Simple(str, url)
+        self.url    = Simple(str, url)
         self.policy = self._check(CorsPolicyV1, policy)
 
     def version(self):
@@ -996,13 +998,13 @@ class CorsPolicyV1(Base):
     """
 
     def __init__(self,
-                 allow_origin=None,
-                 handle_pre_flight=False,
-                 allow_header=None,
-                 max_age=None,
-                 allow_method=None,
-                 allow_credentials=False,
-                 expose_header=None):
+                    allow_origin      = None,
+                    handle_pre_flight = False,
+                    allow_header      = None,
+                    max_age           = None,
+                    allow_method      = None,
+                    allow_credentials = False,
+                    expose_header     = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1027,13 +1029,13 @@ class CorsPolicyV1(Base):
 
         super(CorsPolicyV1, self).__init__()
 
-        self.allow_origin = SimpleList(str, allow_origin)
+        self.allow_origin      = SimpleList(str, allow_origin)
         self.handle_pre_flight = Simple(bool, handle_pre_flight)
-        self.allow_header = SimpleList(str, allow_header)
-        self.max_age = Simple(int, max_age)
-        self.allow_method = SimpleList(str, allow_method)
+        self.allow_header      = SimpleList(str, allow_header)
+        self.max_age           = Simple(int, max_age)
+        self.allow_method      = SimpleList(str, allow_method)
         self.allow_credentials = Simple(bool, allow_credentials)
-        self.expose_header = SimpleList(str, expose_header)
+        self.expose_header     = SimpleList(str, expose_header)
 
     def version(self):
         """
@@ -1051,8 +1053,8 @@ class HealthV1(Base):
     """
 
     def __init__(self,
-                 ping=None,
-                 rule=None):
+                    ping = None,
+                    rule = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1088,10 +1090,9 @@ class HealthPingV1(Base):
     """
 
     def __init__(self,
-                 method,
-                 url,
-                 policy=None):
-        super(HealthPingV1, self).__init__()
+                    method,
+                    url,
+                    policy = None):
 
         """
         Initialise this class instance.  The parameters are as follows:
@@ -1103,8 +1104,10 @@ class HealthPingV1(Base):
                         ibmsecurity.iag.system.config.HealthPingPolicy
         """
 
+        super(HealthPingV1, self).__init__()
+
         self.method = Simple(str, method)
-        self.url = Simple(str, url)
+        self.url    = Simple(str, url)
         self.policy = self._check(HealthPingPolicyV1, policy)
 
     def version(self):
@@ -1123,13 +1126,11 @@ class HealthPingPolicyV1(Base):
     """
 
     def __init__(self,
-                 frequency,
-                 threshold,
-                 recovery=None,
-                 timeout="",
-                 rule=None):
-        super(HealthPingPolicyV1, self).__init__()
-
+                    frequency,
+                    threshold,
+                    recovery  = None,
+                    timeout   = None,
+                    rule      = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1152,11 +1153,13 @@ class HealthPingPolicyV1(Base):
                            characters '*' and '?' can be used.
         """
 
+        super(HealthPingPolicyV1, self).__init__()
+
         self.frequency = Simple(str, frequency)
         self.threshold = Simple(str, threshold)
-        self.recovery = self._check(HealthPingPolicyRecoveryV1, recovery)
-        self.timeout = Simple(str, timeout)
-        self.rule = SimpleList(str, rule)
+        self.recovery  = self._check(HealthPingPolicyRecoveryV1, recovery)
+        self.timeout   = Simple(str, timeout)
+        self.rule      = SimpleList(str, rule)
 
     def version(self):
         """
@@ -1174,10 +1177,8 @@ class HealthPingPolicyRecoveryV1(Base):
     """
 
     def __init__(self,
-                 frequency,
-                 threshold):
-        super(HealthPingPolicyRecoveryV1, self).__init__()
-
+                    frequency,
+                    threshold):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1187,6 +1188,8 @@ class HealthPingPolicyRecoveryV1(Base):
                            fail before the application server is considered 
                            unhealthy.
         """
+
+        super(HealthPingPolicyRecoveryV1, self).__init__()
 
         self.frequency = Simple(str, frequency)
         self.threshold = Simple(str, threshold)
@@ -1206,10 +1209,10 @@ class RateLimitingV1(Base):
     """
 
     def __init__(self,
-                 name,
-                 method,
-                 url,
-                 rule):
+                    name,
+                    method,
+                    url,
+                    rule):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1222,10 +1225,10 @@ class RateLimitingV1(Base):
 
         super(RateLimitingV1, self).__init__()
 
-        self.name = Simple(str, name)
+        self.name   = Simple(str, name)
         self.method = SimpleList(str, method)
-        self.url = Simple(str, url)
-        self.rule = self._check(File, rule)
+        self.url    = Simple(str, url)
+        self.rule   = self._check(File, rule)
 
     def version(self):
         """
@@ -1246,10 +1249,10 @@ class ContentInjectionV1(Base):
     """
 
     def __init__(self,
-                 name="",
-                 url="",
-                 location="",
-                 content=""):
+                    name,
+                    url,
+                    location,
+                    content):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -1265,10 +1268,10 @@ class ContentInjectionV1(Base):
 
         super(ContentInjectionV1, self).__init__()
 
-        self.name = Simple(str, name)
-        self.url = Simple(str, url)
+        self.name     = Simple(str, name)
+        self.url      = Simple(str, url)
         self.location = Simple(str, location)
-        self.content = self._check(File, content)
+        self.content  = self._check(File, content)
 
     def version(self):
         """
@@ -1288,8 +1291,8 @@ class WorkerThreadsV1(Base):
     """
 
     def __init__(self,
-                 soft_limit=None,
-                 hard_limit=None):
+                    soft_limit = None,
+                    hard_limit = None):
         """
         Initialise this class instance.  The parameters are as follows:
 

@@ -96,8 +96,7 @@ try:
                         websocket      = web_socket, 
                         session        = session, 
                         apps           = apps
-                        #failover       = FailoverV1(key = cert))
-    )
+                        failover       = FailoverV1(key = cert))
 
     #
     # Set up the logging configuration.
