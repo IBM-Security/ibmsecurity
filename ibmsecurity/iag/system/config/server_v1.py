@@ -431,11 +431,14 @@ class AppsV1(Base):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param cred_viewer : The credential viewer application. Defining this
-                             parameter will enable the credential viewer app.
-                             This value is an 
-                             ibmsecurity.iag.system.config.CredViewerApp
-                             object.
+        @param cred_viewer  : Used to enable the credential viewer application. 
+                              This value is an 
+                              ibmsecurity.iag.system.config.CredViewerApp
+                              object.
+        @param azn_decision : Used to enabled the authorization decision 
+                              application. This value is an 
+                              ibmsecurity.iag.system.config.CredViewerApp
+                              object.
         """
 
         super(AppsV1, self).__init__()
