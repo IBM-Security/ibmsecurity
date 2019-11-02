@@ -261,13 +261,13 @@ try:
             rate_limiting        = [
                 RateLimitingV1(
                     name             = "rl1",
-                    method           = ["*"],
+                    methods          = ["*"],
                     url              = "rl1",
                     rule             = File("ratelimit.yaml")
                 ),
                 RateLimitingV1(
                     name             = "rl2",
-                    method           = ["*"],
+                    methods          = ["*"],
                     url              = "rl2",
                     rule             = File("ratelimit.yaml")
                 )

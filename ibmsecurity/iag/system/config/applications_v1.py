@@ -1183,25 +1183,25 @@ class RateLimitingV1(Base):
 
     def __init__(self,
                     name,
-                    method,
+                    methods,
                     url,
                     rule):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param name   : The name of this policy.
-        @param method : The HTTP methods which this policy will match.
-                        This value is an array.
-        @param url    : The URL pattern which this rule will match.
-        @param rule   : The rate limiting policy YAML file.
+        @param name    : The name of this policy.
+        @param methods : The HTTP methods which this policy will match.
+                         This value is an array.
+        @param url     : The URL pattern which this rule will match.
+        @param rule    : The rate limiting policy YAML file.
         """
 
         super(RateLimitingV1, self).__init__()
 
-        self.name   = Simple(str, name)
-        self.method = SimpleList(str, method)
-        self.url    = Simple(str, url)
-        self.rule   = self._check(File, rule)
+        self.name    = Simple(str, name)
+        self.methods = SimpleList(str, methods)
+        self.url     = Simple(str, url)
+        self.rule    = self._check(File, rule)
 
     def version(self):
         """
