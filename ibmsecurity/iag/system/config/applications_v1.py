@@ -374,7 +374,7 @@ class IdentityHeadersV1(Base):
                     encoding   = None,
                     basic_auth = None,
                     ip_address = False,
-                    cred       = None):
+                    credential = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -389,7 +389,7 @@ class IdentityHeadersV1(Base):
                             object.
         @param ip_address : Provides the client IP address as a HTTP header in 
                             requests forwarded to the application.
-        @param cred       : Provides credential data in HTTP headers in 
+        @param credential : Provides credential data in HTTP headers in 
                             requests forwarded to the application. This value
                             is an ibmsecurity.iag.system.config.IdentityHeadersCredTypeV1
                             object.
@@ -400,7 +400,7 @@ class IdentityHeadersV1(Base):
         self.encoding   = self._check(IdentityHeadersEncodingTypeV1, encoding)
         self.basic_auth = self._check(IdentityHeadersBasicAuthTypeV1, basic_auth)
         self.ip_address = Simple(bool, ip_address)
-        self.cred       = self._check(IdentityHeadersCredTypeV1, cred)
+        self.credential = self._check(IdentityHeadersCredTypeV1, credential)
 
     def version(self):
         """
