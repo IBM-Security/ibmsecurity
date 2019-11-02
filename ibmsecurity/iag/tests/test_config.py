@@ -281,7 +281,7 @@ try:
                 )
             ],
             worker_threads       = None,
-            policy               = [
+            policies             = [
                 PolicyV1(
                     name             = "test",
                     method           = ["GET","PUT"],

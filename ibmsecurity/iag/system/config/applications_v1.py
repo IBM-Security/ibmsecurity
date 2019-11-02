@@ -45,7 +45,7 @@ class ApplicationsV1(Base):
                     rate_limiting        = None,
                     content_injection    = None,
                     worker_threads       = None,
-                    policy               = None):
+                    policies             = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -116,7 +116,7 @@ class ApplicationsV1(Base):
                                       by this application. This value is an
                                       ibmsecurity.iag.system.config.WorkerThreads
                                       object.
-        @param policy               : Authorization policies for this application.
+        @param policies             : Authorization policies for this application.
                                       This value is an array of
                                       ibmsecurity.iag.system.config.Policy
                                       objects.
@@ -141,7 +141,7 @@ class ApplicationsV1(Base):
         self.rate_limiting        = self._checkList(RateLimitingV1, rate_limiting)
         self.content_injection    = self._checkList(ContentInjectionV1, content_injection)
         self.worker_threads       = self._check(WorkerThreadsV1, worker_threads)
-        self.policy               = self._checkList(PolicyV1, policy)
+        self.policies             = self._checkList(PolicyV1, policies)
 
     def version(self):
         """
