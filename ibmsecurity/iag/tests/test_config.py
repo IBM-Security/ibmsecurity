@@ -248,13 +248,13 @@ try:
                 method               = "*",
                 url                  = "*",
                 policy               = CorsPolicyV1(
-                    allow_origin         = ["*"],
+                    allow_origins        = ["*"],
                     handle_pre_flight    = True,
-                    allow_header         = ["X-IBM"],
+                    allow_headers        = ["X-IBM"],
                     max_age              = 3600,
-                    allow_method         = ["IBMGET"],
+                    allow_methods        = ["IBMGET"],
                     allow_credentials    = True,
-                    expose_header        = ["IBMHDR"]
+                    expose_headers       = ["IBMHDR"]
                 )
             )],
             health               = None,

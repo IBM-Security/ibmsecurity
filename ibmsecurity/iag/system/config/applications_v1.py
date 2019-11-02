@@ -970,13 +970,13 @@ class CorsPolicyV1(Base):
     """
 
     def __init__(self,
-                    allow_origin      = None,
+                    allow_origins     = None,
                     handle_pre_flight = False,
-                    allow_header      = None,
+                    allow_headers     = None,
                     max_age           = None,
-                    allow_method      = None,
+                    allow_methods     = None,
                     allow_credentials = False,
-                    expose_header     = None):
+                    expose_headers    = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -985,29 +985,29 @@ class CorsPolicyV1(Base):
         @param handle_pre_flight : A boolean which indicates whether the proxy
                                    will handle pre-flight requests on behalf
                                    of the application.
-        @param allow_header      : An array of header names which will be
+        @param allow_headers     : An array of header names which will be
                                    allowed in cross-origin requests.
         @param max_age           : The number of seconds a client should cache
                                    the results of a pre-flight request.
-        @param allow_method      : An array of method names which will be 
+        @param allow_methods     : An array of method names which will be 
                                    allowed in cross-origin requests.
         @param allow_credentials : A boolean which indicates whether
                                    authentication is required when accessing
                                    the application.
-        @param expose_header     : An array of header names which the client
+        @param expose_headers    : An array of header names which the client
                                    may expose after making cross-origin
                                    requests.
         """
 
         super(CorsPolicyV1, self).__init__()
 
-        self.allow_origin      = SimpleList(str, allow_origin)
+        self.allow_origins     = SimpleList(str, allow_origins)
         self.handle_pre_flight = Simple(bool, handle_pre_flight)
-        self.allow_header      = SimpleList(str, allow_header)
+        self.allow_headers     = SimpleList(str, allow_headers)
         self.max_age           = Simple(int, max_age)
-        self.allow_method      = SimpleList(str, allow_method)
+        self.allow_methods     = SimpleList(str, allow_methods)
         self.allow_credentials = Simple(bool, allow_credentials)
-        self.expose_header     = SimpleList(str, expose_header)
+        self.expose_headers    = SimpleList(str, expose_headers)
 
     def version(self):
         """
