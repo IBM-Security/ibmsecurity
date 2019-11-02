@@ -215,7 +215,8 @@ try:
             identity_headers     = IdentityHeadersV1(
                 ip_address           = True,
                 encoding             = IdentityHeadersEncodingTypeV1.utf8_bin,
-                basic_auth           = IdentityHeadersBasicAuthTypeV1.supply
+                basic_auth           = IdentityHeadersBasicAuthTypeV1.supply,
+                session_cookie       = True
                 #cred="iv_creds"
             ),
             cookies              = CookiesV1(
@@ -225,7 +226,6 @@ try:
                 #    ensure_unique       = True,
                 #    preserve_name       = True
                 #),
-                forward_client_cookie = True
             ),
             mutual_auth          = MutualAuthV1(
                 basic_auth           = BasicAuthV1(

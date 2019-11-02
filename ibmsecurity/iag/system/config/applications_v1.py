@@ -371,36 +371,44 @@ class IdentityHeadersV1(Base):
     """
 
     def __init__(self,
-                    encoding   = None,
-                    basic_auth = None,
-                    ip_address = False,
-                    credential = None):
+                    encoding       = None,
+                    basic_auth     = None,
+                    ip_address     = False,
+                    credential     = None,
+                    session_cookie = False):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param encoding   : The encoding type to use for any identity headers 
-                            passed to the application. This value is an
-                            ibmsecurity.iag.system.config.IdentityHeadersEncodingType
-                            object.
-        @param basic_auth : Controls whether or not basic authentication 
-                            headers presented by clients are forwarded to 
-                            applications or not. This value is an
-                            ibmsecurity.iag.system.config.IdentityHeadersBasicAuthType
-                            object.
-        @param ip_address : Provides the client IP address as a HTTP header in 
-                            requests forwarded to the application.
-        @param credential : Provides credential data in HTTP headers in 
-                            requests forwarded to the application. This value
-                            is an ibmsecurity.iag.system.config.IdentityHeadersCredTypeV1
-                            object.
+        @param encoding       : The encoding type to use for any identity 
+                                headers passed to the application. This value 
+                                is an
+                                ibmsecurity.iag.system.config.IdentityHeadersEncodingType
+                                object.
+        @param basic_auth     : Controls whether or not basic authentication 
+                                headers presented by clients are forwarded to 
+                                applications or not. This value is an
+                                ibmsecurity.iag.system.config.IdentityHeadersBasicAuthType
+                                object.
+        @param ip_address     : Provides the client IP address as a HTTP header 
+                                in requests forwarded to the application.
+        @param credential     : Provides credential data in HTTP headers in 
+                                requests forwarded to the application. This 
+                                value is an 
+                                ibmsecurity.iag.system.config.IdentityHeadersCredTypeV1
+                                object.
+        @param session_cookie : This entry will forward the reverse proxy 
+                                cookie (the one named by 
+                                server/session/cookie_name) to the application
+                                server.
         """
 
         super(IdentityHeadersV1, self).__init__()
 
-        self.encoding   = self._check(IdentityHeadersEncodingTypeV1, encoding)
-        self.basic_auth = self._check(IdentityHeadersBasicAuthTypeV1, basic_auth)
-        self.ip_address = Simple(bool, ip_address)
-        self.credential = self._check(IdentityHeadersCredTypeV1, credential)
+        self.encoding       = self._check(IdentityHeadersEncodingTypeV1, encoding)
+        self.basic_auth     = self._check(IdentityHeadersBasicAuthTypeV1, basic_auth)
+        self.ip_address     = Simple(bool, ip_address)
+        self.credential     = self._check(IdentityHeadersCredTypeV1, credential)
+        self.session_cookie = Simple(bool, session_cookie)
 
     def version(self):
         """
@@ -536,32 +544,25 @@ class CookiesV1(Base):
     """
 
     def __init__(self,
-                    junction_cookies      = None,
-                    forward_client_cookie = False):
+                    junction_cookie = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param junction_cookie       : The reverse proxy can set a 
-                                       "junction cookie" in returned HTML 
-                                       pages indicating which junction the 
-                                       page was served from. This is useful 
-                                       for applications which dynamically 
-                                       generate URLs that may not be aware 
-                                       or capable of generating URLs 
-                                       containing the path which the reverse
-                                       proxy served them from. This value is 
-                                       an ibmsecurity.iag.system.config.JunctionCookie
-                                       object.
-        @param forward_client_cookie : This entry will forward the reverse 
-                                       proxy cookie (the one named by 
-                                       server/session/cookie_name) to the 
-                                       application server.
+        @param junction_cookie : The reverse proxy can set a "junction cookie" 
+                                 in returned HTML pages indicating which 
+                                 junction the page was served from. This is 
+                                 useful for applications which dynamically 
+                                 generate URLs that may not be aware or 
+                                 capable of generating URLs containing the 
+                                 path which the reverse proxy served them from.
+                                 This value is an 
+                                 ibmsecurity.iag.system.config.JunctionCookie
+                                 object.
         """
 
         super(CookiesV1, self).__init__()
 
-        self.junction_cookie       = self._check(JunctionCookieV1, junction_cookies)
-        self.forward_client_cookie = Simple(bool, forward_client_cookie)
+        self.junction_cookie       = self._check(JunctionCookieV1, junction_cookie)
 
     def version(self):
         """
