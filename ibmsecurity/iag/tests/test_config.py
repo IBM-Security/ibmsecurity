@@ -284,14 +284,14 @@ try:
             policies             = [
                 PolicyV1(
                     name             = "test",
-                    method           = ["GET","PUT"],
+                    methods          = ["GET","PUT"],
                     url              = "*",
                     rule             = "(any groupIds = \"application owners\")",
                     action           = PolicyActionV1.deny
                 ),
                 PolicyV1(
                     name             = "administrators",
-                    method           = ["GET", "PUT"],
+                    methods          = ["GET", "PUT"],
                     url              = "*",
                     action           = PolicyActionV1.deny
                 )

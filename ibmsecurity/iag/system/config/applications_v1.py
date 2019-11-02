@@ -785,37 +785,37 @@ class PolicyV1(Base):
 
     def __init__(self,
                     name,
-                    method,
+                    methods,
                     url,
                     rule   = None,
                     action = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param name   : A name for this policy, which is used to refer to 
-                        this policy in audit events.
-        @param method : The method(s) which this policy applies to. If this is 
-                        not defined, the policy will apply to all methods.
-        @param url    : The URL pattern which this policy applies to.
-        @param rule   : If a rule string is not defined here, the reverse 
-                        proxy will look for a named rule (with the same name 
-                        as this policy) in the authorization section of the 
-                        configuration YAML.
-                        Refer to the authorization section for an explanation 
-                        of rule syntax.
-        @param action : If the rule matches, should this request be permitted?
-                        This value is an 
-                        ibmsecurity.iag.system.config.PolicyAction
-                        object.
+        @param name    : A name for this policy, which is used to refer to 
+                         this policy in audit events.
+        @param methods : The method(s) which this policy applies to. If this is 
+                         not defined, the policy will apply to all methods.
+        @param url     : The URL pattern which this policy applies to.
+        @param rule    : If a rule string is not defined here, the reverse 
+                         proxy will look for a named rule (with the same name 
+                         as this policy) in the authorization section of the 
+                         configuration YAML.
+                         Refer to the authorization section for an explanation 
+                         of rule syntax.
+        @param action  : If the rule matches, should this request be permitted?
+                         This value is an 
+                         ibmsecurity.iag.system.config.PolicyAction
+                         object.
         """
 
         super(PolicyV1, self).__init__()
 
-        self.name   = Simple(str, name)
-        self.method = SimpleList(str, method)
-        self.url    = Simple(str, url)
-        self.rule   = Simple(str, rule)
-        self.action = self._check(PolicyActionV1, action)
+        self.name    = Simple(str, name)
+        self.methods = SimpleList(str, methods)
+        self.url     = Simple(str, url)
+        self.rule    = Simple(str, rule)
+        self.action  = self._check(PolicyActionV1, action)
 
     def version(self):
         """
