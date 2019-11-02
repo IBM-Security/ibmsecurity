@@ -18,7 +18,7 @@ from ibmsecurity.iag.system.config.server_v1   import ServerV1
 from ibmsecurity.iag.system.config.logging_v1  import LoggingV1
 from ibmsecurity.iag.system.config.advanced_v1 import AdvancedV1
 from ibmsecurity.iag.system.config.identity_v1 import IdentityV1
-from ibmsecurity.iag.system.config.application_v1 import ApplicationV1
+from ibmsecurity.iag.system.config.applications_v1 import ApplicationsV1
 from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationV1
 from ibmsecurity.iag.system.environment import Environment
 from ibmsecurity.iag.system.container import Container
@@ -34,7 +34,7 @@ class Configurator(object):
     def __init__(self, 
                     server        = None,
                     identity      = None,
-                    application   = None,
+                    applications  = None,
                     authorization = None,
                     logging       = None,
                     advanced      = None):
@@ -47,7 +47,7 @@ class Configurator(object):
         @param identity      : One of ibmsecurity.iag.system.config.Identity
                                types of object which is used to define the
                                configuration for the authentication part of IAG.
-        @param application   : An array of ibmsecurity.iag.system.config.Application
+        @param applications  : An array of ibmsecurity.iag.system.config.Application
                                objects which define the applications that will be
                                protected by the IAG.
         @param authorization : An ibmsecurity.iag.system.config.Authorization
@@ -64,7 +64,7 @@ class Configurator(object):
 
         self.server        = self.__validate(ServerV1, server)
         self.identity      = self.__validate(IdentityV1, identity)
-        self.application   = self.__validateList(ApplicationV1, application)
+        self.applications  = self.__validateList(ApplicationsV1, applications)
         self.authorization = self.__validate(AuthorizationV1, authorization)
         self.logging       = self.__validate(LoggingV1, logging)
         self.advanced      = self.__validate(AdvancedV1, advanced)

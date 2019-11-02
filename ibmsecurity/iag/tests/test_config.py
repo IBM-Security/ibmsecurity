@@ -40,7 +40,7 @@ from ibmsecurity.iag.system.config.identity_v1 import IdentityRuleV1
 from ibmsecurity.iag.system.config.identity_v1 import OAuthMethodTypeV1
 from ibmsecurity.iag.system.config.identity_v1 import OAuthIdentityV1
 
-from ibmsecurity.iag.system.config.application_v1 import *
+from ibmsecurity.iag.system.config.applications_v1 import *
 
 from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationV1
 from ibmsecurity.iag.system.config.authorization_v1 import AuthorizationRuleV1
@@ -192,7 +192,7 @@ try:
     #
 
     applications = [
-        ApplicationV1(
+        ApplicationsV1(
             path                 = "/static",
             hosts                = [
                 HostV1(
@@ -315,7 +315,7 @@ try:
                     server        = server,
                     logging       = logging,
                     advanced      = advanced,
-                    application   = applications,
+                    applications  = applications,
                     authorization = authorization,
                     identity      = identity)
 

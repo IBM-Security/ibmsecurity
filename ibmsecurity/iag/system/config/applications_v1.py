@@ -21,7 +21,7 @@ from ibmsecurity.iag.system.config.base import AutoNumber
 
 ##############################################################################
 
-class ApplicationV1(Base):
+class ApplicationsV1(Base):
     """
     This class is used to represent the application configuration of an IAG
     container.
@@ -122,7 +122,7 @@ class ApplicationV1(Base):
                                       objects.
         """
 
-        super(ApplicationV1, self).__init__()
+        super(ApplicationsV1, self).__init__()
 
         self.path                 = Simple(str, path)
         self.virtual_host         = Simple(str, virtual_host)
