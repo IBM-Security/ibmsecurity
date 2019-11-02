@@ -32,7 +32,7 @@ class ApplicationsV1(Base):
                     virtual_host         = None,
                     virtual_host_port    = None,
                     hosts                = None,
-                    app_type             = None,
+                    connection_type      = None,
                     transparent_path     = True,
                     stateful             = False,
                     http2                = None,
@@ -63,7 +63,7 @@ class ApplicationsV1(Base):
                                       value is an array of 
                                       ibmsecurity.iag.system.config.Host
                                       objects.
-        @param app_type             : The connection type to the reverse proxy 
+        @param connection_type      : The connection type to the reverse proxy 
                                       will make to this application. This value
                                       is an ibmsecurity.iag.system.config.AppType
                                       object.
@@ -128,7 +128,7 @@ class ApplicationsV1(Base):
         self.virtual_host         = Simple(str, virtual_host)
         self.virtual_host_port    = Simple(str, virtual_host_port)
         self.hosts                = self._checkList(HostV1, hosts)
-        self.app_type             = self._check(AppTypeV1, app_type)
+        self.connection_type      = self._check(ConnectionTypeV1, connection_type)
         self.transparent_path     = Simple(bool, transparent_path)
         self.stateful             = Simple(bool, stateful)
         self.http2                = self._check(HTTP2V1, http2)
@@ -152,9 +152,9 @@ class ApplicationsV1(Base):
 
 ##############################################################################
 
-class AppTypeV1(AutoNumber):
+class ConnectionTypeV1(AutoNumber):
     """
-    This class is used to represent an application type. This is the type of
+    This class is used to represent a connection type. This is the type of
     connection the reverse proxy will make to the application server.
     """
 
@@ -224,10 +224,10 @@ class HostV1(Base):
                                              requests to this application.
         @param virtual_host_port           : Port used in conjunction with
                                              virtual_host.
-        @param proxy_host                  : For applications with the app_type
-                                             tcp_proxy or ssl_proxy, this
-                                             entry can be used to specify the
-                                             proxy server.
+        @param proxy_host                  : For applications with the 
+                                             connection_type tcp_proxy or 
+                                             ssl_proxy, this entry can be used 
+                                             to specify the proxy server.
         @param proxy_port                  : Port used in conjunction with
                                              proxy_host.
         @param ssl                         : SSL settings for this application.

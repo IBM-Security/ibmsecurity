@@ -208,7 +208,7 @@ try:
                     )
                 )
             ],
-            app_type             = AppTypeV1.tcp,
+            connection_type      = ConnectionTypeV1.tcp,
             transparent_path     = False,
             stateful             = True,
             http2                = None,
