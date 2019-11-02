@@ -194,15 +194,15 @@ try:
     applications = [
         ApplicationsV1(
             path                 = "/static",
-            hosts                = [
-                HostV1(
-                    host             = "10.10.10.200",
+            servers                = [
+                ServerV1(
+                    server           = "10.10.10.200",
                     port             = 1337,
-                    ssl              = HostSSLV1(
+                    ssl              = ServerSSLV1(
                                          server_dn = "cn=ibm,dc=com",
                                          sni       = "test.ibm.com"
                     ),
-                    url_style        = HostURLStyleV1(
+                    url_style        = ServerURLStyleV1(
                                          case_insensitive = False,
                                          windows          = False
                     )

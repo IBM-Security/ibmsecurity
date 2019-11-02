@@ -31,7 +31,7 @@ class ApplicationsV1(Base):
                     path                 = None,
                     virtual_host         = None,
                     virtual_host_port    = None,
-                    hosts                = None,
+                    servers              = None,
                     connection_type      = None,
                     transparent_path     = True,
                     stateful             = False,
@@ -58,10 +58,10 @@ class ApplicationsV1(Base):
         @param virtual_host_port    : For a virtual host application, this is the 
                                       port where the application will be made 
                                       available.
-        @param hosts                : An array of elements describing where the 
+        @param servers              : An array of elements describing where the 
                                       application to be protected resides. This
                                       value is an array of 
-                                      ibmsecurity.iag.system.config.Host
+                                      ibmsecurity.iag.system.config.Server
                                       objects.
         @param connection_type      : The connection type to the reverse proxy 
                                       will make to this application. This value
@@ -127,7 +127,7 @@ class ApplicationsV1(Base):
         self.path                 = Simple(str, path)
         self.virtual_host         = Simple(str, virtual_host)
         self.virtual_host_port    = Simple(str, virtual_host_port)
-        self.hosts                = self._checkList(HostV1, hosts)
+        self.servers              = self._checkList(ServerV1, servers)
         self.connection_type      = self._check(ConnectionTypeV1, connection_type)
         self.transparent_path     = Simple(bool, transparent_path)
         self.stateful             = Simple(bool, stateful)
@@ -192,9 +192,9 @@ class ConnectionTypeV1(AutoNumber):
 
 ##############################################################################
 
-class HostV1(Base):
+class ServerV1(Base):
     """
-    This class is used to represent a single application host. A host
+    This class is used to represent a single application server. A server
     defines where the application being protected resides.
     """
 
@@ -232,15 +232,15 @@ class HostV1(Base):
                                              proxy_host.
         @param ssl                         : SSL settings for this application.
                                              This value is an
-                                             ibmsecurity.iag.system.config.HostSSL
+                                             ibmsecurity.iag.system.config.ServerSSL
                                              object.
         @param url_style                   : URL style for this application.
                                              This value is an
-                                             ibmsecurity.iag.system.config.HostURLStyle
+                                             ibmsecurity.iag.system.config.ServerURLStyle
                                              object.
         """
 
-        super(HostV1, self).__init__()
+        super(ServerV1, self).__init__()
 
         self.host                        = Simple(str, host)
         self.port                        = Simple(int, port)
@@ -250,8 +250,8 @@ class HostV1(Base):
         self.proxy_port                  = Simple(int, proxy_port)
         self.mutual_ssl_virtual_hostname = Simple(str, mutual_ssl_virtual_hostname)
         self.mutual_ssl_port             = Simple(int, mutual_ssl_port)
-        self.ssl                         = self._check(HostSSLV1, ssl)
-        self.url_style                   = self._check(HostURLStyleV1, url_style)
+        self.ssl                         = self._check(ServerSSLV1, ssl)
+        self.url_style                   = self._check(ServerURLStyleV1, url_style)
 
     def version(self):
         """
@@ -262,7 +262,7 @@ class HostV1(Base):
 
 ##############################################################################
 
-class HostSSLV1(Base):
+class ServerSSLV1(Base):
     """
     This class is used to represent SSL settings for a single application 
     server.
@@ -286,7 +286,7 @@ class HostSSLV1(Base):
                              here.
         """
 
-        super(HostSSLV1, self).__init__()
+        super(ServerSSLV1, self).__init__()
 
         self.certificate = self._check(File, certificate)
         self.server_dn   = Simple(str, server_dn)
@@ -301,9 +301,9 @@ class HostSSLV1(Base):
 
 ##############################################################################
 
-class HostURLStyleV1(Base):
+class ServerURLStyleV1(Base):
     """
-    This class is used to represent the URL style for a application host.
+    This class is used to represent the URL style for an application server.
     """
 
     def __init__(self,
@@ -318,7 +318,7 @@ class HostURLStyleV1(Base):
                                   style file name aliases.
         """
 
-        super(HostURLStyleV1, self).__init__()
+        super(ServerURLStyleV1, self).__init__()
 
         self.case_insensitive = Simple(bool, case_insensitive)
         self.windows          = Simple(bool, windows)
