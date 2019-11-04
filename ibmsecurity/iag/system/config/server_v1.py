@@ -122,7 +122,8 @@ class SSLFrontEndV1(Base):
                     tlsv13          = True,
                     fips_processing = False,
                     nist_compliance = False,
-                    ciphers         = None):
+                    ciphers         = None,
+                    sni             = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -139,6 +140,10 @@ class SSLFrontEndV1(Base):
                                  ibmsecurity.iag.system.config.ssl_cipher 
                                  objects used to represent the ciphers which 
                                  will be enabled.
+        @param sni             : An array of 
+                                 ibmsecurity.iag.system.config.SSLFrontEndSNIV1
+                                 objects used to represent the SNI 
+                                 configuration for the server.
         """
 
         super(SSLFrontEndV1, self).__init__()
@@ -151,6 +156,39 @@ class SSLFrontEndV1(Base):
         self.fips_processing = Simple(bool, fips_processing)
         self.nist_compliance = Simple(bool, nist_compliance)
         self.ciphers         = self._checkList(SSLCipherV1, ciphers)
+        self.sni             = self._checkList(SSLFrontEndSNIV1, sni)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+        return "19.12"
+
+##############################################################################
+
+class SSLFrontEndSNIV1(Base):
+    """
+    This class is used to represent the SNI SSL configuration of the IAG 
+    container front-end.
+    """
+
+    def __init__(self,
+                    certificate,
+                    hostname):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param certificate : An ibmsecurity.iag.system.config.file object
+                             which points to the file which will be used
+                             as the SNI server certificate.
+        @param hostname    : The hostname to be associated with the 
+                             certificate.
+        """
+
+        super(SSLFrontEndSNIV1, self).__init__()
+
+        self.certificate = self._check(File, certificate)
+        self.hostname    = Simple(str, hostname)
 
     def version(self):
         """

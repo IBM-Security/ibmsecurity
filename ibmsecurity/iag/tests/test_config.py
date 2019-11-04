@@ -80,6 +80,9 @@ try:
     ssl        = SSLV1(
         front_end = SSLFrontEndV1(
             certificate=cert,
+            sni = [ SSLFrontEndSNIV1(
+                        certificate = cert, 
+                        hostname    = "testhost.ibm.com") ]
             #ciphers=ciphers
         ),
         applications = SSLApplicationsV1(
