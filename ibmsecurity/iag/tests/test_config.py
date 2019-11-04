@@ -200,8 +200,114 @@ try:
         ApplicationsV1(
             path                 = "/static",
             servers                = [
-                ServerV1(
-                    server           = "10.10.10.200",
+                ApplicationServerV1(
+                    host             = "10.10.10.200",
+                    port             = 1337,
+                    ssl              = ServerSSLV1(
+                                         server_dn = "cn=ibm,dc=com",
+                                         sni       = "test.ibm.com"
+                    ),
+                    url_style        = ServerURLStyleV1(
+                                         case_insensitive = False,
+                                         windows          = False
+                    ),
+                    virtual_host     = "test.ibm.com:9443"
+                ),
+            ],
+            connection_type      = ConnectionTypeV1.tcp,
+            transparent_path     = False,
+            stateful             = True,
+            http2                = None,
+            identity_headers     = IdentityHeadersV1(
+                ip_address           = True,
+                encoding             = IdentityHeadersEncodingTypeV1.utf8_bin,
+                basic_auth           = IdentityHeadersBasicAuthTypeV1.supply,
+                session_cookie       = True
+                #cred="iv_creds"
+            ),
+            cookies              = CookiesV1(
+                #junction_cookies    = JunctionCookieV1(
+                #    position            = "inhead",
+                #    version             = "xhtml10",
+                #    ensure_unique       = True,
+                #    preserve_name       = True
+                #),
+            ),
+            mutual_auth          = MutualAuthV1(
+                basic_auth           = BasicAuthV1(
+                    username             = "test",
+                    password             = "passsword"
+                )
+            ),
+            http_transformations = HttpTransformationV1(
+                request              = [
+                    HTTPTransformationRuleV1(
+                        name             = "RequestHeaderInjector1",
+                        method           = "*",
+                        url              = "*",
+                        rule             = File("httptrans_req.xsl")
+                    )
+                ]
+            ),
+            cors                 = [CorsV1(
+                name                 = "apiPolicy",
+                method               = "*",
+                url                  = "*",
+                policy               = CorsPolicyV1(
+                    allow_origins        = ["*"],
+                    handle_pre_flight    = True,
+                    allow_headers        = ["X-IBM"],
+                    max_age              = 3600,
+                    allow_methods        = ["IBMGET"],
+                    allow_credentials    = True,
+                    expose_headers       = ["IBMHDR"]
+                )
+            )],
+            health               = None,
+            rate_limiting        = [
+                RateLimitingV1(
+                    name             = "rl1",
+                    methods          = ["*"],
+                    url              = "rl1",
+                    rule             = File("ratelimit.yaml")
+                ),
+                RateLimitingV1(
+                    name             = "rl2",
+                    methods          = ["*"],
+                    url              = "rl2",
+                    rule             = File("ratelimit.yaml")
+                )
+            ],
+            content_injection    = [
+                ContentInjectionV1(
+                    name             = "test",
+                    url              = "inject",
+                    location         = "<h3>*",
+                    content          = File("snippet.html")
+                )
+            ],
+            worker_threads       = None,
+            policies             = [
+                PolicyV1(
+                    name             = "test",
+                    methods          = ["GET","PUT"],
+                    url              = "*",
+                    rule             = "(any groupIds = \"application owners\")",
+                    action           = PolicyActionV1.deny
+                ),
+                PolicyV1(
+                    name             = "administrators",
+                    methods          = ["GET", "PUT"],
+                    url              = "*",
+                    action           = PolicyActionV1.deny
+                )
+            ]
+        ),
+        ApplicationsV1(
+            virtual_host           = "iag-test:443",
+            servers                = [
+                ApplicationServerV1(
+                    host             = "10.10.10.200",
                     port             = 1337,
                     ssl              = ServerSSLV1(
                                          server_dn = "cn=ibm,dc=com",
@@ -241,7 +347,7 @@ try:
             http_transformations = HttpTransformationV1(
                 request              = [
                     HTTPTransformationRuleV1(
-                        name             = "RequestHeaderInjector",
+                        name             = "RequestHeaderInjector2",
                         method           = "*",
                         url              = "*",
                         rule             = File("httptrans_req.xsl")
