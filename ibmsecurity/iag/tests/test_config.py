@@ -99,13 +99,25 @@ try:
                                                 max_cache_size=3600
                        )
     )
+
+    localPages = LocalContentV1(
+                    content = [ 
+                        LocalPagesV1(
+                                    name    = "index.html",
+                                    content = File("snippet.html")),
+                        LocalPagesV1(
+                                    name    = "images/logo.gif",
+                                    content = File("snippet.html")),
+                        ])
+
     server     = ServerV1(
                         worker_threads = 200, 
                         ssl            = ssl, 
                         websocket      = web_socket, 
                         session        = session, 
                         apps           = apps,
-                        failover       = FailoverV1(key = "simple key"))
+                        failover       = FailoverV1(key = "simple key"),
+                        local_pages    = localPages)
 
     #
     # Set up the logging configuration.

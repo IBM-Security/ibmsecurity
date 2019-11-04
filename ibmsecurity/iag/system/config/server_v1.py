@@ -34,7 +34,8 @@ class ServerV1(Base):
                     http2          = True,
                     websocket      = None,
                     apps           = None,
-                    failover       = None):
+                    failover       = None,
+                    local_pages    = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -58,6 +59,9 @@ class ServerV1(Base):
                                 object which contains configuration
                                 information for failover support
                                 between multiple IAG containers.
+        @param local_pages    : An ibmsecurity.iag.system.config.LocalContentV1
+                                object which contains configuration information
+                                for pages served by the local junction.
         """
 
         super(ServerV1, self).__init__()
@@ -69,6 +73,7 @@ class ServerV1(Base):
         self.websocket      = self._check(WebSocketV1, websocket)
         self.apps           = self._check(AppsV1, apps)
         self.failover       = self._check(FailoverV1, failover)
+        self.local_pages    = self._check(LocalContentV1, local_pages)
 
     def version(self):
         """
@@ -565,5 +570,89 @@ class AznDecisionAppV1(Base):
         """
 
         return "19.12"
+
+##############################################################################
+
+class LocalContentV1(Base):
+    """
+    This class is used to represent the local pages which are served by the
+    IAG container.
+    """
+
+    def __init__(self,
+                 content):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param content : An array of 
+                         ibmsecurity.iag.system.config.LocalPagesV1 objects.
+        """
+
+        super(LocalContentV1, self).__init__()
+
+        self.content = self._checkList(LocalPagesV1, content)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+##############################################################################
+
+class LocalPagesV1(Base):
+    """
+    This class is used to represent the local pages which are served by the
+    IAG container.
+    """
+
+    def __init__(self,
+                 name,
+                 content):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param name    : The name of the file, including any path information.
+        @param content : An ibmsecurity.iag.system.config.file object
+                         which points to the file content.
+        """
+
+        super(LocalPagesV1, self).__init__()
+
+        self.name    = Simple(str, name)
+        self.content = self._check(File, content)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+    def getData(self, version):
+        """
+        Return the data which is managed by this object.  
+        """
+
+        if (self.version() > version):
+            version = self.version()
+
+        data    = {}
+        current = data
+
+        # Find the correct node to add the data to.
+        for dir in self.name.value_.split('/')[:-1]:
+            current[dir] = []
+            newData      = {}
+
+            current[dir].append(newData)
+
+            current = newData
+
+        # Add the data to the node.
+        current[self.name.value_.split('/')[-1:][0]] = self.content.value
+
+        return data, version
 
 ##############################################################################
