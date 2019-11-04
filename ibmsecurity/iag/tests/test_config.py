@@ -100,15 +100,43 @@ try:
                        )
     )
 
-    localPages = LocalContentV1(
+    localPages = LocalPagesV1(
                     content = [ 
-                        LocalPagesV1(
+                        LocalContentV1(
                                     name    = "index.html",
                                     content = File("snippet.html")),
-                        LocalPagesV1(
+                        LocalContentV1(
                                     name    = "images/logo.gif",
                                     content = File("snippet.html")),
                         ])
+
+
+    mgmtPages = MgmtPagesV1(
+                    language = "C",
+                    content  = [
+                        MgmtContentV1(
+                            page_type = MgmtContentTypeV1.logout,
+                            pages     = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200),
+                              ResponsePageV1(
+                                    mime_type     = "json", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 201),
+                            ]),
+                        MgmtContentV1(
+                            page_type = MgmtContentTypeV1.default,
+                            pages     = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200)
+                            ])
+
+                    ]
+                )
 
     server     = ServerV1(
                         worker_threads = 200, 
@@ -117,7 +145,8 @@ try:
                         session        = session, 
                         apps           = apps,
                         failover       = FailoverV1(key = "simple key"),
-                        local_pages    = localPages)
+                        local_pages    = localPages,
+                        mgmt_pages     = [ mgmtPages ])
 
     #
     # Set up the logging configuration.

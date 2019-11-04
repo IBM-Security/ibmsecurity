@@ -35,7 +35,9 @@ class ServerV1(Base):
                     websocket      = None,
                     apps           = None,
                     failover       = None,
-                    local_pages    = None):
+                    local_pages    = None,
+                    mgmt_pages     = None,
+                    error_pages    = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
@@ -59,21 +61,26 @@ class ServerV1(Base):
                                 object which contains configuration
                                 information for failover support
                                 between multiple IAG containers.
-        @param local_pages    : An ibmsecurity.iag.system.config.LocalContentV1
+        @param local_pages    : An ibmsecurity.iag.system.config.LocalPagesV1
                                 object which contains configuration information
                                 for pages served by the local junction.
+        @param mgmt_pages     : An array of 
+                                ibmsecurity.iag.system.config.MgmtPagesV1
+                                objects which contains configuration 
+                                information for management pages.
         """
 
         super(ServerV1, self).__init__()
 
-        self.ssl            = self._check(SSLV1, ssl)
-        self.session        = self._check(SessionV1, session)
-        self.worker_threads = Simple(int, worker_threads)
-        self.http2          = Simple(bool, http2)
-        self.websocket      = self._check(WebSocketV1, websocket)
-        self.apps           = self._check(AppsV1, apps)
-        self.failover       = self._check(FailoverV1, failover)
-        self.local_pages    = self._check(LocalContentV1, local_pages)
+        self.ssl              = self._check(SSLV1, ssl)
+        self.session          = self._check(SessionV1, session)
+        self.worker_threads   = Simple(int, worker_threads)
+        self.http2            = Simple(bool, http2)
+        self.websocket        = self._check(WebSocketV1, websocket)
+        self.apps             = self._check(AppsV1, apps)
+        self.failover         = self._check(FailoverV1, failover)
+        self.local_pages      = self._check(LocalPagesV1, local_pages)
+        self.management_pages = self._checkList(MgmtPagesV1, mgmt_pages)
 
     def version(self):
         """
@@ -573,7 +580,7 @@ class AznDecisionAppV1(Base):
 
 ##############################################################################
 
-class LocalContentV1(Base):
+class LocalPagesV1(Base):
     """
     This class is used to represent the local pages which are served by the
     IAG container.
@@ -585,12 +592,12 @@ class LocalContentV1(Base):
         Initialise this class instance.  The parameters are as follows:
 
         @param content : An array of 
-                         ibmsecurity.iag.system.config.LocalPagesV1 objects.
+                         ibmsecurity.iag.system.config.LocalContentV1 objects.
         """
 
-        super(LocalContentV1, self).__init__()
+        super(LocalPagesV1, self).__init__()
 
-        self.content = self._checkList(LocalPagesV1, content)
+        self.content = self._checkList(LocalContentV1, content)
 
     def version(self):
         """
@@ -601,7 +608,7 @@ class LocalContentV1(Base):
 
 ##############################################################################
 
-class LocalPagesV1(Base):
+class LocalContentV1(Base):
     """
     This class is used to represent the local pages which are served by the
     IAG container.
@@ -618,7 +625,7 @@ class LocalPagesV1(Base):
                          which points to the file content.
         """
 
-        super(LocalPagesV1, self).__init__()
+        super(LocalContentV1, self).__init__()
 
         self.name    = Simple(str, name)
         self.content = self._check(File, content)
@@ -656,3 +663,178 @@ class LocalPagesV1(Base):
         return data, version
 
 ##############################################################################
+
+class MgmtPagesV1(Base):
+    """
+    This class is used to represent the management pages which are served by 
+    the IAG container.
+    """
+
+    def __init__(self,
+                 language,
+                 content):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param language : The language for the supplied content.
+        @param content  : An array of 
+                          ibmsecurity.iag.system.config.MgmtContentV1
+                          objects which contain configuration information
+                          for pages served by the local junction.
+        """
+
+        super(MgmtPagesV1, self).__init__()
+
+        self.language = Simple(str, language)
+        self.content  = self._checkList(MgmtContentV1, content)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+##############################################################################
+
+class MgmtContentV1(Base):
+    """
+    This class is used to represent the management pages which are served by 
+    the IAG container.
+    """
+
+    def __init__(self,
+                 page_type,
+                 pages):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param page_type : An ibmsecurity.iag.system.config.MgmtContentTypeV1
+                           object which represents the page type.
+        @param pages     : An array of ibmsecurity.iag.system.config.PageV1
+                           objects which contain information related to a
+                           single management page.
+        """
+
+        super(MgmtContentV1, self).__init__()
+
+        self.page_type = self._check(MgmtContentTypeV1, page_type)
+        self.pages     = self._checkList(ResponsePageV1, pages)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+
+    def getData(self, version):
+        """
+        Return the data which is managed by this object.  
+        """
+
+        if (self.version() > version):
+            version = self.version()
+
+        data = {}
+
+        data['page_type'], lversion = self.page_type.getData(version)
+
+        if (lversion > version):
+            version = lversion
+
+        for page in self.pages:
+            data[page.mime_type.value_], lversion = page.getData(version)
+
+            if (lversion > version):
+                version = lversion
+
+        return data, version
+
+##############################################################################
+
+class MgmtContentTypeV1(AutoNumber):
+    """
+    This class is used to represent a single management page type.
+    """
+
+    default             = ()
+    help                = ()
+    login_success       = ()
+    logout              = ()
+    oidc_fragment       = ()
+    ratelimit           = ()
+    redirect            = ()
+    temp_cache_response = ()
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+        return "19.12"
+
+    def getData(self, version):
+        """
+        Return the data which is managed by this object.  
+        """
+
+        if (self.version() > version):
+            version = self.version()
+
+        return self.name, version
+
+##############################################################################
+
+class ResponsePageV1(Base):
+    """
+    This class is used to represent a single management page.
+    """
+
+    def __init__(self,
+                 mime_type,
+                 content,
+                 response_code = None):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param mime_type     : The mime type for which this page will be 
+                               returned: e.g. json
+        @param content       : An ibmsecurity.iag.system.config.file object
+                               which points to the file content.
+        @param response_code : The response code which will be returned with
+                               the page.
+        """
+
+        super(ResponsePageV1, self).__init__()
+
+        self.mime_type     = Simple(str, mime_type)
+        self.content       = self._check(File, content)
+        self.response_code = Simple(int, response_code)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+    def getData(self, version):
+        """
+        Return the data which is managed by this object.  
+        """
+
+        if (self.version() > version):
+            version = self.version()
+
+        data = {}
+
+        data['content'] = self.content.value
+
+        if self.response_code.value_ is not None:
+            data['response_code'] = self.response_code.value_
+
+        return data, version
+
+##############################################################################
+
