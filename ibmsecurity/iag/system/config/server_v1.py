@@ -458,11 +458,11 @@ class WebSocketV1(Base):
         }
 
         self.timeouts = {
-            "application": {
+            "applications": {
                 "read"  : Simple(int, app_read_timeout),
                 "write" : Simple(int, app_write_timeout)
             },
-            "client": {
+            "front_end": {
                 "read"  : Simple(int, client_read_timeout),
                 "write" : Simple(int, client_write_timeout)
             }
