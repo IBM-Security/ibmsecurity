@@ -30,7 +30,6 @@ class ApplicationsV1(Base):
     def __init__(self,
                     path                 = None,
                     virtual_host         = None,
-                    virtual_host_port    = None,
                     servers              = None,
                     connection_type      = None,
                     transparent_path     = True,
@@ -54,10 +53,9 @@ class ApplicationsV1(Base):
                                       virtual_host and virtual_host_port.
         @param virtual_host         : For a virtual host application, this is the 
                                       hostname where the application will be made 
-                                      available.
-        @param virtual_host_port    : For a virtual host application, this is the 
-                                      port where the application will be made 
-                                      available.
+                                      available. This entry should include any
+                                      port information if non-default ports are
+                                      used.
         @param servers              : An array of elements describing where the 
                                       application to be protected resides. This
                                       value is an array of 
@@ -126,8 +124,7 @@ class ApplicationsV1(Base):
 
         self.path                 = Simple(str, path)
         self.virtual_host         = Simple(str, virtual_host)
-        self.virtual_host_port    = Simple(str, virtual_host_port)
-        self.servers              = self._checkList(ServerV1, servers)
+        self.servers              = self._checkList(ApplicationServerV1, servers)
         self.connection_type      = self._check(ConnectionTypeV1, connection_type)
         self.transparent_path     = Simple(bool, transparent_path)
         self.stateful             = Simple(bool, stateful)
@@ -192,7 +189,7 @@ class ConnectionTypeV1(AutoNumber):
 
 ##############################################################################
 
-class ServerV1(Base):
+class ApplicationServerV1(Base):
     """
     This class is used to represent a single application server. A server
     defines where the application being protected resides.
@@ -202,7 +199,6 @@ class ServerV1(Base):
                     host,
                     port,
                     virtual_host                = None,
-                    virtual_host_port           = None,
                     proxy_host                  = None,
                     proxy_port                  = None,
                     mutual_ssl_virtual_hostname = None,
@@ -222,8 +218,10 @@ class ServerV1(Base):
                                              which the reverse proxy should 
                                              present in the host header for 
                                              requests to this application.
-        @param virtual_host_port           : Port used in conjunction with
-                                             virtual_host.
+                                             For virtual host type applications,
+                                             this will be inherited from the
+                                             application and does not need to
+                                             be duplicated here.
         @param proxy_host                  : For applications with the 
                                              connection_type tcp_proxy or 
                                              ssl_proxy, this entry can be used 
@@ -240,12 +238,11 @@ class ServerV1(Base):
                                              object.
         """
 
-        super(ServerV1, self).__init__()
+        super(ApplicationServerV1, self).__init__()
 
         self.host                        = Simple(str, host)
         self.port                        = Simple(int, port)
         self.virtual_host                = Simple(str, virtual_host)
-        self.virtual_host_port           = Simple(int, virtual_host_port)
         self.proxy_host                  = Simple(str, proxy_host)
         self.proxy_port                  = Simple(int, proxy_port)
         self.mutual_ssl_virtual_hostname = Simple(str, mutual_ssl_virtual_hostname)
