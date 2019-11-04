@@ -138,6 +138,31 @@ try:
                     ]
                 )
 
+    errorPages = ErrorPagesV1(
+                    language = "C",
+                    content  = [
+                        ErrorContentV1(
+                            error_code = "3898342f",
+                            pages      = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200),
+                              ResponsePageV1(
+                                    mime_type     = "json", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 201),
+                            ]),
+                        ErrorContentV1(
+                            error_code = "default",
+                            pages      = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"))
+                            ])
+                    ]
+                )
+
     server     = ServerV1(
                         worker_threads = 200, 
                         ssl            = ssl, 
@@ -146,7 +171,8 @@ try:
                         apps           = apps,
                         failover       = FailoverV1(key = "simple key"),
                         local_pages    = localPages,
-                        mgmt_pages     = [ mgmtPages ])
+                        mgmt_pages     = [ mgmtPages ],
+                        error_pages    = [ errorPages ] )
 
     #
     # Set up the logging configuration.

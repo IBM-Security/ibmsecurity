@@ -68,6 +68,10 @@ class ServerV1(Base):
                                 ibmsecurity.iag.system.config.MgmtPagesV1
                                 objects which contains configuration 
                                 information for management pages.
+        @param error_pages     : An array of 
+                                ibmsecurity.iag.system.config.ErrorPagesV1
+                                objects which contains configuration 
+                                information for error pages.
         """
 
         super(ServerV1, self).__init__()
@@ -81,6 +85,7 @@ class ServerV1(Base):
         self.failover         = self._check(FailoverV1, failover)
         self.local_pages      = self._check(LocalPagesV1, local_pages)
         self.management_pages = self._checkList(MgmtPagesV1, mgmt_pages)
+        self.error_pages      = self._checkList(ErrorPagesV1, error_pages)
 
     def version(self):
         """
@@ -711,7 +716,8 @@ class MgmtContentV1(Base):
 
         @param page_type : An ibmsecurity.iag.system.config.MgmtContentTypeV1
                            object which represents the page type.
-        @param pages     : An array of ibmsecurity.iag.system.config.PageV1
+        @param pages     : An array of 
+                           ibmsecurity.iag.system.config.ResponsePageV1
                            objects which contain information related to a
                            single management page.
         """
@@ -783,6 +789,95 @@ class MgmtContentTypeV1(AutoNumber):
             version = self.version()
 
         return self.name, version
+
+##############################################################################
+
+class ErrorPagesV1(Base):
+    """
+    This class is used to represent the error pages which are served by 
+    the IAG container.
+    """
+
+    def __init__(self,
+                 language,
+                 content):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param language : The language for the supplied content.
+        @param content  : An array of 
+                          ibmsecurity.iag.system.config.ErrorContentV1
+                          objects which contain configuration information
+                          for error pages served by the server.
+        """
+
+        super(ErrorPagesV1, self).__init__()
+
+        self.language = Simple(str, language)
+        self.content  = self._checkList(ErrorContentV1, content)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+##############################################################################
+
+class ErrorContentV1(Base):
+    """
+    This class is used to represent the error pages which are served by 
+    the IAG container.
+    """
+
+    def __init__(self,
+                 error_code,
+                 pages):
+        """
+        Initialise this class instance.  The parameters are as follows:
+
+        @param error_code : The hexidecimal error code for the supplied pages.
+                            A special error page of 'default' can be used to
+                            indicate the default error page.
+        @param pages      : An array of 
+                            ibmsecurity.iag.system.config.ResponsePageV1
+                            objects which contain information related to a
+                            single error page.
+        """
+
+        super(ErrorContentV1, self).__init__()
+
+        self.error = Simple(str, error_code)
+        self.pages = self._checkList(ResponsePageV1, pages)
+
+    def version(self):
+        """
+        Return the minimal IAG version for this object.
+        """
+
+        return "19.12"
+
+
+    def getData(self, version):
+        """
+        Return the data which is managed by this object.  
+        """
+
+        if (self.version() > version):
+            version = self.version()
+
+        data = {}
+
+        data['error'] = self.error.value_
+
+        for page in self.pages:
+            data[page.mime_type.value_], lversion = page.getData(version)
+
+            if (lversion > version):
+                version = lversion
+
+        return data, version
 
 ##############################################################################
 
