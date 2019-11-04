@@ -76,16 +76,16 @@ class ServerV1(Base):
 
         super(ServerV1, self).__init__()
 
-        self.ssl              = self._check(SSLV1, ssl)
-        self.session          = self._check(SessionV1, session)
-        self.worker_threads   = Simple(int, worker_threads)
-        self.http2            = Simple(bool, http2)
-        self.websocket        = self._check(WebSocketV1, websocket)
-        self.apps             = self._check(AppsV1, apps)
-        self.failover         = self._check(FailoverV1, failover)
-        self.local_pages      = self._check(LocalPagesV1, local_pages)
-        self.management_pages = self._checkList(MgmtPagesV1, mgmt_pages)
-        self.error_pages      = self._checkList(ErrorPagesV1, error_pages)
+        self.ssl                = self._check(SSLV1, ssl)
+        self.session            = self._check(SessionV1, session)
+        self.worker_threads     = Simple(int, worker_threads)
+        self.http2              = Simple(bool, http2)
+        self.websocket          = self._check(WebSocketV1, websocket)
+        self.local_applications = self._check(AppsV1, apps)
+        self.failover           = self._check(FailoverV1, failover)
+        self.local_pages        = self._check(LocalPagesV1, local_pages)
+        self.management_pages   = self._checkList(MgmtPagesV1, mgmt_pages)
+        self.error_pages        = self._checkList(ErrorPagesV1, error_pages)
 
     def version(self):
         """
