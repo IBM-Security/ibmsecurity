@@ -29,7 +29,8 @@ from ibmsecurity.iag.system.config.logging_v1  import TransactionV1
 from ibmsecurity.iag.system.config.logging_v1  import RequestLogV1
 
 from ibmsecurity.iag.system.config.advanced_v1 import AdvancedV1
-from ibmsecurity.iag.system.config.advanced_v1 import StanzaV1
+from ibmsecurity.iag.system.config.advanced_v1 import AdvConfigV1
+from ibmsecurity.iag.system.config.advanced_v1 import AdvConfigOperationV1
 
 from ibmsecurity.iag.system.config.identity_v1 import IdentityV1
 from ibmsecurity.iag.system.config.identity_v1 import OidcCiIdentityV1
@@ -101,7 +102,7 @@ try:
                         websocket      = web_socket, 
                         session        = session, 
                         apps           = apps,
-                        failover       = FailoverV1(key = cert))
+                        failover       = FailoverV1(key = "simple key"))
 
     #
     # Set up the logging configuration.
@@ -130,12 +131,16 @@ try:
     #
 
     advanced = AdvancedV1(
-                    [ StanzaV1("test_stanza", 
-                            { 
-                                "name" : "value" ,
-                                "name2" : "value2",
-                                "name3" : [ "value3a", "value3b" ]
-                            }) ] )
+                    [ AdvConfigV1(
+                            stanza    = "test_stanza", 
+                            entry     = "test_entry",
+                            operation = AdvConfigOperationV1.set,
+                            value     = [ "value_1", "value_2" ]),
+                     AdvConfigV1(
+                            stanza    = "test_delete_stanza", 
+                            entry     = "test_delete_entry",
+                            operation = AdvConfigOperationV1.delete) ]
+                    )
 
     #
     # Identity configuration.
