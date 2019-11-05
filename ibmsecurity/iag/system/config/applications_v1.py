@@ -59,11 +59,11 @@ class ApplicationsV1(Base):
         @param servers              : An array of elements describing where the 
                                       application to be protected resides. This
                                       value is an array of 
-                                      ibmsecurity.iag.system.config.Server
+                                      ibmsecurity.iag.system.config.ApplicationServer
                                       objects.
         @param connection_type      : The connection type to the reverse proxy 
                                       will make to this application. This value
-                                      is an ibmsecurity.iag.system.config.AppType
+                                      is an ibmsecurity.iag.system.config.ConnectionType
                                       object.
         @param transparent_path     : For path type applications, this will pass 
                                       the entire URL as observed by the reverse 
@@ -230,11 +230,11 @@ class ApplicationServerV1(Base):
                                              proxy_host.
         @param ssl                         : SSL settings for this application.
                                              This value is an
-                                             ibmsecurity.iag.system.config.ServerSSL
+                                             ibmsecurity.iag.system.config.ApplicationServerSSL
                                              object.
         @param url_style                   : URL style for this application.
                                              This value is an
-                                             ibmsecurity.iag.system.config.ServerURLStyle
+                                             ibmsecurity.iag.system.config.ApplicationServerURLStyle
                                              object.
         """
 
@@ -247,8 +247,8 @@ class ApplicationServerV1(Base):
         self.proxy_port                  = Simple(int, proxy_port)
         self.mutual_ssl_virtual_hostname = Simple(str, mutual_ssl_virtual_hostname)
         self.mutual_ssl_port             = Simple(int, mutual_ssl_port)
-        self.ssl                         = self._check(ServerSSLV1, ssl)
-        self.url_style                   = self._check(ServerURLStyleV1, url_style)
+        self.ssl                         = self._check(ApplicationServerSSLV1, ssl)
+        self.url_style                   = self._check(ApplicationServerURLStyleV1, url_style)
 
     def version(self):
         """
@@ -259,7 +259,7 @@ class ApplicationServerV1(Base):
 
 ##############################################################################
 
-class ServerSSLV1(Base):
+class ApplicationServerSSLV1(Base):
     """
     This class is used to represent SSL settings for a single application 
     server.
@@ -283,7 +283,7 @@ class ServerSSLV1(Base):
                              here.
         """
 
-        super(ServerSSLV1, self).__init__()
+        super(ApplicationServerSSLV1, self).__init__()
 
         self.certificate = self._check(File, certificate)
         self.server_dn   = Simple(str, server_dn)
@@ -298,7 +298,7 @@ class ServerSSLV1(Base):
 
 ##############################################################################
 
-class ServerURLStyleV1(Base):
+class ApplicationServerURLStyleV1(Base):
     """
     This class is used to represent the URL style for an application server.
     """
@@ -315,7 +315,7 @@ class ServerURLStyleV1(Base):
                                   style file name aliases.
         """
 
-        super(ServerURLStyleV1, self).__init__()
+        super(ApplicationServerURLStyleV1, self).__init__()
 
         self.case_insensitive = Simple(bool, case_insensitive)
         self.windows          = Simple(bool, windows)
@@ -1038,7 +1038,7 @@ class HealthV1(Base):
                       wildcard characters '*' and '?' can be used.
         """
 
-        super(CorsPolicyV1, self).__init__()
+        super(HealthV1, self).__init__()
 
         self.ping = self._check(HealthPingV1, ping)
         self.rule = SimpleList(str, rule)

@@ -203,11 +203,11 @@ try:
                 ApplicationServerV1(
                     host             = "10.10.10.200",
                     port             = 1337,
-                    ssl              = ServerSSLV1(
+                    ssl              = ApplicationServerSSLV1(
                                          server_dn = "cn=ibm,dc=com",
                                          sni       = "test.ibm.com"
                     ),
-                    url_style        = ServerURLStyleV1(
+                    url_style        = ApplicationServerURLStyleV1(
                                          case_insensitive = False,
                                          windows          = False
                     ),
@@ -309,11 +309,11 @@ try:
                 ApplicationServerV1(
                     host             = "10.10.10.200",
                     port             = 1337,
-                    ssl              = ServerSSLV1(
+                    ssl              = ApplicationServerSSLV1(
                                          server_dn = "cn=ibm,dc=com",
                                          sni       = "test.ibm.com"
                     ),
-                    url_style        = ServerURLStyleV1(
+                    url_style        = ApplicationServerURLStyleV1(
                                          case_insensitive = False,
                                          windows          = False
                     )
