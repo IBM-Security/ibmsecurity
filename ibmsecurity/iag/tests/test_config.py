@@ -80,6 +80,9 @@ try:
     ssl        = SSLV1(
         front_end = SSLFrontEndV1(
             certificate=cert,
+            sni = [ SSLFrontEndSNIV1(
+                        certificate = cert, 
+                        hostname    = "testhost.ibm.com") ]
             #ciphers=ciphers
         ),
         applications = SSLApplicationsV1(
@@ -96,13 +99,80 @@ try:
                                                 max_cache_size=3600
                        )
     )
+
+    localPages = LocalPagesV1(
+                    content = [ 
+                        LocalContentV1(
+                                    name    = "index.html",
+                                    content = File("snippet.html")),
+                        LocalContentV1(
+                                    name    = "images/logo.gif",
+                                    content = File("snippet.html")),
+                        ])
+
+
+    mgmtPages = MgmtPagesV1(
+                    language = "C",
+                    content  = [
+                        MgmtContentV1(
+                            page_type = MgmtContentTypeV1.logout,
+                            pages     = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200),
+                              ResponsePageV1(
+                                    mime_type     = "json", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 201),
+                            ]),
+                        MgmtContentV1(
+                            page_type = MgmtContentTypeV1.default,
+                            pages     = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200)
+                            ])
+
+                    ]
+                )
+
+    errorPages = ErrorPagesV1(
+                    language = "C",
+                    content  = [
+                        ErrorContentV1(
+                            error_code = "3898342f",
+                            pages      = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 200),
+                              ResponsePageV1(
+                                    mime_type     = "json", 
+                                    content       = File("snippet.html"), 
+                                    response_code = 201),
+                            ]),
+                        ErrorContentV1(
+                            error_code = "default",
+                            pages      = [
+                              ResponsePageV1(
+                                    mime_type     = "html", 
+                                    content       = File("snippet.html"))
+                            ])
+                    ]
+                )
+
     server     = ServerV1(
-                        worker_threads = 200, 
-                        ssl            = ssl, 
-                        websocket      = web_socket, 
-                        session        = session, 
-                        apps           = apps,
-                        failover       = FailoverV1(key = "simple key"))
+                        worker_threads   = 200, 
+                        ssl              = ssl, 
+                        websocket        = web_socket, 
+                        session          = session, 
+                        apps             = apps,
+                        failover         = FailoverV1(key = "simple key"),
+                        local_pages      = localPages,
+                        management_pages = [ mgmtPages ],
+                        error_pages      = [ errorPages ] )
 
     #
     # Set up the logging configuration.
