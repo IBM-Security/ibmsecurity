@@ -28,50 +28,52 @@ class ServerV1(Base):
     """
 
     def __init__(self,
-                    ssl            = None,
-                    session        = None,
-                    worker_threads = 100,
-                    http2          = True,
-                    websocket      = None,
-                    apps           = None,
-                    failover       = None,
-                    local_pages    = None,
-                    mgmt_pages     = None,
-                    error_pages    = None):
+                    ssl              = None,
+                    session          = None,
+                    worker_threads   = 100,
+                    http2            = True,
+                    websocket        = None,
+                    apps             = None,
+                    failover         = None,
+                    local_pages      = None,
+                    management_pages = None,
+                    error_pages      = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param ssl            : An ibmsecurity.iag.system.config.SSL object 
-                                which is used to define the SSL configuration 
-                                of the IAG.
-        @param session        : An ibmsecurity.iag.system.config.Session object
-                                which is used to define the configuration of the
-                                session cache which is used by the IAG.
-        @param worker_threads : The number of worker threads which will be used
-                                by the IAG.
-        @param http2          : A boolean which is used to indicate whether
-                                HTTP2 support is enabled or not.
-        @param websocket      : An ibmsecurity.iag.system.config.WebSocket 
-                                object which is used to configure the Web Socket
-                                support of the IAG.
-        @param apps           : An array of ibmsecurity.iag.system.config.App
-                                objects which are used to define which local
-                                applications are enabled.
-        @param failover       : An ibmsecurity.iag.system.config.Failover
-                                object which contains configuration
-                                information for failover support
-                                between multiple IAG containers.
-        @param local_pages    : An ibmsecurity.iag.system.config.LocalPagesV1
-                                object which contains configuration information
-                                for pages served by the local junction.
-        @param mgmt_pages     : An array of 
-                                ibmsecurity.iag.system.config.MgmtPagesV1
-                                objects which contains configuration 
-                                information for management pages.
-        @param error_pages     : An array of 
-                                ibmsecurity.iag.system.config.ErrorPagesV1
-                                objects which contains configuration 
-                                information for error pages.
+        @param ssl              : An ibmsecurity.iag.system.config.SSL object 
+                                  which is used to define the SSL configuration
+                                  of the IAG.
+        @param session          : An ibmsecurity.iag.system.config.Session 
+                                  object which is used to define the 
+                                  configuration of the session cache which is 
+                                  used by the IAG.
+        @param worker_threads   : The number of worker threads which will be 
+                                  used by the IAG.
+        @param http2            : A boolean which is used to indicate whether
+                                  HTTP2 support is enabled or not.
+        @param websocket        : An ibmsecurity.iag.system.config.WebSocket 
+                                  object which is used to configure the Web 
+                                  Socket support of the IAG.
+        @param apps             : An array of ibmsecurity.iag.system.config.App
+                                  objects which are used to define which local
+                                  applications are enabled.
+        @param failover         : An ibmsecurity.iag.system.config.Failover
+                                  object which contains configuration
+                                  information for failover support
+                                  between multiple IAG containers.
+        @param local_pages      : An ibmsecurity.iag.system.config.LocalPagesV1
+                                  object which contains configuration 
+                                  information for pages served by the local 
+                                  junction.
+        @param management_pages : An array of 
+                                  ibmsecurity.iag.system.config.MgmtPagesV1
+                                  objects which contains configuration 
+                                  information for management pages.
+        @param error_pages      : An array of 
+                                  ibmsecurity.iag.system.config.ErrorPagesV1
+                                  objects which contains configuration 
+                                  information for error pages.
         """
 
         super(ServerV1, self).__init__()
@@ -84,7 +86,7 @@ class ServerV1(Base):
         self.local_applications = self._check(AppsV1, apps)
         self.failover           = self._check(FailoverV1, failover)
         self.local_pages        = self._check(LocalPagesV1, local_pages)
-        self.management_pages   = self._checkList(MgmtPagesV1, mgmt_pages)
+        self.management_pages   = self._checkList(MgmtPagesV1, management_pages)
         self.error_pages        = self._checkList(ErrorPagesV1, error_pages)
 
     def version(self):

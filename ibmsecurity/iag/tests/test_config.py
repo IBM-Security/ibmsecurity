@@ -164,15 +164,15 @@ try:
                 )
 
     server     = ServerV1(
-                        worker_threads = 200, 
-                        ssl            = ssl, 
-                        websocket      = web_socket, 
-                        session        = session, 
-                        apps           = apps,
-                        failover       = FailoverV1(key = "simple key"),
-                        local_pages    = localPages,
-                        mgmt_pages     = [ mgmtPages ],
-                        error_pages    = [ errorPages ] )
+                        worker_threads   = 200, 
+                        ssl              = ssl, 
+                        websocket        = web_socket, 
+                        session          = session, 
+                        apps             = apps,
+                        failover         = FailoverV1(key = "simple key"),
+                        local_pages      = localPages,
+                        management_pages = [ mgmtPages ],
+                        error_pages      = [ errorPages ] )
 
     #
     # Set up the logging configuration.
