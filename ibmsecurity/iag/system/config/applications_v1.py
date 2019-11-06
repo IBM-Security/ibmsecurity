@@ -161,15 +161,6 @@ class ConnectionTypeV1(AutoNumber):
     # SSL (TLS) connection.
     ssl = ()
 
-    # TCP proxy connection. Requires the proxy_host and proxy_port to be 
-    # defined in each host.
-    tcp_proxy = ()
-
-    # SSL (TLS) proxy connection. Requires the proxy_host and proxy_port to 
-    # be defined in each host.
-
-    ssl_proxy = ()
-
     def version(self):
         """
         Return the minimal IAG version for this object.
@@ -199,10 +190,6 @@ class ApplicationServerV1(Base):
                     host,
                     port,
                     virtual_host                = None,
-                    proxy_host                  = None,
-                    proxy_port                  = None,
-                    mutual_ssl_virtual_hostname = None,
-                    mutual_ssl_port             = None,
                     ssl                         = None,
                     url_style                   = None):
         """
@@ -222,12 +209,6 @@ class ApplicationServerV1(Base):
                                              this will be inherited from the
                                              application and does not need to
                                              be duplicated here.
-        @param proxy_host                  : For applications with the 
-                                             connection_type tcp_proxy or 
-                                             ssl_proxy, this entry can be used 
-                                             to specify the proxy server.
-        @param proxy_port                  : Port used in conjunction with
-                                             proxy_host.
         @param ssl                         : SSL settings for this application.
                                              This value is an
                                              ibmsecurity.iag.system.config.ApplicationServerSSL
@@ -243,10 +224,6 @@ class ApplicationServerV1(Base):
         self.host                        = Simple(str, host)
         self.port                        = Simple(int, port)
         self.virtual_host                = Simple(str, virtual_host)
-        self.proxy_host                  = Simple(str, proxy_host)
-        self.proxy_port                  = Simple(int, proxy_port)
-        self.mutual_ssl_virtual_hostname = Simple(str, mutual_ssl_virtual_hostname)
-        self.mutual_ssl_port             = Simple(int, mutual_ssl_port)
         self.ssl                         = self._check(ApplicationServerSSLV1, ssl)
         self.url_style                   = self._check(ApplicationServerURLStyleV1, url_style)
 
