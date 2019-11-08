@@ -107,7 +107,6 @@ def add(isamAppliance, name, attributesrequired, policy, description="",
         else:
             try:
                 import json
-                print policy
                 json_data = json.loads(policy)[0]
                 logger.info("Policy {0} contains full policy export".format(name))
             except:
