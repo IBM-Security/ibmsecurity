@@ -94,7 +94,7 @@ def clear(isamAppliance, check_mode=False, force=False):
     :param force:
     :return:
     """
-    #TODO: This function has not been tested.  Please open an issue on GitHub if you find a problem.
+    # TODO: This function has not been tested.  Please open an issue on GitHub if you find a problem.
 
     if force is True or _check(isamAppliance) is True:
         if check_mode is True:
