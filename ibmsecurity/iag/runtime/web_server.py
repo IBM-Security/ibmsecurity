@@ -31,7 +31,7 @@ class WebServer:
 
         @WebServer.app.route("/")
         def hello_world():
-        return "Hello World!"
+          return "Hello World!"
 
     """
 
@@ -143,23 +143,4 @@ class WebServer:
         """
 
         self.app.run(host="0.0.0.0", port=self.port_, use_reloader=False)
-
-
-class HelloWorldWebServer(WebServer):
-
-    """
-    This class is used to create a simple Hello World Web Server.  It 
-    really serves to illustrate how to create a Web Server using the WebServer
-    class.
-    """
-
-
-    @WebServer.app.route("/")
-    def hello_world():
-        """
-        Our default route, which will simply return the 'hello world' response.
-        """
-
-        return "Hello World!"
-
 

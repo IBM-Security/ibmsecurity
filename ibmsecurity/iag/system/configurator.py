@@ -68,6 +68,7 @@ class Configurator(object):
         self.authorization = self.__validate(AuthorizationV1, authorization)
         self.logging       = self.__validate(LoggingV1, logging)
         self.advanced      = self.__validate(AdvancedV1, advanced)
+        self.custom_data   = None
 
     def write(self, filename = None):
         """
@@ -91,6 +92,8 @@ class Configurator(object):
                     for entry in value:
                         inst, version = entry.getData(version)
                         data[name].append(inst)
+                elif isinstance(value, dict):
+                    data.update(value)
                 else:
                     data[name], version = value.getData(version)
 
@@ -112,6 +115,14 @@ class Configurator(object):
         logger.info("Wrote the IAG configuration to {0}".format(filename))
 
         return filename
+
+    def addCustomData(self, custom_data):
+        """
+        This method is used to add some custom data to the constructed
+        yaml file.
+        """
+
+        self.custom_data = custom_data
 
     @classmethod
     def __validate(self, data_type, data):
