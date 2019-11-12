@@ -73,7 +73,7 @@ try:
     # Create an entry for the certificate file.  If a certificate file was
     # not provided we just use the current file.
     #
-    cert = File(pemFile if pemFile is not None else __file__)
+    cert = File(name = pemFile if pemFile is not None else __file__)
 
     web_socket = WebSocketV1()
     session    = SessionV1()
@@ -104,10 +104,10 @@ try:
                     content = [ 
                         LocalContentV1(
                                     name    = "index.html",
-                                    content = File("snippet.html")),
+                                    content = File(name="snippet.html")),
                         LocalContentV1(
                                     name    = "images/logo.gif",
-                                    content = File("snippet.html")),
+                                    content = File(name="snippet.html")),
                         ])
 
 
@@ -119,11 +119,11 @@ try:
                             pages     = [
                               ResponsePageV1(
                                     mime_type     = "html", 
-                                    content       = File("snippet.html"), 
+                                    content       = File(name="snippet.html"), 
                                     response_code = 200),
                               ResponsePageV1(
                                     mime_type     = "json", 
-                                    content       = File("snippet.html"), 
+                                    content       = File(name="snippet.html"), 
                                     response_code = 201),
                             ]),
                         MgmtContentV1(
@@ -131,7 +131,7 @@ try:
                             pages     = [
                               ResponsePageV1(
                                     mime_type     = "html", 
-                                    content       = File("snippet.html"), 
+                                    content       = File(name="snippet.html"), 
                                     response_code = 200)
                             ])
 
@@ -146,11 +146,11 @@ try:
                             pages      = [
                               ResponsePageV1(
                                     mime_type     = "html", 
-                                    content       = File("snippet.html"), 
+                                    content       = File(name="snippet.html"), 
                                     response_code = 200),
                               ResponsePageV1(
                                     mime_type     = "json", 
-                                    content       = File("snippet.html"), 
+                                    content       = File(name="snippet.html"), 
                                     response_code = 201),
                             ]),
                         ErrorContentV1(
@@ -158,7 +158,7 @@ try:
                             pages      = [
                               ResponsePageV1(
                                     mime_type     = "html", 
-                                    content       = File("snippet.html"))
+                                    content       = File(name="snippet.html"))
                             ])
                     ]
                 )
@@ -315,7 +315,7 @@ try:
                         name             = "RequestHeaderInjector1",
                         method           = "*",
                         url              = "*",
-                        rule             = File("httptrans_req.xsl")
+                        rule             = File(name="httptrans_req.xsl")
                     )
                 ]
             ),
@@ -339,13 +339,13 @@ try:
                     name             = "rl1",
                     methods          = ["*"],
                     url              = "rl1",
-                    rule             = File("ratelimit.yaml")
+                    rule             = File(name="ratelimit.yaml")
                 ),
                 RateLimitingV1(
                     name             = "rl2",
                     methods          = ["*"],
                     url              = "rl2",
-                    rule             = File("ratelimit.yaml")
+                    rule             = File(name="ratelimit.yaml")
                 )
             ],
             content_injection    = [
@@ -353,7 +353,7 @@ try:
                     name             = "test",
                     url              = "inject",
                     location         = "<h3>*",
-                    content          = File("snippet.html")
+                    content          = File(name="snippet.html")
                 )
             ],
             worker_threads       = None,
@@ -420,7 +420,7 @@ try:
                         name             = "RequestHeaderInjector2",
                         method           = "*",
                         url              = "*",
-                        rule             = File("httptrans_req.xsl")
+                        rule             = File(name="httptrans_req.xsl")
                     )
                 ]
             ),
@@ -444,13 +444,13 @@ try:
                     name             = "rl1",
                     methods          = ["*"],
                     url              = "rl1",
-                    rule             = File("ratelimit.yaml")
+                    rule             = File(name="ratelimit.yaml")
                 ),
                 RateLimitingV1(
                     name             = "rl2",
                     methods          = ["*"],
                     url              = "rl2",
-                    rule             = File("ratelimit.yaml")
+                    rule             = File(name="ratelimit.yaml")
                 )
             ],
             content_injection    = [
@@ -458,7 +458,7 @@ try:
                     name             = "test",
                     url              = "inject",
                     location         = "<h3>*",
-                    content          = File("snippet.html")
+                    content          = File(name="snippet.html")
                 )
             ],
             worker_threads       = None,

@@ -14,6 +14,8 @@ import atexit
 import requests
 import time
 import socket
+import sys
+import ssl
 
 from flask import Flask
 
@@ -37,11 +39,11 @@ class WebServer:
 
     app = Flask(__name__)
 
-    def __init__(self):
+    def __init__(self, ssl = False):
         """
         Initialise this object.
 
-        \param port [in] : The port on which this server will be listening.
+        \param ssl [in] : Should we use http or https?
         """
 
         super(WebServer, self).__init__()
@@ -73,6 +75,8 @@ class WebServer:
             s.close()
 
         self.process_ = None
+        self.ssl_     = ssl
+        self.caCert_  = None
 
     def start(self):
         """
@@ -83,7 +87,8 @@ class WebServer:
 
         logger.info("Starting the Web server: 0.0.0.0:{0}".format(self.port_))
 
-        self.process = multiprocessing.Process(target=self.__runServer) 
+        self.process = multiprocessing.Process(
+                            target=self.__runServer, args=[self.ssl_]) 
         self.process.start() 
 
         atexit.register(self.stop)
@@ -92,12 +97,17 @@ class WebServer:
         running = False
         attempt = 0
 
+        if self.ssl_:
+            protocol="https"
+        else:
+            protocol="http"
+
         while not running and attempt < 30:
             time.sleep(1)
 
             try:
-                requests.get("http://{0}:{1}".format(self.host_, self.port_), 
-                                    timeout=2)
+                requests.get("{0}://{1}:{2}".format(protocol, self.host_, 
+                                        self.port_), verify=False, timeout=2)
 
                 running = True
             except:
@@ -108,6 +118,11 @@ class WebServer:
             logger.critical(message)
 
             raise Exception(message)
+
+        # If we are using SSL we also need to grab the CA certificate from
+        # the server.
+        if self.ssl_:
+            self.caCert_ = ssl.get_server_certificate((self.host_, self.port_))
 
         logger.info("The Web server has started")
 
@@ -137,10 +152,30 @@ class WebServer:
 
         return self.host_
 
-    def __runServer(self):
+    def ssl(self):
+        """
+        Return whether this server is SSL enabled or not.
+        """
+
+        return self.ssl_
+
+    def caCertificate(self):
+        """
+        Return the CA certificate (in PEM format) of this server.
+        """
+
+        return self.caCert_;
+
+    def __runServer(self, ssl):
         """
         This private function is used to actually start the server.
         """
 
-        self.app.run(host="0.0.0.0", port=self.port_, use_reloader=False)
+        if ssl:
+            ssl_context = "adhoc"
+        else:
+            ssl_context = None
+
+        self.app.run(ssl_context=ssl_context, host="0.0.0.0", 
+                        port=self.port_, use_reloader=False)
 

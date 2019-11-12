@@ -24,23 +24,31 @@ class File(Base):
     and inserted into the container configuration.
     """
 
-    def __init__(self, filename):
+    def __init__(self, name = None, content = None):
         """
         Initialise this class instance.  The parameters are as follows:
 
-        @param filename : The name of the file which is to be used.
+        @param name:    The name of the file which is to be used.
+        @param content: The actual content of the file.  The name will take
+                        precedence over the content if both parameters are
+                        specified.
         """
 
         super(File, self).__init__()
 
-        self._check(str, filename)
+        self._check(str, name)
+        self._check(str, content)
 
-        if not os.path.isfile(filename):
-            raise Exception("File does not exist: {0}".format(filename))
+        if name is not None:
+            if not os.path.isfile(name):
+                raise Exception("File does not exist: {0}".format(name))
 
-        with open(filename, "rb") as fh:
-            self.value = "B64:{0}".format(
+            with open(name, "rb") as fh:
+                self.value = "B64:{0}".format(
                     base64.b64encode(fh.read()).decode("utf-8"))
+        else:
+            self.value = "B64:{0}".format(base64.b64encode(
+                                    content.encode("utf-8")).decode("utf-8"))
 
     def version(self):
         """
