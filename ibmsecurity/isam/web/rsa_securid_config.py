@@ -85,6 +85,24 @@ def delete(isamAppliance, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def delete_node():
-    # TODO: Need a configuration with Node Secret File to code this
-    pass
+def clear(isamAppliance, check_mode=False, force=False):
+    """
+    Clear the node secret file
+
+    :param isamAppliance:
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    # TODO: This function has not been tested.  Please open an issue on GitHub if you find a problem.
+
+    if force is True or _check(isamAppliance) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Clear the node secret file",
+                                               "{0}/node_secret".format(uri),
+                                               requires_modules=requires_modules,
+                                               requires_version=requires_version)
+
+    return isamAppliance.create_return_object()
