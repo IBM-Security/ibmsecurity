@@ -105,16 +105,22 @@ def add(isamAppliance, name, attributesrequired, policy, description="",
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            json_data = {
-                "name": name,
-                "attributesrequired": attributesrequired,
-                "description": description,
-                "predefined": predefined,
-                "policy": policy,
-                "dialect": dialect
-            }
-            return isamAppliance.invoke_post(
-                "Create a new Policy", uri, json_data)
+            try:
+                import json
+                json_data = json.loads(policy)[0]
+                logger.info("Policy {0} contains full policy export".format(name))
+            except:
+                logger.info("Policy {0} only contains policy data".format(name))
+                json_data = {
+                    "name": name,
+                    "attributesrequired": attributesrequired,
+                    "description": description,
+                    "predefined": predefined,
+                    "policy": policy,
+                    "dialect": dialect
+                }
+
+            return isamAppliance.invoke_post("Create a new Policy", uri, json_data)
 
     return isamAppliance.create_return_object()
 
@@ -167,12 +173,19 @@ def _check(isamAppliance, name, attributesrequired, policy, description, dialect
     Check and return True if update needed
     """
     update_required = False
-    json_data = {
-        "attributesrequired": attributesrequired,
-        "policy": policy,
-        "dialect": dialect,
-        "predefined": predefined
-    }
+    try:
+        import json
+        json_data = json.loads(policy)[0]
+        logger.info("Policy {0} contains full policy export".format(name))
+    except:
+        logger.info("Policy {0} only contains policy data".format(name))
+        json_data = {
+            "attributesrequired": attributesrequired,
+            "policy": policy,
+            "dialect": dialect,
+            "predefined": predefined
+        }
+
     ret_obj = get(isamAppliance, name)
     if ret_obj['data'] == {}:
         logger.warning("Policy not found, returning no update required.")
