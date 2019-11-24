@@ -47,7 +47,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
         enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None,
         sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None,
-        enabledServerProtocols=None,
+        enabledServerProtocols=None,loginHeader=None, loginMessage=None,
         check_mode=False, force=False):
     """
     Updating the administrator settings
@@ -61,7 +61,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
                                                       enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
                                                       sshdClientAliveInterval, swapFileSize, httpProxy,
-                                                      enabledServerProtocols, warnings)
+                                                      enabledServerProtocols, loginHeader, loginMessage, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -78,7 +78,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
            minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
            validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort,
            sessionCachePurge, sessionInactivityTimeout, sshdClientAliveInterval, swapFileSize, httpProxy,
-           enabledServerProtocols, warnings):
+           enabledServerProtocols, loginHeader, loginMessage, warnings):
     """
     Check whether target key has already been set with the value
     :param isamAppliance:
@@ -246,6 +246,24 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["enabledServerProtocols"] = enabledServerProtocols
         elif 'enabledServerProtocols' in ret_obj['data']:
             del ret_obj['data']['enabledServerProtocols']
+        if loginHeader is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, loginHeader: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring loginHeader for this call.".format(
+                        isamAppliance.facts["version"], loginHeader))
+            else:
+                json_data["loginHeader"] = loginHeader
+        elif 'loginHeader' in ret_obj['data']:
+            del ret_obj['data']['loginHeader']
+        if loginMessage is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, loginMessage: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring loginMessage for this call.".format(
+                        isamAppliance.facts["version"], loginMessage))
+            else:
+                json_data["loginMessage"] = loginMessage
+        elif 'loginMessage' in ret_obj['data']:
+            del ret_obj['data']['loginMessage']
 
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
