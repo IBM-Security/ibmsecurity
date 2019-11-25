@@ -47,7 +47,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
         enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None,
         sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None,
-        enabledServerProtocols=None,loginHeader=None, loginMessage=None, pendingChangesLifetime=None
+        enabledServerProtocols=None, loginHeader=None, loginMessage=None, pendingChangesLifetime=None,
         check_mode=False, force=False):
     """
     Updating the administrator settings
@@ -61,7 +61,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
                                                       enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
                                                       sshdClientAliveInterval, swapFileSize, httpProxy,
-                                                      enabledServerProtocols, loginHeader, loginMessage, warnings)
+                                                      enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
