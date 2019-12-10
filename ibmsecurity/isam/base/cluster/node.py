@@ -85,7 +85,7 @@ def add_v2(isamAppliance, signature_file, cluster_id=None, restricted=False,
             {'restricted': restricted,
              'signature_file': open(signature_file, 'rb'),
              'address': cluster_id,
-             }, json_response=False)
+            }, json_response=False)
 
 
 def add(isamAppliance, signature_file, restricted=False, check_mode=False, force=False):
