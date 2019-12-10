@@ -67,7 +67,7 @@ def _check_file(isdsAppliance, file):
         logger.debug("{0}: version: {1} date: {2}".format(fp[2], fp[0], fp[3]))
 
         # Check if firmware level already contains the update to be uploaded or greater, check Active partition
-        # firmware "name" of format - 8.0.1.9-ISS-ISDS_20181207-0045 
+        # firmware "name" of format - 8.0.1.9-ISS-ISDS_20181207-0045
         import ibmsecurity.isds.firmware
         ret_obj = ibmsecurity.isds.firmware.get(isdsAppliance)
         for firm in ret_obj['data']:

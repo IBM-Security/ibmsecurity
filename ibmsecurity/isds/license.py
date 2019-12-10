@@ -60,8 +60,8 @@ def _check_license(isdsAppliance):
 
     ret_obj = get(isdsAppliance)
     """
-    Returned json is any of the following: 
-        {"LicenseActivated":"LIMITED"} 
+    Returned json is any of the following:
+        {"LicenseActivated":"LIMITED"}
         {"LicenseActivated":"STANDARD"}
         {"LicenseActivated":"ENTERPRISE"}
     """
