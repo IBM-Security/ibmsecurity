@@ -6,6 +6,7 @@ import difflib
 import hashlib
 import ntpath
 import re
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +196,7 @@ def strings(filename, min=4):
     """
     Emulate UNIX "strings" command on a file
     """
-    with open(filename, "rb") as f:
+    with open(filename, 'r', errors='ignore') as f:
         result = ""
         for c in f.read():
             if c in string.printable:
