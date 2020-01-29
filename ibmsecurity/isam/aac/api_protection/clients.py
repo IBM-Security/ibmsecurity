@@ -55,6 +55,38 @@ def search(isamAppliance, name, check_mode=False, force=False):
 
     return return_obj
 
+def search_id(isamAppliance, clientId, check_mode=False, force=False):
+    """
+    Search API Protection Client by name
+    """
+    ret_obj = get_all(isamAppliance)
+    return_obj = isamAppliance.create_return_object()
+    return_obj['warnings'] = ret_obj["warnings"]
+
+    for obj in ret_obj['data']:
+        if obj['clientId'] == clientId:
+            logger.info("Found API Protection Client {0} id: {1}".format(clientId, obj['id']))
+            return_obj['data'] = obj['id']
+            return_obj['rc'] = 0
+
+    return return_obj
+
+def _get_id(isamAppliance, clientId, check_mode=False, force=False):
+    """
+    Search API Protection Client by name
+    """
+    ret_obj = get_all(isamAppliance)
+    return_obj = isamAppliance.create_return_object()
+    return_obj['warnings'] = ret_obj["warnings"]
+
+    for obj in ret_obj['data']:
+        if obj['clientId'] == clientId:
+            logger.info("Found API Protection Client {0} id: {1}".format(clientId, obj['id']))
+            return_obj['data'] = obj
+            return_obj['rc'] = 0
+
+    return return_obj
+
 
 def generate_client_id(isamAppliance, check_mode=False, force=False):
     """
@@ -76,7 +108,7 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
 
 def add(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, introspectWithSecret=None,
         check_mode=False, force=False):
     """
     Create an API protection definition
@@ -157,6 +189,13 @@ def add(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                             isamAppliance.facts["version"], extProperties))
                 else:
                     client_json["extProperties"] = extProperties
+            if introspectWithSecret is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
+                            isamAppliance.facts["version"], introspectWithSecret))
+                else:
+                    client_json["introspectWithSecret"] = introspectWithSecret
 
             return isamAppliance.invoke_post(
                 "Create an API protection definition", uri, client_json, requires_modules=requires_modules,
@@ -188,7 +227,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 def update(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
            contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None,
-           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, introspectWithSecret=None,
            check_mode=False, force=False, new_name=None):
     """
     Update a specified mapping rule
@@ -306,6 +345,15 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
                 json_data["extProperties"] = extProperties
         elif 'extProperties' in ret_obj['data']:
             del ret_obj['data']['extProperties']
+        if introspectWithSecret is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
+                        isamAppliance.facts["version"], introspectWithSecret))
+            else:
+                json_data["introspectWithSecret"] = introspectWithSecret
+        elif 'introspectWithSecret' in ret_obj['data']:
+            del ret_obj['data']['introspectWithSecret']
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
@@ -327,7 +375,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
 def set(isamAppliance, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
         contactType=None, email=None, phone=None, otherInfo=None, clientId=None, clientSecret=None, new_name=None,
-        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, introspectWithSecret=None,
         check_mode=False, force=False):
     """
     Creating or Modifying an API Protection Definition
@@ -338,7 +386,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
         return add(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                    contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
                    clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
-                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties,
+                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties, introspectWithSecret=introspectWithSecret,
                    check_mode=check_mode, force=True)
     else:
         # Update request
@@ -347,7 +395,178 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                       contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
                       otherInfo=otherInfo, clientId=clientId, clientSecret=clientSecret, new_name=new_name,
                       requirePkce=requirePkce, encryptionDb=encryptionDb, encryptionCert=encryptionCert,
-                      jwksUri=jwksUri, extProperties=extProperties, check_mode=check_mode, force=force)
+                      jwksUri=jwksUri, extProperties=extProperties, introspectWithSecret=introspectWithSecret, check_mode=check_mode, force=force)
+
+def update_id(isamAppliance, clientId, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
+           contactType=None, email=None, phone=None, otherInfo=None, clientSecret=None,
+           requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, introspectWithSecret=None,
+           check_mode=False, force=False, new_clientId=None):
+    """
+    Update a specified mapping rule
+    """
+
+    ret_obj = definitions.search(isamAppliance, definitionName, check_mode=check_mode, force=force)
+    if ret_obj['data'] == {}:
+        warnings = ret_obj["warnings"]
+        warnings.append(
+            "API Protection Definition {0} is not found. Cannot process client request.".format(definitionName))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        definition = ret_obj['data']
+
+    ret_obj = _get_id(isamAppliance, clientId=clientId)
+    warnings = ret_obj["warnings"]
+
+    if ret_obj["data"] == {}:
+        warnings.append("Client {0} not found, skipping update.".format(clientId))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        id = ret_obj["data"]["id"]
+
+    needs_update = False
+    # Create a simple json with just the main client attributes
+    json_data = {
+        "definition": definition,
+        "companyName": companyName,
+        "name": name
+    }
+
+    if new_clientId is not None:
+        json_data['clientId'] = new_clientId
+    else:
+        json_data['clientId'] = clientId
+
+    if force is not True:
+        del ret_obj['data']["id"]
+        # Add attributes that have been supplied... otherwise skip them.
+        if redirectUri is not None:
+            json_data["redirectUri"] = redirectUri
+        elif 'redirectUri' in ret_obj['data']:
+            del ret_obj['data']['redirectUri']
+        if companyUrl is not None:
+            json_data["companyUrl"] = companyUrl
+        elif 'companyUrl' in ret_obj['data']:
+            del ret_obj['data']['companyUrl']
+        if contactPerson is not None:
+            json_data["contactPerson"] = contactPerson
+        elif 'contactPerson' in ret_obj['data']:
+            del ret_obj['data']['contactPerson']
+        if contactType is not None:
+            json_data["contactType"] = contactType
+        elif 'contactType' in ret_obj['data']:
+            del ret_obj['data']['contactType']
+        if email is not None:
+            json_data["email"] = email
+        elif 'email' in ret_obj['data']:
+            del ret_obj['data']['email']
+        if phone is not None:
+            json_data["phone"] = phone
+        elif 'phone' in ret_obj['data']:
+            del ret_obj['data']['phone']
+        if otherInfo is not None:
+            json_data["otherInfo"] = otherInfo
+        elif 'otherInfo' in ret_obj['data']:
+            del ret_obj['data']['otherInfo']
+        if clientSecret is not None:
+            json_data["clientSecret"] = clientSecret
+        elif 'clientSecret' in ret_obj['data']:
+            del ret_obj['data']['clientSecret']
+        if requirePkce is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
+                        isamAppliance.facts["version"], requirePkce))
+            else:
+                json_data["requirePkce"] = requirePkce
+        elif 'requirePkce' in ret_obj['data']:
+            del ret_obj['data']['requirePkce']
+        if encryptionDb is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
+                        isamAppliance.facts["version"], encryptionDb))
+            else:
+                json_data["encryptionDb"] = encryptionDb
+        elif 'encryptionDb' in ret_obj['data']:
+            del ret_obj['data']['encryptionDb']
+        if encryptionCert is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
+                        isamAppliance.facts["version"], encryptionCert))
+            else:
+                json_data["encryptionCert"] = encryptionCert
+        elif 'encryptionCert' in ret_obj['data']:
+            del ret_obj['data']['encryptionCert']
+        if jwksUri is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
+                        isamAppliance.facts["version"], jwksUri))
+            else:
+                json_data["jwksUri"] = jwksUri
+        elif 'jwksUri' in ret_obj['data']:
+            del ret_obj['data']['jwksUri']
+        if extProperties is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
+                        isamAppliance.facts["version"], extProperties))
+            else:
+                json_data["extProperties"] = extProperties
+        elif 'extProperties' in ret_obj['data']:
+            del ret_obj['data']['extProperties']
+        if introspectWithSecret is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
+                        isamAppliance.facts["version"], introspectWithSecret))
+            else:
+                json_data["introspectWithSecret"] = introspectWithSecret
+        elif 'introspectWithSecret' in ret_obj['data']:
+            del ret_obj['data']['introspectWithSecret']
+
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        if sorted_ret_obj != sorted_json_data:
+            needs_update = True
+
+    if force is True or needs_update is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_put(
+                "Update a specified mapping rule", "{0}/{1}".format(uri, id), json_data,
+                requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
+
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
+def set_id(isamAppliance, clientId, name, definitionName, companyName, redirectUri=None, companyUrl=None, contactPerson=None,
+        contactType=None, email=None, phone=None, otherInfo=None, clientSecret=None, new_clientId=None,
+        requirePkce=None, encryptionDb=None, encryptionCert=None, jwksUri=None, extProperties=None, introspectWithSecret=None,
+        check_mode=False, force=False):
+    """
+    Creating or Modifying an API Protection Definition
+    """
+    if (search_id(isamAppliance, clientId))['data'] == {}:
+        # Force the add - we already know policy does not exist
+        logger.info("Definition {0} had no match, requesting to add new one.".format(clientId))
+        return add(isamAppliance, name=name, definitionName=definitionName, companyName=companyName, redirectUri=redirectUri, companyUrl=companyUrl,
+                   contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
+                   clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
+                   encryptionCert=encryptionCert, jwksUri=jwksUri, extProperties=extProperties, introspectWithSecret=introspectWithSecret,
+                   check_mode=check_mode, force=True)
+    else:
+        # Update request
+        logger.info("Definition {0} exists, requesting to update.".format(clientId))
+        return update_id(isamAppliance, clientId=clientId, definitionName=definitionName, companyName=companyName, name=name, redirectUri=redirectUri, companyUrl=companyUrl,
+                      contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
+                      otherInfo=otherInfo, clientSecret=clientSecret, new_clientId=new_clientId,
+                      requirePkce=requirePkce, encryptionDb=encryptionDb, encryptionCert=encryptionCert,
+                      jwksUri=jwksUri, extProperties=extProperties, introspectWithSecret=introspectWithSecret, check_mode=check_mode, force=force)
 
 
 def compare(isamAppliance1, isamAppliance2):
