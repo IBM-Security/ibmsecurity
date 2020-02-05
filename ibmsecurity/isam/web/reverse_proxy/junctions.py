@@ -405,10 +405,19 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['authz_rules'] = 'no'
                 else:
                     jct_json['authz_rules'] = authz_rules
-                if basic_auth_mode is None:
-                    jct_json['basic_auth_mode'] = 'filter'
+                # basic_auth_mode cannot be set with enable_basic_auth otherwise RESTAPI returns the error:
+                # "The -b option cannot be specified with the -B option."
+                # Nevertheless, RESTAPI returns the basic_auth_mode as the default value (filter) for junction
+                # with enable_basic_auth so it needs to be removed for idempotency.
+                if basic_auth_mode == 'no':
+                    basic_auth_mode = None
+                    if 'basic_auth_mode' in exist_jct:
+                        del exist_jct['basic_auth_mode']
                 else:
-                    jct_json['basic_auth_mode'] = basic_auth_mode
+                    if basic_auth_mode is None:
+                        jct_json['basic_auth_mode'] = 'filter'
+                    else:
+                        jct_json['basic_auth_mode'] = basic_auth_mode
                 if client_ip_http is None or client_ip_http.lower() == 'no':
                     jct_json['client_ip_http'] = 'do not insert'
                 elif client_ip_http.lower() == 'yes':
@@ -539,6 +548,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     "Junction will replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
                         srvs_len))
         else:
+            if basic_auth_mode == 'no':
+                basic_auth_mode = None
             add_required = True
 
     if force is True or add_required is True:
