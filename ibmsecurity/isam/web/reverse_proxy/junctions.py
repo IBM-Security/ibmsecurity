@@ -517,6 +517,13 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         sni_name = None
                     else:
                         jct_json['sni_name'] = sni_name
+                if enable_basic_auth is not None and enable_basic_auth != '' and enable_basic_auth != 'no':
+                    jct_json['enable_basic_auth'] = enable_basic_auth
+                # It seems that if enable_basic_auth is set the RESTAPI does not send back the
+                # mutual_auth value as 'no' so we need to remove it for idempotency
+                if enable_basic_auth == 'yes':
+                    if 'mutual_auth' in jct_json:
+                        del jct_json['mutual_auth']
                 if description is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
