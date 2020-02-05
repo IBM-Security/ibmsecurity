@@ -541,7 +541,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     del exist_jct['ltpa_keyfile_password']
                 if key_label is not None and key_label != '':
                     jct_json['key_label'] = key_label
-                if description is not None:
+                if description is not None and description != '':
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(
