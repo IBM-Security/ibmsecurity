@@ -527,6 +527,18 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 # In existing jct 'username' is returned from REST as 'ba_username'
                 if username is not None and username != '':
                     jct_json['ba_username'] = username
+                # insert_ltpa_cookies is returned by exist_jct only if it is at "yes"
+                if insert_ltpa_cookies == 'yes':
+                    # without an ltpa_keyfile, insert_ltpa_cookies is forced to "no"
+                    if ltpa_keyfile is not None and ltpa_keyfile != '':
+                        jct_json['ltpa_keyfile'] = ltpa_keyfile
+                        jct_json['insert_ltpa_cookies'] = insert_ltpa_cookies
+                # this param is returned by exist_jct only if it is at "yes"
+                if version_two_cookies == 'yes':
+                    jct_json['version_two_cookies'] = version_two_cookies
+                # this param being a pwd, it is returned as "*****" -> not point in comparing
+                if 'ltpa_keyfile_password' in exist_jct:
+                    del exist_jct['ltpa_keyfile_password']
                 if description is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
