@@ -527,10 +527,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 del exist_jct['servers']
                 # Delete dynamic data shown when we get junctions details
                 del exist_jct['active_worker_threads']
-                if tools.json_sort(jct_json) != tools.json_sort(exist_jct):
-                    logger.debug("Junctions are found to be different. See following JSON for difference.")
-                    logger.debug("New Junction JSON: {0}".format(tools.json_sort(jct_json)))
-                    logger.debug("Old Junction JSON: {0}".format(tools.json_sort(exist_jct)))
+
+                sorted_jct_json = tools.json_sort(jct_json)
+                sorted_exist_jct = tools.json_sort(exist_jct)
+                logger.debug("New Junction JSON: {0}".format(sorted_jct_json))
+                logger.debug("Old Junction JSON: {0}".format(sorted_exist_jct))
+                if sorted_jct_json != sorted_exist_jct:
                     add_required = True
             if add_required is True and srvs_len > 1:
                 warnings.append(
