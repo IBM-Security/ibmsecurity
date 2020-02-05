@@ -539,6 +539,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 # this param being a pwd, it is returned as "*****" -> not point in comparing
                 if 'ltpa_keyfile_password' in exist_jct:
                     del exist_jct['ltpa_keyfile_password']
+                if key_label is not None and key_label != '':
+                    jct_json['key_label'] = key_label
                 if description is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
