@@ -321,6 +321,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     """
     warnings = []
     add_required = False
+    standard_jct = (junction_point[:1] == '/')
     if force is False:
         # Check if record exists
         logger.debug("Check if the junction exists.")
@@ -365,11 +366,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         # Server UUID gets generated if not specified
                         if 'server_uuid' in srv:
                             del srv['server_uuid']
-                    if virtual_hostname is None:
-                        if 'virtual_junction_hostname' in srv:
-                            del srv['virtual_junction_hostname']
-                    else:
-                        server_json['virtual_junction_hostname'] = virtual_hostname
+                    # In Standard Junctions the virtual_hostname is compared in the svr objet
+                    # In Virtual Host Junctions the virtual_hostname is compared in the exist_jct objet
+                    if standard_jct:
+                        if virtual_hostname is None or virtual_hostname == '':
+                            if 'virtual_junction_hostname' in srv:
+                                del srv['virtual_junction_hostname']
+                        else:
+                            server_json['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
                     else:
@@ -424,10 +428,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['client_ip_http'] = 'insert'
                 else:
                     jct_json['client_ip_http'] = client_ip_http
-                if cookie_include_path is None:
-                    jct_json['cookie_include_path'] = 'no'
-                else:
-                    jct_json['cookie_include_path'] = cookie_include_path
+                if standard_jct:
+                    # As per doc parameter not valid for virtual junctions
+                    if cookie_include_path is None or cookie_include_path == '':
+                        jct_json['cookie_include_path'] = 'no'
+                    else:
+                        jct_json['cookie_include_path'] = cookie_include_path
                 if delegation_support is None:
                     jct_json['delegation_support'] = 'no'
                 else:
@@ -449,21 +455,21 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['junction_soft_limit'] = str(junction_soft_limit)
                 # We could have a comma delimited set of values - so split them into array
-                if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
-                    jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
-                    # Here the list is delimited by space
-                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct[
-                        'junction_cookie_javascript_block'] is not None:
-                        exist_jct['junction_cookie_javascript_block'] = exist_jct[
-                            'junction_cookie_javascript_block'].split(' ')
+                 if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
+                     jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
+                     # Here the list is delimited by space
+                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct['junction_cookie_javascript_block'] is not None
+                        exist_jct['junction_cookie_javascript_block'] = exist_jct['junction_cookie_javascript_block'].split(' ')
                 if mutual_auth is None:
                     jct_json['mutual_auth'] = 'no'
                 else:
                     jct_json['mutual_auth'] = mutual_auth
-                if preserve_cookie is None:
-                    jct_json['preserve_cookie'] = 'no'
-                else:
-                    jct_json['preserve_cookie'] = preserve_cookie
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if preserve_cookie is None or preserve_cookie == '':
+                        jct_json['preserve_cookie'] = 'no'
+                    else:
+                        jct_json['preserve_cookie'] = preserve_cookie
                 if remote_http_header is None or remote_http_header == []:
                     jct_json['remote_http_header'] = 'do not insert'
                 elif isinstance(remote_http_header, basestring) and remote_http_header.lower() == 'all':
@@ -477,10 +483,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['request_encoding'] = 'UTF-8, URI Encoded'
                 else:
                     jct_json['request_encoding'] = request_encoding
-                if scripting_support is None:
-                    jct_json['scripting_support'] = 'no'
-                else:
-                    jct_json['scripting_support'] = scripting_support
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if scripting_support is None or scripting_support == '':
+                        jct_json['scripting_support'] = 'no'
+                    else:
+                        jct_json['scripting_support'] = scripting_support
                 if stateful_junction is None:
                     jct_json['stateful_junction'] = 'no'
                 else:
@@ -489,10 +497,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['tfim_sso'] = 'no'
                 else:
                     jct_json['tfim_sso'] = tfim_sso
-                if transparent_path_junction is None:
-                    jct_json['transparent_path_junction'] = 'no'
-                else:
-                    jct_json['transparent_path_junction'] = transparent_path_junction
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if transparent_path_junction is None or transparent_path_junction == '':
+                        jct_json['transparent_path_junction'] = 'no'
+                    else:
+                        jct_json['transparent_path_junction'] = transparent_path_junction
                 if http2_junction is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
@@ -558,6 +568,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 del exist_jct['session_cookie_backend_portal']
                 # We are already comparing server details - so remove this from this compare
                 del exist_jct['servers']
+                if standard_jct:
+                    # virtual_hostname is compared in the svr objet
+                    if 'virtual_junction_hostname' in exist_jct:
+                        del exist_jct['virtual_junction_hostname']
+                else:
+                    # virtual_hostname is compared in the exist_jct objet
+                    if virtual_hostname is not None and virtual_hostname != '':
+                        jct_json['virtual_junction_hostname'] = virtual_hostname
                 # Delete dynamic data shown when we get junctions details
                 del exist_jct['active_worker_threads']
 
