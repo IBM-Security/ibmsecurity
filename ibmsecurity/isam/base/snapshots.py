@@ -143,6 +143,7 @@ def apply(isamAppliance, id=None, comment=None, check_mode=False, force=False):
         if ret_obj['data'] != {}:
             if len(ret_obj['data']) == 1:
                 id = ret_obj['data'][0]
+                apply_flag = True
             else:
                 logger.warn(
                     "There are multiple files with matching comments. Only one snapshot at a time can be applied !")
