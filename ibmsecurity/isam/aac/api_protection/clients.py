@@ -261,106 +261,150 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     else:
         json_data['name'] = name
 
-    if force is not True:
-        del ret_obj['data']['id']
-        # Add attributes that have been supplied... otherwise skip them.
-        if redirectUri is not None:
-            json_data["redirectUri"] = redirectUri
-        elif 'redirectUri' in ret_obj['data']:
+    del ret_obj['data']['id']
+    # Add attributes that have been supplied... otherwise skip them.
+    if redirectUri is not None:
+        json_data["redirectUri"] = redirectUri
+    elif 'redirectUri' in ret_obj['data']:
+        if ret_obj['data']['redirectUri'] is not None:
+            json_data['redirectUri'] = ret_obj['data']['redirectUri']
+        else:
             del ret_obj['data']['redirectUri']
-        if companyUrl is not None:
-            json_data["companyUrl"] = companyUrl
-        elif 'companyUrl' in ret_obj['data']:
+    if companyUrl is not None:
+        json_data['companyUrl'] = companyUrl
+    elif 'companyUrl' in ret_obj['data']:
+        if ret_obj['data']['companyUrl'] is not None:
+            json_data['companyUrl'] = ret_obj['data']['companyUrl']
+        else:
             del ret_obj['data']['companyUrl']
-        if contactPerson is not None:
-            json_data["contactPerson"] = contactPerson
-        elif 'contactPerson' in ret_obj['data']:
+    if contactPerson is not None:
+        json_data['contactPerson'] = contactPerson
+    elif 'contactPerson' in ret_obj['data']:
+        if ret_obj['data']['contactPerson'] is not None:
+            json_data['contactPerson'] = ret_obj['data']['contactPerson']
+        else:
             del ret_obj['data']['contactPerson']
-        if contactType is not None:
-            json_data["contactType"] = contactType
-        elif 'contactType' in ret_obj['data']:
+    if contactType is not None:
+        json_data['contactType'] = contactType
+    elif 'contactType' in ret_obj['data']:
+        if ret_obj['data']['contactType'] is not None:
+            json_data['contactType'] = ret_obj['data']['contactType']
+        else:
             del ret_obj['data']['contactType']
-        if email is not None:
-            json_data["email"] = email
-        elif 'email' in ret_obj['data']:
+    if email is not None:
+        json_data['email'] = email
+    elif 'email' in ret_obj['data']:
+        if ret_obj['data']['email'] is not None:
+            json_data['email'] = ret_obj['data']['email']
+        else:
             del ret_obj['data']['email']
-        if phone is not None:
-            json_data["phone"] = phone
-        elif 'phone' in ret_obj['data']:
+    if phone is not None:
+        json_data['phone'] = phone
+    elif 'phone' in ret_obj['data']:
+        if ret_obj['data']['phone'] is not None:
+            json_data['phone'] = ret_obj['data']['phone']
+        else:
             del ret_obj['data']['phone']
-        if otherInfo is not None:
-            json_data["otherInfo"] = otherInfo
-        elif 'otherInfo' in ret_obj['data']:
+    if otherInfo is not None:
+        json_data['otherInfo'] = otherInfo
+    elif 'otherInfo' in ret_obj['data']:
+        if ret_obj['data']['otherInfo'] is not None:
+            json_data['otherInfo'] = ret_obj['data']['otherInfo']
+        else:
             del ret_obj['data']['otherInfo']
-        if clientId is not None:
-            json_data["clientId"] = clientId
-        elif 'clientId' in ret_obj['data']:
+    if clientId is not None:
+        json_data['clientId'] = clientId
+    elif 'clientId' in ret_obj['data']:
+        if ret_obj['data']['clientId'] is not None:
+            json_data['clientId'] = ret_obj['data']['clientId']
+        else:
             del ret_obj['data']['clientId']
-        if clientSecret is not None:
-            json_data["clientSecret"] = clientSecret
-        elif 'clientSecret' in ret_obj['data']:
+    if clientSecret is not None:
+        json_data['clientSecret'] = clientSecret
+    elif 'clientSecret' in ret_obj['data']:
+        if ret_obj['data']['clientSecret'] is not None:
+            json_data['clientSecret'] = ret_obj['data']['clientSecret']
+        else:
             del ret_obj['data']['clientSecret']
-        if requirePkce is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
-                        isamAppliance.facts["version"], requirePkce))
-            else:
-                json_data["requirePkce"] = requirePkce
-        elif 'requirePkce' in ret_obj['data']:
+    if requirePkce is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
+                    isamAppliance.facts["version"], requirePkce))
+        else:
+            json_data['requirePkce'] = requirePkce
+    elif 'requirePkce' in ret_obj['data']:
+        if ret_obj['data']['requirePkce'] is not None:
+            json_data['requirePkce'] = ret_obj['data']['requirePkce']
+        else:
             del ret_obj['data']['requirePkce']
-        if encryptionDb is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
-                        isamAppliance.facts["version"], encryptionDb))
-            else:
-                json_data["encryptionDb"] = encryptionDb
-        elif 'encryptionDb' in ret_obj['data']:
+    if encryptionDb is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
+                    isamAppliance.facts["version"], encryptionDb))
+        else:
+            json_data['encryptionDb'] = encryptionDb
+    elif 'encryptionDb' in ret_obj['data']:
+        if ret_obj['data']['encryptionDb'] is not None:
+            json_data['encryptionDb'] = ret_obj['data']['encryptionDb']
+        else:
             del ret_obj['data']['encryptionDb']
-        if encryptionCert is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
-                        isamAppliance.facts["version"], encryptionCert))
-            else:
-                json_data["encryptionCert"] = encryptionCert
-        elif 'encryptionCert' in ret_obj['data']:
+    if encryptionCert is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
+                    isamAppliance.facts["version"], encryptionCert))
+        else:
+            json_data['encryptionCert'] = encryptionCert
+    elif 'encryptionCert' in ret_obj['data']:
+        if ret_obj['data']['encryptionCert'] is not None:
+            json_data['encryptionCert'] = ret_obj['data']['encryptionCert']
+        else:
             del ret_obj['data']['encryptionCert']
-        if jwksUri is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
-                        isamAppliance.facts["version"], jwksUri))
-            else:
-                json_data["jwksUri"] = jwksUri
-        elif 'jwksUri' in ret_obj['data']:
+    if jwksUri is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
+                    isamAppliance.facts["version"], jwksUri))
+        else:
+            json_data['jwksUri'] = jwksUri
+    elif 'jwksUri' in ret_obj['data']:
+        if ret_obj['data']['jwksUri'] is not None:
+            json_data['jwksUri'] = ret_obj['data']['jwksUri']
+        else:
             del ret_obj['data']['jwksUri']
-        if extProperties is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
-                        isamAppliance.facts["version"], extProperties))
-            else:
-                json_data["extProperties"] = extProperties
-        elif 'extProperties' in ret_obj['data']:
+    if extProperties is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
+                    isamAppliance.facts["version"], extProperties))
+        else:
+            json_data['extProperties'] = extProperties
+    elif 'extProperties' in ret_obj['data']:
+        if ret_obj['data']['extProperties'] is not None:
+            json_data['extProperties'] = ret_obj['data']['extProperties']
+        else:
             del ret_obj['data']['extProperties']
-        if introspectWithSecret is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
-                        isamAppliance.facts["version"], introspectWithSecret))
-            else:
-                json_data["introspectWithSecret"] = introspectWithSecret
-        elif 'introspectWithSecret' in ret_obj['data']:
+    if introspectWithSecret is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
+                    isamAppliance.facts["version"], introspectWithSecret))
+        else:
+            json_data["introspectWithSecret"] = introspectWithSecret
+    elif 'introspectWithSecret' in ret_obj['data']:
+        if ret_obj['data']['introspectWithSecret'] is not None:
+            json_data['introspectWithSecret'] = ret_obj['data']['introspectWithSecret']
+        else:
             del ret_obj['data']['introspectWithSecret']
 
-        sorted_ret_obj = tools.json_sort(ret_obj['data'])
-        sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
-        if sorted_ret_obj != sorted_json_data:
-            needs_update = True
+    sorted_ret_obj = tools.json_sort(ret_obj['data'])
+    sorted_json_data = tools.json_sort(json_data)
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    if sorted_ret_obj != sorted_json_data:
+        needs_update = True
 
     if force is True or needs_update is True:
         if check_mode is True:
@@ -436,102 +480,143 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     else:
         json_data['clientId'] = clientId
 
-    if force is not True:
-        del ret_obj['data']["id"]
-        # Add attributes that have been supplied... otherwise skip them.
-        if redirectUri is not None:
-            json_data["redirectUri"] = redirectUri
-        elif 'redirectUri' in ret_obj['data']:
+    del ret_obj['data']['id']
+    # Add attributes that have been supplied... otherwise skip them.
+    if redirectUri is not None:
+        json_data['redirectUri'] = redirectUri
+    elif 'redirectUri' in ret_obj['data']:
+        if ret_obj['data']['redirectUri'] is not None:
+            json_data["redirectUri"] = ret_obj['data']['redirectUri']
+        else:
             del ret_obj['data']['redirectUri']
-        if companyUrl is not None:
-            json_data["companyUrl"] = companyUrl
-        elif 'companyUrl' in ret_obj['data']:
+    if companyUrl is not None:
+        json_data["companyUrl"] = companyUrl
+    elif 'companyUrl' in ret_obj['data']:
+        if ret_obj['data']['companyUrl'] is not None:
+            json_data["companyUrl"] = ret_obj['data']['companyUrl']
+        else:
             del ret_obj['data']['companyUrl']
-        if contactPerson is not None:
-            json_data["contactPerson"] = contactPerson
-        elif 'contactPerson' in ret_obj['data']:
+    if contactPerson is not None:
+        json_data["contactPerson"] = contactPerson
+    elif 'contactPerson' in ret_obj['data']:
+        if ret_obj['data']['contactPerson'] is not None:
+            json_data["contactPerson"] = ret_obj['data']['contactPerson']
+        else:
             del ret_obj['data']['contactPerson']
-        if contactType is not None:
-            json_data["contactType"] = contactType
-        elif 'contactType' in ret_obj['data']:
+    if contactType is not None:
+        json_data["contactType"] = contactType
+    elif 'contactType' in ret_obj['data']:
+        if ret_obj['data']['contactType'] is not None:
+            json_data["contactType"] = ret_obj['data']['contactType']
+        else:
             del ret_obj['data']['contactType']
-        if email is not None:
-            json_data["email"] = email
-        elif 'email' in ret_obj['data']:
+    if email is not None:
+        json_data["email"] = email
+    elif 'email' in ret_obj['data']:
+        if ret_obj['data']['email'] is not None:
+            json_data["email"] = ret_obj['data']['email']
+        else:
             del ret_obj['data']['email']
-        if phone is not None:
-            json_data["phone"] = phone
-        elif 'phone' in ret_obj['data']:
+    if phone is not None:
+        json_data["phone"] = phone
+    elif 'phone' in ret_obj['data']:
+        if ret_obj['data']['phone'] is not None:
+            json_data["phone"] = ret_obj['data']['phone']
+        else:
             del ret_obj['data']['phone']
-        if otherInfo is not None:
-            json_data["otherInfo"] = otherInfo
-        elif 'otherInfo' in ret_obj['data']:
+    if otherInfo is not None:
+        json_data["otherInfo"] = otherInfo
+    elif 'otherInfo' in ret_obj['data']:
+        if ret_obj['data']['otherInfo'] is not None:
+            json_data["otherInfo"] = ret_obj['data']['otherInfo']
+        else:
             del ret_obj['data']['otherInfo']
-        if clientSecret is not None:
-            json_data["clientSecret"] = clientSecret
-        elif 'clientSecret' in ret_obj['data']:
+    if clientSecret is not None:
+        json_data["clientSecret"] = clientSecret
+    elif 'clientSecret' in ret_obj['data']:
+        if ret_obj['data']['clientSecret'] is not None:
+            json_data["clientSecret"] = ret_obj['data']['clientSecret']
+        else:
             del ret_obj['data']['clientSecret']
-        if requirePkce is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
-                        isamAppliance.facts["version"], requirePkce))
-            else:
-                json_data["requirePkce"] = requirePkce
-        elif 'requirePkce' in ret_obj['data']:
+    if requirePkce is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
+                    isamAppliance.facts["version"], requirePkce))
+        else:
+            json_data["requirePkce"] = requirePkce
+    elif 'requirePkce' in ret_obj['data']:
+        if ret_obj['data']['requirePkce'] is not None:
+            json_data["requirePkce"] = ret_obj['data']['requirePkce']
+        else:
             del ret_obj['data']['requirePkce']
-        if encryptionDb is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
-                        isamAppliance.facts["version"], encryptionDb))
-            else:
-                json_data["encryptionDb"] = encryptionDb
-        elif 'encryptionDb' in ret_obj['data']:
+    if encryptionDb is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
+                    isamAppliance.facts["version"], encryptionDb))
+        else:
+            json_data["encryptionDb"] = encryptionDb
+    elif 'encryptionDb' in ret_obj['data']:
+        if ret_obj['data']['encryptionDb'] is not None:
+            json_data["encryptionDb"] = ret_obj['data']['encryptionDb']
+        else:
             del ret_obj['data']['encryptionDb']
-        if encryptionCert is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
-                        isamAppliance.facts["version"], encryptionCert))
-            else:
-                json_data["encryptionCert"] = encryptionCert
-        elif 'encryptionCert' in ret_obj['data']:
+    if encryptionCert is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
+                    isamAppliance.facts["version"], encryptionCert))
+        else:
+            json_data["encryptionCert"] = encryptionCert
+    elif 'encryptionCert' in ret_obj['data']:
+        if ret_obj['data']['encryptionCert'] is not None:
+            json_data["encryptionCert"] = ret_obj['data']['encryptionCert']
+        else:
             del ret_obj['data']['encryptionCert']
-        if jwksUri is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
-                        isamAppliance.facts["version"], jwksUri))
-            else:
-                json_data["jwksUri"] = jwksUri
-        elif 'jwksUri' in ret_obj['data']:
+    if jwksUri is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
+                    isamAppliance.facts["version"], jwksUri))
+        else:
+            json_data["jwksUri"] = jwksUri
+    elif 'jwksUri' in ret_obj['data']:
+        if ret_obj['data']['jwksUri'] is not None:
+            json_data["jwksUri"] = ret_obj['data']['jwksUri']
+        else:
             del ret_obj['data']['jwksUri']
-        if extProperties is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
-                        isamAppliance.facts["version"], extProperties))
-            else:
-                json_data["extProperties"] = extProperties
-        elif 'extProperties' in ret_obj['data']:
+    if extProperties is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
+                    isamAppliance.facts["version"], extProperties))
+        else:
+            json_data["extProperties"] = extProperties
+    elif 'extProperties' in ret_obj['data']:
+        if ret_obj['data']['extProperties'] is not None:
+            json_data["extProperties"] = ret_obj['data']['extProperties']
+        else:
             del ret_obj['data']['extProperties']
-        if introspectWithSecret is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
-                        isamAppliance.facts["version"], introspectWithSecret))
-            else:
-                json_data["introspectWithSecret"] = introspectWithSecret
-        elif 'introspectWithSecret' in ret_obj['data']:
+    if introspectWithSecret is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
+                    isamAppliance.facts["version"], introspectWithSecret))
+        else:
+            json_data["introspectWithSecret"] = introspectWithSecret
+    elif 'introspectWithSecret' in ret_obj['data']:
+        if ret_obj['data']['introspectWithSecret'] is not None:
+            json_data["introspectWithSecret"] = ret_obj['data']['introspectWithSecret']
+        else:
             del ret_obj['data']['introspectWithSecret']
 
-        sorted_ret_obj = tools.json_sort(ret_obj['data'])
-        sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
-        if sorted_ret_obj != sorted_json_data:
-            needs_update = True
+    sorted_ret_obj = tools.json_sort(ret_obj['data'])
+    sorted_json_data = tools.json_sort(json_data)
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    if sorted_ret_obj != sorted_json_data:
+        needs_update = True
 
     if force is True or needs_update is True:
         if check_mode is True:
