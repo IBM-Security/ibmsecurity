@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/dsc/config"
 requires_modules = None
 requires_version = None
-requires_model="Docker"
+requires_model = "Docker"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -14,7 +14,8 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve the current distributed session cache policy
     """
     return isamAppliance.invoke_get("Retrieve the current distributed session cache policy", uri,
-                                    requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600,
@@ -33,15 +34,16 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         "servers": servers
     }
 
-    if force is True or _check(isamAppliance, dsc_json) is False:
+    obj = _check(isamAppliance, dsc_json)
+    if force is True or obj['value'] is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True, warnings=obj['warnings'])
         else:
             return isamAppliance.invoke_put("Update the current distributed session cache policy", uri, dsc_json,
                                             requires_modules=requires_modules, requires_version=requires_version,
                                             requires_model=requires_model, warnings=warnings)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object(warnings=obj['warnings'])
 
 
 def _check(isamAppliance, cluster_json):
@@ -53,10 +55,7 @@ def _check(isamAppliance, cluster_json):
     :return:
     """
 
-    if isamAppliance.facts['model'] != "Docker":
-        logger.debug("API invoked requires model: {0}, appliance is of deployment model: {1}.".format(
-                requires_model, isamAppliance.facts['model']))
-        return True
+    obj = {"value": False, "warnings": ""}
 
     ret_obj = get(isamAppliance)
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
@@ -66,26 +65,19 @@ def _check(isamAppliance, cluster_json):
 
     if sorted_ret_obj != sorted_json_data:
         logger.info("Existing and input data do not match - updated needed.")
-        return False
+        obj['value'] = False
+        obj['warnings'] = ret_obj['warnings']
+        return obj
     else:
-        return True
+        obj['value'] = True
+        obj['warnings'] = ret_obj['warnings']
+        return obj
 
 
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare DSC configuration between two appliances
     """
-
-    if isamAppliance1.facts['model'] != "Docker":
-        return isamAppliance1.create_return_object(
-            warnings="API invoked requires model: {0}, appliance1 is of deployment model: {1}.".format(
-                requires_model, isamAppliance1.facts['model']))
-
-    if isamAppliance2.facts['model'] != "Docker":
-        return isamAppliance2.create_return_object(
-            warnings="API invoked requires model: {0}, appliance2 is of deployment model: {1}.".format(
-                requires_model, isamAppliance2.facts['model']))
-
 
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)

@@ -53,7 +53,6 @@ def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_pa
     if isinstance(hvdb_port, basestring):
         hvdb_port = int(hvdb_port)
 
-    warnings = []
     # Create a simple json with just the main client attributes
     db_json = {
         "hvdb_db_type": hvdb_db_type,
@@ -80,16 +79,18 @@ def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_pa
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
         db_json["hvdb_solid_tc"] = hvdb_solid_tc
 
-    if force is True or _check(isamAppliance, db_json) is False:
+    obj = _check(isamAppliance, db_json)
+
+    if force is True or obj['value'] is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True, warnings=obj['warnings'])
         else:
             return isamAppliance.invoke_post("Set database configuration", uri, db_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
                                              requires_model=requires_model,
-                                             warnings=warnings)
+                                             warnings=obj['warnings'])
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object(warnings=obj['warnings'])
 
 
 def _check(isamAppliance, db_json):
@@ -101,12 +102,10 @@ def _check(isamAppliance, db_json):
     :return:
     """
 
-    if isamAppliance.facts['model'] != "Docker":
-        return isamAppliance.create_return_object(
-            warnings="API invoked requires model: {0}, appliance is of deployment model: {1}.".format(
-                requires_model, isamAppliance.facts['model']))
+    obj = {'value': True, 'warnings': ""}
 
     ret_obj = get(isamAppliance)
+    obj['warnings'] = ret_obj['warnings']
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(db_json)
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
@@ -127,34 +126,28 @@ def _check(isamAppliance, db_json):
                         ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    obj['value'] = False
+                    return obj
             else:
                 if ret_obj['data'][key] != value:
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    obj['value'] = False
+                    return obj
         except:  # In case there is an error looking up the key in existing configuration (missing)
             logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
-            return False
+            obj['value'] = False
+            return obj
 
     logger.debug("JSON provided already is contained in current appliance configuration.")
-    return True
+    obj['value'] = True
+    return obj
 
 
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare cluster configuration between two appliances
     """
-
-    if isamAppliance1.facts['model'] != "Docker":
-        return isamAppliance1.create_return_object(
-            warnings="API invoked requires model: {0}, appliance1 is of deployment model: {1}.".format(
-                requires_model, isamAppliance1.facts['model']))
-
-    if isamAppliance2.facts['model'] != "Docker":
-        return isamAppliance2.create_return_object(
-            warnings="API invoked requires model: {0}, appliance2 is of deployment model: {1}.".format(
-                requires_model, isamAppliance2.facts['model']))
 
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)

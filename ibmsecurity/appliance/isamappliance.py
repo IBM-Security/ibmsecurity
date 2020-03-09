@@ -150,15 +150,16 @@ class ISAMAppliance(IBMAppliance):
         return warnings, return_call
 
     def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
-                          requires_version=None, requires_model=None, warnings=[], json_response=True, data_as_files=False):
+                          requires_version=None, warnings=[], json_response=True, data_as_files=False,
+                          requires_model=None):
         """
         Send multipart/form-data upload file request to the appliance.
         """
         self._log_desc(description=description)
 
         warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
-                                                       requires_version=requires_version, requires_model=requires_model,
-                                                       warnings=warnings)
+                                                       requires_version=requires_version,
+                                                       warnings=warnings, requires_model=requires_model)
         return_obj = self.create_return_object(warnings=warnings)
         if return_call:
             return return_obj
@@ -204,7 +205,7 @@ class ISAMAppliance(IBMAppliance):
         return return_obj
 
     def invoke_put_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
-                         requires_version=None, requires_model=None, warnings=[]):
+                         requires_version=None, warnings=[], requires_model=None):
         """
         Send multipart/form-data upload file request to the appliance.
         """
@@ -247,7 +248,7 @@ class ISAMAppliance(IBMAppliance):
         return return_obj
 
     def invoke_get_file(self, description, uri, filename, no_headers=False, ignore_error=False, requires_modules=None,
-                        requires_version=None, requires_model=None, warnings=[]):
+                        requires_version=None, warnings=[], requires_model=None):
         """
         Invoke a GET request and download the response data to a file
         """
@@ -306,7 +307,7 @@ class ISAMAppliance(IBMAppliance):
         return return_obj
 
     def _invoke_request(self, func, description, uri, ignore_error, data={}, requires_modules=None,
-                        requires_version=None, requires_model=None, warnings=[]):
+                        requires_version=None, warnings=[], requires_model=None):
         """
         Send a request to the LMI.  This function is private and should not be
         used directly.  The invoke_get/invoke_put/etc functions should be used instead.
@@ -355,8 +356,8 @@ class ISAMAppliance(IBMAppliance):
 
         return return_obj
 
-    def invoke_put(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None, requires_model=None,
-                   warnings=[]):
+    def invoke_put(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
+                   warnings=[], requires_model=None):
         """
         Send a PUT request to the LMI.
         """
@@ -364,12 +365,12 @@ class ISAMAppliance(IBMAppliance):
         self._log_request("PUT", uri, description)
         response = self._invoke_request(self.session.put, description, uri,
                                         ignore_error, data,
-                                        requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model,
-                                        warnings=warnings)
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        requires_model=requires_model, warnings=warnings)
         return response
 
-    def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None, requires_model=None,
-                    warnings=[]):
+    def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
+                    warnings=[], requires_model=None):
         """
         Send a POST request to the LMI.
         """
@@ -377,13 +378,13 @@ class ISAMAppliance(IBMAppliance):
         self._log_request("POST", uri, description)
         response = self._invoke_request(self.session.post, description, uri,
                                         ignore_error, data,
-                                        requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model,
+                                        requires_modules=requires_modules, requires_version=requires_version,
+                                        requires_model=requires_model,
                                         warnings=warnings)
         return response
 
     def invoke_post_snapshot_id(self, description, uri, data, ignore_error=False, requires_modules=None,
-                                requires_version=None, requires_model=None,
-                                warnings=[]):
+                                requires_version=None, warnings=[], requires_model=None):
         """
         Send a POST request to the LMI.  Snapshot id is part of the uri.
         Requires different headers to normal post.
@@ -422,8 +423,8 @@ class ISAMAppliance(IBMAppliance):
 
         return return_obj
 
-    def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None, requires_model=None,
-                   warnings=[]):
+    def invoke_get(self, description, uri, ignore_error=False, requires_modules=None, requires_version=None,
+                   warnings=[], requires_model=None):
         """
         Send a GET request to the LMI.
         """
@@ -431,12 +432,13 @@ class ISAMAppliance(IBMAppliance):
 
         response = self._invoke_request(self.session.get, description, uri,
                                         ignore_error, requires_modules=requires_modules,
-                                        requires_version=requires_version, requires_model=requires_model, warnings=warnings)
+                                        requires_version=requires_version, requires_model=requires_model,
+                                        warnings=warnings)
         self._log_response(response)
         return response
 
-    def invoke_delete(self, description, uri, data={}, ignore_error=False, requires_modules=None, requires_version=None, requires_model=None,
-                      warnings=[]):
+    def invoke_delete(self, description, uri, data={}, ignore_error=False, requires_modules=None, requires_version=None,
+                      warnings=[], requires_model=None):
         """
         Send a DELETE request to the LMI.
         """
@@ -444,18 +446,20 @@ class ISAMAppliance(IBMAppliance):
         if data != {}:
             self.logger.info("Input Data:{0}".format(data))
             response = self._invoke_request(self.session.delete, description, uri, ignore_error, data=data,
-                                            requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model,
+                                            requires_modules=requires_modules, requires_version=requires_version,
+                                            requires_model=requires_model,
                                             warnings=warnings)
         else:
             response = self._invoke_request(self.session.delete, description, uri, ignore_error,
-                                            requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model,
+                                            requires_modules=requires_modules, requires_version=requires_version,
+                                            requires_model=requires_model,
                                             warnings=warnings)
         self._log_response(response)
         return response
 
     def invoke_request(self, description, method, uri, filename=None, ignore_error=False, requires_modules=None,
-                       requires_version=None, requires_model=None,
-                       warnings=[], **kwargs):
+                       requires_version=None,
+                       warnings=[], requires_model=None, **kwargs):
         """
         parse and send a appropriate request to the appliance.
         """
