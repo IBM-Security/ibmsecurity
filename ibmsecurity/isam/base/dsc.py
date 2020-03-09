@@ -23,7 +23,6 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
     """
     Update the current distributed session cache policy
     """
-    warnings = []
     # Create a simple json with just the main client attributes
     dsc_json = {
         "worker_threads": worker_threads,
@@ -41,7 +40,7 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         else:
             return isamAppliance.invoke_put("Update the current distributed session cache policy", uri, dsc_json,
                                             requires_modules=requires_modules, requires_version=requires_version,
-                                            requires_model=requires_model, warnings=warnings)
+                                            requires_model=requires_model, warnings=obj['warnings'])
 
     return isamAppliance.create_return_object(warnings=obj['warnings'])
 
