@@ -32,11 +32,6 @@ def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_pa
     Set cluster configuration
     """
 
-    if isamAppliance.facts['model'] != "Docker":
-        return isamAppliance.create_return_object(
-            warnings="API invoked requires model: {0}, appliance is of deployment model: {1}.".format(
-                requires_model, isamAppliance.facts['model']))
-
     if hvdb_db_type != "soliddb":
         if hvdb_db_name is None:
             return isamAppliance.create_return_object(
