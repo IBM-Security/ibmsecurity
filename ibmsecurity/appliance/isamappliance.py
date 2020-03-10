@@ -11,6 +11,7 @@ from ibmsecurity.utilities import tools
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443, debug=True):
         self.logger = logging.getLogger(__name__)
+        self.debug = debug
         if not self.debug:
             logging.getLogger().setLevel(logging.INFO)
         self.debug = debug
