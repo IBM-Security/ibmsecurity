@@ -9,8 +9,11 @@ from ibmsecurity.utilities import tools
 
 
 class ISAMAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443):
+    def __init__(self, hostname, user, lmi_port=443, debug=True):
         self.logger = logging.getLogger(__name__)
+        if not self.debug:
+            logging.getLogger().setLevel(logging.INFO)
+        self.debug = debug
         self.logger.debug('Creating an ISAMAppliance')
         if isinstance(lmi_port, str):
             self.lmi_port = int(lmi_port)
