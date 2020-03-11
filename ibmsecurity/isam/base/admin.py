@@ -47,6 +47,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
         consoleLogLevel=None, acceptClientCerts=None, validateClientCertIdentity=None, excludeCsrfChecking=None,
         enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None,
         sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None,
+        enabledServerProtocols=None,
         check_mode=False, force=False):
     """
     Updating the administrator settings
@@ -59,7 +60,8 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       acceptClientCerts, validateClientCertIdentity,
                                                       excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
                                                       enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
-                                                      sshdClientAliveInterval, swapFileSize, httpProxy, warnings)
+                                                      sshdClientAliveInterval, swapFileSize, httpProxy,
+                                                      enabledServerProtocols, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -75,7 +77,8 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
 def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, sessionTimeout, httpPort, httpsPort,
            minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
            validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort,
-           sessionCachePurge, sessionInactivityTimeout, sshdClientAliveInterval, swapFileSize, httpProxy, warnings):
+           sessionCachePurge, sessionInactivityTimeout, sshdClientAliveInterval, swapFileSize, httpProxy,
+           enabledServerProtocols, warnings):
     """
     Check whether target key has already been set with the value
     :param isamAppliance:
@@ -104,7 +107,8 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 lmiDebuggingEnabled is not None or consoleLogLevel is not None or \
                 acceptClientCerts is not None or validateClientCertIdentity is not None or \
                 excludeCsrfChecking is not None or enableSSLv3 is not None or maxFiles is not None or \
-                maxFileSize is not None or enabledTLS is not None or sshdPort is not None:
+                maxFileSize is not None or enabledTLS is not None or sshdPort is not None or \
+                enabledServerProtocols is not None:
             warnings.append(
                 "Appliance at version: {0}, only oldPassword, newPassword, sessionTimeout are supported. Needs 9.0.1.0 or higher. Ignoring other attributes for this call.")
     else:
@@ -233,6 +237,16 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["httpProxy"] = httpProxy
         elif 'httpProxy' in ret_obj['data']:
             del ret_obj['data']['httpProxy']
+        if enabledServerProtocols is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, enabledServerProtocols: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring enabledServerProtocols for this call.".format(
+                        isamAppliance.facts["version"], enabledServerProtocols))
+            else:
+                json_data["enabledServerProtocols"] = enabledServerProtocols
+        elif 'enabledServerProtocols' in ret_obj['data']:
+            del ret_obj['data']['enabledServerProtocols']
+
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)

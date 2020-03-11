@@ -5,24 +5,24 @@ setup(
     packages = find_packages(),
     # Date of release used for version - please be sure to use YYYY.MM.DD.seq#, MM and DD should be two digits e.g. 2017.02.05.0
     # seq# will be zero unless there are multiple release on a given day - then increment by one for additional release for that date
-    version = '2019.04.27.1',
+    version = '2020.02.13.0',
     description = 'Idempotent functions for IBM Security Appliance REST APIs',
     author='IBM',
-    author_email='ISAMDEV@au1.ibm.com',
+    author_email='secorch@us.ibm.com',
     url='',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'License :: IBM :: Apache',
+        'Programming Language :: Python :: 3.7',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Development Status :: GA',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
-        'Intended Audience :: IBM Security Appliance Users',
-        'Topic :: IBM:: Security'
+        'Intended Audience :: System Administrators',
+        'Topic :: Software Development :: Build Tools'
     ],
     zip_safe = False,
     install_requires = [
-        'importlib',
         'requests'
     ]
 )

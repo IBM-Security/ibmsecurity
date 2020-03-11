@@ -4,12 +4,46 @@ import ibmsecurity.utilities.tools
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance, check_mode=False, force=False):
+def get_all(isamAppliance, check_mode=False, force=False):
     """
     Get existing activations
     """
     return isamAppliance.invoke_get("Retrieving activations",
                                     "/isam/capabilities/v1")
+
+
+def get(isamAppliance, id=None, check_mode=False, force=False):
+    """
+    Retrieve a specified activation offering
+    """
+    if force is True or check(isamAppliance, id) is True:
+        return isamAppliance.invoke_get("Retrieve a specified activation offering",
+                                        "/isam/capabilities/{0}/v1".format(id))
+
+    return isamAppliance.create_return_object()
+
+
+def update(isamAppliance, enabled, id=None, check_mode=False, force=False):
+    """
+    Update an activation offering
+    """
+
+    if isinstance(enabled, bool):
+        if enabled is True:
+            enabled = 'True'
+        if enabled is False:
+            enabled = 'False'
+
+    if force is True or check_enabled(isamAppliance, id, enabled) is False:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_put("Update an activation offering",
+                                            "/isam/capabilities/{0}/v1".format(id),
+                                            {'enabled': enabled.capitalize()}
+                                            )
+
+    return isamAppliance.create_return_object()
 
 
 def set(isamAppliance, id, code, check_mode=False, force=False):
@@ -57,7 +91,7 @@ def check(isamAppliance, id):
     """
     Check if ISAM module is already activated
     """
-    ret_obj = get(isamAppliance)
+    ret_obj = get_all(isamAppliance)
 
     for activation in ret_obj['data']:
         if id == activation['id']:
@@ -75,3 +109,17 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get(isamAppliance2)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
+
+
+def check_enabled(isamAppliance, id, enabled):
+    """
+    Check to see if the enabled is the same as the value passed in
+    """
+    ret_obj = get_all(isamAppliance)
+
+    for activation in ret_obj['data']:
+        if id == activation['id']:
+            if activation['enabled'] == enabled.capitalize():
+                return True
+
+    return False

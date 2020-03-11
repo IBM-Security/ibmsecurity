@@ -1,6 +1,11 @@
 import logging
 import ibmsecurity.utilities.tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 uri = "/isam/cluster/v2"
@@ -18,7 +23,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
         hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
-        hvdb_driver_type=None, hvdb_solid_tc=None):
+        hvdb_driver_type=None, hvdb_solid_tc=None, check_mode=False, force=False):
     """
     Set service configuration
     """
@@ -53,9 +58,15 @@ def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvd
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
             service_json["hvdb_solid_tc"] = hvdb_solid_tc
 
-    return isamAppliance.invoke_post("Set service configuration", uri, service_json,
-                                     requires_modules=requires_modules, requires_version=requires_version,
-                                     warnings=warnings)
+    if force is True or _check(isamAppliance, service_json) is False:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_post("Set service configuration", uri, service_json,
+                                             requires_modules=requires_modules, requires_version=requires_version,
+                                             warnings=warnings)
+
+    return isamAppliance.create_return_object()
 
 
 def _check(isamAppliance, service_json):
@@ -70,7 +81,7 @@ def _check(isamAppliance, service_json):
     logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
     logger.debug("JSON to Apply: {0}".format(service_json))
 
-    for key, value in service_json.iteritems():
+    for key, value in service_json.items():
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(

@@ -6,13 +6,17 @@ import shutil
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga", "federation"]
+requires_version = None
+
 
 def get(isamAppliance, path, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files/{0}".format(path))
+                                    "/mga/template_files/{0}".format(path), requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def _check(isamAppliance, path, name):
@@ -54,7 +58,8 @@ def create(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
                     'file_name': name,
                     'type': 'file',
                     'contents': contents
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
     return isamAppliance.create_return_object(warnings=warnings)
 
 
@@ -86,7 +91,8 @@ def update(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
                     {
                         'contents': contents,
                         'type': 'file'
-                    })
+                    }, requires_modules=requires_modules,
+                    requires_version=requires_version)
             else:
                 warnings.append("Either contents or filename parameter need to be provided. Skipping update request.")
                 return isamAppliance.create_return_object(warnings=warnings)
@@ -115,7 +121,8 @@ def delete(isamAppliance, path, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a file in the runtime template files directory",
-                "/mga/template_files/{0}/{1}".format(path, name))
+                "/mga/template_files/{0}/{1}".format(path, name), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -148,7 +155,8 @@ def rename(isamAppliance, path, name, new_name, check_mode=False, force=False):
                 {
                     'new_name': new_name,
                     'type': 'file'
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -174,7 +182,9 @@ def export_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting a file from the runtime template files directory",
-                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename)
+                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -234,13 +244,7 @@ def import_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
                 {
                     'type': 'file',
                     'force': force
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
-
-
-def compare(isamAppliance1, isamAppliance2, instance_id):
-    ret_obj1 = get_all(isamAppliance1, instance_id)
-    ret_obj2 = get_all(isamAppliance2, instance_id)
-
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

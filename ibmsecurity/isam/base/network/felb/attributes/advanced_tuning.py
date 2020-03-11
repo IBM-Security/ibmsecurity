@@ -1,5 +1,7 @@
 import logging
 
+from ibmsecurity.utilities import tools
+
 logger = logging.getLogger(__name__)
 
 module_uri = "/isam/felb/configuration/attributes"
@@ -28,12 +30,12 @@ def delete(isamAppliance, attribute_name, check_mode=False, force=False):
     """
     deletes given attribute
     """
-    # TODO Idempotency missing
-    if check_mode is True:
-        return isamAppliance.create_return_object(changed=True)
-    else:
-        return isamAppliance.invoke_delete("Deleting Attribute", "{0}/{1}".format(module_uri, attribute_name),
-                                           requires_modules=requires_modules, requires_version=requires_version)
+    if force or search(isamAppliance, attribute_name):
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete("Deleting Attribute", "{0}/{1}".format(module_uri, attribute_name),
+                                               requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -87,6 +89,35 @@ def _check(isamAppliance, attribute_name, attribute_value):
         return False
 
 
-# TODO Create compare function
-def compare():
-    pass
+def search(isamAppliance, attribute_name):
+    """
+    Check for idempotency
+    """
+    # Error handling to see if attribute exist returns True if attribute doesnt exist
+    try:
+        return get(isamAppliance, attribute_name)
+    except:
+        return False
+
+
+def compare(isamAppliance1, isamAppliance2):
+    """
+    Compare access policies between two appliances
+    """
+    ret_obj1 = get_all(isamAppliance1)
+    ret_obj2 = get_all(isamAppliance2)
+
+    obj1 = {'rc': 0, 'data': []}
+    obj2 = {'rc': 0, 'data': []}
+
+    for attr in ret_obj1["data"]:
+        if search(isamAppliance=isamAppliance1, attribute_name=attr["name"]):
+            value = get(isamAppliance1, attribute_name=attr["name"])
+            obj1['data'].append({attr["name"]: value["data"]["value"]})
+
+    for attr in ret_obj2["data"]:
+        if search(isamAppliance=isamAppliance2, attribute_name=attr["name"]):
+            value = get(isamAppliance2, attribute_name=attr["name"])
+            obj2['data'].append({attr["name"]: value["data"]["value"]})
+
+    return tools.json_compare(obj1, obj2)

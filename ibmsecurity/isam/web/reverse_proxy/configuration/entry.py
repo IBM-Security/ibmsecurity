@@ -1,6 +1,11 @@
 import logging
 import ibmsecurity.utilities.tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 # URI for this module
@@ -101,10 +106,10 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
                 process_entry = True
                 for val in cur_value:
                     # Force delete of existing values, new values will be added
-                    delete(isamAppliance, reverseproxy_id, stanza_id, entry[0], val, check_mode, True)
                     logger.info(
                         'Deleting entry, will be re-added: {0}/{1}/{2}/{3}'.format(reverseproxy_id, stanza_id, entry[0],
                                                                                    val))
+                    delete(isamAppliance, reverseproxy_id, stanza_id, entry[0], val, check_mode, True)
             if process_entry is True:
                 if isinstance(entry[1], list):
                     for v in entry[1]:
@@ -165,8 +170,14 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
             # URL encode
-            import urllib
-            full_uri = urllib.quote(ruri)
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            full_uri = quote(ruri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 

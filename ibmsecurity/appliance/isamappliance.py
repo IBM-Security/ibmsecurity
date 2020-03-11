@@ -7,6 +7,11 @@ from .ibmappliance import IBMError
 from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443):
@@ -136,7 +141,7 @@ class ISAMAppliance(IBMAppliance):
         return warnings, return_call
 
     def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
-                          requires_version=None, warnings=[], json_response=True):
+                          requires_version=None, warnings=[], json_response=True, data_as_files=False):
         """
         Send multipart/form-data upload file request to the appliance.
         """
@@ -160,16 +165,22 @@ class ISAMAppliance(IBMAppliance):
             }
         self.logger.debug("Headers are: {0}".format(headers))
 
-        files = list()
-        for file2post in fileinfo:
-            files.append((file2post['file_formfield'],
-                          (tools.path_leaf(file2post['filename']), open(file2post['filename'], 'rb'),
-                           file2post['mimetype'])))
+        if data_as_files is False:
+            files = list()
+            for file2post in fileinfo:
+                files.append((file2post['file_formfield'],
+                              (tools.path_leaf(file2post['filename']), open(file2post['filename'], 'rb'),
+                               file2post['mimetype'])))
+        else:
+            files = data
 
         self._suppress_ssl_warning()
 
         try:
-            r = self.session.post(url=self._url(uri=uri), data=data, files=files, verify=False, headers=headers)
+            if data_as_files is False:
+                r = self.session.post(url=self._url(uri=uri), data=data, files=files, verify=False, headers=headers)
+            else:
+                r = self.session.post(url=self._url(uri=uri), files=files, verify=False, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -450,7 +461,7 @@ class ISAMAppliance(IBMAppliance):
 
         args = {}
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key == 'json' and value != {}:
                 json_data = json.dumps(value)
                 self.logger.debug("Input json Data: " + json_data)
@@ -585,7 +596,7 @@ class ISAMAppliance(IBMAppliance):
         self.facts['activations'] = []
         import ibmsecurity.isam.base.activation
 
-        ret_obj = ibmsecurity.isam.base.activation.get(self)
+        ret_obj = ibmsecurity.isam.base.activation.get_all(self)
         for activation in ret_obj['data']:
             if activation['enabled'] == 'True':
                 self.facts['activations'].append(activation['id'])
