@@ -12,10 +12,7 @@ class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443, debug=True):
         self.logger = logging.getLogger(__name__)
         self.debug = debug
-        if not self.debug:
-            logging.getLogger().setLevel(logging.INFO)
-        self.debug = debug
-        self.logger.debug('Creating an ISAMAppliance')
+        if self.debug: self.logger.debug('Creating an ISAMAppliance')
         if isinstance(lmi_port, str):
             self.lmi_port = int(lmi_port)
         else:
@@ -26,7 +23,7 @@ class ISAMAppliance(IBMAppliance):
     def _url(self, uri):
         # Build up the URL
         url = "https://" + self.hostname + ":" + str(self.lmi_port) + uri
-        self.logger.debug("Issuing request to: " + url)
+        if self.debug: self.logger.debug("Issuing request to: " + url)
 
         return url
 
@@ -37,7 +34,7 @@ class ISAMAppliance(IBMAppliance):
     def _suppress_ssl_warning(self):
         # Disable https warning because of non-standard certs on appliance
         try:
-            self.logger.debug("Suppressing SSL Warnings.")
+            if self.debug: self.logger.debug("Suppressing SSL Warnings.")
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         except AttributeError:
             self.logger.warning("load requests.packages.urllib3.disable_warnings() failed")
@@ -65,9 +62,9 @@ class ISAMAppliance(IBMAppliance):
             return_obj['data'] = http_response.content
             return
 
-        self.logger.debug("Status Code: {0}".format(http_response.status_code))
+        if self.debug: self.logger.debug("Status Code: {0}".format(http_response.status_code))
         if http_response.text != "":
-            self.logger.debug("Text: " + http_response.content.decode("utf-8"))
+            if self.debug: self.logger.debug("Text: " + http_response.content.decode("utf-8"))
 
         for key in http_response.headers:
             if key == 'g-type':
@@ -88,13 +85,13 @@ class ISAMAppliance(IBMAppliance):
             self.logger.critical("Failed to connect to server.")
             raise IBMError("HTTP Return code: 502", "Failed to connect to server")
         else:
-            self.logger.debug("Failed to connect to server.")
+            if self.debug: self.logger.debug("Failed to connect to server.")
             return_obj['rc'] = 502
 
     def _process_warnings(self, uri, requires_modules, requires_version, warnings=[]):
         # flag to indicate if processing needs to return and not continue
         return_call = False
-        self.logger.debug("Checking for minimum version: {0}.".format(requires_version))
+        if self.debug: self.logger.debug("Checking for minimum version: {0}.".format(requires_version))
         if requires_version is not None and 'version' in self.facts and self.facts['version'] is not None:
             if tools.version_compare(self.facts['version'], requires_version) < 0:
                 return_call = True
@@ -105,12 +102,12 @@ class ISAMAppliance(IBMAppliance):
         if requires_modules is None and not requires_modules:
             if uri.startswith("/wga"):
                 requires_modules = ['wga']
-                self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
+                if self.debug: self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
             elif uri.startswith("/mga"):
                 requires_modules = ['mga']
-                self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
+                if self.debug: self.logger.debug("Detected module: {0} from uri: {1}.".format(requires_modules, uri))
 
-        self.logger.debug("Checking for one of required modules: {0}.".format(requires_modules))
+        if self.debug: self.logger.debug("Checking for one of required modules: {0}.".format(requires_modules))
         if requires_modules is not None and requires_modules:
             if 'activations' in self.facts and self.facts['activations']:
                 # Find intersection of the two lists
@@ -127,7 +124,7 @@ class ISAMAppliance(IBMAppliance):
                 warnings.append("API invoked requires module: {0}, appliance has no modules active.".format(
                     requires_modules))
 
-        self.logger.debug("Warnings: {0}".format(warnings))
+        if self.debug: self.logger.debug("Warnings: {0}".format(warnings))
         return warnings, return_call
 
     def invoke_post_files(self, description, uri, fileinfo, data, ignore_error=False, requires_modules=None,
@@ -153,7 +150,7 @@ class ISAMAppliance(IBMAppliance):
             headers = {
                 'Accept': 'text/html,application/xhtml+xml,application/xml'
             }
-        self.logger.debug("Headers are: {0}".format(headers))
+        if self.debug: self.logger.debug("Headers are: {0}".format(headers))
 
         files = list()
         for file2post in fileinfo:
@@ -174,7 +171,7 @@ class ISAMAppliance(IBMAppliance):
                 self.logger.critical("Failed to connect to server.")
                 raise IBMError("HTTP Return code: 502", "Failed to connect to server")
             else:
-                self.logger.debug("Failed to connect to server.")
+                if self.debug: self.logger.debug("Failed to connect to server.")
                 return_obj.rc = 502
 
         return return_obj
@@ -197,7 +194,7 @@ class ISAMAppliance(IBMAppliance):
         headers = {
             'Accept': 'application/json,text/html,application/xhtml+xml,application/xml'
         }
-        self.logger.debug("Headers are: {0}".format(headers))
+        if self.debug: self.logger.debug("Headers are: {0}".format(headers))
 
         files = list()
 
@@ -218,7 +215,7 @@ class ISAMAppliance(IBMAppliance):
                 self.logger.critical("Failed to connect to server.")
                 raise IBMError("HTTP Return code: 502", "Failed to connect to server")
             else:
-                self.logger.debug("Failed to connect to server.")
+                if self.debug: self.logger.debug("Failed to connect to server.")
                 return_obj.rc = 502
 
         return return_obj
@@ -244,7 +241,7 @@ class ISAMAppliance(IBMAppliance):
             headers = {
                 'Accept': 'application/json,application/octet-stream'
             }
-        self.logger.debug("Headers are: {0}".format(headers))
+            if self.debug: self.logger.debug("Headers are: {0}".format(headers))
 
         self._suppress_ssl_warning()
 
@@ -278,7 +275,7 @@ class ISAMAppliance(IBMAppliance):
                 self.logger.critical("Failed to write to file: " + filename)
                 raise IBMError("HTTP Return code: 999", "Failed to write to file: " + filename)
             else:
-                self.logger.debug("Failed to write to file: " + filename)
+                if self.debug: self.logger.debug("Failed to write to file: " + filename)
                 return_obj['rc'] = 999
 
         return return_obj
@@ -303,12 +300,12 @@ class ISAMAppliance(IBMAppliance):
             'Accept': 'application/json',
             'Content-type': 'application/json'
         }
-        self.logger.debug("Headers are: {0}".format(headers))
+        if self.debug: self.logger.debug("Headers are: {0}".format(headers))
 
         # Process the input data into JSON
         json_data = json.dumps(data)
 
-        self.logger.debug("Input Data: " + json_data)
+        if self.debug: self.logger.debug("Input Data: " + json_data)
 
         self._suppress_ssl_warning()
 
@@ -384,7 +381,7 @@ class ISAMAppliance(IBMAppliance):
             'Accept-Encoding': 'gzip, deflate, br',
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-        self.logger.debug("Headers are: {0}".format(headers))
+        if self.debug: self.logger.debug("Headers are: {0}".format(headers))
 
         self._suppress_ssl_warning()
 
@@ -399,7 +396,7 @@ class ISAMAppliance(IBMAppliance):
                 self.logger.critical("Failed to connect to server.")
                 raise IBMError("HTTP Return code: 502", "Failed to connect to server")
             else:
-                self.logger.debug("Failed to connect to server.")
+                if self.debug: self.logger.debug("Failed to connect to server.")
                 return_obj.rc = 502
 
         return return_obj
@@ -454,15 +451,15 @@ class ISAMAppliance(IBMAppliance):
         for key, value in kwargs.items():
             if key == 'json' and value != {}:
                 json_data = json.dumps(value)
-                self.logger.debug("Input json Data: " + json_data)
+                if self.debug: self.logger.debug("Input json Data: " + json_data)
                 args['json'] = json_data
             elif key == 'data':
                 try:
                     json.loads(value)
-                    self.logger.debug("Input Data: " + value)
+                    if self.debug: self.logger.debug("Input Data: " + value)
                     args['data'] = value
                 except ValueError:
-                    self.logger.debug("Input Data: " + value)
+                    if self.debug: self.logger.debug("Input Data: " + value)
                     args['data'] = value
             else:
                 args[key] = value
@@ -594,14 +591,14 @@ class ISAMAppliance(IBMAppliance):
                 self.facts['activations'].append(activation['id'])
 
     def _log_request(self, method, url, desc):
-        self.logger.debug("Request: %s %s desc=%s", method, url, desc)
+        if self.debug: self.logger.debug("Request: %s %s desc=%s", method, url, desc)
 
     def _log_response(self, response):
         if response:
-            self.logger.debug("Response: %d", response.get('rc'))
+            if self.debug: self.logger.debug("Response: %d", response.get('rc'))
             # self.logger.debug("Response: %i %i warnings:%s",
             #                     response.get('rc'),
             #                     response.get('status_code'),
             #                     response.get('warnings'))
         else:
-            self.logger.debug("Response: None")
+            if self.debug: self.logger.debug("Response: None")
