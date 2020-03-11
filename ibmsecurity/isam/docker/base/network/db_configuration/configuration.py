@@ -27,7 +27,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_password, hvdb_db_name=None,
         hvdb_db_secure=None, hvdb_driver_type=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None,
-        hvdb_solid_tc=None, check_mode=False, force=False):
+        hvdb_solid_tc=None, check_mode=False, force=False, ignore_password_for_idempotency=False):
     """
     Set cluster configuration
     """
@@ -74,21 +74,22 @@ def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_pa
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
         db_json["hvdb_solid_tc"] = hvdb_solid_tc
 
-    obj = _check(isamAppliance, db_json)
+    obj = _check(isamAppliance=isamAppliance, db_json=db_json,
+                 ignore_password_for_idempotency=ignore_password_for_idempotency)
 
     if force is True or obj['value'] is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=obj['warnings'])
         else:
+            print("test")
             return isamAppliance.invoke_post("Set database configuration", uri, db_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
-                                             requires_model=requires_model,
-                                             warnings=obj['warnings'])
+                                             requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=obj['warnings'])
 
 
-def _check(isamAppliance, db_json):
+def _check(isamAppliance, db_json, ignore_password_for_idempotency=False):
     """
     Check if provided json values match the configuration on appliance
 
@@ -100,43 +101,32 @@ def _check(isamAppliance, db_json):
     obj = {'value': True, 'warnings': ""}
 
     ret_obj = get(isamAppliance)
+
     obj['warnings'] = ret_obj['warnings']
+    del_password = False
+
+    if ignore_password_for_idempotency is True:
+        if 'hvdb_password' in ret_obj['data']:
+            del ret_obj['data']['hvdb_password']
+        if 'hvdb_password' in db_json:
+            password = db_json['hvdb_password']
+            del_password = True
+            del db_json['hvdb_password']
+
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(db_json)
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
     logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
-    temp = copy.deepcopy(
-        db_json)  # deep copy neccessary: otherwise password parameter would be removed from desired config dict 'db_json'. Comparison is done with temp<>ret_obj object
-    for idx, x in enumerate(db_json):
-        if "password" in x:
-            logger.debug("Ignoring JSON password entry: '{0}' to satisfy idempotency.".format(x))
-            del temp[x]
-    logger.debug("Passwordless JSON to Apply: {0}".format(temp))
+    if del_password is True:
+        db_json['hvdb_password'] = password
 
-    for key, value in temp.items():
-        try:
-            if isinstance(value, list):
-                if ibmsecurity.utilities.tools.json_sort(
-                        ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
-                    logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    obj['value'] = False
-                    return obj
-            else:
-                if ret_obj['data'][key] != value:
-                    logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    obj['value'] = False
-                    return obj
-        except:  # In case there is an error looking up the key in existing configuration (missing)
-            logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
-            obj['value'] = False
-            return obj
-
-    logger.debug("JSON provided already is contained in current appliance configuration.")
-    obj['value'] = True
-    return obj
+    if sorted_ret_obj != sorted_json_data:
+        obj['value'] = False
+        return obj
+    else:
+        obj['value'] = True
+        return obj
 
 
 def compare(isamAppliance1, isamAppliance2):
