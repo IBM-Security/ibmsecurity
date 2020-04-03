@@ -1,3 +1,5 @@
+import os, sys, json
+import yaml
 import logging
 from ibmsecurity.utilities import tools
 
@@ -68,6 +70,117 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     ret_obj['data']['servers'] = servers
 
     return ret_obj
+
+def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False, force=False):
+    """
+    Retrieving the parameters for a single standard or virtual junction
+
+    :param isamAppliance:
+    :param reverseproxy_id:
+    :param junctionname:
+    :param file:  
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    ignoreAttrs = {'current_requests', 'operation_state', 'server_state'}     
+    attrPrefix = "add_junction_"
+    junctionPrefix="add_junction_servers_"
+    
+    file_path = file + reverseproxy_id
+    file_path = file_path.strip()
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        logger.debug("Directory doesn't exist, creating: " + file_path)
+    
+    if os.path.exists(directory):
+        logger.debug("Path exists: " + file_path)
+    
+    ret_obj = isamAppliance.invoke_get("Retrieving the parameters for a single standard or virtual junction",
+                                       "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id,
+                                                                                   junctionname),
+                                       requires_modules=requires_modules,
+                                       requires_version=requires_version)
+    # servers are provided as a single string, here we parse it out into a list + dict
+    servers = []
+    if tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") > 0:
+        srv_separator = '#'
+    else:
+        srv_separator = '&'
+    logger.debug("Server Separator being used: {0}".format(srv_separator))
+    srvs = ret_obj['data']['servers'].split(srv_separator)
+    logger.debug("Servers in raw string: {0}".format(ret_obj['data']['servers']))
+    logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+    for srv in srvs:
+        logger.debug("Parsing Server: {0}".format(srv))
+        server = {}
+        for s in srv.split(';'):
+            if s != '':
+                kv = s.split('!')
+                server[kv[0]] = kv[1]
+        servers.append(server)
+
+    ret_obj['data']['servers'] = servers
+    # convert into JSON:
+    json_data = json.dumps(ret_obj['data'])
+    junction_data = yaml.safe_load(json_data)
+
+    f = open(file_path + "/" + junctionname +".0", "w")   
+    f.write(attrPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
+    #f.write(attrPrefix + "junction_point: " + junctionname +"\n")  
+    for mykey in junction_data:
+        #logger.debug("Junction attr: " + str(mykey) + " / " + junction_data[mykey])
+        #rename auth_http_header and fix data
+        if mykey == "auth_http_header":
+            mykey = "remote_http_header"
+            junction_data[mykey]=junction_data[mykey].replace("_","-")            
+      
+        #process servers   
+        if (mykey == "servers"):
+            #sjson_data = json.dumps(junction_data["servers"])
+            #server_data=yaml.safe.load(sjson_data)
+            i = 0
+            #process 1st junctioned server
+            while i < 1:
+                #print(server[i])
+                for skey in junction_data["servers"][i]:
+                 f.write(attrPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n") 
+                i += 1
+            #process additional servers, new file
+            while i < len(junction_data["servers"]):
+                fi = open(file_path + "/" + junctionname + "." + str(i), "w") 
+                fi.write(junctionPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
+                fi.write(junctionPrefix + "junction_point: " + junctionname +"\n") 
+                fi.write(junctionPrefix + "junction_type: " + junction_data["junction_type"] +"\n") 
+                fi.write("add_junction_servers: \n    - server: " + junction_data["servers"][i]["server_hostname"])
+                fi.write( "\n      port: " + junction_data["servers"][i]["server_port"] +"\n")
+                for skey in junction_data["servers"][i]:
+                    if skey == "server_hostname":
+                        logger.debug("Skipping server_hostname \n")
+                    elif skey == "server_port":
+                        logger.debug("Skipping server_port \n")                        
+                    else:    
+                        fi.write(junctionPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n")
+
+                #add_junction_servers
+#  - server: "newsrv.ibm.com"
+#    port: 8443
+                fi.close()  
+                i += 1
+        elif mykey in ignoreAttrs:
+            f.write("#"+ attrPrefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")       
+     
+        #process junction attributes
+        else:
+            f.write(attrPrefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")    
+    
+
+
+    f.close()
+
+    return ret_obj
+
 
 
 def _check(isamAppliance, reverseproxy_id, junctionname):
