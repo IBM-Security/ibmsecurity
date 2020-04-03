@@ -129,6 +129,13 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
     f = open(file_path + "/" + junctionname +".0", "w")   
     f.write(attrPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
     #f.write(attrPrefix + "junction_point: " + junctionname +"\n")  
+    if junction_data['forms_based_sso'].lower == "disabled":
+        junction_data['forms_based_sso']=""
+    if junction_data['fsso_config_file'].lower == "disabled":
+        junction_data['forms_based_sso']=""
+ 
+
+    
     for mykey in junction_data:
         #logger.debug("Junction attr: " + str(mykey) + " / " + junction_data[mykey])
         #rename auth_http_header and fix data
@@ -144,11 +151,16 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
             #process 1st junctioned server
             while i < 1:
                 #print(server[i])
+                del junction_data["servers"][i]['server_state']
+                del junction_data["servers"][i]['operation_state']
+
                 for skey in junction_data["servers"][i]:
                  f.write(attrPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n") 
                 i += 1
             #process additional servers, new file
             while i < len(junction_data["servers"]):
+                del junction_data["servers"][i]['server_state']
+                del junction_data["servers"][i]['operation_state']                
                 fi = open(file_path + "/" + junctionname + "." + str(i), "w") 
                 fi.write(junctionPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
                 fi.write(junctionPrefix + "junction_point: " + junctionname +"\n") 
