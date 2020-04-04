@@ -71,6 +71,10 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
 
     return ret_obj
 
+def _remove_junction_attrs(obj):
+
+    return ret_obj
+
 def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False, force=False):
     """
     Retrieving the parameters for a single standard or virtual junction
@@ -93,10 +97,7 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
     if not os.path.exists(directory):
         os.makedirs(directory)
         logger.debug("Directory doesn't exist, creating: " + file_path)
-    
-    if os.path.exists(directory):
-        logger.debug("Path exists: " + file_path)
-    
+        
     ret_obj = isamAppliance.invoke_get("Retrieving the parameters for a single standard or virtual junction",
                                        "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id,
                                                                                    junctionname),
@@ -108,7 +109,7 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
         srv_separator = '#'
     else:
         srv_separator = '&'
-    logger.debug("Server Separator being used: {0}".format(srv_separator))
+    logger.debug("Server separator being used: {0}".format(srv_separator))
     srvs = ret_obj['data']['servers'].split(srv_separator)
     logger.debug("Servers in raw string: {0}".format(ret_obj['data']['servers']))
     logger.debug("Number of servers in junction: {0}".format(len(srvs)))
@@ -129,93 +130,68 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
     f = open(file_path + "/" + junctionname +".0", "w")   
     f.write(junctionPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
     #f.write(junctionPrefix + "junction_point: " + junctionname +"\n")  
-    if junction_data['forms_based_sso'].lower() == "disabled":
-        junction_data['forms_based_sso']=""
-    if junction_data['fsso_config_file'].lower() == "disabled":
-        junction_data['fsso_config_file']=""
+
+
  
     #Delete statistical attributes
     #del junction_data['active_worker_threads'] 
-    junction_data.pop('active_worker_threads', None)
-    junction_data.pop('http_header_ident', None)
+
     if str(junction_data['junction_soft_limit'])[0:1]=="0":
         junction_data['junction_soft_limit'] = "0"
     if str(junction_data['junction_hard_limit'])[0:1]=="0":
         junction_data['junction_hard_limit'] = "0"
     junction_data['request_encoding'] = str(junction_data['request_encoding'].lower())
-    junction_data['request_encoding'].replace("utf-8, uri encoded","utf8_uri")
-    junction_data['request_encoding'].replace("utf-8, bin encoded","utf8_bin")    
-               
+    junction_data['request_encoding'] = junction_data['request_encoding'].replace("utf-8, uri encoded","utf8_uri")
+    junction_data['request_encoding'] = junction_data['request_encoding'].replace("utf-8, bin encoded","utf8_bin")    
+         #rename auth_http_header and fix data       
+    junction_data["remote_http_header"]=str(junction_data["http_header_ident"]).replace("_","-")            
+    junction_data["remote_http_header"]=str(junction_data["remote_http_header"]).lower().replace("insert - ","") 
+    #remove unwanted attributes
+    junction_data.pop('auth_http_header', None)
+    junction_data.pop('active_worker_threads', None)
+    junction_data.pop('http_header_ident', None)            
 
     for mykey in junction_data:
         #logger.debug("Junction attr: " + str(mykey) + " / " + junction_data[mykey])
-        #rename auth_http_header and fix data
-       
-        if mykey == "auth_http_header":
-            junction_data[mykey]=str(junction_data[mykey]).replace("_","-")            
-            junction_data[mykey]=str(junction_data[mykey]).lower().replace("insert - ","") 
-            mykey = "remote_http_header"
-         
 
-   
-        
+               
         #process servers   
         if (mykey == "servers"):
             #sjson_data = json.dumps(junction_data["servers"])
             #server_data=yaml.safe.load(sjson_data)
             i = 0
             #process 1st junctioned server
-            while i < 1:
-                #print(server[i])
-                del junction_data["servers"][i]["server_state"]
-                del junction_data["servers"][i]["operation_state"]
-                del junction_data["servers"][i]["current_requests"] 
-                   
-
-
-                del junction_data["servers"][i]['total_requests'] 
-               
-                for skey in junction_data["servers"][i]:
-                    logger.debug("String replace on skey " + skey + " / " + junction_data["servers"][i][skey] +" \n")
-                    junction_data["servers"][i][skey].replace("unknown","")
-                    junction_data["servers"][i][skey].replace("disabled","")   
-                    f.write(junctionPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n") 
-                i += 1
+#             while i < 1:
+#                 #print(server[i])
+#                 if junction_data["servers"][i].lower() == "disabled":
+#                     junction_data["servers"][i]=""
+#                 del junction_data["servers"][i]["server_state"]
+#                 del junction_data["servers"][i]["operation_state"]
+#                 del junction_data["servers"][i]["current_requests"] 
+#                 del junction_data["servers"][i]['total_requests']                   
+# 
+# 
+#                 del junction_data["servers"][i]['total_requests'] 
+#                
+#                 for skey in junction_data["servers"][i]:
+#                     logger.debug("String replace on skey " + skey + " / " + junction_data["servers"][i][skey] +" \n")
+#                     junction_data["servers"][i][skey]=junction_data["servers"][i][skey].lower().replace("unknown","")
+#                     junction_data["servers"][i][skey]=junction_data["servers"][i][skey].lower().replace("disabled","")   
+#                     f.write(junctionPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n") 
+#                 i += 1
             #process additional servers, new file
             while i < len(junction_data["servers"]):
                 del junction_data["servers"][i]['server_state']
                 del junction_data["servers"][i]['operation_state']
                 del junction_data["servers"][i]['current_requests']    
                 del junction_data["servers"][i]['total_requests'] 
-
-                                                
-  #              add_junction_serveers_reverseproxy_id: account01
-#add_junction_servers_junction_point: /fin_acc
-#add_junction_servers_junction_type: tcp
-#add_junction_servers:
- #   - server: 192.168.1.249
-  #    port: 99
-#add_junction_servers_current_requests: 0
-#add_junction_servers_operation_state: Online
-#add_junction_servers_http_port: 99
-#add_junction_servers_server_uuid: e75807f2-75c8-11ea-8b80-0050562094b4
-#add_junction_servers_windows_style_url: no
-#add_junction_servers_server_state: not running
-#add_junction_servers_query_contents: unknown
-#add_junction_servers_local_ip:
-#add_junction_servers_case_sensitive_url: no
-#add_junction_servers_total_requests: 14
-#add_junction_servers_query_content_url: /cgi-bin/query_contents
-#add_junction_servers_virtual_junction_hostname: goonit.vc.com:99
-#add_junction_servers_server_dn:
-
-                            
-                fi = open(file_path + "/" + junctionname + "." + str(i), "w") 
-                fi.write(serverPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
-                fi.write(serverPrefix + "junction_point: " + junctionname +"\n") 
-                fi.write(serverPrefix + "junction_type: " + junction_data["junction_type"] +"\n") 
-                fi.write("add_junction_servers: \n    - server: " + junction_data["servers"][i]["server_hostname"])
-                fi.write( "\n      port: " + junction_data["servers"][i]["server_port"] +"\n")
+                                            
+                f = open(file_path + "/" + junctionname + "." + str(i), "w") 
+                f.write(serverPrefix + "reverseproxy_id: " + reverseproxy_id +"\n")  
+                f.write(serverPrefix + "junction_point: " + junctionname +"\n") 
+                f.write(serverPrefix + "junction_type: " + junction_data["junction_type"] +"\n") 
+                f.write("add_junction_servers: \n    - server: " + junction_data["servers"][i]["server_hostname"])
+                f.write( "\n      port: " + junction_data["servers"][i]["server_port"] +"\n")
                 del junction_data["servers"][i]['server_port'] 
                 del junction_data["servers"][i]['server_hostname'] 
                 for skey in junction_data["servers"][i]:
@@ -224,14 +200,10 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
                     elif skey == "server_port":
                         logger.debug("Skipping server_port \n")                        
                     else:    
-                        str(junction_data["servers"][i][skey]).lower().replace("unknown","")
-                        str(junction_data["servers"][i][skey]).lower().replace("disabled","")
-                        fi.write(serverPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n")
-
-                #add_junction_servers
-#  - server: "newsrv.ibm.com"
-#    port: 8443
-                fi.close()  
+                        junction_data["servers"][i][skey]=str(junction_data["servers"][i][skey]).lower().replace("unknown","")
+                        junction_data["servers"][i][skey]=str(junction_data["servers"][i][skey]).lower().replace("disabled","")
+                        f.write(serverPrefix + skey + ": " + junction_data["servers"][i][skey]+"\n")
+                f.close()  
                 i += 1
         elif mykey in ignoreAttrs:
             f.write("#"+ junctionPrefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")       
