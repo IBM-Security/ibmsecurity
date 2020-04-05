@@ -71,23 +71,25 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
 
     return ret_obj
 
-def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False, force=False):
+
+def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_prefix, check_mode=False, force=False):
     """
     Retrieving the parameters for a single standard or virtual junction
 
     :param isamAppliance:
     :param reverseproxy_id:
     :param junctionname:
-    :param file:  
+    :param export_dir: 
+    :param junction_prefix: 
     :param check_mode:
     :param force:
     :return:
     """
     ignoreAttrs = {'current_requests', 'operation_state', 'server_state'}     
-    junctionPrefix = "add_junction_"
+    junction_prefix = "add_junction_"
     serverPrefix="add_junction_"
     
-    file_path = file + reverseproxy_id
+    file_path = export_dir + reverseproxy_id
     file_path = file_path.strip()
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
@@ -154,7 +156,7 @@ def export(isamAppliance, reverseproxy_id, junctionname, file, check_mode=False,
     for mykey in junction_data:              
         junction_data[mykey]=str(junction_data[mykey]).lower().replace("unknown","")
         junction_data[mykey]=str(junction_data[mykey]).lower().replace("disabled","")
-        f.write(junctionPrefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")    
+        f.write(junction_prefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")    
     f.close()  
     
      #process additional servers, new file
