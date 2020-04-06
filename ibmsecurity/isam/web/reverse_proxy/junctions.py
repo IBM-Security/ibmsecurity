@@ -86,10 +86,9 @@ def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_pr
     :return:
     """
     ignoreAttrs = {'current_requests', 'operation_state', 'server_state'}     
-    junction_prefix = "add_junction_"
     serverPrefix="add_junction_"
     
-    file_path = export_dir + reverseproxy_id
+    file_path = export_dir +"/"+ reverseproxy_id
     file_path = file_path.strip()
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
