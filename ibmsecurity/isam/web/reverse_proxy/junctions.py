@@ -72,6 +72,35 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     return ret_obj
 
 
+def _normaliseJunction(ret_obj):
+    ret_obj.pop('auth_http_header', None)
+    ret_obj.pop('active_worker_threads', None)
+    ret_obj.pop('http_header_ident', None)  
+    ret_obj['junction_soft_limit'] = ret_obj['junction_soft_limit'].replace(' - using global value','')
+    ret_obj['junction_hard_limit'] = ret_obj['junction_hard_limit'].replace(' - using global value','')
+    ret_obj['junction_hard_limit'] = ret_obj['client_ip_http'].replace('do not insert','no')
+    ret_obj["remote_http_header"]=str(ret_obj["remote_http_header"]).replace("_","-")            
+    ret_obj["remote_http_header"]=str(ret_obj["remote_http_header"]).lower().replace("insert - ","") 
+    ret_obj['junction_type'] = ret_obj['junction_type'].lower()
+    ret_obj['request_encoding'] = ret_obj['request_encoding'].lower().replace("utf-8, uri encoded","utf8_uri")
+    ret_obj['request_encoding'] = ret_obj['request_encoding'].lower().replace("utf-8, bin encoded","utf8_bin")  
+    ret_obj['request_encoding'] = ret_obj['request_encoding'].lower().replace("local code page, uri encoded","lcp_uri")
+    ret_obj['request_encoding'] = ret_obj['request_encoding'].lower().replace("local code page, binary","lcp_bin")
+    servers = ret_obj['servers']
+    i=0
+    while i < len(servers):
+        servers[i].pop('http_port', None) 
+        servers[i].pop('https_port', None) 
+        servers[i].pop('server_state')
+        servers[i].pop('operation_state')
+        servers[i].pop('current_requests')    
+        servers[i].pop('total_requests')
+        i+=1
+    
+
+
+    return ret_obj
+
 def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_prefix, check_mode=False, force=False):
     """
     Retrieving the parameters for a single standard or virtual junction
@@ -86,7 +115,7 @@ def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_pr
     :return:
     """
     ignoreAttrs = {'current_requests', 'operation_state', 'server_state'}     
-    serverPrefix="add_junction_"
+    serverPrefix=junction_prefix
     
     file_path = export_dir +"/"+ reverseproxy_id
     file_path = file_path.strip()
@@ -120,55 +149,27 @@ def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_pr
         servers.append(server)
 
     ret_obj['data']['servers'] = servers
-    # convert into JSON:
-    json_data = json.dumps(ret_obj['data'])
-    junction_data = yaml.safe_load(json_data)
-    #open file for junction create
-    f = open(file_path + "/" + junctionname +".0", "w")   
+    
+    #normalise Junction json
+    junction_data = _normaliseJunction(ret_obj['data'])
  
-    #Delete statistical attributes
-    if str(junction_data['junction_soft_limit'])[0:1]=="0":
-        junction_data['junction_soft_limit'] = "0"
-    if str(junction_data['junction_hard_limit'])[0:1]=="0":
-        junction_data['junction_hard_limit'] = "0"
-    if str(junction_data['client_ip_http']).lower() == 'do not insert':
-        junction_data['client_ip_http'] = "no";
-         #rename auth_http_header and fix data       
-    junction_data["remote_http_header"]=str(junction_data["http_header_ident"]).replace("_","-")            
-    junction_data["remote_http_header"]=str(junction_data["remote_http_header"]).lower().replace("insert - ","") 
-    junction_data['request_encoding'] = str(junction_data['request_encoding']).lower()
-    junction_data['request_encoding'] = junction_data['request_encoding'].replace("utf-8, uri encoded","utf8_uri")
-    junction_data['request_encoding'] = junction_data['request_encoding'].replace("utf-8, bin encoded","utf8_bin")  
-    junction_data['request_encoding'] = junction_data['request_encoding'].replace("local code page, uri encoded","lcp_uri")
-    junction_data['request_encoding'] = junction_data['request_encoding'].replace("local code page, binary","lcp_bin")
-  
-    #junction_data["junction_type"] = junction_data["junction_type"].lower()
-    #remove unwanted attributes
-    junction_data.pop('auth_http_header', None)
-    junction_data.pop('active_worker_threads', None)
-    junction_data.pop('http_header_ident', None)    
+    f = open(file_path + "/" + junctionname +".0", "w")    
     
     servers = junction_data['servers'] 
     #servers will be processed separately
     del junction_data['servers']
             
     for mykey in junction_data:              
-        junction_data[mykey]=str(junction_data[mykey]).lower().replace("unknown","")
-        junction_data[mykey]=str(junction_data[mykey]).lower().replace("disabled","")
-        f.write(junction_prefix + mykey +": " + str(junction_data[mykey]).lower() +"\n")    
+        junction_data[mykey]=str(junction_data[mykey]).replace("unknown","")
+        junction_data[mykey]=str(junction_data[mykey]).replace("disabled","")
+        f.write(junction_prefix + mykey +": " + str(junction_data[mykey]) +"\n")    
     f.close()  
     
      #process additional servers, new file
     i=0
     while i < len(servers):
-        servers[i].pop('http_port', None) 
-        servers[i].pop('https_port', None) 
-        del servers[i]['server_state']
-        del servers[i]['operation_state']
-        del servers[i]['current_requests']    
-        del servers[i]['total_requests'] 
-        #append 1st server to main file
-        f = open(file_path + "/" + junctionname + "." + str(i), "a")
+        if i == 0:
+            f = open(file_path + "/" + junctionname + "." + str(i), "a")
         #f.write(serverPrefix + "reverseproxy_id: " + reverseproxy_id +"\n") 
         # open a new file for additional junctioned servers
         if i > 0:            
@@ -189,6 +190,7 @@ def export(isamAppliance, reverseproxy_id, junctionname, export_dir, junction_pr
             f.write(serverPrefix + skey + ": " + servers[i][skey]+"\n")
         
         i += 1
+        f.close()
 
     return ret_obj
 

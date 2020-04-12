@@ -91,12 +91,5 @@ if __name__ == "__main__":
     
    #junction_data=ibmsecurity.isam.web.reverse_proxy.junctions.get(isamAppliance=isam_server,junctionname="/fin_acc",reverseproxy_id="account01")
     junction_data=ibmsecurity.isam.web.reverse_proxy.junctions.export(isamAppliance=isam_server,junctionname="/fin_acc",reverseproxy_id="account01",export_dir="/tmp/",junction_prefix="add_junctions_")
-    p(junction_data)
-    print(junction_data)
-    import unicodedata
-    print(junction_data['data']['junction_point'])
-    import json
-    # convert into JSON:
-    y = json.dumps(junction_data)
-    print(y)
+  
 
