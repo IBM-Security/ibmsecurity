@@ -115,10 +115,11 @@ def test(isamAppliance, userid, password, check_mode=False, force=False):
     """
     ret_obj = isamAppliance.invoke_post("Testing the management authentication",
                                         "/isam/management_authentication/",
-                                        {
+                                           {
                                             'user': userid,
-                                            'password': password}
-                                        )
+                                            'password': password
+                                           }
+                                       )
     ret_obj['changed'] = False
 
     return ret_obj
