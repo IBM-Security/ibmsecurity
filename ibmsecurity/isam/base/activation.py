@@ -41,7 +41,7 @@ def update(isamAppliance, enabled, id=None, check_mode=False, force=False):
             return isamAppliance.invoke_put("Update an activation offering",
                                             "/isam/capabilities/{0}/v1".format(id),
                                             {'enabled': enabled.capitalize()}
-                                            )
+                                           )
 
     return isamAppliance.create_return_object()
 
