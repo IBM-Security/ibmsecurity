@@ -84,7 +84,7 @@ def _check(isamAppliance, comment='', id=None):
     return False
 
 
-def delete(isamAppliance, id, comment=None, check_mode=False, force=False):
+def delete(isamAppliance, id=None, comment=None, check_mode=False, force=False):
     """
     Delete snapshot(s) - check id before processing comment. id can be a list
     """
