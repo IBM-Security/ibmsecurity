@@ -1,6 +1,7 @@
 import logging
 import ibmsecurity.utilities.tools
 from ibmsecurity.appliance.ibmappliance import IBMError
+from io import open
 
 logger = logging.getLogger(__name__)
 
