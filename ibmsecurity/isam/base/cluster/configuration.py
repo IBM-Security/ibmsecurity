@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/cluster/v2"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 try:
     basestring
@@ -20,7 +21,8 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve the current cluster configuration
     """
     return isamAppliance.invoke_get("Retrieve the current cluster configuration", uri,
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
@@ -35,6 +37,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     """
     Set cluster configuration
     """
+
     warnings = []
     # Create a simple json with just the main client attributes
     cluster_json = {
@@ -134,12 +137,15 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if dsc_trace_level is not None:
         cluster_json["dsc_trace_level"] = dsc_trace_level
 
-    if force is True or _check(isamAppliance, cluster_json, ignore_password_for_idempotency) is False:
+    check_obj =  _check(isamAppliance, cluster_json, ignore_password_for_idempotency)
+    warnings.append(check_obj['warnings'])
+    if force is True or check_obj['value'] is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post("Set cluster configuration", uri, cluster_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
+                                             requires_model=requires_model,
                                              warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -153,7 +159,11 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
     :param cluster_json:
     :return:
     """
+
+    check_obj = {'value': True, 'warnings':""}
+
     ret_obj = get(isamAppliance)
+    check_obj['warnings'] = ret_obj['warnings']
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(cluster_json)
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
@@ -177,24 +187,29 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
                         ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    check_obj['value']=False
+                    return check_obj
             else:
                 if ret_obj['data'][key] != value:
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    check_obj['value']=False
+                    return check_obj
         except:  # In case there is an error looking up the key in existing configuration (missing)
             logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
-            return False
+            check_obj['value']=False
+            return check_obj
 
     logger.debug("JSON provided already is contained in current appliance configuration.")
-    return True
+    check_obj['value']=True
+    return check_obj
 
 
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare cluster configuration between two appliances
     """
+
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 

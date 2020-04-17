@@ -2,6 +2,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+requires_model="Appliance"
+
 
 def export(isamAppliance, filename, type='db2', check_mode=False, force=False):
     """
@@ -14,6 +16,6 @@ def export(isamAppliance, filename, type='db2', check_mode=False, force=False):
             return isamAppliance.invoke_get_file(
                 "Export the configuration database",
                 "/isam/cluster/configdb/v1?type={0}".format(type),
-                filename)
+                filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object()
