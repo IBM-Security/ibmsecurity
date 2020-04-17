@@ -2,6 +2,7 @@ import logging
 from .all import search, get, _get, _create_json
 from ibmsecurity.utilities.tools import json_sort
 import os.path
+from io import open
 
 logger = logging.getLogger(__name__)
 

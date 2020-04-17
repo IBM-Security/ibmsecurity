@@ -6,6 +6,7 @@ import difflib
 import hashlib
 import ntpath
 import re
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -166,9 +167,9 @@ def files_same(original_file, new_file):
         -works with text, image, and zip files
     Returns Boolean
     """
-    with open(original_file, 'r') as f:
+    with open(original_file, 'rb') as f:
         original_file_contents = f.read()
-    with open(new_file, 'r') as f:
+    with open(new_file, 'rb') as f:
         new_file_contents = f.read()
     hash_original_file = hashlib.sha224(original_file_contents).hexdigest()
     hash_new_file = hashlib.sha224(new_file_contents).hexdigest()
@@ -195,7 +196,7 @@ def strings(filename, min=4):
     """
     Emulate UNIX "strings" command on a file
     """
-    with open(filename, "rb") as f:
+    with open(filename, 'r', errors='ignore') as f:
         result = ""
         for c in f.read():
             if c in string.printable:

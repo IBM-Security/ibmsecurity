@@ -1,6 +1,7 @@
 import logging
 import os.path
 import ibmsecurity.utilities.tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
