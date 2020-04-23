@@ -85,13 +85,22 @@ def _get_interface(isamAppliance, label, vlanId=None, check_mode=False, force=Fa
     return None
 
 
-def search(isamAppliance, label, vlanId=None, check_mode=False, force=False):
+def search(isamAppliance, label=None, vlanId=None, address=None, check_mode=False, force=False):
     """
     Search UUID for given label/vlanid
     """
     ret_obj = isamAppliance.create_return_object()
-    intf = _get_interface(isamAppliance, label, vlanId, check_mode, force)
-    ret_obj['data'] = intf['uuid']
+    if label is not None:
+        intf = _get_interface(isamAppliance, label, vlanId, check_mode, force)
+        ret_obj['data'] = intf['uuid']
+        return ret_obj
+    elif address is not None:
+        objs = get_all(isamAppliance)
+        for intfc in objs['data']['interfaces']:
+            for adds in intfc['ipv4']['addresses']:
+                if adds['address'] == address:
+                    ret_obj['data'] = adds['uuid']
+                    return ret_obj
 
     return ret_obj
 

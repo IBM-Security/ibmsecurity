@@ -99,10 +99,10 @@ def set(isamAppliance, resource_id, stanza_id, entries, check_mode=False, force=
                 process_entry = True
                 for val in cur_value:
                     # Force delete of existing values, new values will be added
-                    delete(isamAppliance, resource_id, stanza_id, entry[0], val, check_mode, True)
                     logger.info(
                         'Deleting entry, will be re-added: {0}/{1}/{2}/{3}'.format(resource_id, stanza_id, entry[0],
                                                                                    val))
+                    delete(isamAppliance, resource_id, stanza_id, entry[0], val, check_mode, True)
             if process_entry is True:
                 if isinstance(entry[1], list):
                     for v in entry[1]:
@@ -158,8 +158,13 @@ def delete(isamAppliance, resource_id, stanza_id, entry_id, value_id='', check_m
             # URL being encoded primarily to handle spaces in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, resource_id, stanza_id,
                                                                                        entry_id, value_id)
-            import urllib.parse
-            full_uri = urllib.parse.quote(f_uri)
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+            full_uri = quote(f_uri)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Runtime Environment", full_uri)
 

@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 from ibmsecurity.utilities.tools import get_random_temp_dir, files_same
+from io import open
 
 logger = logging.getLogger(__name__)
 uri = "/isam/runtime_components/pdmgrd/tracing_configuration/v1"
