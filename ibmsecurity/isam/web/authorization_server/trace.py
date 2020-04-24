@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/authzserver"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 
 def get_all(isamAppliance, id, check_mode=False, force=False):
@@ -16,7 +17,8 @@ def get_all(isamAppliance, id, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieve the trace components and settings of an existing instance",
                                     "{0}/{1}/tracing/v1".format(uri, id),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def get_list(isamAppliance, id, trace_id, check_mode=False, force=False):
@@ -26,7 +28,8 @@ def get_list(isamAppliance, id, trace_id, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("List trace files for a trace component",
                                     "{0}/{1}/tracing/{2}/trace_files/v1".format(uri, id, trace_id),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def get(isamAppliance, id, trace_id, trace_file_id, size=None, start=None, options=None, check_mode=False, force=False):
@@ -39,7 +42,8 @@ def get(isamAppliance, id, trace_id, trace_file_id, size=None, start=None, optio
                                                                                        tools.create_query_string(
                                                                                            size=size, start=start,
                                                                                            options=options)),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def export_file(isamAppliance, id, trace_id, trace_file_id, filepath, check_mode=False, force=False):
@@ -57,10 +61,8 @@ def export_file(isamAppliance, id, trace_id, trace_file_id, filepath, check_mode
     else:
         return isamAppliance.invoke_get_file(
             "Export the trace file for a trace component",
-            "{0}/{1}/tracing/{2}/trace_files/{3}/v1?export".format(uri, id, trace_id, trace_file_id), filepath
-        )
-
-    return isamAppliance.create_return_object()
+            "{0}/{1}/tracing/{2}/trace_files/{3}/v1?export".format(uri, id, trace_id, trace_file_id),
+            filepath, requires_model=requires_model)
 
 
 def update(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files, compress,
@@ -68,9 +70,13 @@ def update(isamAppliance, id, trace_id, level, flush_interval, rollover_size, ma
     """
     Update the settings for a trace component
     """
+    ret_obj = get_all(isamAppliance, id)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
     if force is True or _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files,
-                                  compress) is False:
+                                  compress, ret_obj) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -93,23 +99,27 @@ def delete(isamAppliance, id, trace_id, trace_file_id, check_mode=False, force=F
     """
     Delete Trace File for a trace component
     """
+    ret_obj = get_all(isamAppliance, id)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
-    if force is True or _check(isamAppliance, id, trace_id, trace_file_id) is True:
+    if force is True or _check(isamAppliance, id, trace_id, trace_file_id, ret_obj) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Delete Trace File for a trace component",
-                "{0}/{1}/tracing/{2}/trace_files/{3}/v1".format(uri, id, trace_id, trace_file_id))
+                "{0}/{1}/tracing/{2}/trace_files/{3}/v1".format(uri, id, trace_id, trace_file_id),
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
 
-def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files, compress):
+def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files, compress, ret_obj):
     """
     Check to see if the file_id exists or not
     """
-    ret_obj = get_all(isamAppliance, id)
     new_obj = {
         'id': trace_id,
         'level': level,
@@ -129,11 +139,10 @@ def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size,
     return False
 
 
-def _check(isamAppliance, id, trace_id, trace_file_id):
+def _check(isamAppliance, id, trace_id, trace_file_id, ret_obj):
     """
     Check to see if the file_id exists or not
     """
-    ret_obj = get_all(isamAppliance, id)
 
     for obj in ret_obj['data']:
         if obj['id'] == trace_id:
