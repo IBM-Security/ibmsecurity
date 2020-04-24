@@ -3,7 +3,7 @@ import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
 requires_modules = ["mga", "federation"]
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -11,10 +11,17 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving runtime listening interfaces",
                                     "/mga/runtime_tuning/v1",
-                                    requires_modules=requires_modules)
+                                    requires_modules=requires_modules,requires_model=requires_model)
 
 
 def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
+
+    ret_obj = get(isamAppliance)
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
     """
     Set a runtime listening interface
     """
@@ -50,7 +57,7 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
 
 
 def set_by_address(isamAppliance, address, port, secure, check_mode=False, force=False):
-    ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
+    ret_obj = ibmsecurity.isam.base.network.interfaces.get(isamAppliance)
     uuid = None
 
     for intfc in ret_obj['data']['interfaces']:
@@ -71,6 +78,10 @@ def _check(isamAppliance, interface, port):
     Check listening interface for the runtime
     """
     ret_obj = get(isamAppliance)
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
     exists = False
     secure = False
@@ -92,6 +103,13 @@ def _check(isamAppliance, interface, port):
 
 
 def delete(isamAppliance, interface, port, check_mode=False, force=False):
+
+    ret_obj = get(isamAppliance)
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
     """
     Delete a runtime listening interface
     """
