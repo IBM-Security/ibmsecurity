@@ -2,14 +2,14 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve existing suffixes.
     """
     return isamAppliance.invoke_get("Retrieving suffixes from embedded ldap",
-                                    "/isam/embedded_ldap/suffixes/v1")
+                                    "/isam/embedded_ldap/suffixes/v1",requires_model=requires_model)
 
 
 def add(isamAppliance, name, check_mode=False, force=False):
@@ -29,7 +29,7 @@ def add(isamAppliance, name, check_mode=False, force=False):
             return isamAppliance.invoke_post(
                 "Add suffix to embedded ldap",
                 "/isam/embedded_ldap/suffixes/v1",
-                {'name': name})
+                {'name': name},requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -50,7 +50,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete suffix from embedded ldap",
-                "/isam/embedded_ldap/suffixes/{0}/v1".format(id))
+                "/isam/embedded_ldap/suffixes/{0}/v1".format(id),requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 

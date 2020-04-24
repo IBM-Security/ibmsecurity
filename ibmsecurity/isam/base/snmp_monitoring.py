@@ -2,13 +2,13 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieving the SNMP Monitoring configuration
     """
-    return isamAppliance.invoke_get("Retrieving the SNMP Monitoring configuration", "/snmp/v1")
+    return isamAppliance.invoke_get("Retrieving the SNMP Monitoring configuration", "/snmp/v1", requires_model=requires_model)
 
 
 def set_v1v2(isamAppliance, community, port=161, check_mode=False, force=False):

@@ -2,14 +2,14 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve runtime component status
     """
     return isamAppliance.invoke_get("Retrieving web runtime component status",
-                                    "/isam/runtime_components/")
+                                    "/isam/runtime_components/",requires_model=requires_model)
 
 
 def _check(isamAppliance):
@@ -19,6 +19,10 @@ def _check(isamAppliance):
     :return:
     """
     ret_obj = get(isamAppliance)
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
     if ret_obj['data']['modecode'] == '-1':
         return False
@@ -57,7 +61,7 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
                                                  "ssl_compliance": ssl_compliance,
                                                  "isam_host": isam_host,
                                                  "isam_port": isam_port
-                                             })
+                                             },requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -78,7 +82,7 @@ def unconfig(isamAppliance, clean=False, ldap_dn=None, ldap_pwd=None, check_mode
                                                 "clean": clean,
                                                 "ldap_dn": ldap_dn,
                                                 "ldap_pwd": ldap_pwd
-                                            })
+                                            },requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -98,7 +102,7 @@ def import_config(isamAppliance, migrate_file, check_mode=False, force=False):
                                                        'filename': migrate_file,
                                                        'mimetype': 'application/octet-stream'
                                                    }],
-                                                   {})
+                                                   {},requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -113,6 +117,11 @@ def execute(isamAppliance, operation='restart', check_mode=False, force=False):
     """
     if (force is False):
         ret_obj = get(isamAppliance)
+        for key, val in ret_obj.items():
+            if key == 'warnings' and val != []:
+                if "Docker" in val[0]:
+                    return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
         if (ret_obj['data']['statuscode'] == '1'):
             logger.info("ISAM web runtime is unconfigured.")
             return isamAppliance.create_return_object()
@@ -130,7 +139,7 @@ def execute(isamAppliance, operation='restart', check_mode=False, force=False):
                                         "/isam/runtime_components/",
                                         {
                                             "operation": operation
-                                        })
+                                        },requires_model=requires_model)
 
 
 def compare(isamAppliance1, isamAppliance2):

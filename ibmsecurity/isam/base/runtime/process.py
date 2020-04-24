@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 uri = "/mga/runtime_profile/local/v1"
 requires_modules = ["mga", "federation"]
 requires_version = "8.0.0.0"
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -14,7 +14,7 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving runtime status",
                                     "/mga/runtime_profile/v1",
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
 def execute(isamAppliance, operation="restart", check_mode=False, force=False):

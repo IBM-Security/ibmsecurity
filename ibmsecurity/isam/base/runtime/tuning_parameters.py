@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 requires_modules = ["mga", "federation"]
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -10,10 +10,16 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving runtime tuning parameters",
                                     "/mga/runtime_tuning/v1",
-                                    requires_modules=requires_modules)
+                                    requires_modules=requires_modules,requires_model=requires_model)
 
 
 def set(isamAppliance, option, value, check_mode=False, force=False):
+
+    ret_obj = get(isamAppliance)
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
     """
     Set a runtime tuning parameter
     """

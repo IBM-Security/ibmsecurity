@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/dsc/admin/replicas"
 requires_modules = None
 requires_version = None
-
+requires_model = "Appliance"
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
@@ -14,7 +14,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving the list of replica sets",
                                     "{0}".format(uri),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
 def get_servers(isamAppliance, replica, check_mode=False, force=False):
@@ -23,7 +23,7 @@ def get_servers(isamAppliance, replica, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving the list of servers for a replica set",
                                     "{0}/{1}/servers".format(uri, replica),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
 def get_session(isamAppliance, replica, user="*", max="1024", check_mode=False, force=False):
@@ -33,7 +33,7 @@ def get_session(isamAppliance, replica, user="*", max="1024", check_mode=False, 
     return isamAppliance.invoke_get("Searching for session within a replica set",
                                     "{0}/{1}/sessions{2}".format(uri, replica,
                                                                  tools.create_query_string(user=user, max=max)),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
 def delete(isamAppliance, replica, session, check_mode=False, force=False):
@@ -47,7 +47,7 @@ def delete(isamAppliance, replica, session, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete("Terminating a session",
                                                "{0}/{1}/sessions/session/{2}".format(uri, replica, session),
-                                               requires_modules=requires_modules, requires_version=requires_version)
+                                               requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -64,7 +64,7 @@ def delete_all(isamAppliance, replica, username, check_mode=False, force=False):
             return isamAppliance.invoke_delete("Terminating all sessions for a single user",
                                                "{0}/{1}/sessions/user/{2}".format(uri, replica, username),
                                                requires_modules=requires_modules,
-                                               requires_version=requires_version)
+                                               requires_version=requires_version,requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
