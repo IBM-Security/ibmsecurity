@@ -7,6 +7,7 @@ uri = "/isam/authzserver"
 requires_modules = None
 requires_version = None
 version = "v1"
+requires_model = "Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -15,17 +16,18 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get(description="Retrieving all authorization servers",
                                     uri="{0}/{1}".format(uri, version),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
-def _check(isamAppliance, id):
+def _check(isamAppliance, id, ret_obj):
     """
     Check if authorization server is already created or not
 
     :param isamAppliance:
     :return:
     """
-    ret_obj = get(isamAppliance)
 
     logger.debug("Looking for existing authorization servers in: {0}".format(ret_obj['data']))
     if ret_obj['data']:
@@ -47,7 +49,12 @@ def add(isamAppliance, inst_name, admin_pwd, addresses, hostname='localhost', au
     :param isamAppliance, inst_name, admin_pwd, addresses:
     :return:
     """
-    if force is True or _check(isamAppliance, inst_name) is False:
+    ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
+    if force is True or _check(isamAppliance, inst_name, ret_obj) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -76,7 +83,12 @@ def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', check_mode=False
     """
     Unconfigure existing runtime component
     """
-    if force is True or force == "yes" or _check(isamAppliance, id) is True:
+    ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
+    if force is True or force == "yes" or _check(isamAppliance, id, ret_obj) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -108,6 +120,9 @@ def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin
     :return:
     """
     ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
     for acld in ret_obj['data']:
         if acld['id'] == id:
@@ -135,7 +150,7 @@ def execute(isamAppliance, id, operation="restart", admin_id="sec_master", admin
                                                     requires_modules=requires_modules,
                                                     requires_version=requires_version, warnings=warnings)
             break
-    if _check(isamAppliance, id) is False:
+    if _check(isamAppliance, id, ret_obj) is False:
         return isamAppliance.create_return_object(
             warnings="The authorization server instance specified in the request does not exist. Check that the authorization server instance is correct: {0}".format(
                 id))

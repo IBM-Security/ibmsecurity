@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/authzserver"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 
 def get_all(isamAppliance, id, check_mode=False, force=False):
@@ -15,7 +16,7 @@ def get_all(isamAppliance, id, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieve the log file names of an existing instance",
                                     "{0}/{1}/logging/v1".format(uri, id),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model)
 
 
 def get(isamAppliance, id, file_id, size=None, start=None, options=None, check_mode=False, force=False):
@@ -27,7 +28,7 @@ def get(isamAppliance, id, file_id, size=None, start=None, options=None, check_m
                                     "{0}/{1}/logging/{2}/v1{3}".format(uri, id, file_id,
                                                                        tools.create_query_string(size=size, start=start,
                                                                                                  options=options)),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model)
 
 
 def export_file(isamAppliance, id, file_id, filepath, check_mode=False, force=False):
@@ -45,7 +46,7 @@ def export_file(isamAppliance, id, file_id, filepath, check_mode=False, force=Fa
     else:
         return isamAppliance.invoke_get_file(
             "Export the log file of an existing instance",
-            "{0}/{1}/logging/{2}/v1?export".format(uri, id, file_id), filepath
+            "{0}/{1}/logging/{2}/v1?export".format(uri, id, file_id), filepath, requires_model=requires_model
         )
 
     return isamAppliance.create_return_object()
@@ -55,16 +56,26 @@ def delete(isamAppliance, id, file_id, check_mode=False, force=False):
     """
     Clear the log file of an existing instance
     """
+    ret_obj = get_all(isamAppliance, id)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
-    if force is True or _check(isamAppliance, id, file_id) is True:
+    file_exists = False
+    for obj in ret_obj['data']:
+        if obj['id'] == file_id:
+            logger.info("Found file_id '{0}'".format(file_id))
+            file_exists = True
+
+    if force is True or file_exists is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=ret_obj['warnings'])
         else:
             return isamAppliance.invoke_delete(
                 "Clear the log file of an existing instance",
-                "{0}/{1}/logging/{2}/v1".format(uri, id, file_id))
+                "{0}/{1}/logging/{2}/v1".format(uri, id, file_id), requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
 
 def _check(isamAppliance, id, file_id):
