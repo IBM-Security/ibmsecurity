@@ -70,56 +70,57 @@ def update(isamAppliance, id, trace_id, level, flush_interval, rollover_size, ma
     """
     Update the settings for a trace component
     """
-    ret_obj = get_all(isamAppliance, id)
-    warnings = ret_obj['warnings']
-    if warnings and 'Docker' in warnings[0]:
-        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+    id_exists, warnings = _check_id(isamAppliance, id, trace_id, level, flush_interval,
+                                    rollover_size, max_rollover_files, compress)
 
-    if force is True or _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files,
-                                  compress, ret_obj) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_put(
-                "Update the settings for a trace component",
-                "{0}/{1}/tracing/{2}/v1".format(uri, id, trace_id),
-                {
-                    'level': level,
-                    'flush_interval': flush_interval,
-                    'rollover_size': rollover_size,
-                    'max_rollover_files': max_rollover_files,
-                    'compress': compress
-                }
-            )
+    if not warnings:
+        if force is True or id_exists is False:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_put(
+                    "Update the settings for a trace component",
+                    "{0}/{1}/tracing/{2}/v1".format(uri, id, trace_id),
+                    {
+                        'level': level,
+                        'flush_interval': flush_interval,
+                        'rollover_size': rollover_size,
+                        'max_rollover_files': max_rollover_files,
+                        'compress': compress
+                    },
+                    requires_model=requires_model
+                )
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete(isamAppliance, id, trace_id, trace_file_id, check_mode=False, force=False):
     """
     Delete Trace File for a trace component
     """
-    ret_obj = get_all(isamAppliance, id)
-    warnings = ret_obj['warnings']
-    if warnings and 'Docker' in warnings[0]:
-        return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
-    if force is True or _check(isamAppliance, id, trace_id, trace_file_id, ret_obj) is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_delete(
-                "Delete Trace File for a trace component",
-                "{0}/{1}/tracing/{2}/trace_files/{3}/v1".format(uri, id, trace_id, trace_file_id),
-                requires_model=requires_model)
+    id_exists, warnings = _check(isamAppliance, id, trace_id, trace_file_id)
 
-    return isamAppliance.create_return_object()
+    if not warnings:
+        if force is True or id_exists is True:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_delete(
+                    "Delete Trace File for a trace component",
+                    "{0}/{1}/tracing/{2}/trace_files/{3}/v1".format(uri, id, trace_id, trace_file_id),
+                    requires_model=requires_model)
+
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
-def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files, compress, ret_obj):
+def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size, max_rollover_files, compress):
     """
     Check to see if the file_id exists or not
     """
+    ret_obj = get_all(isamAppliance, id)
+    id_exists, warnings = False, ret_obj['warnings']
+
     new_obj = {
         'id': trace_id,
         'level': level,
@@ -130,26 +131,31 @@ def _check_id(isamAppliance, id, trace_id, level, flush_interval, rollover_size,
     }
 
     sorted_new_obj = json_sort(new_obj)
-    for obj in ret_obj['data']:
-        del obj['file_size']
-        sorted_obj = json_sort(obj)
-        if sorted_obj == sorted_new_obj:
-            return True
 
-    return False
+    if not warnings:
+        for obj in ret_obj['data']:
+            del obj['file_size']
+            sorted_obj = json_sort(obj)
+            if sorted_obj == sorted_new_obj:
+                id_exists = True
+
+    return id_exists, warnings
 
 
-def _check(isamAppliance, id, trace_id, trace_file_id, ret_obj):
+def _check(isamAppliance, id, trace_id, trace_file_id):
     """
     Check to see if the file_id exists or not
     """
+    ret_obj = get_all(isamAppliance, id)
+    id_exists, warnings = False, ret_obj['warnings']
 
-    for obj in ret_obj['data']:
-        if obj['id'] == trace_id:
-            filelist = get_list(isamAppliance, id, trace_id)
-            for list_obj in filelist['data']:
-                if list_obj['id'] == trace_file_id:
-                    logger.info("Found trace_id {0} trace_file_id '{1}'".format(trace_id, trace_file_id))
-                    return True
+    if not warnings:
+        for obj in ret_obj['data']:
+            if obj['id'] == trace_id:
+                filelist = get_list(isamAppliance, id, trace_id)
+                for list_obj in filelist['data']:
+                    if list_obj['id'] == trace_file_id:
+                        logger.info("Found trace_id {0} trace_file_id '{1}'".format(trace_id, trace_file_id))
+                        id_exists = True
 
-    return False
+    return id_exists, warnings
