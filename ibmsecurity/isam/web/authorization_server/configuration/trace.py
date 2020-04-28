@@ -2,6 +2,7 @@ import logging
 import os.path
 import shutil
 from ibmsecurity.utilities.tools import get_random_temp_dir, files_same
+from io import open
 
 logger = logging.getLogger(__name__)
 uri = "/isam/authzserver"

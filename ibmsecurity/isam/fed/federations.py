@@ -1,6 +1,7 @@
 import logging
 import json
 from ibmsecurity.utilities import tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
