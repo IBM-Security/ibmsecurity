@@ -71,8 +71,10 @@ def set(isamAppliance, instance_id, component_id, status, hours, mins, secs,
     """
     Modify the statistics settings for a component
     """
-    if check_mode is True:
-        return isamAppliance.create_return_object(changed=True)
+    check_value, warnings = _check(isamAppliance,instance_id)
+
+    if check_mode is True and check_value is True:
+        return isamAppliance.create_return_object(changed=True,warnings=warnings)
     else:
         return isamAppliance.invoke_put(
             "Modify statistics settings for a component",
@@ -92,12 +94,14 @@ def set(isamAppliance, instance_id, component_id, status, hours, mins, secs,
 
             },requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, force=False):
     """
     Deleting the statistics log file or rollover file for a component - Reverse Proxy
     """
+    check_value, warnings = _check(isamAppliance,instance_id)
+
     if force is False:
         try:
             ret_obj = get_default_snippet(isamAppliance, instance_id, component_id, file_id)
@@ -106,8 +110,8 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
             delete_required = False
 
     if force is True or delete_required is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+        if check_mode is True and check_value is True:
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a statistics log file",
@@ -116,13 +120,15 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
                                                                 component_id,
                                                                 file_id),requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force=False):
     """
     Deleting all the log files for a component - Reverse Proxy
     """
+    check_value, warnings = _check(isamAppliance,instance_id)
+
     if force is False:
         try:
             ret_obj = get_all_logs(isamAppliance, instance_id, component_id)
@@ -131,8 +137,8 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
             delete_required = False
 
     if force is True or delete_required is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+        if check_mode is True and check_value is True:
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting all statistics log files",
@@ -140,4 +146,20 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
                                                             instance_id,
                                                             component_id),requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
+def _check(isamAppliance,instance_id):
+    """
+    Check if it's appliance or not
+    :param isamAppliance:
+    :return: true|false, warnings message
+    """
+    ret_obj = get_all(isamAppliance,instance_id)
+    check_value, warnings=False, ret_obj['warnings']
+
+    if warnings == []:
+        check_value = True
+        return check_value, warnings
+    else:
+        return check_value, warnings
