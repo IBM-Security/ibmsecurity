@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 uri = "/wga/rsa_config"
 requires_modules = ["wga"]
 requires_version = None
-requires_model = "Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -16,57 +15,45 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve RSA Securid Configuration
     """
     return isamAppliance.invoke_get("Retrieve RSA Securid Configuration", uri, requires_modules=requires_modules,
-                                    requires_version=requires_version, requires_model=requires_model)
+                                    requires_version=requires_version)
 
 
 def upload(isamAppliance, filename, check_mode=False, force=False):
     """
     Upload a RSA Securid Config file
     """
-
-    srv_cfg_available, warnings = _check(isamAppliance)
-    if warnings and warnings[0] != '':
-        return isamAppliance.create_return_object(warnings=warnings)
-
-    if force is True or srv_cfg_available is False:
-        warnings = [
-                "Idempotency check is only to see if there was a config already uploaded. Force upload to replace existing configuration."]
-
+    warnings = [
+        "Idempotency check is only to see if there was a config already uploaded. Force upload to replace existing configuration."]
+    if force is True or _check(isamAppliance) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(
-                    "Upload a RSA Securid Config file",
-                    "{0}/server_config".format(uri),
-                    [
-                        dict(file_formfield='server_config_file', filename=filename,
-                             mimetype='application/octet-stream')
-                    ],
-                    {}, requires_modules=requires_modules,
-                    requires_version=requires_version, warnings=warnings, requires_model=requires_model)
+                "Upload a RSA Securid Config file",
+                "{0}/server_config".format(uri),
+                [
+                    {
+                        'file_formfield': 'server_config_file',
+                        'filename': filename,
+                        'mimetype': 'application/octet-stream'
+                    }
+                ],
+                {}, requires_modules=requires_modules,
+                requires_version=requires_version, warnings=warnings)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
 def _check(isamAppliance):
     ret_obj = get(isamAppliance)
-    srv_cfg_available, warnings = False, ret_obj['warnings']
-
-    if warnings == [] and ret_obj['data']['server_config'] == 'available':
-        srv_cfg_available = True
-    return srv_cfg_available, warnings
+    return ret_obj['data']['server_config'] == 'available'
 
 
 def test(isamAppliance, username, passcode, check_mode=False, force=False):
     """
     Test RSA Configuration with username/passcode
     """
-    srv_cfg_available, warnings = _check(isamAppliance)
-
-    if warnings and warnings[0] != '':
-        return isamAppliance.create_return_object(warnings=warnings)
-
-    if srv_cfg_available is False:
+    if _check(isamAppliance) is False:
         return isamAppliance.create_return_object(warnings=["Valid configuration not found, test skipped."])
     else:
         ret_obj = isamAppliance.invoke_post("Test RSA Configuration with username/passcode", "{0}/test".format(uri),
@@ -75,9 +62,7 @@ def test(isamAppliance, username, passcode, check_mode=False, force=False):
                                                 'passcode': passcode
                                             },
                                             requires_modules=requires_modules,
-                                            requires_version=requires_version,
-                                            ignore_error=True,
-                                            requires_model=requires_model)
+                                            requires_version=requires_version, ignore_error=True)
         if ret_obj['changed'] is True:
             ret_obj['changed'] = False
 
@@ -88,19 +73,16 @@ def delete(isamAppliance, check_mode=False, force=False):
     """
     Deleting or Clear RSA Securid Configuration
     """
-    srv_cfg_available, warnings = _check(isamAppliance)
-
-    if force is True or srv_cfg_available is True:
+    if force is True or _check(isamAppliance) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Deleting or Clear RSA Securid Configuration",
                                                "{0}/server_config".format(uri),
                                                requires_modules=requires_modules,
-                                               requires_version=requires_version,
-                                               requires_model=requires_model)
+                                               requires_version=requires_version)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
 
 
 def clear(isamAppliance, check_mode=False, force=False):
@@ -113,16 +95,14 @@ def clear(isamAppliance, check_mode=False, force=False):
     :return:
     """
     # TODO: This function has not been tested.  Please open an issue on GitHub if you find a problem.
-    srv_cfg_available, warnings = _check(isamAppliance)
 
-    if force is True or srv_cfg_available is True:
+    if force is True or _check(isamAppliance) is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Clear the node secret file",
                                                "{0}/node_secret".format(uri),
                                                requires_modules=requires_modules,
-                                               requires_version=requires_version,
-                                               requires_model=requires_model)
+                                               requires_version=requires_version)
 
-    return isamAppliance.create_return_object(warnings=warnings)
+    return isamAppliance.create_return_object()
