@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
+requires_model = "Appliance"
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -8,7 +9,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieve the cluster manager log file names
     """
     return isamAppliance.invoke_get("Retrieve the cluster manager log file names",
-                                    "/isam/cluster/logging/v1")
+                                    "/isam/cluster/logging/v1", requires_model=requires_model)
 
 
 def get(isamAppliance, file_id, size=100, start=None, options=None, check_mode=False, force=False):
@@ -16,31 +17,33 @@ def get(isamAppliance, file_id, size=100, start=None, options=None, check_mode=F
     Retrieve a log file snippet
     """
     return isamAppliance.invoke_get("Retrieve a log file snippet",
-                                    "/isam/cluster/logging/{0}/v1".format(file_id))
+                                    "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model)
 
 
 def _check(isamAppliance, file_id):
     ret_obj = get(isamAppliance, file_id)
+    file_exists, warnings = False, ret_obj['warnings']
 
-    if ret_obj['data']['contents'] == '':
-        return False
-    else:
-        return True
+    if warnings ==[] and ret_obj['data']['contents'] != '':
+        file_exists = True
+    return file_exists, warnings
 
 
 def delete(isamAppliance, file_id, check_mode=False, force=False):
     """
     Clear a log file
     """
-    if force is True or _check(isamAppliance, file_id) is True:
+    file_exists, warnings = _check(isamAppliance, file_id)
+
+    if force is True or file_exists is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Clear a log file",
-                "/isam/cluster/logging/{0}/v1".format(file_id))
+                "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def export_file(isamAppliance, file_id, filename, check_mode=False, force=False):
@@ -54,6 +57,6 @@ def export_file(isamAppliance, file_id, filename, check_mode=False, force=False)
             return isamAppliance.invoke_get_file(
                 "Export a cluster manager log file",
                 "/isam/cluster/logging/{0}/v1?export".format(file_id),
-                filename)
+                filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object()
