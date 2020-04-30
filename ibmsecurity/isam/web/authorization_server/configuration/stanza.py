@@ -3,6 +3,7 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 uri = "/isam/authzserver"
+requires_model = "Appliance"
 
 
 def get(isamAppliance, id, check_mode=False, force=False):
@@ -10,38 +11,46 @@ def get(isamAppliance, id, check_mode=False, force=False):
     Retrieving a list of stanzas - Authorization Server
     """
     return isamAppliance.invoke_get(description="Retrieving a list of stanzas - Authorization Server",
-                                    uri="{0}/{1}/configuration/stanza/v1".format(uri, id))
+                                    uri="{0}/{1}/configuration/stanza/v1".format(uri, id),
+                                    requires_model=requires_model)
 
 
 def add(isamAppliance, id, stanza_id, check_mode=False, force=False):
     """
     Add Stanza name - Authorization Server
     """
-    if force is True or _check(isamAppliance, id, stanza_id) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_post(
-                description="Add stanza name - Authorization Server",
-                uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri, id, stanza_id),
-                data={})
+    stanza_exists, warnings = _check(isamAppliance, id, stanza_id)
 
-    return isamAppliance.create_return_object()
+    if not warnings:
+        if force is True or stanza_exists is False:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_post(
+                    description="Add stanza name - Authorization Server",
+                    uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri, id, stanza_id),
+                    data={}, requires_model=requires_model)
+
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete(isamAppliance, id, stanza_id, check_mode=False, force=False):
     """
     Delete Authorization Server configuration stanza
     """
-    if force is True or _check(isamAppliance, id, stanza_id) is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_delete(
-                description="Delete Authorization Server configuration stanza",
-                uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri, id, stanza_id))
+    stanza_exists, warnings = _check(isamAppliance, id, stanza_id)
 
-    return isamAppliance.create_return_object()
+    if not warnings:
+        if force is True or stanza_exists is True:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_delete(
+                    description="Delete Authorization Server configuration stanza",
+                    uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri, id, stanza_id),
+                    requires_model=requires_model)
+
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _check(isamAppliance, id, stanza_id):
@@ -49,14 +58,15 @@ def _check(isamAppliance, id, stanza_id):
     Check if stanza exists
     """
     ret_obj = get(isamAppliance, id)
+    stanza_exists, warnings = False, ret_obj['warnings']
 
-    for stanza in ret_obj['data']:
-        if stanza == stanza_id:
-            logger.info("Stanza found in resource: " + id)
-            return True
-
-    logger.info("Stanza *not* found in resource: " + id)
-    return False
+    if not warnings:
+        for stanza in ret_obj['data']:
+            if stanza == stanza_id:
+                logger.info("Stanza found in resource: " + id)
+                stanza_exists = True
+        logger.info("Stanza *not* found in resource: " + id)
+    return stanza_exists, warnings
 
 
 def compare(isamAppliance1, isamAppliance2, id, id2=None):
@@ -74,6 +84,10 @@ def compare(isamAppliance1, isamAppliance2, id, id2=None):
 
     # Retrieve all stanzas and corresponding entries for comparison
     ret_obj1 = get(isamAppliance1, id)
+    warnings = ret_obj1['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return isamAppliance.create_return_object(warnings=ret_obj1['warnings'])
+
     entries = {}
     for stanza in ret_obj1['data']:
         entries[stanza] = {}
