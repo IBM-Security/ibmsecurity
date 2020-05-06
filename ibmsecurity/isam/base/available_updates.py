@@ -100,7 +100,7 @@ def _check_file(isamAppliance, file):
             if upd['version'] == fp[1] and rd == fp[2]:  # Version of format 9.0.2.0
                 return True
     except:
-	logger.debug("Exception occured: {0}".format(e))
+        logger.debug("Exception occured: {0}".format(e))
         pass
 
     return False
