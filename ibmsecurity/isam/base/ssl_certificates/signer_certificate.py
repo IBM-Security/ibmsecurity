@@ -30,8 +30,10 @@ def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_m
     checking for existence of the label in the kdb
     """
     if check_remote:
+      logger.debug("Compare remote certificate with the one on the appliance. Use check_remote=False to switch to simple label checking.")
       tmp_check = _check_load(isamAppliance, kdb_id, label, server, port)
     else:
+      logger.debug("Check for existence of the label in the kdb. Use check_remote=True to switch to advanced remote certificate with appliance certificate checking.")
       tmp_check = _check(isamAppliance, kdb_id, label)
     
     if force is True or tmp_check is False:
@@ -83,8 +85,9 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
         cert_id = cert_data['id']
         cert_pem = get(isamAppliance, kdb_id, cert_id)['data']['contents']
         if cert_id == label:  # label exists on appliance already
+            logger.debug("Comparing certificates: appliance[{0}] remote[{1}].".format(cert_pem,remote_cert_pem))
             if cert_pem == remote_cert_pem:  # certificate data is the same
-                logger.debug("The certificate already exits on the appliance with the same label name.")
+                logger.debug("The certificate already exits on the appliance with the same label name and same content.")
                 return True  # both the labels and certificates match
             else:
                 # Labels match, but the certs are different, so we need to update it.
@@ -113,9 +116,18 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            # URL being encoded primarily to handle spaces and other special characers in them
+            f_uri = "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id)
+            full_uri = quote(f_uri)
             return isamAppliance.invoke_delete(
-                "Deleting a signer certificate from a certificate database",
-                "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id))
+                "Deleting a signer certificate from a certificate database", full_uri)
 
     return isamAppliance.create_return_object()
 
