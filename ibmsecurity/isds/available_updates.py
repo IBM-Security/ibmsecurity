@@ -100,7 +100,7 @@ def _check_file(isdsAppliance, file):
             if upd['version'] == fp[0] and rd == fp[3]:  # Version of format 8.0.1.9
                 return True
     except Exception as e:
-	logger.debug("Exception occured: {0}".format(e))
+        logger.debug("Exception occured: {0}".format(e))
         pass
 
     return False

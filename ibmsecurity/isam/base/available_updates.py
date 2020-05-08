@@ -99,8 +99,8 @@ def _check_file(isamAppliance, file):
             rd = rd.replace('-', '')  # turn release date into 20161102 format from 2016-11-02
             if upd['version'] == fp[1] and rd == fp[2]:  # Version of format 9.0.2.0
                 return True
-    except:
-	logger.debug("Exception occured: {0}".format(e))
+    except Exception as e:
+        logger.debug("Exception occured: {0}".format(e))
         pass
 
     return False
