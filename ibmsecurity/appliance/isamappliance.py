@@ -69,11 +69,12 @@ class ISAMAppliance(IBMAppliance):
         else:
             return_obj['rc'] = 0
 
-            # Handle if there was json on input but response was not in json format
+        # Handle if there was json on input but response was not in json format
         try:
             json_data = json.loads(http_response.text)
+            return_obj['data'] = json_data
         except ValueError:
-            return_obj['data'] = http_response.content
+            return_obj['data'] = http_response.content.decode("utf-8")
             return
 
         self.logger.debug("Status Code: {0}".format(http_response.status_code))
