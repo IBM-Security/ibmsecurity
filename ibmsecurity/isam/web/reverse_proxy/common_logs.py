@@ -53,7 +53,7 @@ def delete(isamAppliance, file_id, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
 
-def export_file(isamAppliance, file_id, filename, check_mode=False, force=False, ret_obj=None):
+def export_file(isamAppliance, file_id, filename, check_mode=False, force=False):
     """
     Exporting a common log file
     """

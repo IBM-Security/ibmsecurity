@@ -25,7 +25,7 @@ def get(isamAppliance, instance_id, file_id, options=None, size=None, start=None
                                         options=options, start=start, size=size)), requires_model=requires_model)
 
 
-def delete(isamAppliance, instance_id, file_id, check_mode=False, force=False, ret_obj=None):
+def delete(isamAppliance, instance_id, file_id, check_mode=False, force=False):
     """
     Clearing a common log file
     """
@@ -53,7 +53,7 @@ def delete(isamAppliance, instance_id, file_id, check_mode=False, force=False, r
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
 
-def export_file(isamAppliance, instance_id, file_id, filename, check_mode=False, force=False, ret_obj=None):
+def export_file(isamAppliance, instance_id, file_id, filename, check_mode=False, force=False):
     """
     Exporting a common log file
     """

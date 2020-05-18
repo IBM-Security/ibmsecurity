@@ -33,7 +33,7 @@ def get(isamAppliance, file_path, length=None, start=None, check_mode=False, for
                                                             start=start)), requires_model=requires_model)
 
 
-def clear(isamAppliance, file_id, check_mode=False, force=False, obj=None):
+def clear(isamAppliance, file_id, check_mode=False, force=False):
     """
     Clearing a log file
     """
@@ -90,7 +90,7 @@ def delete(isamAppliance, file_id, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
 
-def export_file(isamAppliance, file_path, filename, check_mode=False, force=False, obj=None, ret_obj=None):
+def export_file(isamAppliance, file_path, filename, check_mode=False, force=False):
     """
     Downloading a file from the file application log files area
     """
