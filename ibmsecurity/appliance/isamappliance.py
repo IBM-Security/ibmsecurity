@@ -85,7 +85,7 @@ class ISAMAppliance(IBMAppliance):
             if key == 'g-type':
                 if http_response.headers[key] == 'application/octet-stream; charset=UTF-8':
                     json_data = {}
-                    return_obj.data = http_response.content
+                    return_obj.data = http_response.content.decode("utf-8")
                     return
 
         if http_response.text == "":
