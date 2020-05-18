@@ -42,13 +42,15 @@ def delete(isamAppliance, replica, session, check_mode=False, force=False):
     """
     check_value, warnings = _check(isamAppliance)
 
-    if force is True or search(isamAppliance=isamAppliance, replica=replica, session=session) is True or check_value is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True,warnings=warnings)
-        else:
-            return isamAppliance.invoke_delete("Terminating a session",
-                                               "{0}/{1}/sessions/session/{2}".format(uri, replica, session),
-                                               requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
+    if check_value is True:
+        if force is True or search(isamAppliance=isamAppliance, replica=replica, session=session) is True:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_delete("Terminating a session",
+                                                   "{0}/{1}/sessions/session/{2}".format(uri, replica, session),
+                                                   requires_modules=requires_modules, requires_version=requires_version,
+                                                   requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -58,20 +60,22 @@ def delete_all(isamAppliance, replica, username, check_mode=False, force=False):
     Terminating all sessions for a single user
     """
     check_value, warnings = _check(isamAppliance)
-    print (check_value)
-    if force is True or search(isamAppliance=isamAppliance, replica=replica, username=username) is True or check_value is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True,warnings=warnings)
-        else:
-            return isamAppliance.invoke_delete("Terminating all sessions for a single user",
-                                               "{0}/{1}/sessions/user/{2}".format(uri, replica, username),
-                                               requires_modules=requires_modules,
-                                               requires_version=requires_version,requires_model=requires_model)
+
+    if check_value is True:
+        if force is True or search(isamAppliance=isamAppliance, replica=replica, username=username) is True:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_delete("Terminating all sessions for a single user",
+                                                   "{0}/{1}/sessions/user/{2}".format(uri, replica, username),
+                                                   requires_modules=requires_modules,
+                                                   requires_version=requires_version, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
 
 def search(isamAppliance, replica, session=None, username=None, check_mode=False, force=False):
+
     if session != None:
         ret_obj = get_session(isamAppliance, replica)
         data = ret_obj['data']['matched_sessions']

@@ -47,7 +47,9 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
                 },
                 requires_modules=requires_modules,requires_model=requires_model)
 
-    return ret_obj, warnings
+    ret_obj['warnings'].append(warnings)
+
+    return ret_obj
 
 
 def set_by_address(isamAppliance, address, port, secure, check_mode=False, force=False):
