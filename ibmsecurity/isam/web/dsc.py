@@ -76,6 +76,12 @@ def delete_all(isamAppliance, replica, username, check_mode=False, force=False):
 
 def search(isamAppliance, replica, session=None, username=None, check_mode=False, force=False):
 
+    ret_obj = get_all(isamAppliance)
+    warnings = ret_obj['warnings']
+
+    if warnings and 'Docker' in warnings[0]:
+        return False
+
     if session != None:
         ret_obj = get_session(isamAppliance, replica)
         data = ret_obj['data']['matched_sessions']
@@ -87,8 +93,6 @@ def search(isamAppliance, replica, session=None, username=None, check_mode=False
         data = ret_obj['data']['matched_sessions']
         if len(data) == 1:
             return True
-
-    return False
 
 
 def _check(isamAppliance):
