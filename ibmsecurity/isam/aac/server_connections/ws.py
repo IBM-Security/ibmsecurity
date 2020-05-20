@@ -93,25 +93,48 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
     """
     Modifying a Web Service connection
 
-    Use new_name to rename the connection, cannot compare password so update will take place everytime
+    Use new_name to rename the connection
     """
+    ret_obj = get(isamAppliance, name)
+    warnings = ret_obj["warnings"]
 
-    if force is True or _check_exists(isamAppliance, name):
+    if ret_obj["data"] == {}:
+        warnings.append("Web Service connection {0} not found, skipping update.".format(name))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        id = ret_obj["data"]["uuid"]
+
+    needs_update = False
+
+    json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
+    if new_name is not None:  # Rename condition
+        json_data['name'] = new_name
+
+    if force is not True:
+        if 'uuid' in ret_obj['data']:
+            del ret_obj['data']['uuid']
+
+        sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
+        sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        if sorted_ret_obj != sorted_json_data:
+            needs_update = True
+
+        if 'password' in connection:
+            warnings.append("Since existing password cannot be read - this call will not be idempotent.")
+            needs_update = True
+
+    if force is True or needs_update is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            json_data = _create_json(name=name, description=description, locked=locked, connection=connection)
-            if new_name is not None:  # Rename condition
-                json_data['name'] = new_name
-
-            ret_obj = search(isamAppliance, name=name)
-            id = ret_obj['data']
             return isamAppliance.invoke_put(
                 "Modifying a Web Service connection",
                 "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
-                requires_version=requires_version)
+                requires_version=requires_version, warnings=warnings)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def set(isamAppliance, name, connection, description='', locked=False, new_name=None, check_mode=False, force=False):

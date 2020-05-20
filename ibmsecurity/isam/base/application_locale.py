@@ -9,7 +9,7 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieve the current log file language",
                                     "/isam/applang/v1"
-                                    )
+                                   )
 
 
 def update(isamAppliance, id, check_mode=False, force=False):

@@ -3,6 +3,8 @@ import logging
 logger = logging.getLogger(__name__)
 requires_model = "Appliance"
 
+requires_model = "Appliance"
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
@@ -21,7 +23,10 @@ def get(isamAppliance, file_id, size=100, start=None, options=None, check_mode=F
 
 
 def _check(isamAppliance, file_id):
+    check_obj = {'vale': False, 'warnings': ""}
+
     ret_obj = get(isamAppliance, file_id)
+
     file_exists, warnings = False, ret_obj['warnings']
 
     if warnings ==[] and ret_obj['data']['contents'] != '':

@@ -2,6 +2,7 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 try:
     basestring
@@ -11,29 +12,32 @@ except NameError:
 
 def get(isamAppliance, check_mode=False, force=False):
     """
-    Get current dns settings
+    Retrieving the DNS configuration
     """
-    return isamAppliance.invoke_get("Retrieving current dns settings",
-                                    "/net/dns")
+    return isamAppliance.invoke_get("Retrieving the DNS configuration",
+                                    "/net/dns", requires_model=requires_model)
 
 
 def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=None, searchDomains=None, auto=True,
         autoFromInterface=None, check_mode=False, force=False):
     """
-    Update date/time settings (set NTP server and timezone)
+    Updating the DNS configuration
     """
+
     if isinstance(auto, basestring):
         if auto.lower() == 'true':
             auto = True
         else:
             auto = False
-    if force is True or _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, searchDomains, auto,
-                               autoFromInterface) is False:
+
+    check_value,warnings = _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, searchDomains, auto,
+                               autoFromInterface)
+    if force is True or check_value is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
-                "Setting dns settings",
+                "Updating the DNS configuration",
                 "/net/dns",
                 {
                     'auto': auto,
@@ -42,15 +46,16 @@ def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=
                     'secondaryServer': secondaryServer,
                     'tertiaryServer': tertiaryServer,
                     'searchDomains': searchDomains
-                })
+                }, requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def test(isamAppliance, host, server=None, force=False, check_mode=False):
     """
     Run DNS Lookup Test
     """
+
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)
 
@@ -59,7 +64,7 @@ def test(isamAppliance, host, server=None, force=False, check_mode=False):
                                         {
                                             'host': host,
                                             'server': server
-                                        })
+                                        }, requires_model=requires_model)
     # HTTP POST calls get flagged as changes - but DNS lookup changes nothing so override
     if ret_obj['changed'] is True:
         ret_obj['changed'] = False
@@ -72,7 +77,9 @@ def _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, search
     """
     Check if DNS is already set
     """
+
     ret_obj = get(isamAppliance)
+    check_value,warnings=True,ret_obj['warnings']
 
     check_json_data = {
         'auto': auto,
@@ -84,9 +91,11 @@ def _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, search
     }
 
     if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) == ibmsecurity.utilities.tools.json_sort(check_json_data):
-        return True
+        check_value=True
+        return check_value,warnings
     else:
-        return False
+        check_value = False
+        return check_value,warnings
 
 
 def compare(isamAppliance1, isamAppliance2):

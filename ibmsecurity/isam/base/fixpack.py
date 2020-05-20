@@ -118,6 +118,7 @@ def _extract_fixpack_name(fixpack):
     # Return fixpack name derived from the filename
     file_name = os.path.basename(fixpack)
     fixpack_name, ext_name = file_name.split('.')
+    logger.info("Fixpack name could not be extracted from binary, use name derived from the filename: {0}".format(fixpack_name))
 
     return fixpack_name
 
