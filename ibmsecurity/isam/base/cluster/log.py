@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
+requires_model = "Appliance"
 
 requires_model = "Appliance"
 
@@ -25,35 +26,29 @@ def _check(isamAppliance, file_id):
     check_obj = {'vale': False, 'warnings': ""}
 
     ret_obj = get(isamAppliance, file_id)
-    check_obj['warnings'] = ret_obj['warnings']
 
-    if ret_obj['data'] != {}:
-        if ret_obj['data']['contents'] == '':
-            check_obj['value'] = False
-            return check_obj
-        else:
-            check_obj['value'] = True
-            return check_obj
-    else:
-        check_obj['value'] = False
-        return check_obj
+    file_exists, warnings = False, ret_obj['warnings']
+
+    if warnings ==[] and ret_obj['data']['contents'] != '':
+        file_exists = True
+    return file_exists, warnings
 
 
 def delete(isamAppliance, file_id, check_mode=False, force=False):
     """
     Clear a log file
     """
-    check_obj = _check(isamAppliance, file_id)
+    file_exists, warnings = _check(isamAppliance, file_id)
 
-    if force is True or check_obj['value'] is True:
+    if force is True or file_exists is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True, warnings=check_obj['warnings'] )
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Clear a log file",
-                "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model, warnings=check_obj['warnings'])
+                "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model)
 
-    return isamAppliance.create_return_object(warnings=check_obj['warnings'])
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def export_file(isamAppliance, file_id, filename, check_mode=False, force=False):
