@@ -3,7 +3,7 @@ import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
 requires_modules = ["mga", "federation"]
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -11,10 +11,11 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving runtime listening interfaces",
                                     "/mga/runtime_tuning/v1",
-                                    requires_modules=requires_modules)
+                                    requires_modules=requires_modules,requires_model=requires_model)
 
 
 def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
+
     """
     Set a runtime listening interface
     """
@@ -22,7 +23,7 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
     exists = False
     secure_existing = None
     if force is False:
-        exists, secure_existing, id = _check(isamAppliance, interface, port)
+        exists, secure_existing, id, warnings = _check(isamAppliance, interface, port)
 
     # Delete if interface has different secure setting
     if exists is True and secure_existing != secure:
@@ -44,7 +45,9 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
                     'port': port,
                     'secure': secure
                 },
-                requires_modules=requires_modules)
+                requires_modules=requires_modules,requires_model=requires_model)
+
+    ret_obj['warnings'].append(warnings)
 
     return ret_obj
 
@@ -70,7 +73,13 @@ def _check(isamAppliance, interface, port):
     """
     Check listening interface for the runtime
     """
+    warnings = []
     ret_obj = get(isamAppliance)
+
+    for key, val in ret_obj.items():
+        if key == 'warnings' and val != []:
+            if "Docker" in val[0]:
+                warnings = ret_obj['warnings']
 
     exists = False
     secure = False
@@ -88,28 +97,36 @@ def _check(isamAppliance, interface, port):
     except:
         logger.info("Runtime listening parameter does not exist")
 
-    return exists, secure, id
+    return exists, secure, id, warnings
 
 
 def delete(isamAppliance, interface, port, check_mode=False, force=False):
+
+#    ret_obj = get(isamAppliance)
+#    for key, val in ret_obj.items():
+#        if key == 'warnings' and val != []:
+#            if "Docker" in val[0]:
+#                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
     """
     Delete a runtime listening interface
     """
+    warnings = []
     exists = False
     id = None
     if force is False:
-        exists, secure, id = _check(isamAppliance, interface, port)
+        exists, secure, id, warnings = _check(isamAppliance, interface, port)
 
     if force is True or exists is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(warnings, changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Delete a runtime listening interface",
                 "/mga/runtime_tuning/endpoints/{0}/v1".format(id),
-                requires_modules=requires_modules)
+                requires_modules=requires_modules,requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def compare(isamAppliance1, isamAppliance2):
