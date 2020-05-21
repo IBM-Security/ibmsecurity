@@ -1,11 +1,14 @@
 import ibmsecurity.utilities.tools
 import logging
 
+from ibmsecurity.utilities import tools
+
 logger = logging.getLogger(__name__)
 
 module_uri = "/isam/felb/configuration/ha"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -13,22 +16,27 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving HA configuration
     """
     return isamAppliance.invoke_get("Retrieving HA configuration", module_uri,
-                                    requires_version=requires_version, requires_modules=requires_modules)
+                                    requires_version=requires_version, requires_modules=requires_modules,
+                                    requires_model=requires_model)
 
 
 def disable(isamAppliance, check_mode=False, force=False):
     """
     Disabling HA
     """
-    if force is True or _check_disable(isamAppliance) is True:
+
+    check_value, warnings = _check_enable(isamAppliance)
+
+    if force is True or check_value is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_delete("Disabling HA", module_uri,
                                                requires_version=requires_version,
-                                               requires_modules=requires_modules)
+                                               requires_modules=requires_modules,
+                                               requires_model=requires_model)
     else:
-        return isamAppliance.create_return_object()
+        return isamAppliance.create_return_object(warnings=warnings)
 
 
 def enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
@@ -36,22 +44,29 @@ def enable(isamAppliance, is_primary, interface, remote, port, health_check_inte
     """
     Enabling HA
     """
-    if force is True or _check_enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
-                                      health_check_timeout) is True:
+
+    json_data = {
+        "is_primary": is_primary,
+        "interface": interface,
+        "remote": remote,
+        "port": port,
+        "health_check_interval": health_check_interval,
+        "health_check_timeout": health_check_timeout
+    }
+
+    check_value, warnings = _check_enable(isamAppliance)
+
+    if force is True or check_value is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post("Enabling HA", module_uri,
-                                             {
-                                                 "is_primary": is_primary,
-                                                 "interface": interface,
-                                                 "remote": remote,
-                                                 "port": port,
-                                                 "health_check_interval": health_check_interval,
-                                                 "health_check_timeout": health_check_timeout
-                                             }, requires_version=requires_version, requires_modules=requires_modules)
+                                             json_data,
+                                             requires_version=requires_version,
+                                             requires_modules=requires_modules,
+                                             requires_model=requires_model)
     else:
-        return isamAppliance.create_return_object()
+        return isamAppliance.create_return_object(warnings=warnings)
 
 
 def update(isamAppliance, is_primary, interface, remote, port, health_check_interval,
@@ -59,27 +74,30 @@ def update(isamAppliance, is_primary, interface, remote, port, health_check_inte
     """
     Updating HA configuration
     """
+
+    json_data = {
+        "is_primary": is_primary,
+        "interface": interface,
+        "remote": remote,
+        "port": port,
+        "health_check_interval": health_check_interval,
+        "health_check_timeout": health_check_timeout
+    }
+
     # Call to check function to see if configuration already exist
-    update_required = _check_enable(isamAppliance, is_primary=is_primary, interface=interface, remote=remote,
-                                    port=port, health_check_interval=health_check_interval,
-                                    health_check_timeout=health_check_timeout)
+    update_required, warnings = _check_update(isamAppliance, json_data)
 
     if force is True or update_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnigns=warnings)
         else:
             return isamAppliance.invoke_put("Updating HA configuration", module_uri,
-                                            {
-                                                "is_primary": is_primary,
-                                                "interface": interface,
-                                                "remote": remote,
-                                                "port": port,
-                                                "health_check_interval": health_check_interval,
-                                                "health_check_timeout": health_check_timeout
-
-                                            }, requires_modules=requires_modules, requires_version=requires_version)
+                                            json_data,
+                                            requires_modules=requires_modules,
+                                            requires_version=requires_version,
+                                            requires_model=requires_model)
     else:
-        return isamAppliance.create_return_object()
+        return isamAppliance.create_return_object(warnings=warnings)
 
 
 def set(isamAppliance, is_primary, interface, remote, port, health_check_interval,
@@ -87,57 +105,67 @@ def set(isamAppliance, is_primary, interface, remote, port, health_check_interva
     """
     determines if add or update is used.
     """
-    check_obj = get(isamAppliance)
 
-    if check_mode['data']['enabled'] is False:
-        enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
-               health_check_timeout, check_mode, force)
+    is_enabled, warnings = _check_enable(isamAppliance)
 
+
+    if is_enabled is False:
+        return enable(isamAppliance, is_primary=is_primary, interface=interface, remote=remote, port=port,
+                      health_check_interval=health_check_interval,
+                      health_check_timeout=health_check_timeout, check_mode=check_mode, force=force)
+    elif is_enabled is True:
+        return update(isamAppliance, is_primary=is_primary, interface=interface, remote=remote, port=port,
+                      health_check_interval=health_check_interval,
+                      health_check_timeout=health_check_timeout, check_mode=check_mode, force=force)
     else:
-        update(isamAppliance, is_primary, interface, remote, port, health_check_interval,
-               health_check_timeout, check_mode, force)
+        return isamAppliance.create_return_object(warnings=warnings)
 
-
-def _check_enable(isamAppliance, is_primary, interface, remote, port, health_check_interval,
-                  health_check_timeout):
+def _check_update(isamAppliance, json_data):
     """
     idempotency test for each parameter
     """
+
     ret_obj = get(isamAppliance)
-    if ret_obj['data']['enabled'] != True:
-        return True
-    elif ret_obj['data']['is_primary'] != is_primary:
-        return True
-    elif ret_obj['data']['interface'] != interface:
-        return True
-    elif ret_obj['data']['remote'] != remote:
-        return True
-    elif ret_obj['data']['port'] != port:
-        return True
-    elif ret_obj['data']['health_check_interval'] != health_check_interval:
-        return True
-    elif ret_obj['data']['health_check_timeout'] != health_check_timeout:
-        return True
+    warnings = ret_obj['warnings']
+
+    if 'enabled' in ret_obj['data']:
+        if ret_obj['data']['enabled'] is False:
+            return False, warnings
+        else:
+            del ret_obj['data']['enabled']
+
+    sorted_ret_obj = tools.json_sort(ret_obj['data'])
+    sorted_json_data = tools.json_sort(json_data)
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    if sorted_ret_obj != sorted_json_data:
+        return True, warnings
     else:
-        return False
+        return False, warnings
 
 
-def _check_disable(isamAppliance):
+def _check_enable(isamAppliance):
     """
     Checks delete function for idempotency
     """
-    check_obj = get(isamAppliance)
 
-    if check_obj['data']['enabled'] == True:
-        return True
+    check_obj = get(isamAppliance)
+    warnings = check_obj['warnings']
+
+    if 'enabled' in check_obj['data']:
+        if check_obj['data']['enabled'] == True:
+            return True, warnings
+        else:
+            return False, warnings
     else:
-        return False
+        return None, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare FELB HA configuration between two appliances
     """
+
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 

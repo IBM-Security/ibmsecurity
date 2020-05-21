@@ -33,16 +33,19 @@ def get_rp_health_summary(isamAppliance, check_mode=False, force=False):
                                     "/wga/widgets/health.json",requires_model=requires_model)
 
 
-def get_rp_throughput_summary(isamAppliance, date, duration, aspect, summary=True, check_mode=False, force=False):
+def get_rp_throughput_summary(isamAppliance, date, duration, aspect, summary=None, check_mode=False, force=False):
     """
     Retrieving a summary of throughput for all Reverse Proxy instances
     """
-    return isamAppliance.invoke_get("Retrieving a summary of throughput for all Reverse Proxy instances",
-                                    "/analysis/reverse_proxy_traffic/throughput/{0}".format(
-                                        tools.create_query_string(summary=summary,
-                                                                  date=date,
-                                                                  duration=duration,
-                                                                  aspect=aspect)),requires_model=requires_model)
+    headers = {'Accept': 'application/json', 'range': 'items=0-24'}
+    return isamAppliance.invoke_get_with_headers("Retrieving a summary of throughput for all Reverse Proxy instances",
+                                                 "/analysis/reverse_proxy_traffic/throughput/{0}".format(
+                                                     tools.create_query_string(summary=summary,
+                                                                               date=date,
+                                                                               duration=duration,
+                                                                               aspect=aspect)), 
+                                                                               requires_model=requires_model,
+                                                                               headers=headers)
 
 
 def get_rp_throughput(isamAppliance, instance, date, duration, check_mode=False, force=False):

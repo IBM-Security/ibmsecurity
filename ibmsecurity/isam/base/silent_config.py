@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 module_uri = "/silent_config"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -13,7 +14,8 @@ def get(isamAppliance, check_mode=False, force=False):
     Getting the silent configuration flag
     """
     return isamAppliance.invoke_get("Getting the silent configuration flag", "{}/flag".format(module_uri),
-                                    requires_version=requires_version, requires_modules=requires_modules)
+                                    requires_version=requires_version, requires_modules=requires_modules,
+                                    requires_model=requires_model)
 
 
 def update(isamAppliance, flag, check_mode=False, force=False):
@@ -21,17 +23,26 @@ def update(isamAppliance, flag, check_mode=False, force=False):
     Setting the silent configuration flag
     """
     ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+    if 'flag' in ret_obj['data']:
+        if ret_obj['data']['flag'] != flag:
+            check_value = True
+        else:
+            check_value = False
+    else:
+        check_value = False
 
-    if force is True or flag != ret_obj['data']['flag']:
+    if force is True or check_value is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             json_data = {"flag": flag}
             return isamAppliance.invoke_put("Setting the silent configuration flag", "{}/flag".format(module_uri),
                                             json_data, requires_version=requires_version,
-                                            requires_modules=requires_modules)
+                                            requires_modules=requires_modules,
+                                            requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_address, network_1_1_ipv4_netmask,
@@ -43,7 +54,7 @@ def _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_add
     # create the request header for the post first
     headers = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                "Content-type": "application/x-www-form-urlencoded"
-               }
+              }
 
     json_data = {
         "network.hostname": network_hostname,
@@ -71,7 +82,7 @@ def _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_add
             ret_obj = isamAppliance.invoke_request("Generating a silent configuration", "post", uri=uri,
                                                    filename=filename, requires_modules=requires_modules,
                                                    requires_version=requires_version, data=post_data, headers=headers,
-                                                   stream=True)
+                                                   stream=True, requires_model=requires_model)
             # HTTP POST calls get flagged as changes - but no changes here
             if ret_obj['changed'] is True:
                 ret_obj['changed'] = False

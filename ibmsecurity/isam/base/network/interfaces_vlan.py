@@ -3,6 +3,7 @@ import ibmsecurity.utilities.tools
 import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 try:
     basestring
@@ -15,7 +16,12 @@ def add(isamAppliance, label, vlanId, name='', enabled=False, comment='', overri
     """
     Creating a (VLAN) interface
     """
-    if force is True or ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId) is None:
+    check_value, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+
+    if force is True or check_value is None:
+        if warnings != []:
+            if "Docker" in warnings[0]:
+                return isamAppliance.create_return_object(warnings=warnings)
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -45,9 +51,9 @@ def add(isamAppliance, label, vlanId, name='', enabled=False, comment='', overri
                                                      },
                                                      'addresses': []
                                                  }
-                                             })
+                                             }, requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete(isamAppliance, label, vlanId, check_mode=False, force=False):
@@ -58,15 +64,15 @@ def delete(isamAppliance, label, vlanId, check_mode=False, force=False):
     """
     ret_obj = None
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
 
     if force is True or ret_obj is not None:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_delete("Deleting a (VLAN) interface", "/net/ifaces/{0}".format(ret_obj['uuid']))
+            return isamAppliance.invoke_delete("Deleting a (VLAN) interface", "/net/ifaces/{0}".format(ret_obj['uuid']), requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=None,
@@ -82,7 +88,7 @@ def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=N
         else:
             enabled = False
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
             del ret_obj['objType']
             del ret_obj['type']
@@ -118,4 +124,4 @@ def update(isamAppliance, name, comment, label, enabled, vlanId=None, bondedTo=N
             else:
                 return ibmsecurity.isam.base.network.interfaces._update_interface(isamAppliance, json_data)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)

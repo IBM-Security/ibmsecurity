@@ -6,7 +6,7 @@ requires_model = "Appliance"
 
 # URI for this module
 uri = "/wga/reverseproxy"
-
+requires_model = "Appliance"
 
 def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
@@ -14,7 +14,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
     try:
         return isamAppliance.invoke_get("Retrieving all trace components - Reverse Proxy",
-                                        "{0}/{1}/tracing".format(uri, instance_id),requires_model=requires_model)
+                                        "{0}/{1}/tracing".format(uri, instance_id), requires_model=requires_model)
     except:
         # Return empty array - exception thrown if list has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()

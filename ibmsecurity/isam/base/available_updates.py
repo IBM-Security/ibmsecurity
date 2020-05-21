@@ -61,23 +61,36 @@ def _check_file(isamAppliance, file):
         fn = os.path.splitext(f)
         logger.debug("File name without path: {0}".format(fn[0]))
 
-        # Discard everything after the "-" hyphen
-        fp, d = f.split('-')
-        logger.debug("File name without extension: {0}".format(fp))
-        # Split the remainder of file by '_' under score
-        fp = fp.split('_')
-        logger.debug("{0}: version: {1} date: {2}".format(fp[0], fp[1], fp[2]))
+        # Split of file by '-' hyphen and '_' under score
+        import re
+        fp = re.split('-|_', fn[0])
+        firm_file_version = fp[1]
+        firm_file_product = fp[0]
+        firm_file_date = fp[2]
+        logger.debug("PKG file details: {0}: version: {1} date: {2}".format(firm_file_product, firm_file_version, firm_file_date))
 
         # Check if firmware level already contains the update to be uploaded or greater, check Active partition
         # firmware "name" of format - isam_9.0.2.0_20161102-2353
         import ibmsecurity.isam.base.firmware
         ret_obj = ibmsecurity.isam.base.firmware.get(isamAppliance)
         for firm in ret_obj['data']:
-            if firm['active'] is True and firm['name'] >= fn[0]:
-                logger.info(
-                    "Active partition has version {0} which is greater or equals install package at version {1}.".format(
-                        firm['name'], fn[0]))
-                return True
+            # Split of file by '-' hyphen and '_' under score
+            fp = re.split('-|_', firm['name'])
+            firm_appl_version = fp[1]
+            firm_appl_product = fp[0]
+            firm_appl_date = fp[2]
+            logger.debug("Partition details ({0}): {1}: version: {2} date: {3}".format(firm['partition'], firm_appl_product, firm_appl_version, firm_appl_date))
+            if firm['active'] is True:
+                from ibmsecurity.utilities import tools
+                if tools.version_compare(firm_appl_version, firm_file_version) >= 0:
+                    logger.info(
+                        "Active partition has version {0} which is greater or equals than install package at version {1}.".format(
+                            firm_appl_version, firm_file_version))
+                    return True
+                else:
+                    logger.info(
+                        "Active partition has version {0} which is smaller than install package at version {1}.".format(
+                            firm_appl_version, firm_file_version))
 
         # Check if update uploaded - will not show up if installed though
         ret_obj = get(isamAppliance)
@@ -86,7 +99,8 @@ def _check_file(isamAppliance, file):
             rd = rd.replace('-', '')  # turn release date into 20161102 format from 2016-11-02
             if upd['version'] == fp[1] and rd == fp[2]:  # Version of format 9.0.2.0
                 return True
-    except:
+    except Exception as e:
+        logger.debug("Exception occured: {0}".format(e))
         pass
 
     return False

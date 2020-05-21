@@ -13,7 +13,7 @@ def get(isdsAppliance, check_mode=False, force=False):
 
 def set(isdsAppliance, serverType="RDBM", check_mode=False, force=False):
     """
-    Update Directory Server "server type" 
+    Update Directory Server "server type"
     """
     if force is True or _check(isdsAppliance, serverType) is False:
         if check_mode is True:
