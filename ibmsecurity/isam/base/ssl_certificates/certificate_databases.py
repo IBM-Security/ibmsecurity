@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
+requires_model = "Appliance"
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -13,10 +14,11 @@ def get_all(isamAppliance, check_mode=False, force=False):
 
 def get(isamAppliance, cert_dbase_id, check_mode=False, force=False):
     """
-    Get details of a certificate database
+    Retrieving the SSL certificate database details
     """
-    return isamAppliance.invoke_get("Retrieving details of a certificate database",
-                                    "/isam/ssl_certificates/{0}/details".format(cert_dbase_id))
+    return isamAppliance.invoke_get("Retrieving the SSL certificate database details",
+                                    "/isam/ssl_certificates/{0}/details".format(cert_dbase_id),
+                                    requires_model=requires_model)
 
 
 def create(isamAppliance, kdb_name, type='kdb', token_label=None, passcode=None, hsm_type=None, ip=None, port=None,

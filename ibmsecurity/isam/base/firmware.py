@@ -3,37 +3,39 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
+requires_model = "Appliance"
+
 
 def get(isamAppliance, check_mode=False, force=False, ignore_error=False):
     """
-    Retrieve existing firmware.
+    Retrieving a list of firmware settings
     """
-    return isamAppliance.invoke_get("Retrieving firmware",
-                                    "/firmware_settings", ignore_error=ignore_error)
+    return isamAppliance.invoke_get("Retrieving a list of firmware settings",
+                                    "/firmware_settings", ignore_error=ignore_error, requires_model=requires_model)
 
 
 def backup(isamAppliance, check_mode=False, force=False):
     """
-    Kickoff Backup of active partition
+    Creating a backup of the active partition
     """
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)
     else:
-        return isamAppliance.invoke_put("Kickoff Backup of Active Partition",
-                                        "/firmware_settings/kickoff_backup", {})
+        return isamAppliance.invoke_put("Creating a backup of the active partition",
+                                        "/firmware_settings/kickoff_backup", {}, requires_model=requires_model)
 
 
 def swap(isamAppliance, check_mode=False, force=False):
     """
-    Kickoff swap of active partition
+    Swapping the active partition
     """
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)
     else:
         ret_obj_old = get(isamAppliance)
 
-        ret_obj = isamAppliance.invoke_put("Kickoff swap of Active Partition",
-                                           "/firmware_settings/kickoff_swap", {})
+        ret_obj = isamAppliance.invoke_put("Swapping the active partition",
+                                           "/firmware_settings/kickoff_swap", {}, requires_model=requires_model)
         # Process previous query after a successful call to swap the partition
         for partition in ret_obj_old['data']:
             if partition['active'] is False:  # Get version of inactive partition (active now!)
@@ -45,28 +47,31 @@ def swap(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, id, comment, check_mode=False, force=False):
     """
-    Update comment on partition
+    Updating a comment for a partition
     """
-    if force is True or _check_comment(isamAppliance, comment) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_put("Update comment on Partition",
-                                            "/firmware_settings/{0}".format(id),
-                                            {'comment': comment})
 
-    return isamAppliance.create_return_object()
+    check_value, warnings = _check_comment(isamAppliance, comment)
+    if force is True or check_value is False:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_put("Updating a comment for a partition",
+                                            "/firmware_settings/{0}".format(id),
+                                            {'comment': comment}, requires_model=requires_model)
+
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _check_comment(isamAppliance, comment):
     ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
 
     # Loop through firmware partitions looking for active one
     for partition in ret_obj['data']:
         if partition['active'] is True:
-            return (partition['comment'] == comment)
+            return (partition['comment'] == comment), warnings
 
-    return False
+    return False, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):
