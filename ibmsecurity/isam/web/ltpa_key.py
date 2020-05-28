@@ -1,4 +1,7 @@
 import logging
+import os.path
+from ibmsecurity.utilities.tools import files_same, get_random_temp_dir
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,7 @@ def import_key(isamAppliance, id, ltpa_keyfile, check_mode=False, force=False):
     """
     Importing a LTPA key file
     """
-    if force is True or _check(isamAppliance, id) is False:
+    if force is True or _check_import(isamAppliance, id, ltpa_keyfile, check_mode=check_mode) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -96,6 +99,28 @@ def _check(isamAppliance, id):
 
     return False
 
+def _check_import(isamAppliance, id, filename, check_mode=False):
+    """
+    Checks if key on the Appliance exists and if so, whether it is different from the key
+    """
+    tmpdir = get_random_temp_dir()
+    tmp_original_file = os.path.join(tmpdir, os.path.basename(id))
+    if _check(isamAppliance, id):
+        export_key(isamAppliance, id, tmp_original_file, check_mode=False, force=True)
+        logger.debug("key already exists on appliance")
+        if files_same(tmp_original_file, filename):
+            logger.debug("keys are the same, so we don't want to do anything")
+            shutil.rmtree(tmpdir)
+            return False
+        else:
+            logger.debug("keys are different, so we delete existing key in preparation for import")
+            delete(isamAppliance, id, check_mode=check_mode, force=True)
+            shutil.rmtree(tmpdir)
+            return True
+    else:
+        logger.debug("key does not exist on appliance, so we'll want to import")
+        shutil.rmtree(tmpdir)
+        return True
 
 def compare(isamAppliance1, isamAppliance2):
     """
