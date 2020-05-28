@@ -1,6 +1,8 @@
 import logging
 import os.path
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import files_same, get_random_temp_dir
+import shutil
 from io import open
 
 logger = logging.getLogger(__name__)
@@ -222,22 +224,7 @@ def import_file(isamAppliance, filepath, check_mode=False, force=False):
     """
     Importing a User Mapping CDAS file
     """
-    filename = os.path.basename(filepath)
-
-    ret_obj = search(isamAppliance, name=filename)
-    id = ret_obj['data']
-
-    if os.path.exists(filepath) is False:
-        logger.info("File '{0}' does not exists.  Skipping import.".format(filepath))
-        warnings = ["File '{0}' does not exists.  Skipping import.".format(filepath)]
-        return isamAppliance.create_return_object(warnings=warnings)
-
-    if id != {}:
-        logger.info("User Mapping CDAS file name '{0}' already exists.  Skipping import file.".format(filename))
-        warnings = ["User Mapping CDAS file name '{0}' already exists.  Skipping import file.".format(filename)]
-        return isamAppliance.create_return_object(warnings=warnings)
-
-    if force is True or id == {}:
+    if force is True or _check_import(isamAppliance, id, filepath, check_mode=check_mode) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -289,6 +276,40 @@ def rename(isamAppliance, name, new_name, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+def _check_import(isamAppliance, id, filename, check_mode=False):
+    """
+    Checks if file on the Appliance exists and if so, whether it is different from filename
+    """
+    tmpdir = get_random_temp_dir()
+    tmp_original_file = os.path.join(tmpdir, os.path.basename(id))
+    if _check(isamAppliance, id):
+        export_file(isamAppliance, id, tmp_original_file, check_mode=False, force=True)
+        logger.debug("file already exists on appliance")
+        if files_same(tmp_original_file, filename):
+            logger.debug("files are the same, so we don't want to do anything")
+            shutil.rmtree(tmpdir)
+            return False
+        else:
+            logger.debug("files are different, so we delete existing file in preparation for import")
+            delete(isamAppliance, id, check_mode=check_mode, force=True)
+            shutil.rmtree(tmpdir)
+            return True
+    else:
+        logger.debug("file does not exist on appliance, so we'll want to import")
+        shutil.rmtree(tmpdir)
+        return True
+
+def _check(isamAppliance, id):
+    """
+    Check if Junction Mapping already exists
+    """
+    ret_obj = get_all(isamAppliance)
+
+    for obj in ret_obj['data']:
+        if obj['id'] == id:
+            return True
+
+    return False
 
 def compare(isamAppliance1, isamAppliance2):
     """
