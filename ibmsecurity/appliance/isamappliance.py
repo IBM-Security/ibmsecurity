@@ -85,7 +85,7 @@ class ISAMAppliance(IBMAppliance):
             if key == 'g-type':
                 if http_response.headers[key] == 'application/octet-stream; charset=UTF-8':
                     json_data = {}
-                    return_obj.data = http_response.content
+                    return_obj.data = http_response.content.decode("utf-8")
                     return
 
         if http_response.text == "":
@@ -357,6 +357,51 @@ class ISAMAppliance(IBMAppliance):
 
         return return_obj
 
+    def _invoke_request_with_headers(self, func, description, uri, ignore_error, headers, data={},
+                                     requires_modules=None, requires_version=None, warnings=[], requires_model=None):
+        """
+        Send a request to the LMI.  This function is private and should not be
+        used directly.  The invoke_get/invoke_put/etc functions should be used instead.
+        """
+        self._log_desc(description=description)
+
+        warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
+                                                       requires_version=requires_version, requires_model=requires_model,
+                                                       warnings=warnings)
+        return_obj = self.create_return_object(warnings=warnings)
+        if return_call:
+            return return_obj
+
+        self.logger.debug("Headers are: {0}".format(headers))
+
+        # Process the input data into JSON
+        json_data = json.dumps(data)
+
+        self.logger.debug("Input Data: " + json_data)
+
+        self._suppress_ssl_warning()
+
+        try:
+            if func == self.session.get or func == self.session.delete:
+
+                if data != {}:
+                    r = func(url=self._url(uri), data=json_data, verify=False, headers=headers)
+                else:
+                    r = func(url=self._url(uri), verify=False, headers=headers)
+            else:
+                r = func(url=self._url(uri), data=json_data,
+                         verify=False, headers=headers)
+
+            if func != self.session.get:
+                return_obj['changed'] = True  # Anything but GET should result in change
+
+            self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
+
+        except requests.exceptions.ConnectionError:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+
+        return return_obj
+
     def invoke_put(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
                    warnings=[], requires_model=None):
         """
@@ -435,6 +480,21 @@ class ISAMAppliance(IBMAppliance):
                                         ignore_error, requires_modules=requires_modules,
                                         requires_version=requires_version, requires_model=requires_model,
                                         warnings=warnings)
+        self._log_response(response)
+        return response
+
+    def invoke_get_with_headers(self, description, uri, headers, ignore_error=False, requires_modules=None,
+                                requires_version=None,
+                                warnings=[], requires_model=None):
+        """
+        Send a GET request to the LMI with passed in headers.
+        """
+        self._log_request("GET", uri, description)
+
+        response = self._invoke_request_with_headers(self.session.get, description, uri,
+                                                     ignore_error, headers=headers, requires_modules=requires_modules,
+                                                     requires_version=requires_version, requires_model=requires_model,
+                                                     warnings=warnings)
         self._log_response(response)
         return response
 
