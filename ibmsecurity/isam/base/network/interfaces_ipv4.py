@@ -15,7 +15,7 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
     ret_obj = {}
     warnings = []
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
             del ret_obj['objType']
             del ret_obj['type']
@@ -56,7 +56,7 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
     ret_obj = {}
     warnings = []
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
             for addr in ret_obj['ipv4']['addresses']:
                 if addr['address'] == address:
@@ -85,7 +85,7 @@ def update(isamAppliance, label, address, new_address, maskOrPrefix, vlanId=None
     ret_obj = {}
     warnings = []
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
             for addr in ret_obj['ipv4']['addresses']:
                 if addr['address'] == address:
@@ -126,7 +126,7 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
     ret_obj = {}
     warnings = []
     if force is False:
-        ret_obj = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        ret_obj, warnings = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
         if ret_obj is not None:
             upd_dhcp = {
                 'enabled': enabled,
