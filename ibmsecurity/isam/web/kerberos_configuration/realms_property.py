@@ -29,12 +29,14 @@ def search(isamAppliance, realm, propname, subsection=None, includeValuesInLine=
 
     return_obj = isamAppliance.create_return_object()
     return_obj["warnings"] = ret_obj["warnings"]
+    return_obj['data'] = {}
 
     for obj in ret_obj['data']:
         if obj['type'] == "property":
             if "{0} = ".format(propname) in obj['name']:
                 logger.info("Found Kerberos realm property {0} id: {1}".format(propname, obj['id']))
-                return_obj['data'] = obj['name']
+                return_obj['data']['name'] = obj['name']
+                return_obj['data']['id'] = obj['id']
                 return_obj['rc'] = 0
                 break
 
@@ -54,7 +56,7 @@ def _check(isamAppliance, realm, propname, propvalue, subsection=None):
     ret_obj = search(isamAppliance, realm, propname, subsection)
     logger.debug("Looking for existing kerberos property {0} in {1}".format(propname, ret_obj['data']))
     if ret_obj['data'] != {}:
-        if ret_obj['data'] == propstring:
+        if ret_obj['data']['name'] == propstring:
             logger.debug("Found kerberos property: {0} in : {1}".format(propname, ret_obj['data']))
             return True
     return False
@@ -79,7 +81,7 @@ def add(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=F
         return isamAppliance.create_return_object(
             warnings=["Subsection: {0}/{1} does not exists.".format(realm, subsection)])
 
-    if _check(isamAppliance, realm, propname, propvalue, subsection) is True and force is False:
+    if force is False and _check(isamAppliance, realm, propname, propvalue, subsection) is True:
         return isamAppliance.create_return_object(
             warnings=["Property: {0} with value: {1} already exists: ".format(uriprop, propvalue)])
 
