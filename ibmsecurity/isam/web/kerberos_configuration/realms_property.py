@@ -156,14 +156,10 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
 
     needs_update = False
 
-    json_data = {
-        "name": "{0} = {1}".format(propname, propvalue)
-    }
+    propstring = "{0} = {1}".format(propname, propvalue)
 
     if force is not True:
-        import ibmsecurity.utilities.tools
-        if ibmsecurity.utilities.tools.json_sort(ret_obj['data']) != ibmsecurity.utilities.tools.json_sort(
-                json_data):
+        if ret_obj['data']['name'] != propstring:
             needs_update = True
 
     if force is True or needs_update is True:
