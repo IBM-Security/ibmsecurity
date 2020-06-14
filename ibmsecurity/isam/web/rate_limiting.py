@@ -3,6 +3,9 @@ import os.path
 from ibmsecurity.utilities.tools import files_same, get_random_temp_dir
 import shutil
 
+requires_modules = ["wga"]
+requires_version = "9.0.6.0"
+
 logger = logging.getLogger(__name__)
 
 
@@ -11,7 +14,9 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving all Rate Limiting policies
     """
     return isamAppliance.invoke_get("Retrieving all Rate limiting policies",
-                                    "/wga/ratelimiting")
+                                    "/wga/ratelimiting",
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, id, check_mode=False, force=False):
@@ -19,7 +24,9 @@ def get(isamAppliance, id, check_mode=False, force=False):
     Retrieve a Rate Limiting policy
     """
     return isamAppliance.invoke_get("Retrieve a Rate Limiting policy",
-                                    "/wga/ratelimiting/{0}".format(id))
+                                    "/wga/ratelimiting/{0}".format(id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def add(isamAppliance, id, content, check_mode=False, force=False):
@@ -36,7 +43,9 @@ def add(isamAppliance, id, content, check_mode=False, force=False):
                 {
                     "name": id,
                     "content": content
-                })
+                },
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -51,7 +60,9 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a Rate Limiting policy",
-                "/wga/ratelimiting/{0}".format(id))
+                "/wga/ratelimiting/{0}".format(id),
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -70,7 +81,9 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
                 {
                     'id': id,
                     'new_name': new_name
-                })
+                },
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -89,7 +102,9 @@ def update(isamAppliance, id, content, check_mode=False, force=False):
                 {
                     'id': id,
                     'content': content
-                })
+                },
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -103,7 +118,9 @@ def export_file(isamAppliance, id, filename, check_mode=False, force=False):
             return isamAppliance.invoke_get_file(
                 "Export a Rate Limiting policy",
                 "/wga/ratelimiting/{0}?export".format(id),
-                filename)
+                filename,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -126,7 +143,9 @@ def import_file(isamAppliance, id, filename, check_mode=False, force=False):
                         'mimetype': 'application/octet-stream'
                     }
                 ],
-                {})
+                {},
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 

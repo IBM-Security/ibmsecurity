@@ -6,13 +6,17 @@ import shutil
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga", "federation"]
+requires_version = None
+
 
 def get(isamAppliance, path, check_mode=False, force=False):
     """
     Retrieving the current runtime template files directory contents
     """
     return isamAppliance.invoke_get("Retrieving the current runtime template files directory contents",
-                                    "/mga/template_files/{0}".format(path))
+                                    "/mga/template_files/{0}".format(path), requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
 def _check(isamAppliance, path, name):
@@ -21,8 +25,8 @@ def _check(isamAppliance, path, name):
     for obj in ret_obj['data']['contents']:
         if obj['name'] == name and obj['type'] == 'File':
             logger.info("File .{0}".format(obj['name']))
-            return True    
-   
+            return True
+
     return None
 
 
@@ -41,10 +45,10 @@ def create(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file != None:
-        warnings.append("File {0} exists in path {1}. Ignoring create.".format(name,path))
+        warnings.append("File {0} exists in path {1}. Ignoring create.".format(name, path))
 
     if force is True or check_file == None:
-        if check_mode is True:          
+        if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
@@ -54,7 +58,8 @@ def create(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
                     'file_name': name,
                     'type': 'file',
                     'contents': contents
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
     return isamAppliance.create_return_object(warnings=warnings)
 
 
@@ -72,9 +77,9 @@ def update(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists in path {1}. Ignoring update.".format(name,path))
+        warnings.append("File {0} does not exists in path {1}. Ignoring update.".format(name, path))
         return isamAppliance.create_return_object(warnings=warnings)
-    
+
     if force is True or check_file is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -86,7 +91,8 @@ def update(isamAppliance, path, name, contents=None, check_mode=False, force=Fal
                     {
                         'contents': contents,
                         'type': 'file'
-                    })
+                    }, requires_modules=requires_modules,
+                    requires_version=requires_version)
             else:
                 warnings.append("Either contents or filename parameter need to be provided. Skipping update request.")
                 return isamAppliance.create_return_object(warnings=warnings)
@@ -106,16 +112,17 @@ def delete(isamAppliance, path, name, check_mode=False, force=False):
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists in path {1}. Ignoring delete.".format(name,path))
+        warnings.append("File {0} does not exists in path {1}. Ignoring delete.".format(name, path))
         return isamAppliance.create_return_object(warnings=warnings)
-  
+
     if force is True or check_file != None:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a file in the runtime template files directory",
-                "/mga/template_files/{0}/{1}".format(path, name))
+                "/mga/template_files/{0}/{1}".format(path, name), requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -135,7 +142,7 @@ def rename(isamAppliance, path, name, new_name, check_mode=False, force=False):
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists in path {1}. Ignoring rename.".format(name,path))
+        warnings.append("File {0} does not exists in path {1}. Ignoring rename.".format(name, path))
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or check_file != None:
@@ -148,7 +155,8 @@ def rename(isamAppliance, path, name, new_name, check_mode=False, force=False):
                 {
                     'new_name': new_name,
                     'type': 'file'
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -167,17 +175,18 @@ def export_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file == None:
-        warnings.append("File {0} does not exists in path {1}. Ignoring export.".format(name,path))
+        warnings.append("File {0} does not exists in path {1}. Ignoring export.".format(name, path))
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or check_file != None:
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting a file from the runtime template files directory",
-                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename)
+                "/mga/template_files/{0}/{1}?type=File&export=true".format(path, name), filename,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object()
-
 
 
 def _check_import(isamAppliance, path, name, filename, check_mode=False):
@@ -216,7 +225,7 @@ def import_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
     warnings = []
     check_file = _check(isamAppliance, path, name)
     if check_file != None and force == False:
-        warnings.append("File {0} exists in path {1}.".format(name,path))
+        warnings.append("File {0} exists in path {1}.".format(name, path))
 
     if force is True or _check_import(isamAppliance, path, name, filename, check_mode=check_mode):
         if check_mode is True:
@@ -235,13 +244,7 @@ def import_file(isamAppliance, path, name, filename, check_mode=False, force=Fal
                 {
                     'type': 'file',
                     'force': force
-                })
+                }, requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
-
-
-def compare(isamAppliance1, isamAppliance2, instance_id):
-    ret_obj1 = get_all(isamAppliance1, instance_id)
-    ret_obj2 = get_all(isamAppliance2, instance_id)
-
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])

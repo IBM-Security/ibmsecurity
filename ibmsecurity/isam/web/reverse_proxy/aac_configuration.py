@@ -1,62 +1,66 @@
 import logging
 
+from ibmsecurity.isam.web.reverse_proxy import junctions
+
 logger = logging.getLogger(__name__)
 requires_modules = ["wga"]
-requires_version = "9.0.4.0"
+requires_version = "9.0.6.0"
 
 
-def config(isamAppliance, instance_id, hostname='localhost', port=443, username='easuser',
-           password='passw0rd', junction="/mga", reuse_acls=None, reuse_certs=None,
-           check_mode=False, force=False):
+def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username='easuser', password='passw0rd',
+           junction="/mga", reuse_certs=False, reuse_acls=False, check_mode=False, force=False):
     """
-    AAC CBA configuration for a reverse proxy instance
-    """
-    if force is True or _check_config(isamAppliance, instance_id) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            json_data = {
-                "junction": junction,
-                "hostname": hostname,
-                "port": port,
-                "username": username,
-                "password": password
-            }
-            # Add optional values to the JSON
-            if reuse_acls is not None and reuse_acls != '':
-                json_data['reuse_acls'] = reuse_acls
-            if reuse_certs is not None and reuse_certs != '':
-                json_data['reuse_certs'] = reuse_certs
-            return isamAppliance.invoke_post(
-                "AAC CBA configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/authsvc_config".format(instance_id), json_data,
-                requires_modules=requires_modules, requires_version=requires_version)
-
-        return isamAppliance.create_return_object()
-
-
-def unconfig(isamAppliance, instance_id, check_mode=False, force=False):
-    """
-    AAC CBA unconfiguration for a reverse proxy instance
-    """
-    if force is True or _check_config(isamAppliance, instance_id) is True:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_delete(
-                "AAC CBA configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/authsvc_config".format(instance_id),
-                requires_modules=requires_modules, requires_version=requires_version)
-
-        return isamAppliance.create_return_object()
-
-
-def _check_config(isamAppliance, instance_id):
-    """
-    TODO: Need to code this function to check if Oauth is already configured - one option is to check for existince of junction
+    Authentication and Context based access configuration for a reverse proxy instance
 
     :param isamAppliance:
     :param instance_id:
+    :param junction:
+    :param hostname:
+    :param port:
+    :param username:
+    :param password:
+    :param reuse_certs:
+    :param reuse_acls:
+    :param check_mode:
+    :param force:
     :return:
     """
+    warnings = [
+        "Idempotency logic will check for existence of {} junction. Use force=True to override.".format(junction)]
+    if force is True or _check_config(isamAppliance, instance_id, junction) is False:
+        json_data = {
+            "junction": junction,
+            "hostname": hostname,
+            "port": port,
+            "username": username,
+            "password": password,
+            "reuse_certs": reuse_certs,
+            "reuse_acls": reuse_acls
+        }
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_post(
+                " Authentication and Context based access configuration for a reverse proxy instance",
+                "/wga/reverseproxy/{}/authsvc_config".format(instance_id), json_data, warnings=warnings,
+                requires_modules=requires_modules, requires_version=requires_version)
+
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
+def _check_config(isamAppliance, instance_id, junction):
+    """
+    Check if the junction for aac already created
+
+    :param isamAppliance:
+    :param instance_id:
+    :param junction:
+    :return:
+    """
+    ret_obj = junctions.get_all(isamAppliance, instance_id)
+
+    for j in ret_obj['data']:
+        if j['id'] == junction:
+            logger.info("Junction {} was found - hence aac config must have already executed.".format(junction))
+            return True
     return False

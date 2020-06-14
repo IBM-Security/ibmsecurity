@@ -26,10 +26,10 @@ def get(isamAppliance, id, variable_names=None, check_mode=False, force=False):
 
     TODO: test variable_names...
     """
-    query_str = None
+    query_str = ""
     if variable_names is not None:
         for var in variable_names:
-            if query_str is None:
+            if query_str == "":
                 query_str = '?'
             else:
                 query_str += '&'

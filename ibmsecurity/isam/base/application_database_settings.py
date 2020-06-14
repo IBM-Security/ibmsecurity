@@ -1,6 +1,11 @@
 import logging
 import ibmsecurity.utilities.tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 # URI for this module
@@ -21,7 +26,7 @@ def set(isamAppliance, enableIprAutoUpdate=True, useProxy=False, proxyHost=None,
         proxyUser=None, proxyPwd=None, enableAutoUpdate=True, enableIprFeedback=False, enableWeblearn=False,
         includeIprInfo=False, check_mode=False, force=False):
     """
-    Set Application Database Settings 
+    Set Application Database Settings
     """
     update_required, json_data = _check(isamAppliance, enableIprAutoUpdate=enableIprAutoUpdate, useProxy=useProxy,
                                         proxyHost=proxyHost, proxyPort=proxyPort, useProxyAuth=useProxyAuth,

@@ -105,6 +105,7 @@ def _check(isamAppliance, addr, check_mode=False, force=False):
 
     return False
 
+
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare Host Records between two appliances

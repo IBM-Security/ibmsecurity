@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+requires_model="Appliance"
 
 def export(isamAppliance, filename, check_mode=False, force=False):
     """
@@ -14,6 +15,6 @@ def export(isamAppliance, filename, check_mode=False, force=False):
             return isamAppliance.invoke_get_file(
                 "Retrieve the cluster signature file",
                 "/isam/cluster/signature/v1",
-                filename)
+                filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object()

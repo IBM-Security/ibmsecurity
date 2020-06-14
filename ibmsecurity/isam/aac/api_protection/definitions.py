@@ -1,12 +1,18 @@
 import logging
 from ibmsecurity.utilities import tools
+from ibmsecurity.isam.aac import access_policy
 
 logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/definitions"
-requires_modules = ["mga"]
+requires_modules = ["mga", "federation"]
 requires_version = None
+
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -57,7 +63,8 @@ def search(isamAppliance, name, check_mode=False, force=False):
     return return_obj
 
 
-def add(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+        tcmBehavior="NEVER_PROMPT",
         accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -97,6 +104,22 @@ def add(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
                 "pinLength": pinLength,
                 "tokenCharSet": tokenCharSet
             }
+            if accessPolicyName is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, access policy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring access policy for this call.".format(
+                            isamAppliance.facts["version"], oidc))
+                    accessPolicyName = None
+                else:
+                    ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
+                    if ret_obj['data'] == {}:
+                        warnings = ret_obj["warnings"]
+                        warnings.append(
+                            "Access Policy {0} is not found. Cannot add definition.".format(accessPolicyName))
+                        return isamAppliance.create_return_object(warnings=warnings)
+                    else:
+                        json_data["accessPolicyId"] = int(ret_obj['data'])
+
             if oidc is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
@@ -146,7 +169,8 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def update(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+           tcmBehavior="NEVER_PROMPT",
            accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
            authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
            maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -185,6 +209,22 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
         "pinLength": pinLength,
         "tokenCharSet": tokenCharSet
     }
+    if accessPolicyName is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, access policy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring access policy for this call.".format(
+                    isamAppliance.facts["version"], oidc))
+            accessPolicyName = None
+        else:
+            ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
+            if ret_obj['data'] == {}:
+                warnings = ret_obj["warnings"]
+                warnings.append(
+                    "Access Policy {0} is not found. Cannot update definition.".format(accessPolicyName))
+                return isamAppliance.create_return_object(warnings=warnings)
+            else:
+                json_data["accessPolicyId"] = int(ret_obj['data'])
+
     if oidc is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
@@ -247,7 +287,8 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
                     del json_data['oidc']['dynamicClients']
             else:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") >= 0:
-                    if 'dynamicClients' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['dynamicClients'] is False:
+                    if 'dynamicClients' in ret_obj['data']['oidc'] and ret_obj['data']['oidc'][
+                        'dynamicClients'] is False:
                         del ret_obj['data']['oidc']['dynamicClients']
 
             if 'issueSecret' in json_data['oidc']:
@@ -280,7 +321,8 @@ def update(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], tcmBehavior="NEVER_PROMPT",
+def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=["AUTHORIZATION_CODE"],
+        tcmBehavior="NEVER_PROMPT",
         accessTokenLifetime=3600, accessTokenLength=20, enforceSingleUseAuthorizationGrant=False,
         authorizationCodeLifetime=300, authorizationCodeLength=30, issueRefreshToken=True, refreshTokenLength=40,
         maxAuthorizationGrantLifetime=604800, enforceSingleAccessTokenPerGrant=False,
@@ -293,8 +335,8 @@ def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
-        return add(isamAppliance=isamAppliance, name=name, description=description, grantTypes=grantTypes,
-                   tcmBehavior=tcmBehavior,
+        return add(isamAppliance=isamAppliance, name=name, description=description, accessPolicyName=accessPolicyName,
+                   grantTypes=grantTypes, tcmBehavior=tcmBehavior,
                    accessTokenLifetime=accessTokenLifetime, accessTokenLength=accessTokenLength,
                    enforceSingleUseAuthorizationGrant=enforceSingleUseAuthorizationGrant,
                    authorizationCodeLifetime=authorizationCodeLifetime, authorizationCodeLength=authorizationCodeLength,
@@ -307,8 +349,9 @@ def set(isamAppliance, name, description="", grantTypes=["AUTHORIZATION_CODE"], 
     else:
         # Update request
         logger.info("Definition {0} exists, requesting to update.".format(name))
-        return update(isamAppliance=isamAppliance, name=name, description=description, grantTypes=grantTypes,
-                      tcmBehavior=tcmBehavior,
+        return update(isamAppliance=isamAppliance, name=name, description=description,
+                      accessPolicyName=accessPolicyName,
+                      grantTypes=grantTypes, tcmBehavior=tcmBehavior,
                       accessTokenLifetime=accessTokenLifetime, accessTokenLength=accessTokenLength,
                       enforceSingleUseAuthorizationGrant=enforceSingleUseAuthorizationGrant,
                       authorizationCodeLifetime=authorizationCodeLifetime,

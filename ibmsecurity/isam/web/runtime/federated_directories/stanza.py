@@ -1,6 +1,11 @@
 import logging
 import ibmsecurity.utilities.tools
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 logger = logging.getLogger(__name__)
 
 
@@ -70,8 +75,8 @@ def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl
     Update an existing federated directory
     """
     if force is True or (
-                    _exists(isamAppliance, id) is True and _check(isamAppliance, id, hostname, port, bind_dn, bind_pwd,
-                                                                  use_ssl, client_cert_label, suffix) is False):
+            _exists(isamAppliance, id) is True and _check(isamAppliance, id, hostname, port, bind_dn, bind_pwd,
+                                                          use_ssl, client_cert_label, suffix) is False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:

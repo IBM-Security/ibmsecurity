@@ -4,6 +4,14 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
+from ibmsecurity.utilities import tools
+from io import open
+
+try:
+    basestring
+except NameError:
+
+    basestring = (str, bytes)
 
 
 class ISDSAppliance(IBMAppliance):
@@ -152,7 +160,8 @@ class ISDSAppliance(IBMAppliance):
         files = list()
         for file2post in fileinfo:
             files.append((file2post['file_formfield'],
-                          (file2post['filename'], open(file2post['filename'], 'rb'), file2post['mimetype'])))
+                          (tools.path_leaf(file2post['filename']), open(file2post['filename'], 'rb'),
+                           file2post['mimetype'])))
 
         self._suppress_ssl_warning()
 
@@ -300,6 +309,7 @@ class ISDSAppliance(IBMAppliance):
 
         # Process the input data into JSON
         json_data = json.dumps(data)
+
         self.logger.debug("Input Data: " + json_data)
 
         self._suppress_ssl_warning()
@@ -307,8 +317,12 @@ class ISDSAppliance(IBMAppliance):
         try:
             if func == requests.get or func == requests.delete:
 
-                r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
-                         verify=False, headers=headers)
+                if data != {}:
+                    r = func(url=self._url(uri), data=json_data, auth=(self.user.username, self.user.password),
+                             verify=False, headers=headers)
+                else:
+                    r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
+                             verify=False, headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
                          auth=(self.user.username, self.user.password),

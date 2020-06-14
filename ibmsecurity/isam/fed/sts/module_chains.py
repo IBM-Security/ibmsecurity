@@ -1,6 +1,8 @@
 import logging
+import copy
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.fed.sts import templates
+from ibmsecurity.isam.aac import mapping_rules
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ def _get(isamAppliance, id):
 
 def set(isamAppliance, name, chainName, requestType, description=None, tokenType=None, xPath=None, signResponses=None,
         signatureKey=None, validateRequests=None, validationKey=None, sendValidationConfirmation=None, issuer=None,
-        appliesTo=None, properties=None, new_name=None, check_mode=False,
+        appliesTo=None, properties=None, new_name=None, ignore_password_for_idempotency=False, check_mode=False,
         force=False):
     """
     Creating or Modifying an STS Chain
@@ -80,7 +82,9 @@ def set(isamAppliance, name, chainName, requestType, description=None, tokenType
                       tokenType=tokenType, xPath=xPath, signResponses=signResponses, signatureKey=signatureKey,
                       validateRequests=validateRequests, validationKey=validationKey,
                       sendValidationConfirmation=sendValidationConfirmation, issuer=issuer, appliesTo=appliesTo,
-                      properties=properties, new_name=new_name, check_mode=check_mode, force=force)
+                      properties=properties, new_name=new_name,
+                      ignore_password_for_idempotency=ignore_password_for_idempotency, check_mode=check_mode,
+                      force=force)
 
 
 def add(isamAppliance, name, chainName, requestType, description=None, tokenType=None, xPath=None, signResponses=None,
@@ -128,6 +132,12 @@ def add(isamAppliance, name, chainName, requestType, description=None, tokenType
                 if appliesTo is not None:
                     json_data['appliesTo'] = appliesTo
                 if properties is not None:
+                    for idx, x in enumerate(properties['self']):
+                        if "map.rule.reference.names" in x['name']:
+                            ret_obj1 = mapping_rules.search(isamAppliance, x['value'][0])
+                            properties['self'].append(
+                                {"name": x['prefix'] + ".map.rule.reference.ids", "value": [ret_obj1['data']]})
+                            del properties['self'][idx]
                     json_data['properties'] = properties
                 return isamAppliance.invoke_post(
                     "Create an STS chain", uri, json_data,
@@ -160,16 +170,17 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 
 def update(isamAppliance, name, chainName, requestType, description=None, tokenType=None, xPath=None,
-           signResponses=None,
-           signatureKey=None, validateRequests=None, validationKey=None, sendValidationConfirmation=None, issuer=None,
-           appliesTo=None, properties=None, new_name=None, check_mode=False, force=False):
+           signResponses=None, signatureKey=None, validateRequests=None, validationKey=None,
+           sendValidationConfirmation=None, issuer=None, appliesTo=None, properties=None, new_name=None,
+           ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Update a specific STS chain
     """
     warnings = []
     chain_id, update_required, json_data = _check(isamAppliance, name, chainName, requestType, description, tokenType,
                                                   xPath, signResponses, signatureKey, validateRequests, validationKey,
-                                                  sendValidationConfirmation, issuer, appliesTo, properties, new_name)
+                                                  sendValidationConfirmation, issuer, appliesTo, properties, new_name,
+                                                  ignore_password_for_idempotency)
     if chain_id is None:
         warnings.append("Cannot update data for unknown STS Chain (or template): {0}".format(name))
     else:
@@ -187,7 +198,8 @@ def update(isamAppliance, name, chainName, requestType, description=None, tokenT
 
 
 def _check(isamAppliance, name, chainName, requestType, description, tokenType, xPath, signResponses, signatureKey,
-           validateRequests, validationKey, sendValidationConfirmation, issuer, appliesTo, properties, new_name=None):
+           validateRequests, validationKey, sendValidationConfirmation, issuer, appliesTo, properties, new_name,
+           ignore_password_for_idempotency):
     """
     Check and return True if update needed
     """
@@ -207,6 +219,19 @@ def _check(isamAppliance, name, chainName, requestType, description, tokenType, 
         logger.info("STS Chain not found, returning no update required.")
         return None, update_required, json_data
     else:
+        if (ignore_password_for_idempotency and ret_obj['data']['properties']):
+            if (ret_obj['data']['properties']['self'] == []):
+                del ret_obj['data']['properties']['self']
+            else:
+                for idx, x in enumerate(ret_obj['data']['properties']['self']):
+                    if "password" in x['name']:
+                        del ret_obj['data']['properties']['self'][idx]
+            if (ret_obj['data']['properties']['partner'] == []):
+                del ret_obj['data']['properties']['partner']
+            else:
+                for idx, x in enumerate(ret_obj['data']['properties']['partner']):
+                    if "password" in x['name']:
+                        del ret_obj['data']['properties']['partner'][idx]
         chain_id = ret_obj['data']['id']
         del ret_obj['data']['id']
         if new_name is not None:
@@ -234,8 +259,28 @@ def _check(isamAppliance, name, chainName, requestType, description, tokenType, 
         if appliesTo is not None:
             json_data['appliesTo'] = appliesTo
         if properties is not None:
+            for idx, x in enumerate(properties['self']):
+                if "map.rule.reference.names" in x['name']:
+                    ret_obj1 = mapping_rules.search(isamAppliance, x['value'][0])
+                    properties['self'].append(
+                        {"name": x['prefix'] + ".map.rule.reference.ids", "value": [ret_obj1['data']]})
+                    del properties['self'][idx]
             json_data['properties'] = properties
-        sorted_json_data = tools.json_sort(json_data)
+
+        if ignore_password_for_idempotency:
+            temp = copy.deepcopy(
+                json_data)  # deep copy neccessary: otherwise password parameter would be removed from desired config dict 'json_data'
+            if ('self' in temp['properties']):
+                for idx, x in enumerate(temp['properties']['self']):
+                    if "password" in x['name']:
+                        del temp['properties']['self'][idx]
+            if ('partner' in temp['properties']):
+                for idx, x in enumerate(temp['properties']['partner']):
+                    if "password" in x['name']:
+                        del temp['properties']['partner'][idx]
+        else:
+            temp = json_data
+        sorted_json_data = tools.json_sort(temp)
         logger.debug("Sorted input: {0}".format(sorted_json_data))
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))

@@ -1,16 +1,22 @@
 import logging
 import ibmsecurity.utilities.tools
 import os.path
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance, instance_id, check_mode=False, force=False):
+def get(isamAppliance, instance_id, dir_name='', recursive='yes', check_mode=False, force=False):
     """
-    Retrieving the current administration pages root contents
+    Retrieving the current administration pages contents of a directory.
+    Parameter variables have the following behavior:
+        dir_name and recursive not set => recursively list from root directory (default behavior)
+        dir_name only set => list recursively from dir_name and below
+        recursive set to 'no' => flat directory listing of dir_name (which defaults to root)
     """
     return isamAppliance.invoke_get("Retrieving the current administration pages root contents",
-                                    "/wga/reverseproxy/{0}/management_root?recursive=yes".format(instance_id))
+                                    "/wga/reverseproxy/{0}/management_root/{1}{2}".format(
+                                        instance_id, dir_name, tools.create_query_string(recursive=recursive)))
 
 
 def _check(isamAppliance, instance_id, id, name):

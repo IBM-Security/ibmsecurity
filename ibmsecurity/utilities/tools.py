@@ -6,8 +6,14 @@ import difflib
 import hashlib
 import ntpath
 import re
+from io import open
 
 logger = logging.getLogger(__name__)
+
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 
 def json_sort(json_data):
@@ -190,7 +196,7 @@ def strings(filename, min=4):
     """
     Emulate UNIX "strings" command on a file
     """
-    with open(filename, "rb") as f:
+    with open(filename, 'r', errors='ignore') as f:
         result = ""
         for c in f.read():
             if str(c) in string.printable:
@@ -244,4 +250,9 @@ def version_compare(version1, version2):
         v = re.sub(r'_b\d+$', '', v)
         return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
 
-    return normalize(version1) == normalize(version2)
+    if normalize(version1) == normalize(version2):
+        return 0
+    elif normalize(version1) > normalize(version2):
+        return 1
+    elif normalize(version1) < normalize(version2):
+        return -1

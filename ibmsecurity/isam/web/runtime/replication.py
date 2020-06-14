@@ -20,10 +20,10 @@ def set(isamAppliance, replicating, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put("Updating web runtime component replication status",
-                                                   "/isam/runtime_components?cluster=true",
-                                                   {
-                                                       'replicating': replicating
-                                                   })
+                                            "/isam/runtime_components?cluster=true",
+                                            {
+                                                'replicating': replicating
+                                            })
 
     return isamAppliance.create_return_object()
 

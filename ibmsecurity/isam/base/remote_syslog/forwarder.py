@@ -8,6 +8,11 @@ uri = "/isam/rsyslog_forwarder"
 requires_modules = None
 requires_version = "9.0.2.1"
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
@@ -40,8 +45,8 @@ def get(isamAppliance, server, port, protocol, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, str):
-        port=int(port)
+    if isinstance(port, basestring):
+        port = int(port)
 
     return_obj = isamAppliance.create_return_object()
     return_obj['data'], i = _find_forwarder(ret_obj, server, port, protocol)
@@ -59,8 +64,8 @@ def delete(isamAppliance, server, port, protocol, check_mode=False, force=False)
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, str):
-        port=int(port)
+    if isinstance(port, basestring):
+        port = int(port)
 
     existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)
 
@@ -79,8 +84,8 @@ def set(isamAppliance, server, port, protocol='udp', debug=False, keyfile=None, 
         client_certificate=None, permitted_peers=None, sources=[], check_mode=False, force=False):
     ret_obj = get_all(isamAppliance, check_mode, force)
 
-    if isinstance(port, str):
-        port=int(port)
+    if isinstance(port, basestring):
+        port = int(port)
 
     warnings = []
     existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)

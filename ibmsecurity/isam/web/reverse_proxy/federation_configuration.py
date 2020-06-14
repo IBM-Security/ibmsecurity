@@ -67,7 +67,7 @@ def unconfig(isamAppliance, instance_id, federation_id, check_mode=False, force=
 
 def _check(isamappliance, instance_id, federation_id):
     # WebSEAL has a stanza that should contain the configured federations
-    from  ibmsecurity.isam.web.reverse_proxy.configuration import entry
+    from ibmsecurity.isam.web.reverse_proxy.configuration import entry
     ret_obj = entry.get_all(isamappliance, reverseproxy_id=instance_id, stanza_id="isam-fed-autocfg")
 
     # IF there is any exception - i.e. stanza not found return False

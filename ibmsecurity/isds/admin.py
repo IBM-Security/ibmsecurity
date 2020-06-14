@@ -3,11 +3,13 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
+
 def get(isdsAppliance, check_mode=False, force=False):
     """
     Retrieving the administrator settings
     """
     return isdsAppliance.invoke_get("Retrieving the administrator settings", "/admin_cfg")
+
 
 def set_pw(isdsAppliance, newPassword, oldPassword, sessionTimeout="30", check_mode=False, force=False):
     """
@@ -23,8 +25,8 @@ def set_pw(isdsAppliance, newPassword, oldPassword, sessionTimeout="30", check_m
             "confirmPassword": newPassword,
             "sessionTimeout": sessionTimeout
         }
-        
-	return isdsAppliance.invoke_put("Setting admin password", "/admin_cfg", json_data, warnings=warnings)
+
+        return isdsAppliance.invoke_put("Setting admin password", "/admin_cfg", json_data, warnings=warnings)
 
 
 def set(isdsAppliance, oldPassword=None, newPassword=None, sessionTimeout=30, check_mode=False, force=False):
@@ -44,6 +46,7 @@ def set(isdsAppliance, oldPassword=None, newPassword=None, sessionTimeout=30, ch
                 "/admin_cfg", json_data, warnings=warnings)
 
     return isdsAppliance.create_return_object(changed=False, warnings=warnings)
+
 
 def _check(isdsAppliance, oldPassword, newPassword, sessionTimeout, warnings):
     """
@@ -86,4 +89,3 @@ def compare(isdsAppliance1, isdsAppliance2):
     ret_obj2 = get(isdsAppliance2)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2)
-

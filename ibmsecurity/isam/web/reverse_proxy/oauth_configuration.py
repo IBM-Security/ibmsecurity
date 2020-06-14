@@ -8,14 +8,14 @@ requires_version = "9.0.4.0"
 
 
 def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username='easuser', password='passw0rd',
-           junction="/mga", reuse_certs=False, reuse_acls=False, api=False, browser=True, auth_register=None,
+           junction="/mga", reuse_certs=False, reuse_acls=False, api=False, browser=False, auth_register=None,
            check_mode=False, force=False):
     """
     Oauth and Oidc configuration for a reverse proxy instance
 
     :param isamAppliance:
     :param instance_id:
-	:param junction:
+    :param junction:
     :param hostname:
     :param port:
     :param username:
