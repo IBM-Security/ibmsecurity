@@ -87,7 +87,7 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 
     Smart enough to update only that which is needed.
     """
-    if isinstance(entries, str):
+    if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
 

@@ -6,7 +6,7 @@ class User:
 
     def __init__(self, password, username=None):
         self.logger = logging.getLogger(__name__)
-        #self.logger.debug('Creating a user')
+        self.logger.debug('Creating a user')
 
         if username is None:
             self.username = self.super_user
