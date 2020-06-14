@@ -53,7 +53,7 @@ def set(isamAppliance, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvd
     if hvdb_driver_type is not None:
         service_json["hvdb_driver_type"] = hvdb_driver_type
     if hvdb_solid_tc is not None:
-        if (isinstance(hvdb_solid_tc, str)):
+        if (isinstance(hvdb_solid_tc, basestring)):
             import ast
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
             service_json["hvdb_solid_tc"] = hvdb_solid_tc

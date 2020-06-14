@@ -69,7 +69,7 @@ def _check(isamAppliance, enableAutoCheck, scheduleSettings, dailyFrequencySetti
     if schedule_type == 'day_or_week':
         json_data['config']['scheduleSettings'] = scheduleSettings
     elif schedule_type == 'interval':
-        if 'interval' in dailyFrequencySettings and isinstance(dailyFrequencySettings['interval'], str):
+        if 'interval' in dailyFrequencySettings and isinstance(dailyFrequencySettings['interval'], basestring):
             dailyFrequencySettings['interval'] = int(dailyFrequencySettings['interval'])
             logger.debug("fixing interval")
         json_data['config']['dailyFrequencySettings'] = dailyFrequencySettings

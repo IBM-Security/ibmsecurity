@@ -43,7 +43,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     """
     Adding a configuration entry or entries by stanza - Reverse Proxy
     """
-    if isinstance(entries, str):
+    if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
 

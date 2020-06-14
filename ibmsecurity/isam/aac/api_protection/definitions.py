@@ -74,7 +74,7 @@ def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     """
     Create an API protection definition
     """
-    if (isinstance(grantTypes, str)):
+    if (isinstance(grantTypes, basestring)):
         import ast
         grantTypes = ast.literal_eval(grantTypes)
 

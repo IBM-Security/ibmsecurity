@@ -43,7 +43,7 @@ def add(isamAppliance, resource_id, stanza_id, entries, check_mode=False, force=
     """
     Adding a configuration entry or entries by stanza - Runtime Environment
     """
-    if (isinstance(entries, str)):
+    if (isinstance(entries, basestring)):
         import ast
         entries = ast.literal_eval(entries)
 

@@ -61,13 +61,13 @@ def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPr
 
     if maskOrPrefix is None:
         maskOrPrefix = ""
-    if isinstance(maskOrPrefix, str):
+    if isinstance(maskOrPrefix, basestring):
         if maskOrPrefix.lower() == 'none':
             maskOrPrefix = ""
-    if isinstance(table, str):
+    if isinstance(table, basestring):
         if table.lower() == 'none':
             table = None
-    if isinstance(metric, str):
+    if isinstance(metric, basestring):
         if metric.lower() == 'none':
             metric = None
         else:
@@ -143,7 +143,7 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
         address = new_address
     if maskOrPrefix is None:
         maskOrPrefix = ''
-    if isinstance(maskOrPrefix, str):
+    if isinstance(maskOrPrefix, basestring):
         if maskOrPrefix.lower() == 'none':
             maskOrPrefix = ''
     if isinstance(metric, basestring):
@@ -151,7 +151,7 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
             metric = None
         else:
             metric = int(metric)
-    if isinstance(enabled, str):
+    if isinstance(enabled, basestring):
         if enabled.lower() == 'true':
             enabled = True
         else:

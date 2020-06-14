@@ -13,7 +13,7 @@ def execute(isamAppliance, isamUser, commands, admin_domain='Default'):
     Execute a pdadmin command
     """
     logger.debug('user is: ' + isamUser.username)
-    if (isinstance(commands, str)):
+    if (isinstance(commands, basestring)):
         import ast
         commands = ast.literal_eval(commands)
     return isamAppliance.invoke_post("Execute pdadmin commands", "/isam/pdadmin/",

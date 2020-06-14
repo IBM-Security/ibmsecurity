@@ -23,7 +23,7 @@ class ISDSApplianceAdminProxy(ISDSAppliance):
         self.adminProxyHostname = adminProxyHostname
 
         # Type checking and tranformation to safely reuse this variable later on
-        if isinstance(adminProxyPort, str):
+        if isinstance(adminProxyPort, basestring):
             self.adminProxyPort = int(adminProxyPort)
         else:
             self.adminProxyPort = adminProxyPort

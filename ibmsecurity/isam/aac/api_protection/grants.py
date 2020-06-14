@@ -42,10 +42,10 @@ def set(isamAppliance, state_id, attributes=[], isEnabled=True, check_mode=False
     NOTE: Unable to update attributes, getting an error like so:
         {"result":"FBTRBA0100E The action: UPDATE failed because the resource [https:\/\/<hostname>:443\/iam\/access\/v8\/grants\/uuid70c19d9-0158-1c78-8de9-cb87b95521e8] was not found."}
     """
-    if (isinstance(attributes, str)):
+    if (isinstance(attributes, basestring)):
         import ast
         attributes = ast.literal_eval(attributes)
-    if (isinstance(isEnabled, str)):
+    if (isinstance(isEnabled, basestring)):
         import ast
         isEnabled = ast.literal_eval(isEnabled)
 

@@ -23,7 +23,7 @@ def _check(isamAppliance, dsc):
     ret_obj = get(isamAppliance)
     warnings = ret_obj['warnings']
 
-    if isinstance(dsc, str):
+    if isinstance(dsc, basestring):
         import ast
         dsc = ast.literal_eval(dsc)
 

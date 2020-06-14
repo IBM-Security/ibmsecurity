@@ -50,7 +50,7 @@ def _check(isamAppliance, enableIprAutoUpdate, useProxy, proxyHost, proxyPort, u
     update_required = False
 
     # compare will fail if port is provided as string
-    if proxyPort is not None and isinstance(proxyPort, str):
+    if proxyPort is not None and isinstance(proxyPort, basestring):
         proxyPort = int(proxyPort)
 
     # Create input JSON
