@@ -179,8 +179,8 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
 
             full_uri = quote(ruri)
 
-            ### Workaround value_id encoding for v9.0.7.1
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.1") == 0:
+            ### Workaround value_id encoding for >= v9.0.7.1
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.1") >= 0:
                 value_length = len(str("/value/"))
                 value_id_string = full_uri.split("/value/")[1]
                 value_id_string = value_id_string.replace("/","%2F")
