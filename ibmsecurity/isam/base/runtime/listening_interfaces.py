@@ -22,6 +22,7 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
     ret_obj = isamAppliance.create_return_object()
     exists = False
     secure_existing = None
+    warnings = []
     if force is False:
         exists, secure_existing, id, warnings = _check(isamAppliance, interface, port)
 
@@ -30,7 +31,7 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
         if check_mode is True:
             ret_obj['changed'] = True
         else:
-            delete(isamAppliance, interface, port, check_mode, force)
+            delete(isamAppliance, interface, port, check_mode, force=True)
         exists = False
 
     if force or exists is False:
@@ -42,12 +43,12 @@ def set(isamAppliance, interface, port, secure, check_mode=False, force=False):
                 "/mga/runtime_tuning/endpoints/v1",
                 {
                     'interface': interface,
-                    'port': port,
-                    'secure': secure
+                    'port': int(port),
+                    'secure': bool(secure)
                 },
                 requires_modules=requires_modules,requires_model=requires_model)
 
-    ret_obj['warnings'].append(warnings)
+    ret_obj['warnings'].extend(warnings)
 
     return ret_obj
 
@@ -76,10 +77,8 @@ def _check(isamAppliance, interface, port):
     warnings = []
     ret_obj = get(isamAppliance)
 
-    for key, val in ret_obj.items():
-        if key == 'warnings' and val != []:
-            if "Docker" in val[0]:
-                warnings = ret_obj['warnings']
+    if "Docker" in ' '.join(ret_obj['warnings']):
+        warnings = ret_obj['warnings']
 
     exists = False
     secure = False
@@ -116,6 +115,8 @@ def delete(isamAppliance, interface, port, check_mode=False, force=False):
     id = None
     if force is False:
         exists, secure, id, warnings = _check(isamAppliance, interface, port)
+    else:
+        id = '{0}:{1}'.format(interface, port)
 
     if force is True or exists is True:
         if check_mode is True:
