@@ -2,14 +2,15 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
     """
-    Get current date/time settings
+    Retrieving the current date and time settings
     """
-    return isamAppliance.invoke_get("Retrieving current date and time settings",
-                                    "/time_cfg")
+    return isamAppliance.invoke_get("Retrieving the current date and time settings",
+                                    "/time_cfg", requires_model=requires_model)
 
 
 def get_timezones(isamAppliance, check_mode=False, force=False):
@@ -17,16 +18,18 @@ def get_timezones(isamAppliance, check_mode=False, force=False):
     Retrieving the list of valid timezones
     """
     return isamAppliance.invoke_get("Retrieving the list of valid timezones",
-                                    "/time_cfg/I18nTimezone")
+                                    "/time_cfg/I18nTimezone", requires_model=requires_model)
 
 
 def set(isamAppliance, ntpServers, timeZone="America/New_York", check_mode=False, force=False):
     """
     Update date/time settings (set NTP server and timezone)
     """
-    if force is True or _check(isamAppliance, timeZone, ntpServers) is False:
+
+    check_value, warnings = _check(isamAppliance, timeZone, ntpServers)
+    if force is True or check_value is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
                 "Setting date/time settings (NTP)",
@@ -36,21 +39,28 @@ def set(isamAppliance, ntpServers, timeZone="America/New_York", check_mode=False
                     "timeZone": timeZone,
                     "enableNtp": True,
                     "ntpServers": ntpServers
-                })
+                },
+            requires_model=requires_model
+            )
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def disable(isamAppliance, check_mode=False, force=False):
     """
     Disable NTP settings, leaves all other settings intact
     """
-    if force is False:
-        ret_obj = get(isamAppliance)
+
+    ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+
+    if warnings != []:
+        if "Docker" in warnings[0]:
+            return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or ret_obj['data']['ntpConfig']['enableNtp'] == True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
                 "Setting date/time settings (NTP)",
@@ -60,9 +70,11 @@ def disable(isamAppliance, check_mode=False, force=False):
                     'timeZone': ret_obj['data']['timeZone'],
                     'enableNtp': False,
                     'ntpServers': ','.join(ns['ntpServer'] for ns in ret_obj['data']['ntpConfig']['ntpServers'])
-                })
+                },
+                requires_model=requires_model
+            )
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _check(isamAppliance, timeZone=None, ntpServers=None):
@@ -71,12 +83,17 @@ def _check(isamAppliance, timeZone=None, ntpServers=None):
     If timezone or ntpservers provided then also check if those values match what is currently set
     """
     ret_obj = get(isamAppliance)
+    warnings=ret_obj['warnings']
+
+    if warnings != []:
+        if "Docker" in warnings[0]:
+            return True, warnings
 
     if ret_obj['data']['ntpConfig']['enableNtp']:
         logger.info("NTP is already enabled")
         if timeZone is not None and ret_obj['data']['timeZone'] != timeZone:
             logger.info("Existing timeZone is different")
-            return False
+            return False, warnings
         if ntpServers != None:
             existing_ntpServers = list()
             for ntps in ret_obj['data']['ntpConfig']['ntpServers']:
@@ -85,10 +102,10 @@ def _check(isamAppliance, timeZone=None, ntpServers=None):
             logger.debug(str(sorted(ntpServers.split(','))))
             if sorted(ntpServers.split(',')) != sorted(existing_ntpServers):
                 logger.debug("Existing ntpServers are different")
-                return False
-        return True
+                return False, warnings
+        return True, warnings
     else:
-        return False
+        return False, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):
@@ -98,8 +115,19 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 
+    if ret_obj1['warnings'] != []:
+        if 'Docker' in ret_obj1['warnings'][0]:
+            return isamAppliance1.create_return_object(warnings=ret_obj1['warnings'])
+
+    if ret_obj2['warnings'] != []:
+        if 'Docker' in ret_obj2['warnings'][0]:
+            return isamAppliance2.create_return_object(warnings=ret_obj2['warnings'])
+
     # Ignore actual date / time on servers - they should be same if synced correctly
-    del ret_obj1['data']['dateTime']
-    del ret_obj2['data']['dateTime']
+    if 'dateTime' in ret_obj1['data']:
+        del ret_obj1['data']['dateTime']
+
+    if 'dateTime' in ret_obj2['data']:
+        del ret_obj2['data']['dateTime']
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['datetime'])

@@ -100,12 +100,14 @@ def add(isamAppliance, signature_file, restricted=False, check_mode=False, force
     if force is False:
         try:
             ret_obj = get_id(isamAppliance)
+
             if 'Docker' in ' '.join(ret_obj['warnings'][0]):
                 return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
             else:
                 id = ret_obj['data']['value']
         except IBMError:
             ret_obj = get_default_id(isamAppliance)
+
             if 'Docker' in ' '.join(ret_obj['warnings'][0]):
                 return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
             else:

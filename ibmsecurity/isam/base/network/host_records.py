@@ -4,6 +4,8 @@ from ibmsecurity.utilities.tools import json_compare
 
 logger = logging.getLogger(__name__)
 
+requires_model = "Appliance"
+
 try:
     basestring
 except NameError:
@@ -12,18 +14,18 @@ except NameError:
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
-    Get all current host records
+    Retrieving the list of host IP addresses
     """
-    return isamAppliance.invoke_get("Retrieving current host records",
-                                    "/isam/host_records")
+    return isamAppliance.invoke_get("Retrieving the list of host IP addresses",
+                                    "/isam/host_records", requires_model=requires_model)
 
 
 def get(isamAppliance, addr, check_mode=False, force=False):
     """
-    Get hostnames for specific addr
+    Retrieving the list of host names associated with a host IP address
     """
-    return isamAppliance.invoke_get("Retrieving host records for {0}".format(addr),
-                                    "/isam/host_records/{0}/hostnames".format(addr))
+    return isamAppliance.invoke_get("Retrieving the list of host names associated with a host IP address {0}".format(addr),
+                                    "/isam/host_records/{0}/hostnames".format(addr), requires_model=requires_model)
 
 
 def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
@@ -48,7 +50,8 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
     addr_exists = True
 
     if force is False:
-        exists, hostnames_remaining, addr_exists = _check(isamAppliance, addr, hostnames)
+        exists, hostnames_remaining, addr_exists, warnings = _check(isamAppliance, addr, hostnames)
+        ret_obj['warnings'] = warnings
 
     if force or exists is False:
         if check_mode is True:
@@ -70,7 +73,7 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
 
 def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
     """
-    Creates a new host record for addr with hostnames
+    Creating a host record (IP address and host name)
     :param isamAppliance:
     :param addr:          String, addr of host record to update
     :param hostnames:     Array, hostnames to be added
@@ -83,17 +86,16 @@ def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
     if isinstance(hostnames, basestring):
         hostnames = [hostnames]
 
-    ret_obj = isamAppliance.create_return_object()
     exists = False
     hostnames_remaining = hostnames
     addr_exists = True
 
     if force is False:
-        exists, hostnames_remaining, addr_exists = _check(isamAppliance, addr, hostnames)
+        exists, hostnames_remaining, addr_exists, warnings = _check(isamAppliance, addr, hostnames)
 
-    if force or exists is False:
+    if force or addr_exists is False:
         if check_mode is True:
-            ret_obj['changed'] = True
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             # Format POST response correctly
             hostnames_post = []
@@ -101,50 +103,55 @@ def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
                 hostnames_post.append({'name': entry})
 
             return isamAppliance.invoke_post(
-                "Creating new host record",
+                "Creating a host record (IP address and host name)",
                 "/isam/host_records",
                 {
                     'addr': addr,
                     'hostnames': hostnames_post
-                })
-    return ret_obj
+                }, requires_model=requires_model)
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def update(isamAppliance, addr, name, check_mode=False, force=False):
     """
-    Update an existing addr with a new hostname
+    Adding a host name to a host IP address
 
     :param isamAppliance:
     :param addr:          String, addr of host record to update
     :param name:          String, hostname to add to addr
     :return:
     """
-    ret_obj = isamAppliance.create_return_object()
+
     exists = False
     hostnames_remaining = [name]
     addr_exists = True
 
     if force is False:
-        exists, hostnames_remaining, addr_exists = _check(isamAppliance, addr, [name])
+        exists, hostnames_remaining, addr_exists, warnings = _check(isamAppliance, addr, [name])
         if addr_exists is False:
-            raise IBMError("HTTP Return code: 404", "Specified addr does not exist in the hosts file, cannot update.")
+            if warnings == []:
+                raise IBMError("HTTP Return code: 404",
+                               "Specified addr does not exist in the hosts file, cannot update.")
+            else:
+                return isamAppliance.create_return_object(warnings=warnings)
 
     if force or exists is False:
         if check_mode is True:
-            ret_obj['changed'] = True
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
-                "Update existing host record",
+                "Adding a host name to a host IP address",
                 "/isam/host_records/{0}/hostnames".format(addr),
-                {'name': hostnames_remaining[0]}
+                {'name': hostnames_remaining[0]},
+                requires_model=requires_model
             )
 
-    return ret_obj
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete(isamAppliance, addr, name=None, check_mode=False, force=False):
     """
-
+    Removing a host name from a host IP address
     :param isamAppliance:
     :param addr:          String, addr of host record to update
     :param name:          String, hostname to add to addr
@@ -153,34 +160,34 @@ def delete(isamAppliance, addr, name=None, check_mode=False, force=False):
     :return:
     """
 
-    ret_obj = isamAppliance.create_return_object()
     exists = False
     addr_exists = True
 
     if force is False:
-        exists, _, addr_exists = _check(isamAppliance, addr, [name])
+        exists, _, addr_exists, warnings = _check(isamAppliance, addr, [name])
         if addr_exists is False:
-            ret_obj['changed'] = False
-            return ret_obj
+            return isamAppliance.create_return_object(warnings=warnings)
 
     if force or exists is True or name is None:
         if check_mode is True:
-            ret_obj['changed'] = True
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             if exists is True:
                 # Delete specific entry
                 return isamAppliance.invoke_delete(
-                    "Update existing host record",
-                    "/isam/host_records/{0}/hostnames/{1}".format(addr, name)
+                    "Removing a host name from a host IP address",
+                    "/isam/host_records/{0}/hostnames/{1}".format(addr, name),
+                    requires_model=requires_model
                 )
             elif exists is False and name is None:
                 # Delete all entries for address if no name given
                 return isamAppliance.invoke_delete(
-                    "Update existing host record",
-                    "/isam/host_records/{0}".format(addr)
+                    "Removing a host record (IP address and associated host names)",
+                    "/isam/host_records/{0}".format(addr),
+                    requires_model=requires_model
                 )
 
-    return ret_obj
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _check(isamAppliance, addr, hostnames=[]):
@@ -188,28 +195,33 @@ def _check(isamAppliance, addr, hostnames=[]):
     Check addr has all hostnames set
     """
     exists = False
-    addr_exists = True
+    addr_exists = False
 
     # Make sure addr exists in host records
-    try:
-        ret_obj = get(isamAppliance, addr)
-    except:
-        addr_exists = False
-        return exists, hostnames, addr_exists
 
-    if len(hostnames) > 0:
-        for entry in ret_obj['data']:
-            if entry['name'] in hostnames:
-                hostnames.remove(entry['name'])
-                logger.debug("Host record exists, continuing checking")
+    ret_obj = get_all(isamAppliance)
+    warnings = ret_obj['warnings']
 
-    if len(hostnames) < 1:
-        exists = True
-        logger.info("All host records exist")
+    for obj in ret_obj['data']:
+        if obj['addr'] == addr:
+            addr_exists = True
+            if len(hostnames) > 0:
+                for entry in obj['hostnames']:
+                    if entry['name'] in hostnames:
+                        hostnames.remove(entry['name'])
+                        logger.debug("Host record exists, continuing checking")
+
+    if addr_exists is False:
+        logger.debug("Host record does not exist")
+        return exists, hostnames, addr_exists, warnings
     else:
-        logger.info("Not all host records exist")
+        if len(hostnames) < 1:
+            exists = True
+            logger.info("All host records exist")
+        else:
+            logger.info("Not all host records exist")
 
-    return exists, hostnames, addr_exists
+    return exists, hostnames, addr_exists, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):
