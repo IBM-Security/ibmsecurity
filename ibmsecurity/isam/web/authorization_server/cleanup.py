@@ -8,7 +8,7 @@ requires_version = None
 version = "v1"
 
 
-def get(isamAppliance, isamUser, doamin="Default", check_mode=False, force=False):
+def get(isamAppliance, isamUser, domain="Default", check_mode=False, force=False):
     """
     Retrieving the list of authorization servers
     """
@@ -16,16 +16,17 @@ def get(isamAppliance, isamUser, doamin="Default", check_mode=False, force=False
                                      "{0}".format(uri),
                                      {
                                          "user": isamUser.username,
-                                         "password": isamUser.password
+                                         "password": isamUser.password,
+                                         "domain": domain
                                      },
                                      requires_modules=requires_modules, requires_version=requires_version)
 
 
-def delete(isamAppliance, id, isamUser, check_mode=False, force=False):
+def delete(isamAppliance, id, isamUser, domain="Default", check_mode=False, force=False):
     """
     Removing an authorization server
     """
-    if force is True or _check(isamAppliance, id, isamUser) is True:
+    if force is True or _check(isamAppliance, id, isamUser, domain) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -34,21 +35,22 @@ def delete(isamAppliance, id, isamUser, check_mode=False, force=False):
                                                {
 
                                                    "user": isamUser.username,
-                                                   "password": isamUser.password
+                                                   "password": isamUser.password,
+                                                   "domain": domain
                                                },
                                                requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, id, isamUser):
+def _check(isamAppliance, id, isamUser, domain):
     """
     Check if authorization server is already created or not
 
     :param isamAppliance:
     :return:
     """
-    ret_obj = get(isamAppliance, isamUser)
+    ret_obj = get(isamAppliance, isamUser, domain)
 
     logger.debug("Looking for existing authorization servers in: {0}".format(ret_obj['data']))
     if ret_obj['data']:
