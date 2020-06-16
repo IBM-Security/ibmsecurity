@@ -57,6 +57,10 @@ def set_by_address(isamAppliance, address, port, secure, check_mode=False, force
     ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
     uuid = None
 
+    if "Docker" in ' '.join(ret_obj['warnings']):
+        warnings = ret_obj['warnings']
+        return isamAppliance.create_return_object(warnings=warnings)
+
     for intfc in ret_obj['data']['interfaces']:
         for intfc_adr in intfc['ipv4']['addresses']:
             if intfc_adr['address'] == address:
@@ -100,12 +104,6 @@ def _check(isamAppliance, interface, port):
 
 
 def delete(isamAppliance, interface, port, check_mode=False, force=False):
-
-#    ret_obj = get(isamAppliance)
-#    for key, val in ret_obj.items():
-#        if key == 'warnings' and val != []:
-#            if "Docker" in val[0]:
-#                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
     """
     Delete a runtime listening interface
