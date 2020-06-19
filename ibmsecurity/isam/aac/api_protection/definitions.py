@@ -391,4 +391,3 @@ def compare(isamAppliance1, isamAppliance2):
     return tools.json_compare(ret_obj1, ret_obj2,
                               deleted_keys=['id', 'datecreated', 'lastmodified',
                                             'mappingRules/id'])
-
