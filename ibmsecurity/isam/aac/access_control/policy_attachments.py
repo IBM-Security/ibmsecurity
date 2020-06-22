@@ -238,8 +238,10 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     """
     ret_obj = get(isamAppliance, server, resourceUri)
 
-    if force is True or (ret_obj['data'] != {} and (
-            ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
+    if force is True or (ret_obj['data'] != {} and
+                            (ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False) and
+                             ret_obj['data']['policies'] != []
+                        ):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
