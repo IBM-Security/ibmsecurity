@@ -217,8 +217,11 @@ def _get_interfaceUUID(isamAppliance, label, vlanId=None):
     if label is None or label == '' or label.lower() == 'auto':
         interfaceUUID = ''
     else:
-        intf = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
-        interfaceUUID = intf['uuid']
+        intf, warnings= ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        if intf:
+            interfaceUUID = intf['uuid']
+        else:
+            interfaceUUID = ''
 
     return interfaceUUID
 
