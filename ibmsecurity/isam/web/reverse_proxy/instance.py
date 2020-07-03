@@ -101,7 +101,7 @@ def import_config(isamAppliance, id, file, overwrite=True, check_mode=False, for
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(description="Import or Migrate reverse proxy",
-                                                   uri="{0}/{1}".format(uri, id),
+                                                   uri="{0}/{1}/migrate".format(uri, id),
                                                    fileinfo=[{
                                                        'file_formfield': 'file',
                                                        'filename': file,
