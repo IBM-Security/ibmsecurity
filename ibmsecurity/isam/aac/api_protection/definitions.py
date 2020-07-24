@@ -332,6 +332,10 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     """
     Creating or Modifying an API Protection Definition
     """
+    ### Fix for issue #252 ###
+    if oidc is not None and 'lifetime' in oidc and oidc['lifetime'] is not None:
+        oidc['lifetime'] = int(oidc['lifetime'])
+    
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
