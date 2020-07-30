@@ -32,11 +32,23 @@ def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, f
     """
     Retrieving a specific configuration entry - Reverse Proxy
     """
+    # URL being encoded primarily to handle request-log-format that has "%" values in them
+    f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
+                                                                     stanza_id, entry_id)
+    # Replace % with %25 if it is not encoded already
+    import re
+    ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
+    # URL encode
+    try:
+        # Assume Python3 and import package
+        from urllib.parse import quote
+    except ImportError:
+        # Now try to import Python2 package
+        from urllib import quote
+
+    full_uri = quote(ruri)
     return isamAppliance.invoke_get("Retrieving a specific configuration entry - Reverse Proxy",
-                                    "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri,
-                                                                                             reverseproxy_id,
-                                                                                             stanza_id,
-                                                                                             entry_id))
+                                    full_uri)
 
 
 def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, force=False):
@@ -219,12 +231,24 @@ def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            # URL being encoded primarily to handle request-log-format that has "%" values in them
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
+                                                                            stanza_id, entry_id)
+            # Replace % with %25 if it is not encoded already
+            import re
+            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
+            # URL encode
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            full_uri = quote(ruri)
             return isamAppliance.invoke_put(
                 "Updating a configuration entry or entries by stanza - Reverse Proxy",
-                "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri,
-                                                                         reverseproxy_id,
-                                                                         stanza_id,
-                                                                         entry_id),
+                full_uri,
                 {
                     'value': value_id
                 })
