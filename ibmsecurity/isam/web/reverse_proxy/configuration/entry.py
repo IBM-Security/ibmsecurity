@@ -116,12 +116,10 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
             elif update_required is True:
                 set_update = True
                 process_entry = True
-                for val in cur_value:
-                    # Force delete of existing values, new values will be added
-                    logger.info(
-                        'Deleting entry, will be re-added: {0}/{1}/{2}/{3}'.format(reverseproxy_id, stanza_id, entry[0],
-                                                                                   val))
-                    delete(isamAppliance, reverseproxy_id, stanza_id, entry[0], val, check_mode, True)
+                # Force delete of existing values, new values will be added
+                logger.info(
+                    'Deleting entry, will be re-added: {0}/{1}/{2}'.format(reverseproxy_id, stanza_id, entry[0]))
+                delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
             if process_entry is True:
                 if isinstance(entry[1], list):
                     for v in entry[1]:
@@ -190,6 +188,11 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
                 from urllib import quote
 
             full_uri = quote(ruri)
+            ### Workaround for value_id encoding in 9.0.7.1
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], '9.0.7.1') >= 0:
+                uri_parts = full_uri.split('/value/')
+                uri_parts[1] = uri_parts[1].replace('/', '%2F')
+                full_uri = '/value/'.join(uri_parts)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 
@@ -213,9 +216,24 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            # URL being encoded primarily to handle request-log-format that has "%" values in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id, stanza_id, entry_id)
+
+            # Replace % with %25 if it is not encoded already
+            import re
+            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
+            # URL encode
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            full_uri = quote(ruri)
+
             return isamAppliance.invoke_delete(
-                "Deleting all values from a configuration entry - Reverse Proxy", f_uri)
+                "Deleting all values from a configuration entry - Reverse Proxy", full_uri)
 
     return isamAppliance.create_return_object()
 
