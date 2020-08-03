@@ -216,9 +216,24 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            # URL being encoded primarily to handle request-log-format that has "%" values in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id, stanza_id, entry_id)
+
+            # Replace % with %25 if it is not encoded already
+            import re
+            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
+            # URL encode
+            try:
+                # Assume Python3 and import package
+                from urllib.parse import quote
+            except ImportError:
+                # Now try to import Python2 package
+                from urllib import quote
+
+            full_uri = quote(ruri)
+
             return isamAppliance.invoke_delete(
-                "Deleting all values from a configuration entry - Reverse Proxy", f_uri)
+                "Deleting all values from a configuration entry - Reverse Proxy", full_uri)
 
     return isamAppliance.create_return_object()
 
