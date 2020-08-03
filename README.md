@@ -5,7 +5,7 @@ has the most mature code, code for ISDS appliance is being developed.
 
 ## Requirements
 
-Python v2.7.10 and above is required for this package.
+Python v2.7.10 and above is required for this package. The package also supports python3 simultaneously (recommend v3.7 or higher).
 
 The following Python Packages are required:
 1. requests - for making REST API calls

@@ -45,7 +45,7 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def export_key(isamAppliance, id, check_mode=False, force=False):
+def export_key(isamAppliance, id, filename, check_mode=False, force=False):
     """
     Exporting a LTPA Key
     """

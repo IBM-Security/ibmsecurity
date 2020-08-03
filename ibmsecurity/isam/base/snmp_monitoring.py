@@ -3,12 +3,13 @@ import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieving the SNMP Monitoring configuration
     """
-    return isamAppliance.invoke_get("Retrieving the SNMP Monitoring configuration", "/snmp/v1")
+    return isamAppliance.invoke_get("Retrieving the SNMP Monitoring configuration", "/snmp/v1", requires_model=requires_model)
 
 
 def set_v1v2(isamAppliance, community, port=161, check_mode=False, force=False):
@@ -52,7 +53,10 @@ def set(isamAppliance, enabled, port=None, snmpv1v2c=None, snmpv3=None, check_mo
     if snmpv1v2c is not None and snmpv1v2c != '' and snmpv3 is not None and snmpv3 != '':
         warnings.append("SNMP v1v2 and v3 settings cannot be specified at the same time. Ignoring v1v2 settings.")
         snmpv1v2c = None
-    update_required, json_data = _check_all(isamAppliance, snmpv1v2c, snmpv3, port, enabled)
+
+    update_required, json_data, warn_str = _check_all(isamAppliance, snmpv1v2c, snmpv3, port, enabled)
+    warnings = warnings + warn_str
+
     if force is True or update_required is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
@@ -77,6 +81,11 @@ def _check_all(isamAppliance, snmpv1v2c, snmpv3, port, enabled):
     update_required = False
 
     ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
+    if warnings != []:
+        if 'Docker' in warnings[0]:
+            return update_required, json_data, warnings
+
     import ibmsecurity.utilities.tools
     sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
     logger.debug("Sorted input: {0}".format(sorted_json_data))
@@ -86,7 +95,7 @@ def _check_all(isamAppliance, snmpv1v2c, snmpv3, port, enabled):
         logger.info("Changes detected, update needed.")
         update_required = True
 
-    return update_required, json_data
+    return update_required, json_data, warnings
 
 
 def _check(isamAppliance, community, port):

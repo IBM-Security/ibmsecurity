@@ -97,12 +97,10 @@ def set(isamAppliance, resource_id, stanza_id, entries, check_mode=False, force=
             elif update_required is True:  # Existing entries need to be updated
                 set_update = True
                 process_entry = True
-                for val in cur_value:
-                    # Force delete of existing values, new values will be added
-                    logger.info(
-                        'Deleting entry, will be re-added: {0}/{1}/{2}/{3}'.format(resource_id, stanza_id, entry[0],
-                                                                                   val))
-                    delete(isamAppliance, resource_id, stanza_id, entry[0], val, check_mode, True)
+                # Force delete of existing values, new values will be added
+                logger.info(
+                    'Deleting entry, will be re-added: {0}/{1}/{2}'.format(resource_id, stanza_id, entry[0]))
+                delete_all(isamAppliance, resource_id, stanza_id, entry[0], check_mode, True)
             if process_entry is True:
                 if isinstance(entry[1], list):
                     for v in entry[1]:
@@ -135,9 +133,9 @@ def _collapse_entries(entries):
         if entry[0] == cur_key:
             cur_value.append(entry[1])
         else:
+            new_entry.append([cur_key, cur_value])
             cur_key = entry[0]
             cur_value = [entry[1]]
-            new_entry.append([cur_key, cur_value])
 
     new_entry.append([cur_key, cur_value])
 
