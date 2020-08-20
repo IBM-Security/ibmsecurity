@@ -166,6 +166,10 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
     """
     Deleting a value from a configuration entry - Reverse Proxy
     """
+
+    if value_id == '' or value_id is None:
+        return delete_all(isamAppliance=isamAppliance, reverseproxy_id=reverseproxy_id, stanza_id=stanza_id, entry_id=entry_id, check_mode=check_mode, force=force)
+
     if force is False:
         exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
