@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
 requires_model="Appliance"
@@ -29,6 +30,13 @@ def set(isamAppliance, primaryServer=None, secondaryServer=None, tertiaryServer=
             auto = True
         else:
             auto = False
+
+    # check autoFromInterface. If it is a label replace it with corresponding interface UUID, else leave it untouched (treat as UUID)
+    if autoFromInterface is not None:
+      ret_obj = ibmsecurity.isam.base.network.interfaces.get_all(isamAppliance)
+      for intfc in ret_obj['data']['interfaces']:
+        if intfc['label'] == autoFromInterface:
+          autoFromInterface = intfc['uuid']
 
     check_value,warnings = _check(isamAppliance, primaryServer, secondaryServer, tertiaryServer, searchDomains, auto,
                                autoFromInterface)
