@@ -21,10 +21,13 @@ def get_timezones(isamAppliance, check_mode=False, force=False):
                                     "/time_cfg/I18nTimezone", requires_model=requires_model)
 
 
-def set(isamAppliance, ntpServers, timeZone="America/New_York", check_mode=False, force=False):
+def set(isamAppliance, ntpServers="", timeZone="America/New_York", enableNtp=False, dateTime=None, check_mode=False, force=False):
     """
     Update date/time settings (set NTP server and timezone)
     """
+    
+    if dateTime is None:
+        dateTime = "0000-00-00 00:00:00"
 
     check_value, warnings = _check(isamAppliance, timeZone, ntpServers)
     if force is True or check_value is False:
@@ -35,9 +38,9 @@ def set(isamAppliance, ntpServers, timeZone="America/New_York", check_mode=False
                 "Setting date/time settings (NTP)",
                 "/time_cfg",
                 {
-                    "dateTime": "0000-00-00 00:00:00",
+                    "dateTime": dateTime,
                     "timeZone": timeZone,
-                    "enableNtp": True,
+                    "enableNtp": enableNtp,
                     "ntpServers": ntpServers
                 },
             requires_model=requires_model
