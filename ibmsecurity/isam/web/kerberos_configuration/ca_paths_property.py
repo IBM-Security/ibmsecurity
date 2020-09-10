@@ -96,7 +96,7 @@ def update(isamAppliance, client_realm, server_realm, intermediate_realm, check_
             found_server_realm = True
             break
     if found_server_realm:
-        int_realm = ca_paths._get(isamAppliance, "{0}/{1}".format(client_realm, server_realm))['data']
+        int_realm = ca_paths.get(isamAppliance, "{0}/{1}".format(client_realm, server_realm))['data']
         if intermediate_realm != int_realm[0]:
             needs_update = True
     else:
@@ -131,7 +131,7 @@ def set(isamAppliance, client_realm, server_realm=None, intermediate_realm=None,
                     server_realm))
 
     # check if client realm exists, if it does not exit with warning message
-    if ca_paths.search(isamAppliance, client_realm=client_realm)['data'] == {}:
+    if ca_paths.search(isamAppliance, name=client_realm)['data'] == {}:
         return isamAppliance.create_return_object(
             warnings="Client_realm: {0}, does not exist".format(client_realm))
     else:
