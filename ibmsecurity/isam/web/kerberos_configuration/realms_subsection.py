@@ -15,7 +15,7 @@ def search(isamAppliance, realm, subsection, check_mode=False, force=False):
     Search kerberos realm subsection by name
     """
     logger.info("subsection to search under: {0} is: {1} ".format(realm, subsection))
-    ret_obj = realms._get(isamAppliance, realm)
+    ret_obj = realms.get(isamAppliance, realm)
     return_obj = isamAppliance.create_return_object()
     return_obj["warnings"] = ret_obj["warnings"]
 
@@ -37,14 +37,14 @@ def _check(isamAppliance, realm, subsection):
     :param isamAppliance:
     :return:
     """
-    ret_obj = _search(isamAppliance, realm, subsection)
+    ret_obj = search(isamAppliance, realm, subsection)
 
     realm = "{0}/{1}".format("realms", realm)
 
     logger.debug("Looking for existing kerberos subsection: {1} in realm: {0} in: {2}".format(realm, subsection,
                                                                                               ret_obj['data']))
     if ret_obj['data'] != {}:
-        if ret_obj['data']['name'] == subsection and ret_obj['data']['parent'] == realm:
+        if ret_obj['data']['name'] == subsection:
             logger.debug("Found kerberos realm's subsection: {0}".format(subsection))
             return True
     return False
