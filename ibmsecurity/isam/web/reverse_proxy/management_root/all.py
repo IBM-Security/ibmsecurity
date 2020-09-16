@@ -23,7 +23,7 @@ def export_zip(isamAppliance, instance_id, filename, check_mode=False, force=Fal
             return isamAppliance.invoke_get_file(
                 "Exporting the contents of the administration pages root as a .zip file",
                 "/wga/reverseproxy/{0}/management_root?index=&name=&enc_name=&type=&browser=".format(instance_id),
-                filename)
+                filename=filename,no_headers=True)
 
     return isamAppliance.create_return_object()
 
