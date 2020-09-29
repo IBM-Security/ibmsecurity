@@ -27,7 +27,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
                                     "/net/routes/{0}".format(uuid), requires_model=requires_model)
 
 
-def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPrefix=None, gateway=None, label=None,
+def add(isamAppliance, address, enabled=True, comment=None, table='main', maskOrPrefix=None, gateway=None, label=None,
         vlanId=None, metric=None, check_mode=False, force=False):
     """
     Creating a static route
@@ -59,11 +59,10 @@ def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPr
         logger.debug("Interface {0} not found, Add static route is not supported.".format(label))
         return isamAppliance.create_return_object(changed=False)
 
-    if maskOrPrefix is None:
-        maskOrPrefix = ""
-    if isinstance(maskOrPrefix, basestring):
-        if maskOrPrefix.lower() == 'none':
-            maskOrPrefix = ""
+    if maskOrPrefix is not None:
+        if isinstance(maskOrPrefix, basestring):
+            if maskOrPrefix.lower() == 'none':
+                maskOrPrefix = ''
     if isinstance(table, basestring):
         if table.lower() == 'none':
             table = None
@@ -97,7 +96,7 @@ def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPr
 
 
 def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=None, gateway=None,
-           metric=None, comment='', table='main', label=None, vlanId=None, new_label=None, new_vlanId=None,
+           metric=None, comment=None, table='main', label=None, vlanId=None, new_label=None, new_vlanId=None,
            check_mode=False, force=False):
     """
     Updating a static route
@@ -141,11 +140,10 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
         interfaceUUID = ''
     if new_address is not None:
         address = new_address
-    if maskOrPrefix is None:
-        maskOrPrefix = ''
-    if isinstance(maskOrPrefix, basestring):
-        if maskOrPrefix.lower() == 'none':
-            maskOrPrefix = ''
+    if maskOrPrefix is not None:
+        if isinstance(maskOrPrefix, basestring):
+            if maskOrPrefix.lower() == 'none':
+                maskOrPrefix = ''
 
     if isinstance(metric, basestring):
         if metric.lower() == 'none':
@@ -183,7 +181,7 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
 
 
 def set(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=None, gateway=None, metric=None,
-        comment='', table='main', label=None, vlanId=None, new_label=None, new_vlanId=None, check_mode=False,
+        comment=None, table='main', label=None, vlanId=None, new_label=None, new_vlanId=None, check_mode=False,
         force=False):
 
     if isamAppliance.facts['model'] != requires_model:
