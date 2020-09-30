@@ -2,7 +2,7 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-requires_model = "Appliance"
+requires_model = None
 
 def get(isamAppliance, check_mode=False, force=False):
     """
