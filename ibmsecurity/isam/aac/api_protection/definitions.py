@@ -308,6 +308,9 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                     if 'issueSecret' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['issueSecret'] is False:
                         del ret_obj['data']['oidc']['issueSecret']
 
+        if oidc is None and 'oidc' in ret_obj['data']:
+            del ret_obj['data']['oidc']
+
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
         logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
