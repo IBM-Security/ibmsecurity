@@ -194,10 +194,6 @@ def update_attachments(isamAppliance, server, resourceUri, attachments, action, 
 
 
 def _check(policies, attachments, action):
-    # No need to check if the remove is to be forced
-    if action == 'force_remove':
-        return True
-
     # Check and see if there is even one match
     full_match = True
     partial_match = False
@@ -205,7 +201,7 @@ def _check(policies, attachments, action):
         match = False
         for cur_pol in policies:
             if new_pol['name'] == cur_pol['name'] and new_pol['type'] == cur_pol['type']:
-                logger.info("Atleast one policy already exists {0}/{1}".format(new_pol['type'], new_pol['name']))
+                logger.info("At least one policy already exists {0}/{1}".format(new_pol['type'], new_pol['name']))
                 match = True
                 break
         if match is False:
@@ -215,7 +211,7 @@ def _check(policies, attachments, action):
 
     # Add will be rejected if there is even one match
     if action == 'add':
-        logger.info("Check if there is atleast one match returned: {0}".format(partial_match))
+        logger.info("Check if there is at least one match returned: {0}".format(partial_match))
         return not partial_match
     # Delete will be rejected if there is a partial match (has to be full match)
     elif action == 'remove':
@@ -227,6 +223,10 @@ def _check(policies, attachments, action):
             return False
         else:
             return True
+    #Force delete will be rejected if there is no match
+    elif action == 'force_remove':
+        logger.info("Check if there is at least one match returned: {0}".format(partial_match))
+        return partial_match
     else:
         from ibmsecurity.appliance.ibmappliance import IBMError
         raise IBMError("999", "Unknown action provided: {0}".format(action))
