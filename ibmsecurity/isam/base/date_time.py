@@ -29,7 +29,7 @@ def set(isamAppliance, ntpServers="", timeZone="America/New_York", enableNtp=Fal
     if dateTime is None:
         dateTime = "0000-00-00 00:00:00"
 
-    check_value, warnings = _check(isamAppliance, timeZone, ntpServers)
+    check_value, warnings = _check(isamAppliance=isamAppliance, timeZone=timeZone, ntpServers=ntpServers, enableNtp=enableNtp)
     if force is True or check_value is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
@@ -80,7 +80,7 @@ def disable(isamAppliance, check_mode=False, force=False):
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def _check(isamAppliance, timeZone=None, ntpServers=None):
+def _check(isamAppliance, timeZone, ntpServers, enableNtp):
     """
     Check if NTP is already set for syncing date/time
     If timezone or ntpservers provided then also check if those values match what is currently set
@@ -92,23 +92,24 @@ def _check(isamAppliance, timeZone=None, ntpServers=None):
         if "Docker" in warnings[0]:
             return True, warnings
 
-    if ret_obj['data']['ntpConfig']['enableNtp']:
-        logger.info("NTP is already enabled")
-        if timeZone is not None and ret_obj['data']['timeZone'] != timeZone:
-            logger.info("Existing timeZone is different")
-            return False, warnings
-        if ntpServers != None:
-            existing_ntpServers = list()
-            for ntps in ret_obj['data']['ntpConfig']['ntpServers']:
-                existing_ntpServers.append(ntps['ntpServer'])
-            logger.debug(str(sorted(existing_ntpServers)))
-            logger.debug(str(sorted(ntpServers.split(','))))
-            if sorted(ntpServers.split(',')) != sorted(existing_ntpServers):
-                logger.debug("Existing ntpServers are different")
-                return False, warnings
-        return True, warnings
-    else:
+    if ret_obj['data']['ntpConfig']['enableNtp'] != enableNtp:
         return False, warnings
+
+    if timeZone != ret_obj['data']['timeZone']:
+        logger.info("Existing timeZone is different")
+        return False, warnings
+
+    if ntpServers != None:
+        existing_ntpServers = list()
+        for ntps in ret_obj['data']['ntpConfig']['ntpServers']:
+            existing_ntpServers.append(ntps['ntpServer'])
+        logger.debug(str(sorted(existing_ntpServers)))
+        logger.debug(str(sorted(ntpServers.split(','))))
+        if sorted(ntpServers.split(',')) != sorted(existing_ntpServers):
+            logger.debug("Existing ntpServers are different")
+            return False, warnings
+
+    return True, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):
