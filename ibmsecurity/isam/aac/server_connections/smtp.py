@@ -122,7 +122,7 @@ def _create_json(name, description, locked, connection, connectionManager):
     return json
 
 
-def search(isamAppliance, name):
+def search(isamAppliance, name, check_mode=False, force=False):
     """
     Retrieve UUID for named SMTP connection
     """
