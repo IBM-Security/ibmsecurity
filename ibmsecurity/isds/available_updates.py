@@ -64,18 +64,33 @@ def _check_file(isdsAppliance, file):
         # Split of file by '-' hyphen and '_' under score
         import re
         fp = re.split('-|_', fn[0])
-        logger.debug("{0}: version: {1} date: {2}".format(fp[2], fp[0], fp[3]))
+        firm_file_version = fp[0]
+        firm_file_product = fp[2]
+        firm_file_date = fp[3]
+        logger.debug("PKG file details: {0}: version: {1} date: {2}".format(firm_file_product, firm_file_version, firm_file_date))
 
         # Check if firmware level already contains the update to be uploaded or greater, check Active partition
-        # firmware "name" of format - 8.0.1.9-ISS-ISDS_20181207-0045 
+        # firmware "name" of format - 8.0.1.9-ISS-ISDS_20181207-0045
         import ibmsecurity.isds.firmware
         ret_obj = ibmsecurity.isds.firmware.get(isdsAppliance)
         for firm in ret_obj['data']:
-            if firm['active'] is True and firm['name'] >= fn[0]:
-                logger.info(
-                    "Active partition has version {0} which is greater or equals install package at version {1}.".format(
-                        firm['name'], fn[0]))
-                return True
+            # Split of file by '-' hyphen and '_' under score
+            fp = re.split('-|_', firm['name'])
+            firm_appl_version = fp[0]
+            firm_appl_product = fp[2]
+            firm_appl_date = fp[3]
+            logger.debug("Partition details ({0}): {1}: version: {2} date: {3}".format(firm['partition'], firm_appl_product, firm_appl_version, firm_appl_date))
+            if firm['active'] is True:
+                from ibmsecurity.utilities import tools
+                if tools.version_compare(firm_appl_version, firm_file_version) >= 0:
+                    logger.info(
+                        "Active partition has version {0} which is greater or equals than install package at version {1}.".format(
+                            firm_appl_version, firm_file_version))
+                    return True
+                else:
+                    logger.info(
+                        "Active partition has version {0} which is smaller than install package at version {1}.".format(
+                            firm_appl_version, firm_file_version))
 
         # Check if update uploaded - will not show up if installed though
         ret_obj = get(isdsAppliance)
@@ -84,7 +99,8 @@ def _check_file(isdsAppliance, file):
             rd = rd.replace('-', '')  # turn release date into 20161102 format from 2016-11-02
             if upd['version'] == fp[0] and rd == fp[3]:  # Version of format 8.0.1.9
                 return True
-    except:
+    except Exception as e:
+        logger.debug("Exception occured: {0}".format(e))
         pass
 
     return False

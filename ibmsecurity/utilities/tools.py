@@ -6,6 +6,8 @@ import difflib
 import hashlib
 import ntpath
 import re
+from io import open
+import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -166,9 +168,9 @@ def files_same(original_file, new_file):
         -works with text, image, and zip files
     Returns Boolean
     """
-    with open(original_file, 'r') as f:
+    with open(original_file, 'rb') as f:
         original_file_contents = f.read()
-    with open(new_file, 'r') as f:
+    with open(new_file, 'rb') as f:
         new_file_contents = f.read()
     hash_original_file = hashlib.sha224(original_file_contents).hexdigest()
     hash_new_file = hashlib.sha224(new_file_contents).hexdigest()
@@ -177,6 +179,38 @@ def files_same(original_file, new_file):
     else:
         return False
 
+def files_same_zip_content(original_file, new_file):
+    identical = True
+    logger.debug("Comparing original_file[{}] vs new_file[{}]".format(original_file, new_file))
+    z1 = zipfile.ZipFile(original_file)
+    z2 = zipfile.ZipFile(new_file)
+    
+    if len(z1.infolist()) != len(z2.infolist()):
+        logger.debug("number of archive elements differ: {} in {} vs {} from server".format(len(z1.infolist()), z1.filename, len(z2.infolist())))
+        identical = False
+        # Can stop comparison of zip files for perfomance
+        return identical
+    for zipentry in z1.infolist():
+        if zipentry.filename not in z2.namelist():
+            logger.debug("no file named {} found in {}".format(zipentry.filename, z2.filename))
+            identical = False
+        else:
+            with z1.open(zipentry.filename) as f:
+                original_file_contents = f.read()
+            with z2.open(zipentry.filename) as f:
+                new_file_contents = f.read()
+            hash_original_file = hashlib.sha224(original_file_contents).hexdigest()
+            hash_new_file = hashlib.sha224(new_file_contents).hexdigest()
+            if hash_original_file != hash_new_file:
+                identical = False
+                logger.debug("content for zip file {} differs.".format(zipentry.filename))
+
+    if identical:
+        logger.info("content for zip files {} and {} are the same.".format(original_file,new_file))
+    else:
+        logger.info("content for zip files {} and {} are different.".format(original_file,new_file))
+
+    return identical
 
 def get_random_temp_dir():
     """
@@ -195,7 +229,7 @@ def strings(filename, min=4):
     """
     Emulate UNIX "strings" command on a file
     """
-    with open(filename, "rb") as f:
+    with open(filename, 'r', errors='ignore') as f:
         result = ""
         for c in f.read():
             if c in string.printable:

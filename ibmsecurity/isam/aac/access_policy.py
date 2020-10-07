@@ -1,5 +1,6 @@
 import logging
 from ibmsecurity.utilities import tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,6 @@ requires_modules = ["federation", "mga"]
 requires_version = "9.0.4.0"
 
 
-# TODO - check the version this was introduced in.
 def get_all(isamAppliance, sortBy=None, count=None, start=None, filter=None, check_mode=False, force=False):
     """
     Retrieve a list of access policies

@@ -2,10 +2,11 @@ import logging
 from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
+requires_model = "Appliance"
 
 # URI for this module
 uri = "/wga/reverseproxy"
-
+requires_model = "Appliance"
 
 def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
@@ -13,7 +14,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
     try:
         return isamAppliance.invoke_get("Retrieving all trace components - Reverse Proxy",
-                                        "{0}/{1}/tracing".format(uri, instance_id))
+                                        "{0}/{1}/tracing".format(uri, instance_id), requires_model=requires_model)
     except:
         # Return empty array - exception thrown if list has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -28,7 +29,7 @@ def get_all_logs(isamAppliance, instance_id, component_id, check_mode=False, for
     return isamAppliance.invoke_get("Retrieving all trace log files for a component - Reverse Proxy",
                                     "{0}/{1}/tracing/{2}/trace_files".format(uri,
                                                                              instance_id,
-                                                                             component_id))
+                                                                             component_id),requires_model=requires_model)
 
 
 def get(isamAppliance, instance_id, component_id, file_id, options=None, size=None, start=None, check_mode=False,
@@ -43,7 +44,7 @@ def get(isamAppliance, instance_id, component_id, file_id, options=None, size=No
                                                                                  file_id,
                                                                                  tools.create_query_string(
                                                                                      options=options, start=start,
-                                                                                     size=size)))
+                                                                                     size=size)),requires_model=requires_model)
 
 
 def export_file(isamAppliance, instance_id, component_id, file_id, filename, check_mode=False, force=False):
@@ -58,7 +59,7 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filename, che
                                                  "{0}/{1}/tracing/{2}/trace_files/{3}?export".format(uri,
                                                                                                      instance_id,
                                                                                                      component_id,
-                                                                                                     file_id), filename)
+                                                                                                     file_id), filename,requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -68,8 +69,10 @@ def set(isamAppliance, instance_id, component_id, level, flush_interval,
     """
     Modify the trace settings for a component
     """
+    warnings = _check(isamAppliance,instance_id)
+
     if check_mode is True:
-        return isamAppliance.create_return_object(changed=True)
+        return isamAppliance.create_return_object(changed=True,warnings=warnings)
     else:
         return isamAppliance.invoke_put(
             "Modify trace settings for a component",
@@ -82,13 +85,15 @@ def set(isamAppliance, instance_id, component_id, level, flush_interval,
                 'rollover_size': rollover_size,
                 'max_rollover_files': max_rollover_files,
                 'compress': compress
-            })
+            },requires_model=requires_model)
 
 
 def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, force=False):
     """
     Deleting a trace log file or rollover file for a component - Reverse Proxy
     """
+    warnings = _check(isamAppliance,instance_id)
+
     if force is False:
         try:
             ret_obj = get(isamAppliance, instance_id, component_id, file_id)
@@ -98,22 +103,24 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
 
     if force is True or delete_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a trace log file",
                 "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,
                                                              instance_id,
                                                              component_id,
-                                                             file_id))
+                                                             file_id),requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force=False):
     """
     Deleting all trace files and rollover files for a component - Reverse Proxy
     """
+    warnings = _check(isamAppliance,instance_id)
+
     if force is False:
         try:
             ret_obj = get_all_logs(isamAppliance, instance_id, component_id)
@@ -123,15 +130,15 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
 
     if force is True or delete_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting all trace log files",
                 "{0}/{1}/tracing/{2}/trace_files".format(uri,
                                                          instance_id,
-                                                         component_id))
+                                                         component_id),requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete_multiple_files(isamAppliance, instance_id, component_id, files, check_mode=False, force=False):
@@ -142,16 +149,18 @@ def delete_multiple_files(isamAppliance, instance_id, component_id, files, check
     files_to_delete = []
 
     ret_obj = get_all_logs(isamAppliance, instance_id, component_id)
+    check_value,warnings = _check(isamAppliance,instance_id)
 
-    for obj1 in files:
-        for obj2 in ret_obj['data']:
-            if obj1['name'] == obj2['id']:
-                files_to_delete.append(obj1)
-                delete_required = True
+    if check_value is True:
+        for obj1 in files:
+            for obj2 in ret_obj['data']:
+                if obj1['name'] == obj2['id']:
+                    files_to_delete.append(obj1)
+                    delete_required = True
 
     if force is True or delete_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             if len(files_to_delete) == 1:
                 return delete(isamAppliance, instance_id, component_id, files_to_delete[0]['name'])
@@ -162,6 +171,21 @@ def delete_multiple_files(isamAppliance, instance_id, component_id, files, check
                     {
                         'files': files_to_delete
                     }
-                )
+                ,requires_model=requires_model)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
+
+def _check(isamAppliance,instance_id):
+    """
+    Check if it's appliance or not
+    :param isamAppliance:
+    :return: true|false, warnings message
+    """
+    ret_obj = get_all(isamAppliance,instance_id)
+    check_value, warnings=False, ret_obj['warnings']
+
+    if warnings == []:
+        check_value = True
+        return check_value, warnings
+    else:
+        return check_value, warnings

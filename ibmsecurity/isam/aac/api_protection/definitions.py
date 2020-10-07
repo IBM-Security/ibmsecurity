@@ -1,4 +1,6 @@
 import logging
+
+from ibmsecurity.isam.fed import attribute_source
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.aac import access_policy
 
@@ -90,18 +92,18 @@ def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
                 "description": description,
                 "grantTypes": grantTypes,
                 "tcmBehavior": tcmBehavior,
-                "accessTokenLifetime": accessTokenLifetime,
-                "accessTokenLength": accessTokenLength,
+                "accessTokenLifetime": int(accessTokenLifetime),
+                "accessTokenLength": int(accessTokenLength),
                 "enforceSingleUseAuthorizationGrant": enforceSingleUseAuthorizationGrant,
-                "authorizationCodeLifetime": authorizationCodeLifetime,
-                "authorizationCodeLength": authorizationCodeLength,
+                "authorizationCodeLifetime": int(authorizationCodeLifetime),
+                "authorizationCodeLength": int(authorizationCodeLength),
                 "issueRefreshToken": issueRefreshToken,
-                "refreshTokenLength": refreshTokenLength,
-                "maxAuthorizationGrantLifetime": maxAuthorizationGrantLifetime,
+                "refreshTokenLength": int(refreshTokenLength),
+                "maxAuthorizationGrantLifetime": int(maxAuthorizationGrantLifetime),
                 "enforceSingleAccessTokenPerGrant": enforceSingleAccessTokenPerGrant,
                 "enableMultipleRefreshTokensForFaultTolerance": enableMultipleRefreshTokensForFaultTolerance,
                 "pinPolicyEnabled": pinPolicyEnabled,
-                "pinLength": pinLength,
+                "pinLength": int(pinLength),
                 "tokenCharSet": tokenCharSet
             }
             if accessPolicyName is not None:
@@ -126,6 +128,8 @@ def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
                         "Appliance at version: {0}, oidc: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring oidc for this call.".format(
                             isamAppliance.facts["version"], oidc))
                 else:
+                    if 'attributeSources' in oidc:
+                        oidc['attributeSources'] = _map_oidc_attributeSources(isamAppliance, oidc['attributeSources'], check_mode, force)
                     json_data["oidc"] = oidc
                 if 'dynamicClients' in json_data['oidc']:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
@@ -195,18 +199,18 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
         "description": description,
         "grantTypes": grantTypes,
         "tcmBehavior": tcmBehavior,
-        "accessTokenLifetime": accessTokenLifetime,
-        "accessTokenLength": accessTokenLength,
+        "accessTokenLifetime": int(accessTokenLifetime),
+        "accessTokenLength": int(accessTokenLength),
         "enforceSingleUseAuthorizationGrant": enforceSingleUseAuthorizationGrant,
-        "authorizationCodeLifetime": authorizationCodeLifetime,
-        "authorizationCodeLength": authorizationCodeLength,
+        "authorizationCodeLifetime": int(authorizationCodeLifetime),
+        "authorizationCodeLength": int(authorizationCodeLength),
         "issueRefreshToken": issueRefreshToken,
-        "refreshTokenLength": refreshTokenLength,
-        "maxAuthorizationGrantLifetime": maxAuthorizationGrantLifetime,
+        "refreshTokenLength": int(refreshTokenLength),
+        "maxAuthorizationGrantLifetime": int(maxAuthorizationGrantLifetime),
         "enforceSingleAccessTokenPerGrant": enforceSingleAccessTokenPerGrant,
         "enableMultipleRefreshTokensForFaultTolerance": enableMultipleRefreshTokensForFaultTolerance,
         "pinPolicyEnabled": pinPolicyEnabled,
-        "pinLength": pinLength,
+        "pinLength": int(pinLength),
         "tokenCharSet": tokenCharSet
     }
     if accessPolicyName is not None:
@@ -232,6 +236,8 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                     isamAppliance.facts["version"], oidc))
             oidc = None
         else:
+            if 'attributeSources' in oidc:
+                oidc['attributeSources'] = _map_oidc_attributeSources(isamAppliance, oidc['attributeSources'], check_mode, force)
             json_data["oidc"] = oidc
 
     if force is not True:
@@ -302,6 +308,9 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                     if 'issueSecret' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['issueSecret'] is False:
                         del ret_obj['data']['oidc']['issueSecret']
 
+        if oidc is None and 'oidc' in ret_obj['data']:
+            del ret_obj['data']['oidc']
+
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
         logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
@@ -332,6 +341,10 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     """
     Creating or Modifying an API Protection Definition
     """
+    ### Fix for issue #252 ###
+    if oidc is not None and 'lifetime' in oidc and oidc['lifetime'] is not None:
+        oidc['lifetime'] = int(oidc['lifetime'])
+    
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
@@ -362,6 +375,30 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
                       enableMultipleRefreshTokensForFaultTolerance=enableMultipleRefreshTokensForFaultTolerance,
                       pinPolicyEnabled=pinPolicyEnabled, pinLength=pinLength,
                       tokenCharSet=tokenCharSet, oidc=oidc, check_mode=check_mode, force=force)
+
+
+def _map_oidc_attributeSources(isamAppliance, attributeSources, check_mode=False, force=False):
+    """
+     Maps OIDC definition attributeSources from a string name to an ID
+     :param isamAppliance: ISAM Appliance to act on
+     :param attributeSources: Attribute sources to convert from string to integer
+     :param check_mode: Ignored
+     :param force: Ignored
+     :return: attributeSources with attribute id mapped from attribute name
+    """
+
+    if attributeSources is not None:
+        attr_lookup = None
+        for source in attributeSources:
+            # Only perform mapping if attributeSourceId is not an integer (this provides backwards compatibility)
+            if not source['attributeSourceId'].isdigit():
+                if not attr_lookup:
+                    attr_lookup = attribute_source.get_all(isamAppliance, check_mode=check_mode, force=force)['data']
+                for attr in attr_lookup:
+                    if attr['name'] == source['attributeSourceId']:
+                        source['attributeSourceId'] = attr['id']
+
+    return attributeSources
 
 
 def compare(isamAppliance1, isamAppliance2):

@@ -118,7 +118,7 @@ def add(isamAppliance, name, uri, description="", attributes=None, properties=No
                         property['value'] = id
                 json_data['properties'] = properties
             return isamAppliance.invoke_post(
-                "Create a new federation", module_uri, json_data,
+                "Create a new Authentication Mechanism", module_uri, json_data,
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()

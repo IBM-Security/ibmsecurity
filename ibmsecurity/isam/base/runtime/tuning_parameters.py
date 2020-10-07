@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 requires_modules = ["mga", "federation"]
-
+requires_model = "Appliance"
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -10,31 +10,37 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieving runtime tuning parameters",
                                     "/mga/runtime_tuning/v1",
-                                    requires_modules=requires_modules)
+                                    requires_modules=requires_modules,requires_model=requires_model)
 
 
 def set(isamAppliance, option, value, check_mode=False, force=False):
+
+#    ret_obj = get(isamAppliance)
+#    for key, val in ret_obj.items():
+#        if key == 'warnings' and val != []:
+#            if "Docker" in val[0]:
+#                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
     """
     Set a runtime tuning parameter
     """
     warnings = []
     matches, exists = False, False
     if force is False:
-        matches, exists = _check(isamAppliance, option, value)
+        matches, exists, warnings = _check(isamAppliance, option, value)
 
     if exists is False:
         warnings.append("Tuning Parameter {0} was not found. set() request will attempt anyway.".format(option))
 
     if force is True or matches is False:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_put(
                 "Setting a runtime tuning parameter",
                 "/mga/runtime_tuning/{0}/v1".format(option),
                 {
                     'value': value
-                }, requires_modules=requires_modules)
+                }, requires_modules=requires_modules,requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -44,6 +50,7 @@ def _check(isamAppliance, option, value):
     Check if tuning parameter option exists and matches value
     """
     ret_obj = get(isamAppliance)
+    warnings = ret_obj['warnings']
 
     matches = False
     exists = False
@@ -58,7 +65,7 @@ def _check(isamAppliance, option, value):
     except:
         logger.info("Runtime tuning parameter does not exist")
 
-    return matches, exists
+    return matches, exists, warnings
 
 
 def reset(isamAppliance, option, check_mode=False, force=False):
@@ -69,17 +76,17 @@ def reset(isamAppliance, option, check_mode=False, force=False):
     matches, exists = False, False
 
     if force is False:
-        matches, exists = _check(isamAppliance, option, None)
+        matches, exists, warnings = _check(isamAppliance, option, None)
 
     if force is True or exists is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
                 "Reset a runtime tuning parameter to default value",
                 "/mga/runtime_tuning/{0}/v1".format(option),
-                requires_modules=requires_modules)
-    elif exists is False:
+                requires_modules=requires_modules,requires_model=requires_model)
+    elif exists is False and warnings == []:
         warnings.append("Tuning Parameter {0} was not found. Skipping reset() request.".format(option))
 
     return isamAppliance.create_return_object(warnings=warnings)
