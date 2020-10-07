@@ -113,6 +113,27 @@ def delete(isamAppliance, id=None, comment=None, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+def multi_delete(isamAppliance, ids=[], comment=None, check_mode=False, force=False):
+    """
+    Delete multiple snapshots based on id or comment
+    """
+    if comment != None:
+      ret_obj = search(isamAppliance, comment=comment)
+      if ret_obj['data'] == {}:
+        return isamAppliance.create_return_object(changed=False)
+      else:
+        if ids == []:
+          ids = ret_obj['data']
+        else:
+          for snaps in ret_obj['data']:
+            ids.append(snaps)
+
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_delete("Deleting one or multiple snapshots", "/snapshots/multi_destroy?record_ids=" + ",".join(ids))
+
+    return isamAppliance.create_return_object()
 
 def modify(isamAppliance, id, comment, check_mode=False, force=False):
     """
