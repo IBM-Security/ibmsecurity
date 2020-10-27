@@ -83,7 +83,7 @@ def search(isamAppliance, federation_name, partner_name, force=False, check_mode
     return return_obj
 
 
-def import_metadata(isamAppliance, federation_name, partner_name, filename, check_mode=False, force=False):
+def import_metadata(isamAppliance, federation_name, filename, partner_name=None, check_mode=False, force=False):
     """
     Import a new partner
     """

@@ -146,11 +146,11 @@ def export_template_file(isamAppliance, id, filename, check_mode=False, force=Fa
     return isamAppliance.create_return_object()
 
 
-def import_file(isamAppliance, id, filename, check_mode=False, force=False):
+def import_file(isamAppliance, filename, id=None, check_mode=False, force=False):
     """
     Importing a HTTP Transformation
     """
-    if force is True or _check_import(isamAppliance, id, filename, check_mode=check_mode):
+    if force is True or _check_import(isamAppliance, filename, check_mode=check_mode):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -182,14 +182,14 @@ def _check(isamAppliance, id):
     return False
 
 
-def _check_import(isamAppliance, id, filename, check_mode=False):
+def _check_import(isamAppliance, filename, check_mode=False):
     """
     Checks if file on the Appliance exists and if so, whether it is different from filename
     """
     tmpdir = get_random_temp_dir()
-    tmp_original_file = os.path.join(tmpdir, os.path.basename(id))
-    if _check(isamAppliance, id):
-        export_file(isamAppliance, id, tmp_original_file, check_mode=False, force=True)
+    tmp_original_file = os.path.join(tmpdir, os.path.basename(filename))
+    if _check(isamAppliance, os.path.basename(filename)):
+        export_file(isamAppliance, os.path.basename(filename), tmp_original_file, check_mode=False, force=True)
         logger.debug("file already exists on appliance")
         if files_same(tmp_original_file, filename):
             logger.debug("files are the same, so we don't want to do anything")
@@ -197,7 +197,7 @@ def _check_import(isamAppliance, id, filename, check_mode=False):
             return False
         else:
             logger.debug("files are different, so we delete existing file in preparation for import")
-            delete(isamAppliance, id, check_mode=check_mode, force=True)
+            delete(isamAppliance, os.path.basename(filename), check_mode=check_mode, force=True)
             shutil.rmtree(tmpdir)
             return True
     else:

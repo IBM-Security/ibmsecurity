@@ -100,7 +100,8 @@ def config(isamAppliance, server, resourceUri, policies=[], policyType=None, pol
     """
     Configure a resource
     Note: Please input policies with policy names (it will be converted to id's), like so:
-     [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
+     [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'},
+      {'name': '<definition name>', 'type': 'definition'}]
     """
     warnings = []
     if force is False:
@@ -174,7 +175,8 @@ def update_attachments(isamAppliance, server, resourceUri, attachments, action, 
     Update the attachments for a resource
 
     Provide attachemnts like so:
-        [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
+     [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'},
+      {'name': '<definition name>', 'type': 'definition'}]
     """
     ret_obj = get(isamAppliance, server, resourceUri)
     cur_policies = ret_obj['data']['policies']
@@ -192,10 +194,6 @@ def update_attachments(isamAppliance, server, resourceUri, attachments, action, 
 
 
 def _check(policies, attachments, action):
-    # No need to check if the remove is to be forced
-    if action == 'force_remove':
-        return True
-
     # Check and see if there is even one match
     full_match = True
     partial_match = False
@@ -203,7 +201,7 @@ def _check(policies, attachments, action):
         match = False
         for cur_pol in policies:
             if new_pol['name'] == cur_pol['name'] and new_pol['type'] == cur_pol['type']:
-                logger.info("Atleast one policy already exists {0}/{1}".format(new_pol['type'], new_pol['name']))
+                logger.info("At least one policy already exists {0}/{1}".format(new_pol['type'], new_pol['name']))
                 match = True
                 break
         if match is False:
@@ -213,7 +211,7 @@ def _check(policies, attachments, action):
 
     # Add will be rejected if there is even one match
     if action == 'add':
-        logger.info("Check if there is atleast one match returned: {0}".format(partial_match))
+        logger.info("Check if there is at least one match returned: {0}".format(partial_match))
         return not partial_match
     # Delete will be rejected if there is a partial match (has to be full match)
     elif action == 'remove':
@@ -225,6 +223,10 @@ def _check(policies, attachments, action):
             return False
         else:
             return True
+    #Force delete will be rejected if there is no match
+    elif action == 'force_remove':
+        logger.info("Check if there is at least one match returned: {0}".format(partial_match))
+        return partial_match
     else:
         from ibmsecurity.appliance.ibmappliance import IBMError
         raise IBMError("999", "Unknown action provided: {0}".format(action))
@@ -236,8 +238,10 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     """
     ret_obj = get(isamAppliance, server, resourceUri)
 
-    if force is True or (ret_obj['data'] != {} and (
-            ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False)):
+    if force is True or (ret_obj['data'] != {} and
+                            (ret_obj['data']['deployrequired'] is True or ret_obj['data']['deployed'] is False) and
+                             ret_obj['data']['policies'] != []
+                        ):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -278,13 +282,16 @@ def publish_list(isamAppliance, attachments, check_mode=False, force=False):
 def _convert_policy_name_to_id(isamAppliance, policies):
     """
     Converts this:
-    [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
+    [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'},
+     {'name': '<definition name>}, 'type': 'definition'}]
     to:
-    [{'id': '<policy id>', 'type': 'policy'}, {'id': '<policyset id>', 'type': 'policyset'}]
+    [{'id': '<policy id>', 'type': 'policy'}, {'id': '<policyset id>', 'type': 'policyset'},
+     {'id': '<definition id>, 'type': 'definition'}]
     """
     pol_ids = []
     import ibmsecurity.isam.aac.access_control.policies
     import ibmsecurity.isam.aac.access_control.policy_sets
+    import ibmsecurity.isam.aac.api_protection.definitions
     for pol in policies:
         name = pol['name']
         type = pol['type']
@@ -302,6 +309,13 @@ def _convert_policy_name_to_id(isamAppliance, policies):
                 logger.debug("Converting policy set {0} to ID: {1}".format(name, pol_id))
             else:
                 logger.warning("Unable to find policy set {0}, skipping.".format(name))
+        elif type == 'definition':
+            ret_obj = ibmsecurity.isam.aac.api_protection.definitions.search(isamAppliance, name)
+            pol_id = ret_obj['data']
+            if pol_id != {}:
+                logger.debug("Converting api definition {0} to ID: {1}".format(name, pol_id))
+            else:
+                logger.warning("Unable to find api definition {0}, skipping.".format(name))
         else:
             from ibmsecurity.appliance.ibmappliance import IBMError
             raise IBMError("999", "Policy specified with unknown type: {0}/{1}".format(type, name))
@@ -314,13 +328,16 @@ def _convert_policy_name_to_id(isamAppliance, policies):
 def _convert_policy_id_to_name(isamAppliance, policies):
     """
     Converts this:
-    [{'id': '<policy id>', 'type': 'policy'}, {'id': '<policyset id>', 'type': 'policyset'}]
+    [{'id': '<policy id>', 'type': 'policy'}, {'id': '<policyset id>', 'type': 'policyset'},
+     {'id': '<definition id>, 'type': 'definition'}]
     to:
-    [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'}]
+    [{'name': '<policy name>', 'type': 'policy'}, {'name': '<policyset name>', 'type': 'policyset'},
+     {'name': '<definition name>}, 'type': 'definition'}]
     """
     pol_ids = []
     import ibmsecurity.isam.aac.access_control.policies
     import ibmsecurity.isam.aac.access_control.policy_sets
+    import ibmsecurity.isam.aac.api_protection.definitions
     for pol in policies:
         pol_id = pol['id']
         type = pol['type']
@@ -338,6 +355,13 @@ def _convert_policy_id_to_name(isamAppliance, policies):
                 logger.debug("Converting policy set {0} to Name: {1}".format(pol_id, pol_name))
             else:
                 logger.warning("Unable to find policy set {0}, skipping.".format(pol_id))
+        elif type == 'definition':
+            ret_obj = ibmsecurity.isam.aac.api_protection.definitions._get(isamAppliance, pol_id)
+            pol_name = ret_obj['data']['name']
+            if pol_name != {}:
+                logger.debug("Converting api definition {0} to Name: {1}".format(pol_id, pol_name))
+            else:
+                logger.warning("Unable to find api definition {0}, skipping.".format(pol_id))
         else:
             from ibmsecurity.appliance.ibmappliance import IBMError
             raise IBMError("999", "Policy specified with unknown type: {0}/{1}".format(type, pol_id))

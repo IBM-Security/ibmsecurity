@@ -140,6 +140,19 @@ def update(isamAppliance, name, value, check_mode=False,
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+def set(isamAppliance, name, value, check_mode=False, force=False):
+    """
+    Set specified Kerberos Configuration Default property
+
+    :param isamAppliance:
+    :return:
+    """
+    ret_obj = search(isamAppliance, name)
+
+    if ret_obj["data"] == {}:
+        return add(isamAppliance, name, value, check_mode, force=True)
+
+    return update(isamAppliance,  name, value, check_mode, force)
 
 def compare(isamAppliance1, isamAppliance2):
     """

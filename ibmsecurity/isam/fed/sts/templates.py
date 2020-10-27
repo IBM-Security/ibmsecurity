@@ -77,7 +77,7 @@ def set(isamAppliance, name, chainItems=[], description=None, new_name=None, che
 def _flatten_chain(chainItems):
     """
     Convert chainItems from JSON to a simple string for use in comparison, ignore prefix if any.
-    
+
     DO NOT Sort the JSON containing chainItems for comparison. Sequence is important! Use this function instead.
     """
     chainItemsString = ''

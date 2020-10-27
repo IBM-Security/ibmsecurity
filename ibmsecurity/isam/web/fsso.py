@@ -1,6 +1,7 @@
 import logging
 import os.path
 from ibmsecurity.utilities import tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
                                         "{0}/{1}".format(uri, id),
                                         requires_modules=requires_modules,
                                         requires_version=requires_version
-                                        )
+                                       )
 
 
 def get_template(isamAppliance, check_mode=False, force=False):
@@ -49,7 +50,7 @@ def get_template(isamAppliance, check_mode=False, force=False):
                                     "/isam/wga_templates/fsso_template",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
-                                    )
+                                   )
 
 
 def add(isamAppliance, name, data, check_mode=False, force=False):

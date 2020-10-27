@@ -4,18 +4,19 @@ import time
 import ibmsecurity.isam.base.lmi
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 
 def reboot(isamAppliance, check_mode=False, force=False):
     """
-    Reboot the appliance
+    Restart the appliance
     """
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True)
     else:
-        return isamAppliance.invoke_post("Rebooting appliance",
+        return isamAppliance.invoke_post("Restart the appliance",
                                          "/diagnostics/restart_shutdown/reboot",
-                                         {})
+                                         {}, requires_model=requires_model)
 
 
 def shutdown(isamAppliance, check_mode=False, force=False):
@@ -27,7 +28,7 @@ def shutdown(isamAppliance, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_post("Shutting down appliance",
                                          "/diagnostics/restart_shutdown/shutdown",
-                                         {})
+                                         {}, requires_model=requires_model)
 
 
 def _changes_available(isamAppliance):
@@ -40,11 +41,13 @@ def _changes_available(isamAppliance):
                                        "/isam/pending_changes")
     logger.debug("Pending changes on appliance are:")
     logger.debug(changes['data'])
+    logger.debug(changes)
 
     change_count = isamAppliance.invoke_get("Get pending changes count",
                                             "/isam/pending_changes/count")
     logger.debug("Pending change count on appliance is:")
     logger.debug(change_count['data'])
+    logger.debug(change_count)
 
     if change_count['data']['count'] > 0 or len(changes['data']['changes']) > 0:
         logger.info("pending changes found")

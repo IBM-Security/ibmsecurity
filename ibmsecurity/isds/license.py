@@ -1,4 +1,5 @@
 import logging
+from io import open
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
@@ -60,8 +61,8 @@ def _check_license(isdsAppliance):
 
     ret_obj = get(isdsAppliance)
     """
-    Returned json is any of the following: 
-        {"LicenseActivated":"LIMITED"} 
+    Returned json is any of the following:
+        {"LicenseActivated":"LIMITED"}
         {"LicenseActivated":"STANDARD"}
         {"LicenseActivated":"ENTERPRISE"}
     """
