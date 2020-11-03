@@ -1,15 +1,18 @@
 import logging
-import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
+requires_modules = ["mga", "federation"]
+requires_version = None
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving a list of all LDAP server connections
     """
     return isamAppliance.invoke_get("Retrieving a list of all LDAP server connections",
-                                    "/mga/server_connections/ldap/v1")
+                                    "/mga/server_connections/ldap/v1",
+                                    requires_modules=requires_modules, requires_version=requires_version)
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -23,11 +26,12 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving an LDAP server connection",
-                                        "/mga/server_connections/ldap/{0}/v1".format(id))
+                                        "/mga/server_connections/ldap/{0}/v1".format(id),
+                                        requires_modules=requires_modules, requires_version=requires_version)
 
 
 def set(isamAppliance, name, connection, description='', locked=False, connectionManager=None, servers=None,
-        new_name=None, check_mode=False, force=False):
+        new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Creating or Modifying an LDAP server connection
     """
@@ -39,7 +43,7 @@ def set(isamAppliance, name, connection, description='', locked=False, connectio
     else:
         # Update request
         return update(isamAppliance=isamAppliance, name=name, connection=connection, description=description,
-                      locked=locked, connectionManager=connectionManager, servers=servers, new_name=new_name,
+                      locked=locked, connectionManager=connectionManager, servers=servers, new_name=new_name, ignore_password_for_idempotency=ignore_password_for_idempotency,
                       check_mode=check_mode, force=force)
 
 
@@ -56,7 +60,8 @@ def add(isamAppliance, name, connection, description='', locked=False, connectio
                 "Creating an LDAP server connection",
                 "/mga/server_connections/ldap/v1",
                 _create_json(name=name, description=description, locked=locked, servers=servers,
-                             connection=connection, connectionManager=connectionManager))
+                             connection=connection, connectionManager=connectionManager),
+                requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -73,36 +78,60 @@ def delete(isamAppliance, name, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting an LDAP server connection",
-                "/mga/server_connections/ldap/{0}/v1".format(id))
+                "/mga/server_connections/ldap/{0}/v1".format(id),
+                requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
 
 def update(isamAppliance, name, connection, description='', locked=False, connectionManager=None, servers=None,
-           new_name=None, check_mode=False, force=False):
+           new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Modifying an LDAP server connection
 
-    Use new_name to rename the connection, cannot compare password so update will take place everytime
+    Use new_name to rename the connection.
     """
-    if force is True or _check_exists(isamAppliance, name=name) is True:
+    ret_obj = get(isamAppliance, name)
+    warnings = ret_obj["warnings"]
+
+    if ret_obj["data"] == {}:
+        warnings.append("LDAP server connection {0} not found, skipping update.".format(name))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        id = ret_obj["data"]["uuid"]
+
+    needs_update = False
+
+    json_data = _create_json(name=name, description=description, locked=locked, servers=servers, connection=connection, connectionManager=connectionManager)
+    if new_name is not None:  # Rename condition
+        json_data['name'] = new_name
+
+    if force is not True:
+        if 'uuid' in ret_obj['data']:
+            del ret_obj['data']['uuid']
+        if ignore_password_for_idempotency:
+            if 'bindPwd' in connection:
+                warnings.append("Request made to ignore bindPwd for idempotency check.")
+                connection.pop('bindPwd', None)
+
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+
+        if sorted_ret_obj != sorted_json_data:
+            needs_update = True
+
+    if force is True or needs_update is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            json_data = _create_json(name=name, description=description, locked=locked, servers=servers,
-                                     connection=connection, connectionManager=connectionManager)
-            if new_name is not None:  # Rename condition
-                json_data['name'] = new_name
-
-            ret_obj = search(isamAppliance, name=name)
-            id = ret_obj['data']
-
             return isamAppliance.invoke_put(
                 "Modifying an LDAP server connection",
-                "/mga/server_connections/ldap/{0}/v1".format(id), json_data)
+                "/mga/server_connections/ldap/{0}/v1".format(id), json_data,
+                requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
-    return isamAppliance.create_return_object()
-
+    return isamAppliance.create_return_object(warnings=warnings)
 
 def _create_json(name, description, locked, servers, connection, connectionManager):
     """
