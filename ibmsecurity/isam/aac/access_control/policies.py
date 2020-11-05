@@ -110,7 +110,7 @@ def add(isamAppliance, name, attributesrequired, policy, description="",
                 import json
                 json_data = json.loads(policy)[0]
                 logger.info("Policy {0} contains full policy export".format(name))
-            except:
+            except json.decoder.JSONDecodeError:
                 logger.info("Policy {0} only contains policy data".format(name))
                 json_data = {
                     "name": name,
@@ -178,7 +178,16 @@ def _check(isamAppliance, name, attributesrequired, policy, description, dialect
         import json
         json_data = json.loads(policy)[0]
         logger.info("Policy {0} contains full policy export".format(name))
-    except:
+        logger.info(json_data)
+        if 'datecreated' in json_data:
+            del json_data['datecreated']
+        if 'id' in json_data:
+            del json_data['id']
+        if 'lastmodified' in json_data:
+            del json_data['lastmodified']
+        if 'userlastmodified' in json_data:
+            del json_data['userlastmodified']
+    except json.decoder.JSONDecodeError:
         logger.info("Policy {0} only contains policy data".format(name))
         json_data = {
             "attributesrequired": attributesrequired,
