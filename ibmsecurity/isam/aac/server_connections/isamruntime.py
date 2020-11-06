@@ -36,8 +36,10 @@ def add(isamAppliance, name, connection, description="", locked=False, check_mod
     """
     Creating an ISAM Runtime server connection
     """
+    ret_obj = search(isamAppliance, name, check_mode=False, force=False)
+    id = ret_obj['data']
 
-    if force is True or _check_exists(isamAppliance, name=name) is False:
+    if force is True or id == {}:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -64,8 +66,8 @@ def update(isamAppliance, name, connection, locked=False, description='', new_na
     Use new_name to rename the connection, cannot compare password so update will take place everytime
 
     """
-
-    if force is True or _check_exists(isamAppliance, name):
+    exists,update=_check_exists(isamAppliance, name=name, connection=connection, locked=locked, description=description, new_name=new_name)
+    if force is True or update:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -157,18 +159,29 @@ def search(isamAppliance, name, force=False, check_mode=False):
     return ret_obj_new
 
 
-def _check_exists(isamAppliance, name=None, id=None):
+def _check_exists(isamAppliance, name, locked=False, connection=None, description=None, new_name=None):
     """
     Check if ISAM runtime Connection already exists
     """
+    exists = False
+    update = False
     ret_obj = get_all(isamAppliance)
-
     for obj in ret_obj['data']:
         if (name is not None and obj['name'] == name) or (id is not None and obj['uuid'] == id):
-            return True
+            exists = True
+            if new_name is not None:
+                update = True
+            elif locked != obj['locked']:
+                update = True
+            elif connection != obj['connection']:
+                update = True
+            elif 'description' in obj:
+                if description != obj['description']:
+                    update = True
 
-    return False
+            return exists,update
 
+    return exists,update
 
 def _create_json(name, connection, description, locked):
     """
