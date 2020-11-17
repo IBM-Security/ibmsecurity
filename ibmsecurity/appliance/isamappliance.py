@@ -91,7 +91,7 @@ class ISAMAppliance(IBMAppliance):
         if http_response.text == "":
             json_data = {}
         else:
-            json_data = json.loads(http_response.text)
+            json_data = json.loads(http_response.content.decode("utf-8"))
 
         return_obj['data'] = json_data
 
