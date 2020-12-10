@@ -1,11 +1,5 @@
-import json
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
-from .ibmappliance import IBMAppliance
 from .isamappliance import ISAMAppliance
-from .ibmappliance import IBMError
-from ibmsecurity.utilities import tools
 
 try:
     basestring
@@ -15,7 +9,7 @@ except NameError:
 
 class ISAMApplianceAdminProxy(ISAMAppliance):
     def __init__(self, adminProxyHostname, user, hostname, adminProxyProtocol='https', adminProxyPort=443,
-                 adminProxyApplianceShortName=False):
+                 adminProxyApplianceShortName=False, cert=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISAMAppliance over AdminProxy')
 
@@ -30,7 +24,7 @@ class ISAMApplianceAdminProxy(ISAMAppliance):
 
         self.adminProxyApplianceShortName = adminProxyApplianceShortName
 
-        ISAMAppliance.__init__(self, hostname, user)
+        ISAMAppliance.__init__(self, hostname, user, cert=cert)
 
     def _url(self, uri):
         # shorten the junction name from hostname parameter
