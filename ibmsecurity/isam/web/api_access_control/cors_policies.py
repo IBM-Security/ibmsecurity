@@ -170,42 +170,57 @@ def _check_exist(isamAppliance, cors_policy_name):
 
 def _check(isamAppliance, cors_policy_name, allowed_origins, allow_credentials, exposed_headers,
            handle_preflight, allowed_methods, allowed_headers, max_age):
-    json_data = {}
     ret_obj = get_all(isamAppliance)
+    exist = False
+    json_data = {}
 
     for obj in ret_obj['data']:
         if obj['name'] == cors_policy_name:
-            obj2 = {
-                "name": cors_policy_name,
-                "allowed_origins": allowed_origins,
-                "allow_credentials": allow_credentials,
-                "exposed_headers": exposed_headers,
-                "handle_preflight": handle_preflight,
-                "allowed_methods": allowed_methods,
-                "allowed_headers": allowed_headers,
-                "max_age": max_age
-            }
-            if allow_credentials is None:
-                obj2['allow_credentials'] = obj['allow_credentials']
-            if exposed_headers is None:
-                obj2['exposed_headers'] = obj['exposed_headers']
-            if handle_preflight is None:
-                obj2['handle_preflight'] = obj['handle_preflight']
-            if allowed_methods is None:
-                obj2['allowed_methods'] = obj['allowed_methods']
-            if allowed_headers is None:
-                obj2['allowed_headers'] = obj['allowed_headers']
-            if max_age is None:
-                obj2['max_age'] = obj['max_age']
-            sorted_obj1 = tools.json_sort(obj)
-            logger.debug("Sorted input: {0}".format(sorted_obj1))
-            sorted_obj2 = tools.json_sort(obj2)
-            logger.debug("Sorted existing data: {0}".format(sorted_obj2))
-            if sorted_obj1 != sorted_obj2:
-                logger.info("Changes detected, update needed.")
-                return True, ret_obj['warnings'], obj2
+            current_data = obj
+            exist = True
 
-    return False, ret_obj['warnings'], json_data
+    if exist is False:
+        return False, ret_obj['warnings'], json_data
+
+    json_data = {
+        "name": cors_policy_name,
+        "allowed_origins": allowed_origins,
+
+    }
+
+    if allow_credentials is not None:
+        json_data['allow_credentials'] = allow_credentials
+    else:
+        json_data['allow_credentials'] = False
+
+    if exposed_headers is not None:
+        json_data['exposed_headers'] = exposed_headers
+
+    if handle_preflight is not None:
+        json_data['handle_preflight'] = handle_preflight
+    else:
+        json_data['handle_preflight'] = False
+
+    if allowed_methods is not None:
+        json_data['allowed_methods'] = allowed_methods
+
+    if allowed_headers is not None:
+        json_data['allowed_headers'] = allowed_headers
+
+    if max_age is not None:
+        json_data['max_age'] = max_age
+    else:
+        json_data['max_age'] = 0
+
+    sorted_obj1 = tools.json_sort(json_data)
+    logger.debug("Sorted input: {0}".format(sorted_obj1))
+    sorted_obj2 = tools.json_sort(current_data)
+    logger.debug("Sorted existing data: {0}".format(sorted_obj2))
+    if sorted_obj1 != sorted_obj2:
+        logger.info("Changes detected, update needed.")
+        return True, ret_obj['warnings'], json_data
+    else:
+        return False, ret_obj['warnings'], json_data
 
 
 def _check_all(isamAppliance, policies):
