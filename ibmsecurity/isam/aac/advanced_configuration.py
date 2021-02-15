@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 # URI for this module
 uri = "/iam/access/v8/override-configs"
 requires_modules = ["mga", "federation"]
-requires_version = "10.0.0"
+requires_version = None
 mga_uri = "/mga/advanced_config/files"
 
 
@@ -15,7 +15,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get("Retrieve a list of configuration properties",
                                     "/iam/access/v8/override-configs", requires_modules=requires_modules,
-                                    requires_version=None)
+                                    requires_version=requires_version)
 
 
 def get(isamAppliance, key, check_mode=False, force=False):
@@ -30,7 +30,7 @@ def get(isamAppliance, key, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_get("Retrieve a specific configuration property",
                                         "/iam/access/v8/override-configs/{0}".format(id),
-                                        requires_modules=requires_modules, requires_version=None)
+                                        requires_modules=requires_modules, requires_version=requires_version)
 
 
 def update(isamAppliance, key, value, sensitive, check_mode=False, force=False):
@@ -51,7 +51,7 @@ def update(isamAppliance, key, value, sensitive, check_mode=False, force=False):
                 {
                     'value': value,
                     'sensitive': sensitive
-                }, requires_modules=requires_modules, requires_version=None)
+                }, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -73,7 +73,7 @@ def update_all(isamAppliance, values, check_mode=False, force=False):
             return isamAppliance.invoke_put(
                 "Update a list of configuration properties",
                 "/iam/access/v8/override-configs",
-                vals, requires_modules=requires_modules, requires_version=None)
+                vals, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -87,7 +87,8 @@ def get_files(isamAppliance, path, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration files",
-                                    "{0}{1}".format(mga_uri, path), requires_version=requires_version)
+                                    "{0}/{1}".format(mga_uri, path),
+                                    requires_modules=requires_modules, requires_version="10.0.0")
 
 
 def get_paths(isamAppliance, check_mode=False, force=False):
@@ -99,7 +100,8 @@ def get_paths(isamAppliance, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration file component paths",
-                                    "{0}".format(mga_uri), requires_version=requires_version)
+                                    "{0}".format(mga_uri),
+                                    requires_modules=requires_modules, requires_version="10.0.0")
 
 
 def get_contents(isamAppliance, path, filename, check_mode=False, force=False):
@@ -111,7 +113,8 @@ def get_contents(isamAppliance, path, filename, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration file component paths",
-                                    "{0}/{1}/{2}".format(mga_uri, path, filename), requires_version=requires_version)
+                                    "{0}/{1}/{2}".format(mga_uri, path, filename),
+                                    requires_modules=requires_modules, requires_version="10.0.0")
 
 
 def export_file(isamAppliance, path, filename, file_path, check_mode=False, force=False):
@@ -128,7 +131,7 @@ def export_file(isamAppliance, path, filename, file_path, check_mode=False, forc
         return isamAppliance.invoke_get_file("Exporting a configuration file",
                                              "{0}/{1}/{2}?export=true".format(mga_uri, path, filename),
                                              file_path,
-                                             requires_version=requires_version)
+                                             requires_modules=requires_modules, requires_version="10.0.0")
 
     return isamAppliance.create_return_object(warnings=["File {0} already exists".format(file_path)])
 
@@ -150,7 +153,7 @@ def update_file_contents(isamAppliance, path, filename, contents, check_mode=Fal
                                             'contents': contents,
                                             'type': 'file'
                                         },
-                                        requires_version=requires_version)
+                                        requires_modules=requires_modules, requires_version="10.0.0")
     return isamAppliance.create_return_object(warnings=warnings)
 
 
@@ -178,7 +181,7 @@ def import_file(isamAppliance, path, filename, file_path, check_mode=False, forc
                                                   "force": "yes",
                                                   "type": "file"
                                               },
-                                              requires_version=requires_version)
+                                              requires_modules=requires_modules, requires_version="10.0.0")
     return isamAppliance.create_return_object(warnings=warnings)
 
 
