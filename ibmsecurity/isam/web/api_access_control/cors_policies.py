@@ -54,9 +54,8 @@ def add(isamAppliance, name, allowed_origins, allow_credentials=False, exposed_h
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def update(isamAppliance, cors_policy_name, allowed_origins, allow_credentials=None, exposed_headers=None,
-           handle_preflight=None, allowed_methods=None, allowed_headers=None, max_age=None,
-           check_mode=False, force=False):
+def update(isamAppliance, cors_policy_name, allowed_origins, allow_credentials=False, exposed_headers=[],
+           handle_preflight=False, allowed_methods=[], allowed_headers=[], max_age=0, check_mode=False, force=False):
     """
     Update an existing API Access Control Policy
     """
@@ -80,9 +79,8 @@ def update(isamAppliance, cors_policy_name, allowed_origins, allow_credentials=N
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def set(isamAppliance, cors_policy_name, allowed_origins, allow_credentials=None, exposed_headers=None,
-        handle_preflight=None, allowed_methods=None, allowed_headers=None, max_age=None,
-        check_mode=False, force=False):
+def set(isamAppliance, cors_policy_name, allowed_origins, allow_credentials=False, exposed_headers=[],
+        handle_preflight=False, allowed_methods=[], allowed_headers=[], max_age=0, check_mode=False, force=False):
     exist, warnings = _check_exist(isamAppliance, cors_policy_name)
     if exist:
         return update(isamAppliance=isamAppliance, cors_policy_name=cors_policy_name, allowed_origins=allowed_origins,
@@ -185,32 +183,13 @@ def _check(isamAppliance, cors_policy_name, allowed_origins, allow_credentials, 
     json_data = {
         "name": cors_policy_name,
         "allowed_origins": allowed_origins,
-
+        "allow_credentials": allow_credentials,
+        "exposed_headers": exposed_headers,
+        "handle_preflight": handle_preflight,
+        "allowed_methods": allowed_methods,
+        "allowed_headers": allowed_headers,
+        "max_age": max_age
     }
-
-    if allow_credentials is not None:
-        json_data['allow_credentials'] = allow_credentials
-    else:
-        json_data['allow_credentials'] = False
-
-    if exposed_headers is not None:
-        json_data['exposed_headers'] = exposed_headers
-
-    if handle_preflight is not None:
-        json_data['handle_preflight'] = handle_preflight
-    else:
-        json_data['handle_preflight'] = False
-
-    if allowed_methods is not None:
-        json_data['allowed_methods'] = allowed_methods
-
-    if allowed_headers is not None:
-        json_data['allowed_headers'] = allowed_headers
-
-    if max_age is not None:
-        json_data['max_age'] = max_age
-    else:
-        json_data['max_age'] = 0
 
     sorted_obj1 = tools.json_sort(json_data)
     logger.debug("Sorted input: {0}".format(sorted_obj1))
