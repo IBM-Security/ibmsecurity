@@ -48,6 +48,7 @@ def add(isamAppliance, name, groups=None, attributes=None, check_mode=False, for
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+
 def update(isamAppliance, policy_name, groups=[], attributes=[], check_mode=False, force=False):
     """
     Update an existing API Access Control Policy
@@ -67,12 +68,15 @@ def update(isamAppliance, policy_name, groups=[], attributes=[], check_mode=Fals
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+
 def set(isamAppliance, policy_name, groups=[], attributes=[], check_mode=False, force=False):
     exist, warnings = _check_exist(isamAppliance, policy_name)
     if exist:
-        return update(isamAppliance=isamAppliance, policy_name=policy_name, groups=groups, attributes=attributes, check_mode=check_mode, force=force)
+        return update(isamAppliance=isamAppliance, policy_name=policy_name, groups=groups, attributes=attributes,
+                      check_mode=check_mode, force=force)
     else:
         return add(isamAppliance=isamAppliance, name=policy_name, groups=groups, attributes=attributes)
+
 
 def delete(isamAppliance, policy_name, check_mode=False, force=False):
     """
@@ -93,11 +97,12 @@ def delete(isamAppliance, policy_name, check_mode=False, force=False):
 
     return isamAppliance.create_return_object(warnings=warnings)
 
+
 def delete_all(isamAppliance, check_mode=False, force=False):
     """
     Delete all existing API Access Control Policies
     """
-    ret_obj=get_all(isamAppliance)
+    ret_obj = get_all(isamAppliance)
 
     if force is True or ret_obj['data'] != []:
         if check_mode is True:
@@ -111,6 +116,7 @@ def delete_all(isamAppliance, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+
 def delete_selection(isamAppliance, policies, command="DELETE", check_mode=False, force=False):
     """
     Delete a selection of API Access Control Policies
@@ -122,16 +128,17 @@ def delete_selection(isamAppliance, policies, command="DELETE", check_mode=False
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
-                    "Delete a selection of API Access Control Policies",
-                    "{0}".format(uri),
-                    {
-                        'command': command,
-                        'policies': policies
-                    },
-                    requires_modules=requires_modules,
-                    requires_version=requires_version)
+                "Delete a selection of API Access Control Policies",
+                "{0}".format(uri),
+                {
+                    'command': command,
+                    'policies': policies
+                },
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
+
 
 def _check_exist(isamAppliance, policy_name):
     ret_obj = get_all(isamAppliance)
@@ -142,35 +149,33 @@ def _check_exist(isamAppliance, policy_name):
 
     return False, ret_obj['warnings']
 
+
 def _check(isamAppliance, policy_name, groups, attributes):
-    json_data={}
+    json_data = {}
     ret_obj = get_all(isamAppliance)
 
     for obj in ret_obj['data']:
         if obj['name'] == policy_name:
-            obj2={
+            obj2 = {
                 'name': policy_name,
                 'groups': groups,
                 'attributes': attributes
             }
-            if groups ==[]:
-                obj2['groups'] = obj['groups']
-            if attributes ==[]:
-                obj2['attributes'] = obj['attributes']
             sorted_obj1 = tools.json_sort(obj)
-            logger.debug("Sorted input: {0}".format(sorted_obj1))
+            logger.debug("Sorted existing data: {0}".format(sorted_obj1))
             sorted_obj2 = tools.json_sort(obj2)
-            logger.debug("Sorted existing data: {0}".format(sorted_obj2))
+            logger.debug("Sorted input data: {0}".format(sorted_obj2))
             if sorted_obj1 != sorted_obj2:
                 logger.info("Changes detected, update needed.")
                 return True, ret_obj['warnings'], obj2
 
     return False, ret_obj['warnings'], json_data
 
+
 def _check_all(isamAppliance, policies):
     ret_obj = get_all(isamAppliance)
-    warnings=ret_obj['warnings']
-    non_exist=False
+    warnings = ret_obj['warnings']
+    non_exist = False
 
     for policy in policies:
         found = False
@@ -178,13 +183,14 @@ def _check_all(isamAppliance, policies):
             if obj['name'] == policy:
                 found = True
         if found is False:
-            non_exist=True
+            non_exist = True
             warnings.append("Did not find policy {0}".format(policy))
 
     if non_exist is False:
         return True, ret_obj['warnings']
     else:
         return False, warnings
+
 
 def compare(isamAppliance1, isamAppliance2):
     """
@@ -194,4 +200,3 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj2 = get_all(isamAppliance2)
 
     return tools.json_compare(ret_obj1, ret_obj2)
-
