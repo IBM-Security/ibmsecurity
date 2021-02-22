@@ -1045,32 +1045,45 @@ def compare(isamAppliance1, isamAppliance2):
     app1_instances = ibmsecurity.isam.web.api_access_control.resources.instances.get_all(isamAppliance1)
     app2_instances = ibmsecurity.isam.web.api_access_control.resources.instances.get_all(isamAppliance2)
 
-    instance_diff = tools.json_compare(app1_instances, app2_instances)
+    obj1 = []
+    obj2 = []
 
     for inst1 in app1_instances['data']:
-        for inst2 in app2_instances['data']:
-            if inst1['name'] == inst2['name']:
-                servers1 = get_all(isamAppliance1, instance_name=inst1['name'])
-                servers2 = get_all(isamAppliance2, instance_name=inst2['name'])
-                servers_diff = tools.json_compare(servers1, servers2)
+        servers = get_all(isamAppliance1, instance_name=inst1['name'])
+        for srv in servers['data']:
+            if "servers" in srv:
+                srvlist = srv['servers'].split(";")
+                new_str = None
+                for value in srvlist:
+                    if value.find("server_uuid") == -1 and \
+                            value.find("current_requests") == -1 and \
+                            value.find("total_requests") == -1:
+                        if new_str is None:
+                            new_str = value
+                        else:
+                            new_str = new_str + ";" + value
+                srv['servers'] = new_str
+            obj1.append(srv)
 
-                if servers_diff['data']['matches'] is False:
-                    if 'context_difference' in instance_diff['data']:
-                        instance_diff['data']['context_difference'].append(servers_diff['data']['context_difference'])
-                    else:
-                        instance_diff['data']['context_difference'] = (servers_diff['data']['context_difference'])
+    for inst2 in app2_instances['data']:
+        servers = get_all(isamAppliance2, instance_name=inst2['name'])
+        for srv in servers['data']:
+            if "servers" in srv:
+                srvlist = srv['servers'].split(";")
+                new_str = None
+                for value in srvlist:
+                    if value.find("server_uuid") == -1 and \
+                            value.find("current_requests") == -1 and \
+                            value.find("total_requests") == -1:
+                        if new_str is None:
+                            new_str = value
+                        else:
+                            new_str = new_str + ";" + value
+                srv['servers'] = new_str
+            obj2.append(srv)
 
-                    if 'difference' in instance_diff['data']:
-                        instance_diff['data']['difference'] += servers_diff['data']['difference']
-                    else:
-                        instance_diff['data']['difference'] = servers_diff['data']['difference']
+    app1_instances['data'].extend(obj1)
+    app2_instances['data'].extend(obj2)
 
-                    if 'html_difference' in instance_diff['data']:
-                        instance_diff['data']['html_difference'] += servers_diff['data']['html_difference']
-                    else:
-                        instance_diff['data']['html_difference'] = servers_diff['data']['html_difference']
-
-                    instance_diff['data']['matches'] = False
-                    instance_diff['data']['deleted_keys'].append(servers_diff['data']['deleted_keys'])
-
-    return instance_diff
+    return tools.json_compare(app1_instances, app2_instances,
+                              deleted_keys=['server_uuid', 'current_requests', 'total_requests'])
