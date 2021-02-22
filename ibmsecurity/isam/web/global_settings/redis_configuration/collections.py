@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 uri = "/wga/redis_config/collections"
 requires_modules = ["wga"]
-requires_version = "10.0.0"
+requires_version = "10.0.1"
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -48,6 +48,7 @@ def add(isamAppliance, name, max_pooled_connections=50, idle_timeout=10, connect
                 "health-check-interval": health_check_interval,
                 "servers": servers
             }
+
             if matching_hosts != None:
                 json_data['matching-hosts'] = matching_hosts
 
@@ -63,8 +64,8 @@ def add(isamAppliance, name, max_pooled_connections=50, idle_timeout=10, connect
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def update(isamAppliance, name, max_pooled_connections=None, idle_timeout=None, connect_timeout=None,
-           io_timeout=None, health_check_interval=None, servers=None, cross_domain_support=None, matching_hosts=None,
+def update(isamAppliance, name, max_pooled_connections=50, idle_timeout=10, connect_timeout=5,
+           io_timeout=30, health_check_interval=15, servers=None, cross_domain_support=None, matching_hosts=None,
            check_mode=False, force=False):
     """
     Update the configuration of a collection of Redis servers
@@ -97,8 +98,8 @@ def update(isamAppliance, name, max_pooled_connections=None, idle_timeout=None, 
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def set(isamAppliance, name, max_pooled_connections=None, idle_timeout=None, connect_timeout=None,
-        io_timeout=None, health_check_interval=None, servers=None, cross_domain_support=None, matching_hosts=None,
+def set(isamAppliance, name, max_pooled_connections=50, idle_timeout=10, connect_timeout=5,
+        io_timeout=30, health_check_interval=15, servers=None, cross_domain_support=None, matching_hosts=None,
         check_mode=False, force=False):
     exist, warnings = _check_exist(isamAppliance, name)
     if exist is True:
@@ -108,24 +109,8 @@ def set(isamAppliance, name, max_pooled_connections=None, idle_timeout=None, con
                       cross_domain_support=cross_domain_support, matching_hosts=matching_hosts, check_mode=check_mode,
                       force=force)
     else:
-        if max_pooled_connections is None:
-            max_pooled_connections = 50
-
-        if idle_timeout is None:
-            idle_timeout = 10
-
-        if connect_timeout is None:
-            connect_timeout = 5
-
-        if io_timeout is None:
-            io_timeout = 30
-
-        if health_check_interval is None:
-            health_check_interval = 15
-
         if servers is None:
             servers = []
-
         return add(isamAppliance=isamAppliance, name=name, max_pooled_connections=max_pooled_connections,
                    idle_timeout=idle_timeout, connect_timeout=connect_timeout, io_timeout=io_timeout,
                    health_check_interval=health_check_interval, servers=servers,
@@ -169,47 +154,20 @@ def _check_contents(isamAppliance, name, max_pooled_connections, idle_timeout, c
 
     json_data = {
         'name': name,
+        'max-pooled-connections': max_pooled_connections,
+        'idle-timeout': idle_timeout,
+        'connect-timeout': connect_timeout,
+        'io-timeout': io_timeout,
+        'health-check-interval': health_check_interval
     }
-
-    if max_pooled_connections is not None:
-        json_data['max-pooled-connections'] = max_pooled_connections
-    elif 'max-pooled-connections' in current_content:
-        json_data['max-pooled-connections'] = current_content['max-pooled-connections']
-
-    if idle_timeout is not None:
-        json_data['idle-timeout'] = idle_timeout
-    elif 'idle-timeout' in current_content:
-        json_data['idle-timeout'] = current_content['idle-timeout']
-
-    if connect_timeout is not None:
-        json_data['connect-timeout'] = connect_timeout
-    elif 'connect-timeout' in current_content:
-        json_data['connect-timeout'] = current_content['connect-timeout']
-
-    if io_timeout is not None:
-        json_data['io-timeout'] = io_timeout
-    elif 'io-timeout' in current_content:
-        json_data['io-timeout'] = current_content['io-timeout']
-
-    if health_check_interval is not None:
-        json_data['health-check-interval'] = health_check_interval
-    elif 'health-check-interval' in current_content:
-        json_data['health-check-interval'] = current_content['health-check-interval']
-
     if servers is not None:
         json_data['servers'] = servers
-    elif 'servers' in current_content:
-        json_data['servers'] = current_content['servers']
 
     if cross_domain_support is not None:
         json_data['cross-domain-support'] = cross_domain_support
-    elif 'cross-domain-support' in current_content:
-        json_data['cross-domain-support'] = current_content['cross-domain-support']
 
     if matching_hosts is not None:
         json_data['matching-hosts'] = matching_hosts
-    elif 'matching-hosts' in current_content:
-        json_data['matching-hosts'] = current_content['matching-hosts']
 
     sorted_obj1 = tools.json_sort(json_data)
     logger.debug("Sorted sorted_obj1: {0}".format(sorted_obj1))

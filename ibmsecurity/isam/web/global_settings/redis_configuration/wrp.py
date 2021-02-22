@@ -1,16 +1,17 @@
 import logging
 import ibmsecurity
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
 uri = "/wga/redis_config/wrp"
 requires_modules = ["wga"]
-requires_version = "10.0.0"
+requires_version = "10.0.1"
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
     """
-    Retrieve the Redis collections configured for a specific Web
+    Retrieve the Redis collections configured for a specific Web Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieve the Redis collections configured for a specific Web",
                                     "{0}/{1}".format(uri, name),
@@ -19,7 +20,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 def update(isamAppliance, name, input_data=[], check_mode=False, force=False):
     """
-    Update the Redis collections which are used by a Web Reverse
+    Update the Redis collections which are used by a Web Reverse Proxy
     """
 
     exist, warnings = _check_exist(isamAppliance, name)
@@ -33,7 +34,7 @@ def update(isamAppliance, name, input_data=[], check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
-                "Update the Redis collections which are used by a Web Reverse ",
+                "Update the Redis collections which are used by a Web Reverse Proxy",
                 "{0}/{1}".format(uri, name),
                 input_data,
                 requires_modules=requires_modules, requires_version=requires_version)
@@ -58,3 +59,10 @@ def _check_contents(isamAppliance, name, input_data):
         return True, ret_obj['warnings']
     else:
         return False, ret_obj['warnings']
+
+
+def compare(isamAppliance1, isamAppliance2, name1, name2):
+    ret_obj1 = get(isamAppliance1, name1)
+    ret_obj2 = get(isamAppliance2, name2)
+
+    return tools.json_compare(ret_obj1, ret_obj2)
