@@ -100,7 +100,8 @@ def set(isamAppliance, instance_name, file_name, contents, type='file', check_mo
         return update(isamAppliance=isamAppliance, instance_name=instance_name, file_name=file_name, contents=contents,
                       type=type, check_mode=check_mode, force=force)
     else:
-        return add(isamAppliance=isamAppliance, instance_name=instance_name, type=type, file_name=file_name, contents=contents,
+        return add(isamAppliance=isamAppliance, instance_name=instance_name, type=type, file_name=file_name,
+                   contents=contents,
                    check_mode=check_mode, force=force)
 
 
@@ -275,6 +276,7 @@ def _check_contents(isamAppliance, instance_name, file_name, contents=None, file
     except Exception as e:
         warnings = ["Exception occurred: {0}.".format(e)]
         return True, warnings
+
 
 def compare(isamAppliance1, instance1_name, isamAppliance2, instance2_name):
     """

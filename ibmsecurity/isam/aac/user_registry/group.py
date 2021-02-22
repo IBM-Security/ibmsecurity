@@ -24,6 +24,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
                                     "{0}/{1}/v1".format(uri, id),
                                     requires_modules=requires_modules, requires_version=requires_version)
 
+
 def add(isamAppliance, id, users=None, check_mode=False, force=False):
     """
     Creating a new group in the registry
@@ -43,6 +44,7 @@ def add(isamAppliance, id, users=None, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+
 def delete(isamAppliance, group_name, check_mode=False, force=False):
     """
     Deleting a group from the registry
@@ -57,6 +59,7 @@ def delete(isamAppliance, group_name, check_mode=False, force=False):
                 requires_modules=requires_modules, requires_version="10.0.1")
 
     return isamAppliance.create_return_object()
+
 
 def add_user(isamAppliance, user_name, id, check_mode=False, force=False):
     """
@@ -108,6 +111,7 @@ def _check(isamAppliance, user_name, id):
 
     return False
 
+
 def _check_group(isamAppliance, id):
     """
     Check if group already exists
@@ -123,6 +127,7 @@ def _check_group(isamAppliance, id):
             return True
 
     return False
+
 
 def compare(isamAppliance1, isamAppliance2):
     """
