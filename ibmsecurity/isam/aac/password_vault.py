@@ -1,13 +1,12 @@
 import logging
 from ibmsecurity.utilities import tools
-from io import open
 
 logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/mga/password_vault/"
 requires_modules = ["federation", "mga"]
-requires_version = "10.0.0"
+requires_version = "10.0.1"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -40,7 +39,7 @@ def update(isamAppliance, enabled, data_location, resources, admin_group, public
         else:
             return isamAppliance.invoke_put(
                 "Update a specified Risk Profile",
-                "{0}".format(uri), json_data)
+                "{0}".format(uri), json_data, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
