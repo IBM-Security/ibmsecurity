@@ -534,14 +534,29 @@ def delete(isamAppliance, instance_name, resource_server_name, server_type='stan
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def delete_select(isamAppliance, instance_name, resource_servers, command="DELETE",
-                  check_mode=False, force=False):
+def delete_selection(isamAppliance, instance_name, resource_servers, command="DELETE",
+                     check_mode=False, force=False):
     """
     Delete a selection of API Access Control Resource Servers
     """
-    exist_all, warnings = _check_list_servers(isamAppliance, instance_name, resource_servers)
 
-    if force is True or exist_all is True:
+    ret_obj = get_all(isamAppliance, instance_name)
+    warnings = ret_obj['warnings']
+    found_any = False
+    new_list_servers = []
+
+    for server in resource_servers:
+        found = False
+        for obj in ret_obj['data']:
+            if obj['name'] == server:
+                found = True
+                found_any = True
+        if found is False:
+            warnings.append("Did not find resource server {0} to delete".format(server))
+        else:
+            new_list_servers.append(server)
+
+    if force is True or found_any is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -550,10 +565,10 @@ def delete_select(isamAppliance, instance_name, resource_servers, command="DELET
                 "{0}/{1}/server".format(uri, instance_name),
                 {
                     'command': command,
-                    'resource_servers': resource_servers
+                    'resource_servers': new_list_servers
                 },
                 requires_modules=requires_modules,
-                requires_version=requires_version)
+                requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -1087,3 +1102,50 @@ def compare(isamAppliance1, isamAppliance2):
 
     return tools.json_compare(app1_instances, app2_instances,
                               deleted_keys=['server_uuid', 'current_requests', 'total_requests'])
+
+
+def compare_one_instance(isamAppliance1, isamAppliance2, instance1_name, instance2_name=None):
+    """
+    Compare resources between two appliances
+    """
+    if instance2_name is None or instance2_name == '':
+        instance2_name = instance1_name
+
+    obj1 = []
+    obj2 = []
+    servers1 = get_all(isamAppliance1, instance_name=instance1_name)
+    for srv in servers1['data']:
+        if "servers" in srv:
+            srvlist = srv['servers'].split(";")
+            new_str = None
+            for value in srvlist:
+                if value.find("server_uuid") == -1 and \
+                        value.find("current_requests") == -1 and \
+                        value.find("total_requests") == -1:
+                    if new_str is None:
+                        new_str = value
+                    else:
+                        new_str = new_str + ";" + value
+            srv['servers'] = new_str
+        obj1.append(srv)
+
+    servers2 = get_all(isamAppliance2, instance_name=instance2_name)
+    for srv in servers2['data']:
+        if "servers" in srv:
+            srvlist = srv['servers'].split(";")
+            new_str = None
+            for value in srvlist:
+                if value.find("server_uuid") == -1 and \
+                        value.find("current_requests") == -1 and \
+                        value.find("total_requests") == -1:
+                    if new_str is None:
+                        new_str = value
+                    else:
+                        new_str = new_str + ";" + value
+            srv['servers'] = new_str
+        obj2.append(srv)
+
+    servers1['data'] = obj1
+    servers2['data'] = obj2
+
+    return tools.json_compare(servers1, servers2, deleted_keys=['server_uuid', 'current_requests', 'total_requests'])

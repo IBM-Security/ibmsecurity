@@ -137,9 +137,24 @@ def delete_selection(isamAppliance, policies, command="DELETE", check_mode=False
     """
     Delete a selection of API Access Control Policies
     """
-    exist_all, warnings = _check_all(isamAppliance, policies)
+    found_any = False
+    new_list_policies = []
 
-    if force is True or exist_all is True:
+    ret_obj = get_all(isamAppliance)
+    warnings = ret_obj['warnings']
+
+    for policy in policies:
+        found = False
+        for obj in ret_obj['data']:
+            if obj['name'] == policy:
+                found_any = True
+                found = True
+        if found is False:
+            warnings.append("Did not find policy {0} to delete".format(policy))
+        else:
+            new_list_policies.append(policy)
+
+    if force is True or found_any is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -148,10 +163,10 @@ def delete_selection(isamAppliance, policies, command="DELETE", check_mode=False
                 "{0}".format(uri),
                 {
                     'command': command,
-                    'policies': policies
+                    'policies': new_list_policies
                 },
                 requires_modules=requires_modules,
-                requires_version=requires_version)
+                requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -200,26 +215,6 @@ def _check(isamAppliance, cors_policy_name, allowed_origins, allow_credentials, 
         return True, ret_obj['warnings'], json_data
     else:
         return False, ret_obj['warnings'], json_data
-
-
-def _check_all(isamAppliance, policies):
-    ret_obj = get_all(isamAppliance)
-    warnings = ret_obj['warnings']
-    non_exist = False
-
-    for policy in policies:
-        found = False
-        for obj in ret_obj['data']:
-            if obj['name'] == policy:
-                found = True
-        if found is False:
-            non_exist = True
-            warnings.append("Did not find policy {0}".format(policy))
-
-    if non_exist is False:
-        return True, ret_obj['warnings']
-    else:
-        return False, warnings
 
 
 def compare(isamAppliance1, isamAppliance2):

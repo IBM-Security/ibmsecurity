@@ -278,10 +278,14 @@ def _check_contents(isamAppliance, instance_name, file_name, contents=None, file
         return True, warnings
 
 
-def compare(isamAppliance1, instance1_name, isamAppliance2, instance2_name):
+def compare(isamAppliance1, isamAppliance2, instance1_name, instance2_name=None):
     """
     Compare documentation root between two appliances
     """
+
+    if instance2_name is None or instance2_name == '':
+        instance2_name = instance1_name
+
     ret_obj1 = get_all(isamAppliance1, instance1_name)
     ret_obj2 = get_all(isamAppliance2, instance2_name)
 

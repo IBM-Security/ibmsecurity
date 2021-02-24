@@ -61,7 +61,9 @@ def _check_contents(isamAppliance, name, input_data):
         return False, ret_obj['warnings']
 
 
-def compare(isamAppliance1, isamAppliance2, name1, name2):
+def compare(isamAppliance1, isamAppliance2, name1, name2=None):
+    if name2 is None or name1 == '':
+        name2 = name1
     ret_obj1 = get(isamAppliance1, name1)
     ret_obj2 = get(isamAppliance2, name2)
 

@@ -38,7 +38,7 @@ def get(isamAppliance, instance_name, resource_server_name, resource_name, metho
 
 
 def add(isamAppliance, instance_name, resource_server_name, method, path, policy, server_type="standard",
-        name=None, static_response_headers=None, rate_limiting_policy=None, url_aliases=None,
+        cors_policy='', static_response_headers=[], url_aliases=[], name=None, rate_limiting_policy=None,
         documentation=None, check_mode=False, force=False):
     """
     Creating a new API Access Control Resource
@@ -65,7 +65,10 @@ def add(isamAppliance, instance_name, resource_server_name, method, path, policy
             json_data = {
                 'method': method,
                 'policy': policy,
-                'server_type': server_type
+                'server_type': server_type,
+                'cors_policy': cors_policy,
+                'static_response_headers': static_response_headers,
+                'url_aliases': url_aliases
             }
 
             if tools.version_compare(isamAppliance.facts["version"], "10.0.0") < 0:
@@ -76,14 +79,8 @@ def add(isamAppliance, instance_name, resource_server_name, method, path, policy
             if name is not None:
                 json_data['name'] = name
 
-            if static_response_headers is not None:
-                json_data['static_response_headers'] = static_response_headers
-
             if rate_limiting_policy is not None:
                 json_data['rate_limiting_policy'] = rate_limiting_policy
-
-            if url_aliases is not None:
-                json_data['url_aliases'] = url_aliases
 
             if documentation is not None:
                 json_data['documentation'] = documentation
@@ -97,7 +94,7 @@ def add(isamAppliance, instance_name, resource_server_name, method, path, policy
 
 
 def update(isamAppliance, instance_name, resource_server_name, method, path, policy, server_type="standard",
-           name=None, static_response_headers=None, rate_limiting_policy=None, url_aliases=None,
+           cors_policy='', static_response_headers=[], url_aliases=[], name=None, rate_limiting_policy=None,
            documentation=None, check_mode=False, force=False):
     """
     Updating an existing API Access Control Resource
@@ -124,7 +121,7 @@ def update(isamAppliance, instance_name, resource_server_name, method, path, pol
                                                                    instance_name=instance_name,
                                                                    resource_server_name=resource_server_name,
                                                                    method=method, path=path, policy=policy,
-                                                                   server_type=server_type, name=name,
+                                                                   cors_policy=cors_policy, name=name,
                                                                    static_response_headers=static_response_headers,
                                                                    rate_limiting_policy=rate_limiting_policy,
                                                                    url_aliases=url_aliases, documentation=documentation)
@@ -149,7 +146,7 @@ def update(isamAppliance, instance_name, resource_server_name, method, path, pol
 
 
 def set(isamAppliance, instance_name, resource_server_name, method, path, policy, server_type="standard",
-        name=None, static_response_headers=None, rate_limiting_policy=None, url_aliases=None,
+        cors_policy='', static_response_headers=[], url_aliases=[], name=None, rate_limiting_policy=None,
         documentation=None, check_mode=False, force=False):
     instance_exist, warnings = _check_instance_exist(isamAppliance, instance_name)
 
@@ -168,14 +165,14 @@ def set(isamAppliance, instance_name, resource_server_name, method, path, policy
     if resource_exist is True:
         return update(isamAppliance=isamAppliance, instance_name=instance_name,
                       resource_server_name=resource_server_name, method=method, path=path, policy=policy,
-                      server_type=server_type, name=name, static_response_headers=static_response_headers,
-                      rate_limiting_policy=rate_limiting_policy, url_aliases=url_aliases,
+                      server_type=server_type, cors_policy=cors_policy, static_response_headers=static_response_headers,
+                      url_aliases=url_aliases, name=name, rate_limiting_policy=rate_limiting_policy,
                       documentation=documentation, check_mode=check_mode, force=force)
     else:
         return add(isamAppliance=isamAppliance, instance_name=instance_name,
                    resource_server_name=resource_server_name, method=method, path=path, policy=policy,
-                   server_type=server_type, name=name, static_response_headers=static_response_headers,
-                   rate_limiting_policy=rate_limiting_policy, url_aliases=url_aliases,
+                   server_type=server_type, cors_policy=cors_policy, static_response_headers=static_response_headers,
+                   url_aliases=url_aliases, name=name, rate_limiting_policy=rate_limiting_policy,
                    documentation=documentation, check_mode=check_mode, force=force)
 
 
@@ -220,14 +217,28 @@ def delete(isamAppliance, instance_name, resource_server_name, method, path, ser
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def delete_select(isamAppliance, instance_name, resource_server_name, resources, command="DELETE",
-                  server_type="standard", check_mode=False, force=False):
+def delete_selection(isamAppliance, instance_name, resource_server_name, resources, command="DELETE",
+                     server_type="standard", check_mode=False, force=False):
     """
     Delete a selection of API Access Control Resources
     """
-    exist_all, warnings = _check_list_resource(isamAppliance, instance_name, resource_server_name, resources)
+    found_any = False
+    new_list_resources = []
+    ret_obj = get_all(isamAppliance, instance_name, resource_server_name)
+    warnings = ret_obj['warnings']
 
-    if force is True or exist_all is True:
+    for resource in resources:
+        found = False
+        for obj in ret_obj['data']:
+            if obj['id'] == resource:
+                found = True
+                found_any = True
+        if found is False:
+            warnings.append("Did not find resource {0} to delete".format(resource))
+        else:
+            new_list_resources.append(resource)
+
+    if force is True or found_any is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -237,10 +248,10 @@ def delete_select(isamAppliance, instance_name, resource_server_name, resources,
                                                                     server_type),
                 {
                     'command': command,
-                    'resources': resources
+                    'resources': new_list_resources
                 },
                 requires_modules=requires_modules,
-                requires_version=requires_version)
+                requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -495,41 +506,34 @@ def _check_list_servers(isamAppliance, instance_name, resource_servers):
         return False, warnings
 
 
-def _check_resource_content(isamAppliance, instance_name, resource_server_name, method, path, policy, server_type, name,
-                            static_response_headers, rate_limiting_policy, url_aliases, documentation):
-    ret_obj = get(isamAppliance, instance_name, resource_server_name, path, method, server_type)
-    current_data = {
-        'policy': ret_obj['data']['policy']
-    }
+def _check_resource_content(isamAppliance, instance_name, resource_server_name, method, path, policy,
+                            cors_policy, static_response_headers, url_aliases, name, rate_limiting_policy,
+                            documentation):
+    ret_obj = get(isamAppliance, instance_name, resource_server_name, path, method)
+    current_data = ret_obj['data']
+    del current_data['id']
 
     json_data = {
+        'method': method,
         'policy': policy,
+        'cors_policy': cors_policy,
+        'static_response_headers': static_response_headers,
+        'url_aliases': url_aliases
     }
+
+    if tools.version_compare(isamAppliance.facts["version"], "10.0.0") < 0:
+        json_data['path'] = path
+    else:
+        json_data['path'] = "{0}{1}".format(resource_server_name, path)
 
     if name is not None:
         json_data['name'] = name
-        if 'name' in ret_obj['data']:
-            current_data['name'] = ret_obj['data']['name']
-
-    if static_response_headers is not None:
-        json_data['static_response_headers'] = name
-        if 'static_response_headers' in ret_obj['data']:
-            current_data['static_response_headers'] = ret_obj['data']['static_response_headers']
 
     if rate_limiting_policy is not None:
-        json_data['rate_limiting_policy'] = name
-        if 'rate_limiting_policy' in ret_obj['data']:
-            current_data['rate_limiting_policy'] = ret_obj['data']['rate_limiting_policy']
-
-    if url_aliases is not None:
-        json_data['url_aliases'] = name
-        if 'url_aliases' in ret_obj['data']:
-            current_data['url_aliases'] = ret_obj['data']['url_aliases']
+        json_data['rate_limiting_policy'] = rate_limiting_policy
 
     if documentation is not None:
-        json_data['documentation'] = name
-        if 'documentation' in ret_obj['data']:
-            current_data['documentation'] = ret_obj['data']['documentation']
+        json_data['documentation'] = documentation
 
     sorted_obj1 = tools.json_sort(json_data)
     logger.debug("Sorted sorted_obj1: {0}".format(sorted_obj1))
@@ -541,6 +545,24 @@ def _check_resource_content(isamAppliance, instance_name, resource_server_name, 
         return True, ret_obj['warnings'], json_data
 
     return False, ret_obj['warnings'], json_data
+
+
+def compare_one_server(isamAppliance1, isamAppliance2, instance1_name, server1_name, instance2_name=None,
+                       server2_name=None):
+    """
+    Compare resources between two appliances
+    """
+
+    if instance2_name is None or instance2_name == '':
+        instance2_name = instance1_name
+
+    if server2_name is None or server2_name == '':
+        server2_name = server1_name
+
+    resources1 = get_all(isamAppliance1, instance_name=instance1_name, resource_server_name=server1_name)
+    resources2 = get_all(isamAppliance2, instance_name=instance2_name, resource_server_name=server2_name)
+
+    return tools.json_compare(resources1, resources2)
 
 
 def compare(isamAppliance1, isamAppliance2):
