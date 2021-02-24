@@ -18,7 +18,7 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
-def update(isamAppliance, enabled, data_location, resources, admin_group, public_key=None, check_mode=False,
+def update(isamAppliance, enabled, data_location, resources, admin_group, public_key='', check_mode=False,
            force=False):
     """
     Update a specified Risk Profile
@@ -28,10 +28,10 @@ def update(isamAppliance, enabled, data_location, resources, admin_group, public
         'admin_group': admin_group,
         'data_location': data_location,
         'enabled': enabled,
-        'public_key': public_key,
-        'resources': resources
+        'resources': resources,
+        'public_key': public_key
     }
-    update_required, warnings = _check(isamAppliance, json_data, public_key)
+    update_required, warnings = _check(isamAppliance, json_data)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -44,16 +44,9 @@ def update(isamAppliance, enabled, data_location, resources, admin_group, public
     return isamAppliance.create_return_object(warnings=warnings)
 
 
-def _check(isamAppliance, json_data, public_key):
+def _check(isamAppliance, json_data):
     ret_obj = get(isamAppliance)
     sorted_json1 = tools.json_sort(ret_obj['data'])
-
-    if public_key is None:
-        if 'public_key' in ret_obj['data']:
-            json_data['public_key'] = ret_obj['data']['public_key']
-        else:
-            return False, ret_obj['warnings']
-
     sorted_json2 = tools.json_sort(json_data)
 
     if sorted_json1 == sorted_json2:
