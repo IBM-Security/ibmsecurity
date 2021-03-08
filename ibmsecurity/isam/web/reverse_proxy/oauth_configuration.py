@@ -27,7 +27,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     :param auth_register:
     :param check_mode:
     :param force:
-    :param fapi_complient:
+    :param fapi_compliant:
     :return:
     """
     warnings = [
