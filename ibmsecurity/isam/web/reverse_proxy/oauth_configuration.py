@@ -8,7 +8,7 @@ requires_version = "9.0.4.0"
 
 
 def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username='easuser', password='passw0rd',
-           junction="/mga", reuse_certs=False, reuse_acls=False, api=False, browser=False, auth_register=None,
+           junction="/mga", reuse_certs=False, reuse_acls=False, api=False, browser=False, auth_register=None, fapi_compliant=None,
            check_mode=False, force=False):
     """
     Oauth and Oidc configuration for a reverse proxy instance
@@ -27,6 +27,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     :param auth_register:
     :param check_mode:
     :param force:
+    :param fapi_complient:
     :return:
     """
     warnings = [
@@ -50,6 +51,13 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
                         isamAppliance.facts["version"], auth_register))
             else:
                 json_data["auth_register"] = auth_register
+        if fapi_compliant is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, fapi_compliant: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring fapi_compliant for this call.".format(
+                        isamAppliance.facts["version"], fapi_compliant))
+            else:
+                json_data["fapi_compliant"] = fapi_compliant 
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
@@ -57,9 +65,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
                 "OAuth configuration for a reverse proxy instance",
                 "/wga/reverseproxy/{0}/oauth_config".format(instance_id), json_data, warnings=warnings,
                 requires_modules=requires_modules, requires_version=requires_version)
-
     return isamAppliance.create_return_object(warnings=warnings)
-
 
 def _check_config(isamAppliance, instance_id, junction):
     """
