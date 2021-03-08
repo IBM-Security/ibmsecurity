@@ -90,14 +90,21 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, id, check_mode=False, force=False):
+def delete(isamAppliance, id=None, name=None, check_mode=False, force=False):
     """
     Delete an authentication policy
     """
-    if force is True or _check(isamAppliance, id=id) is True:
+    if id == None and name == None:
+        from ibmsecurity.appliance.ibmappliance import IBMError
+        raise IBMError("999", "Either id or name attribute must be provided")
+
+    if force is True or _check(isamAppliance, id=id, name=name) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            if id == None:
+                ret_obj = get(isamAppliance, name)
+                id = ret_obj['data']['id']
             return isamAppliance.invoke_delete(
                 "Delete an authentication policy",
                 "{0}/{1}".format(module_uri, id), requires_modules=requires_modules, requires_version=requires_version)

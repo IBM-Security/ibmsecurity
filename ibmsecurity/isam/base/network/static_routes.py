@@ -3,6 +3,7 @@ import ibmsecurity.utilities.tools
 import ibmsecurity.isam.base.network.interfaces
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 try:
     basestring
@@ -15,7 +16,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving all static routes
     """
     return isamAppliance.invoke_get("Retrieving all static routes",
-                                    "/net/routes")
+                                    "/net/routes", requires_model=requires_model)
 
 
 def get(isamAppliance, uuid, check_mode=False, force=False):
@@ -23,14 +24,18 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Retrieving a single static route
     """
     return isamAppliance.invoke_get("Retrieving a single static route",
-                                    "/net/routes/{0}".format(uuid))
+                                    "/net/routes/{0}".format(uuid), requires_model=requires_model)
 
 
-def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPrefix=None, gateway=None, label=None,
+def add(isamAppliance, address, enabled=True, comment=None, table='main', maskOrPrefix=None, gateway=None, label=None,
         vlanId=None, metric=None, check_mode=False, force=False):
     """
     Creating a static route
     """
+
+    if isamAppliance.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     if table.lower() != 'main':
         table_uuid = ibmsecurity.isam.base.network.interfaces.search(isamAppliance, address=table)
@@ -54,11 +59,10 @@ def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPr
         logger.debug("Interface {0} not found, Add static route is not supported.".format(label))
         return isamAppliance.create_return_object(changed=False)
 
-    if maskOrPrefix is None:
-        maskOrPrefix = ""
-    if isinstance(maskOrPrefix, basestring):
-        if maskOrPrefix.lower() == 'none':
-            maskOrPrefix = ""
+    if maskOrPrefix is not None:
+        if isinstance(maskOrPrefix, basestring):
+            if maskOrPrefix.lower() == 'none':
+                maskOrPrefix = ''
     if isinstance(table, basestring):
         if table.lower() == 'none':
             table = None
@@ -92,11 +96,14 @@ def add(isamAppliance, address, enabled=True, comment='', table='main', maskOrPr
 
 
 def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=None, gateway=None,
-           metric=None, comment='', table='main', label=None, vlanId=None, new_label=None, new_vlanId=None,
+           metric=None, comment=None, table='main', label=None, vlanId=None, new_label=None, new_vlanId=None,
            check_mode=False, force=False):
     """
     Updating a static route
     """
+    if isamAppliance.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        return isamAppliance.create_return_object(warnings=warnings)
 
     warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
@@ -133,11 +140,10 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
         interfaceUUID = ''
     if new_address is not None:
         address = new_address
-    if maskOrPrefix is None:
-        maskOrPrefix = ''
-    if isinstance(maskOrPrefix, basestring):
-        if maskOrPrefix.lower() == 'none':
-            maskOrPrefix = ''
+    if maskOrPrefix is not None:
+        if isinstance(maskOrPrefix, basestring):
+            if maskOrPrefix.lower() == 'none':
+                maskOrPrefix = ''
 
     if isinstance(metric, basestring):
         if metric.lower() == 'none':
@@ -175,8 +181,13 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
 
 
 def set(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=None, gateway=None, metric=None,
-        comment='', table='main', label=None, vlanId=None, new_label=None, new_vlanId=None, check_mode=False,
+        comment=None, table='main', label=None, vlanId=None, new_label=None, new_vlanId=None, check_mode=False,
         force=False):
+
+    if isamAppliance.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        return isamAppliance.create_return_object(warnings=warnings)
+
     if table != 'main':
         table_uuid = ibmsecurity.isam.base.network.interfaces.search(isamAppliance, address=table)
         table_uuid = table_uuid['data']
@@ -204,8 +215,11 @@ def _get_interfaceUUID(isamAppliance, label, vlanId=None):
     if label is None or label == '' or label.lower() == 'auto':
         interfaceUUID = ''
     else:
-        intf = ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
-        interfaceUUID = intf['uuid']
+        intf, warnings= ibmsecurity.isam.base.network.interfaces._get_interface(isamAppliance, label, vlanId)
+        if intf:
+            interfaceUUID = intf['uuid']
+        else:
+            interfaceUUID = ''
 
     return interfaceUUID
 
@@ -226,6 +240,10 @@ def delete(isamAppliance, address, table='main', label=None, vlanId=None, check_
     """
     Delete a static route
     """
+    if isamAppliance.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        return isamAppliance.create_return_object(warnings=warnings)
+
     warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
 
@@ -296,6 +314,14 @@ def compare(isamAppliance1, isamAppliance2):
     """
     Compare static routes between 2 appliances
     """
+    if isamAppliance1.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance1.facts['model'])]
+        return isamAppliance1.create_return_object(warnings=warnings)
+
+    if isamAppliance2.facts['model'] != requires_model:
+        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance2.facts['model'])]
+        return isamAppliance2.create_return_object(warnings=warnings)
+
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)
 

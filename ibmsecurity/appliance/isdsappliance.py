@@ -5,10 +5,12 @@ import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
 from ibmsecurity.utilities import tools
+from io import open
 
 try:
     basestring
 except NameError:
+
     basestring = (str, bytes)
 
 

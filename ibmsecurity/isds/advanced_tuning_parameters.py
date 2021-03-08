@@ -17,7 +17,7 @@ def set(isdsAppliance, key, value, comment="", check_mode=False, force=False):
     Set advanced tuning parameter
 
     Note: Pass an array of values if needed to set a set of values for given key
-    
+
     Advanced Tuning Parameters functionality available starting with 8.0.1.9 only
     """
 

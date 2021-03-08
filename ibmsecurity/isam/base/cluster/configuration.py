@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 uri = "/isam/cluster/v2"
 requires_modules = None
 requires_version = None
+requires_model = "Appliance"
 
 try:
     basestring
@@ -20,7 +21,8 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve the current cluster configuration
     """
     return isamAppliance.invoke_get("Retrieve the current cluster configuration", uri,
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    requires_modules=requires_modules, requires_version=requires_version,
+                                    requires_model=requires_model)
 
 
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
@@ -35,17 +37,18 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     """
     Set cluster configuration
     """
+
     warnings = []
     # Create a simple json with just the main client attributes
     cluster_json = {
         "primary_master": primary_master,
-        "dsc_external_clients": dsc_external_clients,
-        "dsc_worker_threads": dsc_worker_threads,
-        "dsc_maximum_session_lifetime": dsc_maximum_session_lifetime,
-        "dsc_client_grace_period": dsc_client_grace_period,
-        "hvdb_embedded": hvdb_embedded,
-        "cfgdb_embedded": cfgdb_embedded,
-        "first_port": first_port
+        "dsc_external_clients": bool(dsc_external_clients),
+        "dsc_worker_threads": int(dsc_worker_threads),
+        "dsc_maximum_session_lifetime": int(dsc_maximum_session_lifetime),
+        "dsc_client_grace_period": int(dsc_client_grace_period),
+        "hvdb_embedded": bool(hvdb_embedded),
+        "cfgdb_embedded": bool(cfgdb_embedded),
+        "first_port": int(first_port)
     }
     # Add attributes that have been supplied... otherwise skip them.
     if secondary_master is not None:
@@ -57,21 +60,21 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if quaternary_master is not None:
         cluster_json["quaternary_master"] = quaternary_master
     if dsc_port is not None:
-        cluster_json["dsc_port"] = dsc_port
+        cluster_json["dsc_port"] = int(dsc_port)
     if dsc_use_ssl is not None:
-        cluster_json["dsc_use_ssl"] = dsc_use_ssl
+        cluster_json["dsc_use_ssl"] = bool(dsc_use_ssl)
     if dsc_ssl_keyfile is not None:
         cluster_json["dsc_ssl_keyfile"] = dsc_ssl_keyfile
     if dsc_ssl_label is not None:
         cluster_json["dsc_ssl_label"] = dsc_ssl_label
-    if hvdb_max_size is not None:
-        cluster_json["hvdb_max_size"] = hvdb_max_size
+    if hvdb_max_size is not None and hvdb_embedded:
+        cluster_json["hvdb_max_size"] = int(hvdb_max_size)
     if hvdb_db_type is not None:
         cluster_json["hvdb_db_type"] = hvdb_db_type
     if hvdb_address is not None:
         cluster_json["hvdb_address"] = hvdb_address
     if hvdb_port is not None:
-        cluster_json["hvdb_port"] = hvdb_port
+        cluster_json["hvdb_port"] = int(hvdb_port)
     if hvdb_user is not None:
         cluster_json["hvdb_user"] = hvdb_user
     if hvdb_password is not None:
@@ -83,11 +86,11 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if hvdb_db2_alt_address is not None:
         cluster_json["hvdb_db2_alt_address"] = hvdb_db2_alt_address
     if hvdb_db2_alt_port is not None:
-        cluster_json["hvdb_db2_alt_port"] = hvdb_db2_alt_port
+        cluster_json["hvdb_db2_alt_port"] = int(hvdb_db2_alt_port)
     if hvdb_db_name is not None:
         cluster_json["hvdb_db_name"] = hvdb_db_name
     if hvdb_db_secure is not None:
-        cluster_json["hvdb_db_secure"] = hvdb_db_secure
+        cluster_json["hvdb_db_secure"] = bool(hvdb_db_secure)
     if hvdb_driver_type is not None:
         cluster_json["hvdb_driver_type"] = hvdb_driver_type
     if hvdb_solid_tc is not None:
@@ -100,7 +103,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_address is not None:
         cluster_json["cfgdb_address"] = cfgdb_address
     if cfgdb_port is not None:
-        cluster_json["cfgdb_port"] = cfgdb_port
+        cluster_json["cfgdb_port"] = int(cfgdb_port)
     if cfgdb_user is not None:
         cluster_json["cfgdb_user"] = cfgdb_user
     if cfgdb_password is not None:
@@ -112,11 +115,11 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_db2_alt_address is not None:
         cluster_json["cfgdb_db2_alt_address"] = cfgdb_db2_alt_address
     if cfgdb_db2_alt_port is not None:
-        cluster_json["cfgdb_db2_alt_port"] = cfgdb_db2_alt_port
+        cluster_json["cfgdb_db2_alt_port"] = int(cfgdb_db2_alt_port)
     if cfgdb_db_name is not None:
         cluster_json["cfgdb_db_name"] = cfgdb_db_name
     if cfgdb_db_secure is not None:
-        cluster_json["cfgdb_db_secure"] = cfgdb_db_secure
+        cluster_json["cfgdb_db_secure"] = bool(cfgdb_db_secure)
     if cfgdb_driver_type is not None:
         cluster_json["cfgdb_driver_type"] = cfgdb_driver_type
     if cfgdb_solid_tc is not None:
@@ -134,12 +137,17 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if dsc_trace_level is not None:
         cluster_json["dsc_trace_level"] = dsc_trace_level
 
-    if force is True or _check(isamAppliance, cluster_json, ignore_password_for_idempotency) is False:
+    check_obj =  _check(isamAppliance, cluster_json, ignore_password_for_idempotency)
+    if check_obj['warnings'] != []:
+        warnings.append(check_obj['warnings'][0])
+
+    if force is True or check_obj['value'] is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post("Set cluster configuration", uri, cluster_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
+                                             requires_model=requires_model,
                                              warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -153,7 +161,11 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
     :param cluster_json:
     :return:
     """
+
+    check_obj = {'value': True, 'warnings':""}
+
     ret_obj = get(isamAppliance)
+    check_obj['warnings'] = ret_obj['warnings']
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(cluster_json)
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
@@ -174,27 +186,32 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
         try:
             if isinstance(value, list):
                 if ibmsecurity.utilities.tools.json_sort(
-                        ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
+                        ret_obj['data'][key]) != ibmsecurity.utilities.tools.json_sort(value):
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    check_obj['value']=False
+                    return check_obj
             else:
                 if ret_obj['data'][key] != value:
                     logger.debug(
                         "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    return False
+                    check_obj['value']=False
+                    return check_obj
         except:  # In case there is an error looking up the key in existing configuration (missing)
             logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
-            return False
+            check_obj['value']=False
+            return check_obj
 
     logger.debug("JSON provided already is contained in current appliance configuration.")
-    return True
+    check_obj['value']=True
+    return check_obj
 
 
 def compare(isamAppliance1, isamAppliance2):
     """
     Compare cluster configuration between two appliances
     """
+
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 

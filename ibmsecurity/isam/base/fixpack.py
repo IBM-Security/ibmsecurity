@@ -3,6 +3,7 @@ import os.path
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
+requires_model="Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -15,38 +16,40 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def install(isamAppliance, file, check_mode=False, force=False):
     """
-    Install fixpack
+    Installing a fix pack
     """
     if force is True or _check(isamAppliance, file) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
-                "Install fixpack",
+                "Installing a fix pack",
                 "/fixpacks",
                 [{
                     'file_formfield': 'file',
                     'filename': file,
                     'mimetype': 'application/octet-stream'
                 }],
-                {})
+                {}, requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
 
 def rollback(isamAppliance, file, check_mode=False, force=False):
     """
-    Rollback fixpack
+    Rollback the most recently installed fixpack
     """
     if force is True or _check_rollback(isamAppliance, file) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Rollback fixpack",
+                "Rollback the most recently installed fixpack",
                 "/fixpacks",
                 requires_modules=None,
-                requires_version="9.0.3.0")
+                requires_version="9.0.3.0",
+                requires_model=requires_model
+            )
 
     return isamAppliance.create_return_object()
 
@@ -118,6 +121,7 @@ def _extract_fixpack_name(fixpack):
     # Return fixpack name derived from the filename
     file_name = os.path.basename(fixpack)
     fixpack_name, ext_name = file_name.split('.')
+    logger.info("Fixpack name could not be extracted from binary, use name derived from the filename: {0}".format(fixpack_name))
 
     return fixpack_name
 

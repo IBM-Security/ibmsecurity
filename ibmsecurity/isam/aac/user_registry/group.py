@@ -25,6 +25,42 @@ def get(isamAppliance, id, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
+def add(isamAppliance, id, users=None, check_mode=False, force=False):
+    """
+    Creating a new group in the registry
+    """
+    if force is True or _check_group(isamAppliance, id) is False:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            json_data = {
+                "id": id,
+                "users": users
+            }
+            return isamAppliance.invoke_post(
+                "Creating a new group in the registry",
+                "{0}/v1".format(uri), json_data,
+                requires_modules=requires_modules, requires_version="10.0.1")
+
+    return isamAppliance.create_return_object()
+
+
+def delete(isamAppliance, group_name, check_mode=False, force=False):
+    """
+    Deleting a group from the registry
+    """
+    if force is True or _check_group(isamAppliance, group_name) is True:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete(
+                "Deleting a group from the registry",
+                "{0}/{1}/v1".format(uri, group_name),
+                requires_modules=requires_modules, requires_version="10.0.1")
+
+    return isamAppliance.create_return_object()
+
+
 def add_user(isamAppliance, user_name, id, check_mode=False, force=False):
     """
     Adding a user to a group in the registry
@@ -72,6 +108,23 @@ def _check(isamAppliance, user_name, id):
             for usr in ret_obj['data']['users']:
                 if usr['id'] == user_name:
                     return True
+
+    return False
+
+
+def _check_group(isamAppliance, id):
+    """
+    Check if group already exists
+    :param isamAppliance:
+    :param id:
+    :return:
+    """
+
+    ret_obj = get_all(isamAppliance)
+
+    for obj in ret_obj['data']:
+        if obj['id'] == id:
+            return True
 
     return False
 

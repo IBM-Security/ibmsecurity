@@ -25,7 +25,7 @@ def get(isamAppliance, check_mode=False, force=False):
 def set(isamAppliance, enableAutoCheck=True, scheduleSettings=None, dailyFrequencySettings=None, schedule_type=None,
         check_mode=False, force=False):
     """
-    Set Scheduled Security Update Settings 
+    Set Scheduled Security Update Settings
     Note: Sample values to be set:
         schedule_type: "day_or_week"
         scheduleSettings: {"day":"Sunday","time":"03:00"}

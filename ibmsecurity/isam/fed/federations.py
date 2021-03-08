@@ -1,6 +1,7 @@
 import logging
 import json
 from ibmsecurity.utilities import tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ def _get(isamAppliance, id):
                                     requires_version=requires_version)
 
 
-def set(isamAppliance, name, protocol, role, configuration, templateName=None, new_name=None, check_mode=False,
+def set(isamAppliance, name, protocol, configuration, role=None, templateName=None, new_name=None, check_mode=False,
         force=False):
     """
     Creating or Modifying a Federation
@@ -83,7 +84,7 @@ def set(isamAppliance, name, protocol, role, configuration, templateName=None, n
                       new_name=new_name, check_mode=check_mode, force=force)
 
 
-def set_file(isamAppliance, name, protocol, role, filename, mapping_id, templateName=None, new_name=None,
+def set_file(isamAppliance, name, protocol, filename, mapping_id, role=None, templateName=None, new_name=None,
              check_mode=False, force=False):
     """
     Creating or Modifying a Federation from a JSON file
@@ -97,15 +98,15 @@ def set_file(isamAppliance, name, protocol, role, filename, mapping_id, template
     return set(isamAppliance, name, protocol, role, file_lines, templateName, new_name, check_mode, force)
 
 
-def add(isamAppliance, name, protocol, role, configuration, templateName=None, check_mode=False,
+def add(isamAppliance, name, protocol, configuration, role=None, templateName=None, check_mode=False,
         force=False):
     """
     Create a new federation
 
     :param isamAppliance:
     :param name:
-    :param protocol: SAML2_0 or OIDC
-    :param role: ip | sp | op | rp
+    :param protocol: SAML2_0 or OIDC or OIDC10 (OIDC deprecated on v10)
+    :param role: ip | sp | op | rp (not required on OIDC10)
     :param configuration: protocol specific configuration data in JSON format
     :param templateName: template id (optional)
     :param check_mode:
@@ -122,9 +123,10 @@ def add(isamAppliance, name, protocol, role, configuration, templateName=None, c
             json_data = {
                 "name": name,
                 "protocol": protocol,
-                "role": role,
                 "configuration": configuration
             }
+            if role is not None:
+                json_data['role'] = role
             if templateName is not None:
                 json_data['templateName'] = templateName
             return isamAppliance.invoke_post(

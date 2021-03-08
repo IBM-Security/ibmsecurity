@@ -1,4 +1,5 @@
 import logging
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -64,38 +65,38 @@ def set(isamAppliance, name, category, filename=None, content=None, upload_filen
     """
     Creating or Modifying an Mapping Rule
     """
-    if content is None or content == '':
-        if upload_filename is None or upload_filename == '':
-            return isamAppliance.create_return_object(
-                warnings="Need to pass content or upload_filename for set() to work.")
-        else:
-            with open(upload_filename, 'r') as contentFile:
-                content = contentFile.read()
-    if filename is None or filename == '':
-        if upload_filename is None or upload_filename == '':
-            return isamAppliance.create_return_object(
-                warnings="Need to pass filename or upload_filename for set() to work.")
-        else:
-            filename = _extract_filename(upload_filename)
+
     if _check(isamAppliance, name=name) is False:
         # Force the add - we already know connection does not exist
-        return add(isamAppliance, name=name, filename=filename, content=content, category=category,
+        return add(isamAppliance, name=name, filename=filename, content=content, category=category, upload_filename=upload_filename,
                    check_mode=check_mode, force=True)
     else:
         # Update request
-        return update(isamAppliance, name=name, content=content, check_mode=check_mode, force=force)
+        return update(isamAppliance, name=name, content=content, upload_filename=upload_filename, check_mode=check_mode, force=force)
 
 
-def add(isamAppliance, name, filename=None, content=None, category="OAUTH", check_mode=False, force=False):
+def add(isamAppliance, name, filename=None, content=None, category=None, upload_filename=None, check_mode=False, force=False):
     """
     Add a mapping rule
     """
+
     if force is True or _check(isamAppliance, name) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if filename is None:
-                filename = _extract_filename(name, category)
+            if content is None or content == '':
+                if upload_filename is None or upload_filename == '':
+                    return isamAppliance.create_return_object(
+                        warnings="Need to pass content or upload_filename for set() to work.")
+                else:
+                    with open(upload_filename, 'r') as contentFile:
+                        content = contentFile.read()
+            if filename is None or filename == '':
+                if upload_filename is None or upload_filename == '':
+                    return isamAppliance.create_return_object(
+                        warnings="Need to pass filename or upload_filename for set() to work.")
+                else:
+                    filename = _extract_filename(upload_filename)
             return isamAppliance.invoke_post(
                 "Add a mapping rule",
                 "/iam/access/v8/mapping-rules",
@@ -127,10 +128,19 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, name, content, check_mode=False, force=False):
+def update(isamAppliance, name, content=None, upload_filename=None, check_mode=False, force=False):
     """
     Update a specified mapping rule
     """
+
+    if content is None or content == '':
+        if upload_filename is None or upload_filename == '':
+            return isamAppliance.create_return_object(
+                warnings="Need to pass content or upload_filename for set() to work.")
+        else:
+            with open(upload_filename, 'r') as contentFile:
+                content = contentFile.read()
+
     update_required = False
     ret_obj = search(isamAppliance, name)
     id = ret_obj['data']

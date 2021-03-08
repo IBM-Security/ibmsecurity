@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/isam/authzserver"
+requires_model = "Appliance"
+docker_warning = ['API invoked requires model: Appliance, appliance is of deployment model: Docker.']
 
 
 def get_all(isamAppliance, id, stanza_id, check_mode=False, force=False):
@@ -21,7 +23,7 @@ def get_all(isamAppliance, id, stanza_id, check_mode=False, force=False):
             description="Retrieving all configuration entries for a stanza - Authorization Server",
             uri="{0}/{1}/configuration/stanza/{2}/v1".format(uri,
                                                              id,
-                                                             stanza_id))
+                                                             stanza_id), requires_model=requires_model)
     except:
         # Return empty array - exception thrown if stanza has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -35,15 +37,18 @@ def get(isamAppliance, id, stanza_id, entry_id, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get(description="Retrieving a specific configuration entry - Authorization Server",
                                     uri="{0}/{1}/configuration/stanza/{2}/entry_name/{3}/v1".format(uri,
-                                                                                                    id,
-                                                                                                    stanza_id,
-                                                                                                    entry_id))
+                                                                                                    id, stanza_id,
+                                                                                                    entry_id),
+                                    requires_model=requires_model)
 
 
 def add(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
     """
     Add configuration entry by stanza - Authorization Server
     """
+    if _isDocker(isamAppliance, id, stanza_id):
+        return isamAppliance.create_return_object(warnings=docker_warning)
+
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
@@ -76,7 +81,16 @@ def _add(isamAppliance, id, stanza_id, entries):
     return isamAppliance.invoke_post(
         description="Add configuration entry by stanza - Authorization Server",
         uri="{0}/{1}/configuration/stanza/{2}/entry_name/v1".format(uri, id, stanza_id),
-        data={"entries": entries})
+        data={"entries": entries}, requires_model=requires_model)
+
+
+def _isDocker(isamAppliance, id, stanza_id):
+    ret_obj = get_all(isamAppliance, id, stanza_id)
+    warnings = ret_obj['warnings']
+    if warnings and 'Docker' in warnings[0]:
+        return True
+    else:
+        return False
 
 
 def set(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
@@ -88,6 +102,9 @@ def set(isamAppliance, id, stanza_id, entries, check_mode=False, force=False):
 
     Smart enough to update only that which is needed.
     """
+    if _isDocker(isamAppliance, id, stanza_id):
+        return isamAppliance.create_return_object(warnings=docker_warning)
+
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
@@ -157,6 +174,10 @@ def delete(isamAppliance, id, stanza_id, entry_id, value_id='', check_mode=False
     """
     Deleting a value from a configuration entry - Authorization Server
     """
+    if _isDocker(isamAppliance, id, stanza_id):
+        return isamAppliance.create_return_object(warnings=docker_warning)
+
+    exists = False
     if force is False:
         exists, update_required, value = _check(isamAppliance, id, stanza_id, entry_id, value_id)
 
@@ -174,7 +195,8 @@ def delete(isamAppliance, id, stanza_id, entry_id, value_id='', check_mode=False
             import urllib.parse
             full_uri = urllib.parse.quote(ruri)
             return isamAppliance.invoke_delete(
-                description="Deleting a value from a configuration entry - Authorization Server", uri=full_uri)
+                description="Deleting a value from a configuration entry - Authorization Server",
+                uri=full_uri, requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -183,10 +205,15 @@ def delete_all(isamAppliance, id, stanza_id, entry_id, check_mode=False, force=F
     """
     Deleting all values from a configuration entry - Authorization Server
     """
+
     delete_required = False
     if force is False:
         try:
             ret_obj = get(isamAppliance, id, stanza_id, entry_id)
+            warnings = ret_obj['warnings']
+            if warnings and 'Docker' in warnings[0]:
+                return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
+
             if ret_obj['data'] != {}:
                 delete_required = True
         except:
@@ -198,7 +225,8 @@ def delete_all(isamAppliance, id, stanza_id, entry_id, check_mode=False, force=F
         else:
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/v1".format(uri, id, stanza_id, entry_id)
             return isamAppliance.invoke_delete(
-                description="Deleting all values from a configuration entry - Authorization Server", uri=f_uri)
+                description="Deleting all values from a configuration entry - Authorization Server", uri=f_uri,
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -207,6 +235,9 @@ def update(isamAppliance, id, stanza_id, entry_name_id, value_id, check_mode=Fal
     """
     Updating a configuration entry or entries by stanza - Authorization Server
     """
+    if _isDocker(isamAppliance, id, stanza_id):
+        return isamAppliance.create_return_object(warnings=docker_warning)
+
     if force is False:
         exists, update_required, cur_value = _check(isamAppliance, id, stanza_id, entry_name_id, value_id)
 
@@ -222,7 +253,7 @@ def update(isamAppliance, id, stanza_id, entry_name_id, value_id, check_mode=Fal
                                                                                 entry_name_id),
                 data={
                     'value': value_id
-                })
+                }, requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 

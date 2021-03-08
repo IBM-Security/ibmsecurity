@@ -104,7 +104,7 @@ def update(isamAppliance, priority, name, enabled, hostName, port, trustLevel, u
            cert="", proxyHost=None, proxyPort=None, proxyUser=None, proxyPwd=None, new_name=None, check_mode=False,
            force=False):
     """
-    Update an update server's details.    
+    Update an update server's details.
     """
     us_id, update_required, json_data = _check(isamAppliance, priority, name, enabled, hostName, port, trustLevel,
                                                useProxy, useProxyAuth, cert, proxyHost, proxyPort, proxyUser, proxyPwd,
@@ -161,7 +161,7 @@ def _check(isamAppliance, priority, name, enabled, hostName, port, trustLevel, u
 
 def enable(isamAppliance, name, enabled, check_mode=False, force=False):
     """
-    Update an update server's details.    
+    Update an update server's details.
     """
     warnings = []
     ret_obj = get(isamAppliance=isamAppliance, name=name)

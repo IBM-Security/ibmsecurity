@@ -1,8 +1,9 @@
 import logging
-import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
-
+requires_modules = ["mga", "federation"]
+requires_version = "9.0.2.1"
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
@@ -27,7 +28,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 
 def set(isamAppliance, name, connection, type, jndiId, description='', locked=False, connectionManager=None,
-        new_name=None, check_mode=False, force=False):
+        new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Creating or Modifying an JDBC server connection
     """
@@ -39,7 +40,7 @@ def set(isamAppliance, name, connection, type, jndiId, description='', locked=Fa
     else:
         # Update request
         return update(isamAppliance=isamAppliance, name=name, connection=connection, type=type, jndiId=jndiId,
-                      description=description, locked=locked, connectionManager=connectionManager, new_name=new_name,
+                      description=description, locked=locked, connectionManager=connectionManager, new_name=new_name, ignore_password_for_idempotency=ignore_password_for_idempotency,
                       check_mode=check_mode, force=force)
 
 
@@ -79,29 +80,53 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
 
 def update(isamAppliance, name, connection, type, jndiId, description='', locked=False, connectionManager=None,
-           new_name=None, check_mode=False, force=False):
+           new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Modifying a JDBC server connection
-
-    Use new_name to rename the connection, cannot compare password so update will take place everytime
+    Use new_name to rename the connection.
     """
+    ret_obj = get(isamAppliance, name)
+    warnings = ret_obj["warnings"]
 
-    if force is True or _check_exists(isamAppliance, name):
+    if ret_obj["data"] == {}:
+        warnings.append("JDBC server connection {0} not found, skipping update.".format(name))
+        return isamAppliance.create_return_object(warnings=warnings)
+    else:
+        id = ret_obj["data"]["uuid"]
+
+    needs_update = False
+
+    json_data = _create_json(name=name, description=description, locked=locked, type=type,
+                             connection=connection, connectionManager=connectionManager, jndiId=jndiId)
+    if new_name is not None:  # Rename condition
+        json_data['name'] = new_name
+
+    if force is not True:
+        if 'uuid' in ret_obj['data']:
+            del ret_obj['data']['uuid']
+        if ignore_password_for_idempotency:
+            if 'password' in connection:
+                warnings.append("Request made to ignore password for idempotency check.")
+                connection.pop('password', None)
+
+        sorted_ret_obj = tools.json_sort(ret_obj['data'])
+        sorted_json_data = tools.json_sort(json_data)
+        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+
+        if sorted_ret_obj != sorted_json_data:
+            needs_update = True
+
+    if force is True or needs_update is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            json_data = _create_json(name=name, description=description, locked=locked, type=type,
-                                     connection=connection, connectionManager=connectionManager, jndiId=jndiId)
-            ret_obj = search(isamAppliance, name)
-            id = ret_obj['data']
+            return isamAppliance.invoke_put(
+                "Modifying a JDBC server connection",
+                "/mga/server_connections/jdbc/{0}/v1".format(id), json_data, requires_modules=requires_modules,
+                requires_version=requires_version, warnings=warnings)
 
-            if new_name is not None:  # Rename condition
-                json_data['name'] = new_name
-
-            return isamAppliance.invoke_put("Modifying a JDBC server connection",
-                                            "/mga/server_connections/jdbc/{0}/v1".format(id), json_data)
-
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _create_json(name, description, locked, type, jndiId, connection, connectionManager):

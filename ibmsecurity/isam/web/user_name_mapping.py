@@ -1,6 +1,7 @@
 import logging
 import os.path
 from ibmsecurity.utilities import tools
+from io import open
 
 logger = logging.getLogger(__name__)
 
@@ -78,58 +79,71 @@ def add(isamAppliance, name, contents=None, check_mode=False, force=False):
 
 def update(isamAppliance, name, filepath=None, contents=None, check_mode=False, force=False):
     """
-    Updating an existing User Mapping CDAS file with new file
+    Updating an existing User Mapping CDAS file with new file or contents
     """
 
     warnings = []
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
+    update_required = False
+    format = None
 
-    if force is True or id != {}:
+    if id != {}:
+        ret_obj = get(isamAppliance, name)
+        ret_data = ret_obj['data']['contents']
+
+        if filepath != None:
+            if os.path.exists(filepath) is True:
+                openfile = open(filepath)
+                filecontent = openfile.read()
+
+                if filecontent != ret_data:
+                    update_required = True
+                    format = "file"
+                else:
+                    logger.info("User Mapping CDAS file content is the same as updates.  Skipping update.")
+                    update_required = False
+        elif contents != None:
+            if ret_data != contents:
+                update_required = True
+                format = "content"
+            else:
+                logger.info("User Mapping CDAS file content is the same as updates.  Skipping update.")
+                update_required = False
+        else:
+            warnings = ["Filepath and contents are both None.  Skipping update."]
+            logger.info("Filepath and contents are both None.  Skipping update.")
+    else:
+        update_required = False
+        logger.info("Did not find {0}".format(name))
+
+    if force is True or update_required is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            ret_obj = get(isamAppliance, name)
-            ret_data = ret_obj['data']['contents']
-
-            if filepath != None:
-                if os.path.exists(filepath) is True:
-                    openfile = open(filepath)
-                    filecontent = openfile.read()
-
-                    if filecontent != ret_data:
-
-                        return isamAppliance.invoke_post_files(
-                            "Updating an existing User Mapping CDAS file with new file",
-                            "{0}/{1}".format(uri, name),
-                            [
-                                {
-                                    'file_formfield': 'file',
-                                    'filename': filepath,
-                                    'mimetype': 'application/octet-stream'
-                                }
-                            ],
-                            {},
-                            requires_modules=requires_modules, requires_version=requires_version
-                        )
-                    else:
-                        logger.info("User Mapping CDAS file content is the same as updates.  Skipping update.")
-            elif contents != None:
-                if ret_data != contents:
-                    return isamAppliance.invoke_post(
-                        "Updating an existing User Mapping CDAS file with new file",
-                        "{0}/{1}".format(uri, name),
+            if format == "file":
+                return isamAppliance.invoke_post_files(
+                    "Updating an existing User Mapping CDAS file with new file",
+                    "{0}/{1}".format(uri, name),
+                    [
                         {
-                            'content': contents
-                        },
-                        requires_modules=requires_modules, requires_version=requires_version
-                    )
-
-                else:
-                    logger.info("User Mapping CDAS file content is the same as updates.  Skipping update.")
+                            'file_formfield': 'file',
+                            'filename': filepath,
+                            'mimetype': 'application/octet-stream'
+                        }
+                    ],
+                    {},
+                    requires_modules=requires_modules, requires_version=requires_version
+                )
             else:
-                warnings = ["File {0} does not exist and input content is empty.  Skipping update.".format(filepath)]
-                logger.info("File {0} does not exist and input content is empty.  Skipping update.".format(filepath))
+                return isamAppliance.invoke_post(
+                    "Updating an existing User Mapping CDAS file with new file",
+                    "{0}/{1}".format(uri, name),
+                    {
+                        'content': contents
+                    },
+                    requires_modules=requires_modules, requires_version=requires_version
+                )
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -143,7 +157,7 @@ def set(isamAppliance, name, filepath=None, contents=None, check_mode=False, for
         # If no id was found, Force the add
         return add(isamAppliance, name, contents=contents, check_mode=check_mode, force=force)
     else:
-        # Update PIP
+        # Update
         return update(isamAppliance, name, filepath=filepath, contents=contents, check_mode=check_mode, force=force)
 
 

@@ -1,6 +1,9 @@
 import logging
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.aac.authentication import mechanism_types
+from ibmsecurity.isam.aac.server_connections import smtp
+from ibmsecurity.isam.aac.server_connections import ci
+from ibmsecurity.isam.aac.server_connections import ws
 
 logger = logging.getLogger(__name__)
 
@@ -99,9 +102,23 @@ def add(isamAppliance, name, uri, description="", attributes=None, properties=No
             if attributes is not None:
                 json_data['attributes'] = attributes
             if properties is not None:
+                logger.info("Searching for keys to substitute value with uuids")
+                for property in properties:
+                    id = {}
+                    if property['key'] == "EmailMessage.serverConnection":
+                        id = smtp.search(isamAppliance, property['value'])['data']
+                        logger.info("Found EmailMessage.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                    elif property['key'] == "ScimConfig.serverConnection":
+                        id = ws.search(isamAppliance, property['value'])['data']
+                        logger.info("Found ScimConfig.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                    elif property['key'] == "CI.serverConnection":
+                        id = ci.search(isamAppliance, property['value'])['data']
+                        logger.info("Found CI.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                    if id != {}:
+                        property['value'] = id
                 json_data['properties'] = properties
             return isamAppliance.invoke_post(
-                "Create a new federation", module_uri, json_data,
+                "Create a new Authentication Mechanism", module_uri, json_data,
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -197,6 +214,20 @@ def _check(isamAppliance, name, description, attributes, properties, predefined,
             except:
                 pass
         if properties is not None:
+            logger.info("Searching for keys to substitute value with uuids")
+            for property in properties:
+                id = {}
+                if property['key'] == "EmailMessage.serverConnection":
+                    id = smtp.search(isamAppliance, property['value'])['data']
+                    logger.info("Found EmailMessage.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                elif property['key'] == "ScimConfig.serverConnection":
+                    id = ws.search(isamAppliance, property['value'])['data']
+                    logger.info("Found ScimConfig.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                elif property['key'] == "CI.serverConnection":
+                    id = ci.search(isamAppliance, property['value'])['data']
+                    logger.info("Found CI.serverConnection by name[{}] with uuid[{}]".format(property['value'], id))
+                if id != {}:
+                    property['value'] = id
             json_data['properties'] = properties
         else:
             # May not exist so skip any exceptions when deleting
