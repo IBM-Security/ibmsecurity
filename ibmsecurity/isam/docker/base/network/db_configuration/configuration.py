@@ -81,7 +81,6 @@ def set(isamAppliance, hvdb_db_type, hvdb_address, hvdb_port, hvdb_user, hvdb_pa
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=obj['warnings'])
         else:
-            print("test")
             return isamAppliance.invoke_post("Set database configuration", uri, db_json,
                                              requires_modules=requires_modules, requires_version=requires_version,
                                              requires_model=requires_model)

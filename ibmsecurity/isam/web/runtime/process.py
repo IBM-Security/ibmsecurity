@@ -8,6 +8,7 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve runtime component status
     """
+    requires_model = None
     return isamAppliance.invoke_get("Retrieving web runtime component status",
                                     "/isam/runtime_components/",requires_model=requires_model)
 
@@ -40,6 +41,7 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
     :param isamAppliance:
     :return:
     """
+    requires_model = None
     check_value, warnings = _check(isamAppliance)
 
     if (force is True or check_value is False):
@@ -73,6 +75,7 @@ def unconfig(isamAppliance, clean=False, ldap_dn=None, ldap_pwd=None, check_mode
     """
     Unconfigure existing runtime component
     """
+    requires_model = None
     check_value, warnings = _check(isamAppliance)
 
     if (force is True or check_value is True):

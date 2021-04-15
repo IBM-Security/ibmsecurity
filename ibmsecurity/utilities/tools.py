@@ -142,6 +142,8 @@ def json_compare(ret_obj1, ret_obj2, deleted_keys=[]):
         logger.debug('Sorted JSON2 to Compare: \n' + psj2)
         diff = difflib.ndiff(psj1.split('\n'), psj2.split('\n'))
         ret_obj['data']['difference'] = '\n'.join(diff)
+        ret_obj['data']['context_difference'] = list(difflib.context_diff(psj1.split('\n'), psj2.split('\n')))
+        ret_obj['data']['html_difference'] = difflib.HtmlDiff().make_file(psj1.split('\n'), psj2.split('\n'), context=True)
 
     return ret_obj
 

@@ -15,7 +15,7 @@ except NameError:
 
 
 class ISAMAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443):
+    def __init__(self, hostname, user, lmi_port=443, cert=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISAMAppliance')
         if isinstance(lmi_port, basestring):
@@ -23,7 +23,12 @@ class ISAMAppliance(IBMAppliance):
         else:
             self.lmi_port = lmi_port
         self.session = requests.session()
-        self.session.auth = (user.username, user.password)
+        if cert is None:
+            self.logger.debug('Cert object is None, using BA Auth with userid/password.')
+            self.session.auth = (user.username, user.password)
+        else:
+            self.logger.debug('Using cert based auth, since cert object is not None.')
+            self.session.cert = cert
         IBMAppliance.__init__(self, hostname, user)
 
     def _url(self, uri):
