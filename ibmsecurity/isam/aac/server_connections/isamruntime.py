@@ -60,7 +60,9 @@ def add(isamAppliance, name, connection, description="", locked=False, check_mod
 def update(isamAppliance, name, connection, locked=False, description='', new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Modifying an ISAM Runtime server connection
+    
     Use new_name to rename the connection.
+    
     """
     ret_obj = get(isamAppliance, name)
     warnings = ret_obj["warnings"]
@@ -127,6 +129,7 @@ def set(isamAppliance, name, locked=False, connection=None, description=None, ne
 def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting an ISAM Runtime server connection
+    
     """
     ret_obj = search(isamAppliance, name, check_mode=False, force=False)
     id = ret_obj['data']
