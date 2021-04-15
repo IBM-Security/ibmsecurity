@@ -36,10 +36,8 @@ def add(isamAppliance, name, connection, description="", locked=False, check_mod
     """
     Creating an ISAM Runtime server connection
     """
-    ret_obj = search(isamAppliance, name, check_mode=False, force=False)
-    id = ret_obj['data']
 
-    if force is True or id == {}:
+    if force is True or _check_exists(isamAppliance, name=name) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -62,11 +60,8 @@ def add(isamAppliance, name, connection, description="", locked=False, check_mod
 def update(isamAppliance, name, connection, locked=False, description='', new_name=None, ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Modifying an ISAM Runtime server connection
-
     Use new_name to rename the connection.
-
     """
-
     ret_obj = get(isamAppliance, name)
     warnings = ret_obj["warnings"]
 
@@ -132,7 +127,6 @@ def set(isamAppliance, name, locked=False, connection=None, description=None, ne
 def delete(isamAppliance, name, check_mode=False, force=False):
     """
     Deleting an ISAM Runtime server connection
-
     """
     ret_obj = search(isamAppliance, name, check_mode=False, force=False)
     id = ret_obj['data']
@@ -182,29 +176,18 @@ def search(isamAppliance, name, force=False, check_mode=False):
     return ret_obj_new
 
 
-def _check_exists(isamAppliance, name, locked=False, connection=None, description=None, new_name=None):
+def _check_exists(isamAppliance, name=None, id=None):
     """
     Check if ISAM runtime Connection already exists
     """
-    exists = False
-    update = False
     ret_obj = get_all(isamAppliance)
+
     for obj in ret_obj['data']:
         if (name is not None and obj['name'] == name) or (id is not None and obj['uuid'] == id):
-            exists = True
-            if new_name is not None:
-                update = True
-            elif locked != obj['locked']:
-                update = True
-            elif connection != obj['connection']:
-                update = True
-            elif 'description' in obj:
-                if description != obj['description']:
-                    update = True
+            return True
 
-            return exists,update
+    return False
 
-    return exists,update
 
 def _create_json(name, connection, description, locked):
     """
