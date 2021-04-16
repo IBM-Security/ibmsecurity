@@ -79,7 +79,13 @@ class ISAMAppliance(IBMAppliance):
             json_data = json.loads(http_response.text)
             return_obj['data'] = json_data
         except ValueError:
-            return_obj['data'] = http_response.content.decode("utf-8")
+            pass
+        try:
+            json_data = json.loads(http_response.content.decode("utf-8"))
+            return_obj['data'] = json_data
+            return
+        except UnicodeDecodeError:
+            return_obj['data'] = http_response.content
             return
 
         self.logger.debug("Status Code: {0}".format(http_response.status_code))
