@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
@@ -86,6 +87,12 @@ class ISAMAppliance(IBMAppliance):
             return
         except UnicodeDecodeError:
             return_obj['data'] = http_response.content
+            return
+        except JSONDecodeError:
+            if isinstance(http_response.content, bytes):
+                return_obj['data'] = http_response.content.decode("utf-8")
+            else:
+                return_obj['data'] = http_response.content
             return
 
         self.logger.debug("Status Code: {0}".format(http_response.status_code))

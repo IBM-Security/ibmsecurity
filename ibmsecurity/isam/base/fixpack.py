@@ -3,7 +3,7 @@ import os.path
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-requires_model="Appliance"
+requires_model = "Appliance"
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -66,12 +66,12 @@ def _check_rollback(isamAppliance, fixpack):
     json_data_sorted = sorted(ret_obj['data'], key=lambda k: int(k['id']), reverse=True)
     # Eliminate all rollbacks before hitting the first non-rollback fixpack
     del_fixpack = ''  # Delete succeeding fixpack to a rollback, only last fixpack can be rolled back
-    for fixpack in json_data_sorted:
-        if fixpack['action'] == 'Uninstalled':
-            del_fixpack = fixpack['name']
-        elif del_fixpack == fixpack['name'] and fixpack['rollback'] == 'Yes':
+    for fp in json_data_sorted:
+        if fp['action'] == 'Uninstalled':
+            del_fixpack = fp['name']
+        elif del_fixpack == fp['name'] and fp['rollback'] == 'Yes':
             del_fixpack = ''
-        elif fixpack['name'].lower() == fixpack_name.lower():
+        elif fp['name'].lower() == fixpack_name.lower():
             return True
         # The first non-rollback fixpack needs to match the name otherwise skip rollback
         else:
@@ -92,12 +92,12 @@ def _check(isamAppliance, fixpack):
     json_data_sorted = sorted(ret_obj['data'], key=lambda k: int(k['id']), reverse=True)
     # Eliminate all rollbacks
     del_fixpack = ''  # Delete succeeding fixpack to a rollback, only last fixpack can be rolled back
-    for fixpack in json_data_sorted:
-        if fixpack['action'] == 'Uninstalled':
-            del_fixpack = fixpack['name']
-        elif del_fixpack == fixpack['name'] and fixpack['rollback'] == 'Yes':
+    for fp in json_data_sorted:
+        if fp['action'] == 'Uninstalled':
+            del_fixpack = fp['name']
+        elif del_fixpack == fp['name'] and fp['rollback'] == 'Yes':
             del_fixpack = ''
-        elif fixpack['name'].lower() == fixpack_name.lower():
+        elif fp['name'].lower() == fixpack_name.lower():
             return True
 
     return False
@@ -120,9 +120,12 @@ def _extract_fixpack_name(fixpack):
     # Unable to extract fixpack name from binary
     # Return fixpack name derived from the filename
     file_name = os.path.basename(fixpack)
-    fixpack_name, ext_name = file_name.split('.')
-    logger.info("Fixpack name could not be extracted from binary, use name derived from the filename: {0}".format(fixpack_name))
-
+    if file_name.find(".fixpack"):
+        fixpack_name = file_name.partition(".fixpack")[0]
+    else:
+        fixpack_name, ext_name = file_name.split('.')
+    logger.info(
+        "Fixpack name could not be extracted from binary, use name derived from the filename: {0}".format(fixpack_name))
     return fixpack_name
 
 
