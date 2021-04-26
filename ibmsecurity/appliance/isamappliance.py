@@ -1,5 +1,4 @@
 import json
-from json import JSONDecodeError
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
@@ -80,38 +79,16 @@ class ISAMAppliance(IBMAppliance):
             json_data = json.loads(http_response.text)
             return_obj['data'] = json_data
         except ValueError:
-            pass
-        try:
-            json_data = json.loads(http_response.content.decode("utf-8"))
-            return_obj['data'] = json_data
-            return
-        except UnicodeDecodeError:
-            return_obj['data'] = http_response.content
-            return
-        except JSONDecodeError:
-            if isinstance(http_response.content, bytes):
-                return_obj['data'] = http_response.content.decode("utf-8")
-            else:
+            try:
+                json_data = json.loads(http_response.content.decode("utf-8"))
+                return_obj['data'] = json_data
+            except UnicodeDecodeError:
                 return_obj['data'] = http_response.content
-            return
-
-        self.logger.debug("Status Code: {0}".format(http_response.status_code))
-        if http_response.text != "":
-            self.logger.debug("Text: " + http_response.content.decode("utf-8"))
-
-        for key in http_response.headers:
-            if key == 'g-type':
-                if http_response.headers[key] == 'application/octet-stream; charset=UTF-8':
-                    json_data = {}
-                    return_obj.data = http_response.content.decode("utf-8")
-                    return
-
-        if http_response.text == "":
-            json_data = {}
-        else:
-            json_data = json.loads(http_response.text)
-
-        return_obj['data'] = json_data
+            except ValueError:
+                if isinstance(http_response.content, bytes):
+                    return_obj['data'] = http_response.content.decode("utf-8")
+                else:
+                    return_obj['data'] = http_response.content
 
     def _process_connection_error(self, ignore_error, return_obj):
         if not ignore_error:
