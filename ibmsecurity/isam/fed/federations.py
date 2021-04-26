@@ -95,7 +95,7 @@ def set_file(isamAppliance, name, protocol, filename, mapping_id, role=None, tem
     # update mapping_id
     file_lines['identityMapping']['properties']['identityMappingRuleReference'] = str(mapping_id)
 
-    return set(isamAppliance, name=name, protocol=protocol, configuration=file_lines, role=role,
+    return set(isamAppliance=isamAppliance, name=name, protocol=protocol, configuration=file_lines, role=role,
                templateName=templateName, new_name=new_name, check_mode=check_mode, force=force)
 
 
