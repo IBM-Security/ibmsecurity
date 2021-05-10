@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/poc"
-requires_modules = ["federation"]
+requires_modules = ["federation", "mga"]
 requires_version = "9.0.1.0"
 
 
