@@ -113,14 +113,14 @@ def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
                             isamAppliance.facts["version"], oidc))
                     accessPolicyName = None
                 else:
-                    ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
-                    if ret_obj['data'] == {}:
-                        warnings = ret_obj["warnings"]
+                    ap_ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
+                    if ap_ret_obj['data'] == {}:
+                        warnings = ap_ret_obj["warnings"]
                         warnings.append(
                             "Access Policy {0} is not found. Cannot add definition.".format(accessPolicyName))
                         return isamAppliance.create_return_object(warnings=warnings)
                     else:
-                        json_data["accessPolicyId"] = int(ret_obj['data'])
+                        json_data["accessPolicyId"] = int(ap_ret_obj['data'])
 
             if oidc is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
@@ -220,14 +220,14 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                     isamAppliance.facts["version"], oidc))
             accessPolicyName = None
         else:
-            ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
-            if ret_obj['data'] == {}:
-                warnings = ret_obj["warnings"]
+            ap_ret_obj = access_policy.search(isamAppliance, accessPolicyName, check_mode=check_mode, force=force)
+            if ap_ret_obj['data'] == {}:
+                warnings = ap_ret_obj["warnings"]
                 warnings.append(
                     "Access Policy {0} is not found. Cannot update definition.".format(accessPolicyName))
                 return isamAppliance.create_return_object(warnings=warnings)
             else:
-                json_data["accessPolicyId"] = int(ret_obj['data'])
+                json_data["accessPolicyId"] = int(ap_ret_obj['data'])
 
     if oidc is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
@@ -308,6 +308,11 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                     if 'issueSecret' in ret_obj['data']['oidc'] and ret_obj['data']['oidc']['issueSecret'] is False:
                         del ret_obj['data']['oidc']['issueSecret']
 
+            if 'fapiCompliant' in ret_obj['data']['oidc'] and 'fapiCompliant' not in json_data['oidc']:
+                del ret_obj['data']['oidc']['fapiCompliant']
+            if 'oidcCompliant' in ret_obj['data']['oidc'] and 'oidcCompliant' not in json_data['oidc']:
+                del ret_obj['data']['oidc']['oidcCompliant']
+
         if oidc is None and 'oidc' in ret_obj['data']:
             del ret_obj['data']['oidc']
 
@@ -344,7 +349,7 @@ def set(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
     ### Fix for issue #252 ###
     if oidc is not None and 'lifetime' in oidc and oidc['lifetime'] is not None:
         oidc['lifetime'] = int(oidc['lifetime'])
-    
+
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
         logger.info("Definition {0} had no match, requesting to add new one.".format(name))
