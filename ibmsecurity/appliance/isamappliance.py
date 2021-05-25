@@ -410,7 +410,7 @@ class ISAMAppliance(IBMAppliance):
                                         requires_model=requires_model, warnings=warnings)
         return response
 
-    def invoke_post(self, description, uri, data, ignore_error, requires_modules=None, requires_version=None,
+    def invoke_post(self, description, uri, data, ignore_error=False, requires_modules=None, requires_version=None,
                     warnings=[], requires_model=None):
         """
         Send a POST request to the LMI.
