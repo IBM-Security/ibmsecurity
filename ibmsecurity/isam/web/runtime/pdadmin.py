@@ -8,7 +8,7 @@ except NameError:
 logger = logging.getLogger(__name__)
 
 
-def execute(isamAppliance, isamUser, commands, admin_domain='Default', ignore_error):
+def execute(isamAppliance, isamUser, commands, ignore_error, admin_domain='Default'):
     """
     Execute a pdadmin command
     """
