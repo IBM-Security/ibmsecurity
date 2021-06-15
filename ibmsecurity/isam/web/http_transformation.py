@@ -57,7 +57,7 @@ def add(isamAppliance, id, template=None, content=None, check_mode=False, force=
                     "/wga/http_transformation_rules",
                     {
                         "name": id,
-                        "template": template
+                        "content": content
                     })
 
     return isamAppliance.create_return_object(warnings=warnings)
