@@ -27,6 +27,8 @@ def set(isamAppliance,
         bind_dn=None,
         bind_password=None,
         ldap_debug=None,
+        enable_usermapping=None,
+        usermapping_script=None,
         check_mode=False,
         force=False):
     """
@@ -70,6 +72,22 @@ def set(isamAppliance,
             json_data["ldap_debug"] = ldap_debug
     elif ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
         json_data["ldap_debug"] = False
+    if enable_usermapping is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, enable_usermapping: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring enable_usermapping for this call.".format(
+                    isamAppliance.facts["version"], enable_usermapping))
+        else:
+            json_data["enable_usermapping"] = enable_usermapping
+    elif ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+        json_data["enable_usermapping"] = False
+    if usermapping_script is not None or usermapping_script == '':
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, usermapping_script: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring usermapping_script for this call.".format(
+                    isamAppliance.facts["version"], usermapping_script))
+        else:
+            json_data["usermapping_script"] = usermapping_script
     if force is False:
         if bind_password is not None:
             warnings.append("Unable to read existing bind password to check idempotency.")
