@@ -64,6 +64,7 @@ def _check_rollback(isamAppliance, fixpack):
 
     # Reverse sort the json by 'id'
     json_data_sorted = sorted(ret_obj['data'], key=lambda k: int(k['id']), reverse=True)
+
     # Eliminate all rollbacks before hitting the first non-rollback fixpack
     del_fixpack = ''  # Delete succeeding fixpack to a rollback, only last fixpack can be rolled back
     for fp in json_data_sorted:
@@ -90,17 +91,20 @@ def _check(isamAppliance, fixpack):
 
     # Reverse sort the json by 'id'
     json_data_sorted = sorted(ret_obj['data'], key=lambda k: int(k['id']), reverse=True)
-    # Eliminate all rollbacks
-    del_fixpack = ''  # Delete succeeding fixpack to a rollback, only last fixpack can be rolled back
-    for fp in json_data_sorted:
-        if fp['action'] == 'Uninstalled':
-            del_fixpack = fp['name']
-        elif del_fixpack == fp['name'] and fp['rollback'] == 'Yes':
-            del_fixpack = ''
-        elif fp['name'].lower() == fixpack_name.lower():
-            return True
 
-    return False
+    samename_fps = []
+    for fp in json_data_sorted:
+        if fp['name'] == fixpack_name:
+            samename_fps.append(fp)
+
+    if len(samename_fps) > 0:
+        fp_sorted = sorted(samename_fps, key=lambda k: int(k['id']), reverse=True)
+        if fp_sorted[0]['action'] == 'Installed':
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 def _extract_fixpack_name(fixpack):

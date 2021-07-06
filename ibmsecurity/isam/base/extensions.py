@@ -41,7 +41,8 @@ def add(isamAppliance, extension, config_data=None, third_party_package=None, ch
     try:
         id = inspect(isamAppliance, extension)
     except Exception as e:
-        return isamAppliance.create_return_object(warnings=e)
+        warning_str = "Exception occurred: {0}".format(e)
+        return isamAppliance.create_return_object(warnings=[warning_str])
 
     if config_data:
         config_str = '{extId:' + id + ',' + config_data + '}'
