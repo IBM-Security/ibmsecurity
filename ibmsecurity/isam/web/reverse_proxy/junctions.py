@@ -90,7 +90,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, description=None, warnings=[]):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, priority=None, server_cn=None, warnings=[]):
     """
     Creating a standard or virtual junction
 
@@ -146,6 +146,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param http2_proxy:
     :param sni_name:
     :param description:
+    :param priority:
+    :param server_cn:
     :return:
     """
     if force is True or _check(isamAppliance, reverseproxy_id, junction_point) is False:
@@ -270,6 +272,32 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             isamAppliance.facts["version"], description))
                 else:
                     jct_json['description'] = description
+            if priority is None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                    warnings.append(
+                       "Appliance at version: {0}, priority is required. Defaulting to '9'.".format(isamAppliance.facts["version"]))
+                    jct_json['priority'] = 9
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                       "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
+                           isamAppliance.facts["version"], priority))
+                    priority = None
+                else:
+                    jct_json['priority'] = priority
+            if server_cn is None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                    warnings.append(
+                       "Appliance at version: {0}, server_cn is required. Defaulting to ''.".format(isamAppliance.facts["version"]))
+                    jct_json['server_cn'] = ''
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                       "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
+                           isamAppliance.facts["version"], server_cn))
+                    server_cn = None
+                else:
+                    jct_json['server_cn'] = server_cn
 
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
@@ -314,7 +342,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, description=None):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, priority=None, server_cn=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -378,6 +406,30 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         server_json['windows_style_url'] = 'no'
                     else:
                         server_json['windows_style_url'] = windows_style_url
+                    if priority is None:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                            del srv['priority']
+                    else:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                            warnings.append(
+                               "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
+                                   isamAppliance.facts["version"], priority))
+                            priority = None
+                            del srv['priority']
+                        else:
+                            server_json['priority'] = priority
+                    if server_cn is None:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                            del srv['server_cn']
+                    else:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                            warnings.append(
+                               "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
+                                   isamAppliance.facts["version"], server_cn))
+                            server_cn = None
+                            del srv['server_cn']
+                        else:
+                            server_json['server_cn'] = server_cn
 
                     # Delete dynamic data shown when we get junctions details
                     if 'current_requests' in srv:
@@ -391,10 +443,13 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     # Not sure what this attribute is supposed to contain?
                     if 'query_contents' in srv:
                         del srv['query_contents']
-                    if tools.json_sort(server_json) != tools.json_sort(srv):
+
+                    sorted_server_json = tools.json_sort(server_json)
+                    sorted_srv = tools.json_sort(srv)
+                    logger.debug("New Junction JSON: {0}".format(sorted_server_json))
+                    logger.debug("Old Junction JSON: {0}".format(sorted_srv))
+                    if sorted_server_json != sorted_srv:
                         logger.debug("Servers are found to be different. See following JSON for difference.")
-                        logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
-                        logger.debug("Old Server JSON: {0}".format(tools.json_sort(srv)))
                         add_required = True
                     break
             if server_found is False:
@@ -615,7 +670,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
-                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, warnings=warnings)
+                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, priority=priority, server_cn=server_cn, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
