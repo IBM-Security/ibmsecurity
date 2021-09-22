@@ -47,7 +47,7 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, label, address, overrideSubnetChecking=False, vlanId=None, check_mode=False, force=False):
+def delete(isamAppliance, label, address, vlanId=None, overrideSubnetChecking=False, check_mode=False, force=False):
     """
     Deleting an IPv4 address from an interface
     """
