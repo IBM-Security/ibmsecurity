@@ -4,7 +4,7 @@ import ibmsecurity.utilities.tools
 logger = logging.getLogger(__name__)
 
 
-def get(isamAppliance):
+def get(isamAppliance, check_mode=False, force=False):
     """
     Get Set up complete status
     """
