@@ -56,6 +56,31 @@ def update(isamAppliance, resource_id, file_contents, check_mode=False, force=Fa
             })
 
 
+def import_file(isamAppliance, resource_id, filename, check_mode=False, force=False):
+    """
+    Updating a runtime configuration file
+    """
+    import os
+    if os.path.exists(filename) is False:
+        warnings = []
+        warnstr = filename + " does not exist."
+        warnings.append(warnstr)
+        return isamAppliance.create_return_object(warnings=warnings)
+
+    with open(filename, 'r') as infile:
+        file_contents = infile.read()
+
+    if check_mode is True:
+        return isamAppliance.create_return_object(changed=True)
+    else:
+        return isamAppliance.invoke_put(
+            "Updating a runtime configuration file",
+            "/isam/advanced_configuration/{0}".format(resource_id),
+            {
+                'file_contents': file_contents
+            })
+
+
 def compare(isamAppliance1, isamAppliance2, resource_id):
     """
     Compare stanzas within resource between two appliances

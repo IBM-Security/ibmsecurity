@@ -6,8 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=False, vlanId=None, allowManagement=False,
-        enabled=True, check_mode=False,
-        force=False):
+        enabled=True, check_mode=False, force=False):
     """
     Adding an IPv4 address to an interface
     """
@@ -48,7 +47,7 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=False):
+def delete(isamAppliance, label, address, overrideSubnetChecking=False, vlanId=None, check_mode=False, force=False):
     """
     Deleting an IPv4 address from an interface
     """
@@ -62,6 +61,7 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
                 if addr['address'] == address:
                     delete_needed = True
                     ret_obj['ipv4']['addresses'].remove(addr)
+                    ret_obj['ipv4']['overrideSubnetChecking'] = overrideSubnetChecking
                     break
         else:
             warnings.append("Interface {0} not found, Delete is not supported.".format(label))
