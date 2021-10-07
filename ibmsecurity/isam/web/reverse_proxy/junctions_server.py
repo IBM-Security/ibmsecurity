@@ -22,7 +22,7 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
 def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junction_type, server_port, server_dn=None,
         stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
         virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
-        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, check_mode=False, force=False):
+        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, policy=None, server_cn=None, check_mode=False, force=False):
     """
     Adding a back-end server to an existing standard or virtual junctions
 
@@ -46,6 +46,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
     :param sms_environment:
     :param vhost_label:
     :param server_uuid:
+    :param policy:
+    :param server_cn:
     :param check_mode:
     :param force:
     :return:
@@ -89,6 +91,22 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 jct_srv_json["query_contents"] = query_contents
             if server_uuid is not None and server_uuid != '':
                 jct_srv_json["server_uuid"] = server_uuid
+            if server_cn is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
+                            isamAppliance.facts["version"], server_cn))
+                    server_cn = None
+                else:
+                    jct_srv_json["server_cn"] = server_cn
+            if policy is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, policy: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring policy for this call.".format(
+                            isamAppliance.facts["version"], policy))
+                    policy = None
+                else:
+                    jct_srv_json["policy"] = policy
 
             return isamAppliance.invoke_put(
                 "Adding a back-end server to an existing standard or virtual junctions",
