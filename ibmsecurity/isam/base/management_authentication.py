@@ -72,7 +72,7 @@ def set(isamAppliance,
             json_data["ldap_debug"] = ldap_debug
     elif ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") >= 0:
         json_data["ldap_debug"] = False
-    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") >= 0:
+    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
         json_data["enable_usermapping"] = enable_usermapping
         if usermapping_script is not None and enable_usermapping:
             json_data["usermapping_script"] = usermapping_script
