@@ -23,6 +23,8 @@ def set(isamAppliance,
         cert_label=None,
         user_attribute='uid',
         group_member_attribute='member',
+        enable_usermapping=False,
+        usermapping_script=None,
         anon_bind=True,
         bind_dn=None,
         bind_password=None,
@@ -45,6 +47,10 @@ def set(isamAppliance,
         json_data["enable_ssl"] = enable_ssl
     if key_database is not None:
         json_data["key_database"] = key_database
+    if enable_usermapping is not None:
+        json_data["enable_usermapping"] = enable_usermapping
+    if usermapping_script is not None:
+        json_data["usermapping_script"] = usermapping_script
     if cert_label is not None:
         json_data["cert_label"] = cert_label
     if user_attribute is not None:
