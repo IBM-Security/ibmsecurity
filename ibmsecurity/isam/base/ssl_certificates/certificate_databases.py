@@ -1,4 +1,8 @@
 import logging
+import zipfile
+import shutil
+
+from ibmsecurity.utilities.tools import get_random_temp_dir
 
 logger = logging.getLogger(__name__)
 requires_model = "Appliance"
@@ -84,36 +88,48 @@ def export_db(isamAppliance, cert_id, filename, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
-def import_db(isamAppliance, kdb, stash, check_mode=False, force=False):
+def import_db(isamAppliance, kdb, stash, zip=None, check_mode=False, force=False):
     """
     Import certificate database
     """
     # Grab the filename to use as identifier (strip path and extension)
     import os.path
+    
+    tmpdir=None
+    if zip != None:
+        with zipfile.ZipFile(zip,"r") as zip_ref:
+            tmpdir = get_random_temp_dir()
+            zip_ref.extractall(tmpdir)
+            kdb = tmpdir + '/' + kdb
+            stash = tmpdir + '/' + stash
+    
     kdb_id = os.path.basename(kdb)
     kdb_id = os.path.splitext(kdb_id)[0]
 
-    if force is True or _check(isamAppliance, kdb_id) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_post_files(
-                "Import certificate database",
-                "/isam/ssl_certificates",
-                [
-                    {
-                        'file_formfield': 'kdb',
-                        'filename': kdb,
-                        'mimetype': 'application/octet-stream'
-                    },
-                    {
-                        'file_formfield': 'stash',
-                        'filename': stash,
-                        'mimetype': 'application/octet-stream'
-                    }
-                ],
-                {})
-
+    try:
+        if force is True or _check(isamAppliance, kdb_id) is False:
+            if check_mode is True:            
+                return isamAppliance.create_return_object(changed=True)
+            else:
+                return isamAppliance.invoke_post_files(
+                    "Import certificate database",
+                    "/isam/ssl_certificates",
+                    [
+                        {
+                            'file_formfield': 'kdb',
+                            'filename': kdb,
+                            'mimetype': 'application/octet-stream'
+                        },
+                        {
+                            'file_formfield': 'stash',
+                            'filename': stash,
+                            'mimetype': 'application/octet-stream'
+                        }
+                    ],
+                    {})
+    finally:
+        if tmpdir != None:
+            shutil.rmtree(tmpdir)
     return isamAppliance.create_return_object()
 
 
