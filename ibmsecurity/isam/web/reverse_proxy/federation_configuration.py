@@ -1,9 +1,10 @@
 import logging
+import ibmsecurity.isam.fed.federations
 
 logger = logging.getLogger(__name__)
 
 
-def config(isamAppliance, instance_id, federation_id, hostname='127.0.0.1', port=443, username='easuser',
+def config(isamAppliance, instance_id, federation_id=None, federation_name=None, hostname='127.0.0.1', port='443', username='easuser',
            password='passw0rd', reuse_certs=False, reuse_acls=False, check_mode=False, force=False):
     """
     Federation configuration for a reverse proxy instance
@@ -11,6 +12,7 @@ def config(isamAppliance, instance_id, federation_id, hostname='127.0.0.1', port
     :param isamAppliance:
     :param instance_id:
     :param federation_id:
+    :param federation_name:
     :param hostname:
     :param port:
     :param username:
@@ -21,6 +23,20 @@ def config(isamAppliance, instance_id, federation_id, hostname='127.0.0.1', port
     :param force:
     :return:
     """
+
+    if federation_name is not None:
+        ret_obj = ibmsecurity.isam.fed.federations.search(isamAppliance, name=federation_name, check_mode=check_mode,
+                                                      force=force)
+        federation_id = ret_obj['data']
+
+        if federation_id == {}:
+            logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
+            return isamAppliance.create_return_object()
+    
+    if federation_id is None:
+        logger.info("Required parameter federation_id missing. Skipping config.")
+        return isamAppliance.create_return_object()
+    
     if force is True or _check(isamAppliance, instance_id, federation_id) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -43,17 +59,32 @@ def config(isamAppliance, instance_id, federation_id, hostname='127.0.0.1', port
     return isamAppliance.create_return_object()
 
 
-def unconfig(isamAppliance, instance_id, federation_id, check_mode=False, force=False):
+def unconfig(isamAppliance, instance_id, federation_id=None, federation_name=None, check_mode=False, force=False):
     """
     Federation unconfiguration for a reverse proxy instance
 
     :param isamAppliance:
     :param instance_id:
     :param federation_id:
+    :param federation_name:
     :param check_mode:
     :param force:
     :return:
     """
+    
+    if federation_name is not None:
+        ret_obj = ibmsecurity.isam.fed.federations.search(isamAppliance, name=federation_name, check_mode=check_mode,
+                                                      force=force)
+        federation_id = ret_obj['data']
+
+        if federation_id == {}:
+            logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
+            return isamAppliance.create_return_object()
+    
+    if federation_id is None:
+        logger.info("Required parameter federation_id missing. Skipping config.")
+        return isamAppliance.create_return_object()
+    
     if force is True or _check(isamAppliance, instance_id, federation_id) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -73,6 +104,7 @@ def _check(isamappliance, instance_id, federation_id):
     # IF there is any exception - i.e. stanza not found return False
     try:
         if federation_id in ret_obj['data']:
+            logger.info("federation_id {0} found in reverse_proxy stanza isam-fed-autocfg.".format(federation_id))
             return True
     except:
         pass
