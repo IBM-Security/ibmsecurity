@@ -94,7 +94,7 @@ def add(isamAppliance, name, active, description=None, attributes=None, predefin
                 # add loop through the attributes
                 # find missing attributeID and go look them up
                 for attv in attributes:
-                    logger.info("Checking {0}".format(attv['name']))
+                    logger.debug("Checking {0}".format(attv['name']))
                     if 'attributeID' not in attv:
                         # lookup the attributeID from the name
                         logger.info(
@@ -102,7 +102,7 @@ def add(isamAppliance, name, active, description=None, attributes=None, predefin
                         ret_obj = attrib.search(isamAppliance, attv['name'])
                         artifact_id = ret_obj['data']
                         if artifact_id == {}:
-                            logger.info("Attribute {0} had no match, skipping retrieval.".format( attv['name'] ))
+                            logger.debug("Attribute {0} had no match, skipping retrieval.".format( attv['name'] ))
                         else:
                             attv['attributeID'] = artifact_id
                 json_data['attributes'] = attributes
@@ -125,11 +125,11 @@ def update(isamAppliance, name, active, description=None, attributes=None, prede
        for attv in attributes:
            if 'attributeID' not in attv:
                # lookup the attributeID from the name
-               logger.info("AttributeID for {0} was empty".format(attv['name']))
+               logger.debug("AttributeID for {0} was empty".format(attv['name']))
                ret_obj = attrib.search(isamAppliance, attv['name'])
                artifact_id = ret_obj['data']
                if artifact_id == {}:
-                   logger.info("Attribute {0} had no match, skipping retrieval.".format(name))
+                   logger.debug("Attribute {0} had no match, skipping retrieval.".format(name))
                else:
                    attv['attributeID'] = artifact_id
 
@@ -179,15 +179,9 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
 
             id = ret_obj['data']['id']
             del ret_obj['data']['id']
-            count = 0
-            for i in ret_obj['data']['attributes']:
-                del ret_obj['data']['attributes'][count]['name']
-                count += 1
-            import ibmsecurity.utilities.tools
-            #sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+
             sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
             logger.debug("Sorted input: {0}".format(sorted_json_data))
-            #sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
             sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
             logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
             if sorted_ret_obj != sorted_json_data:
