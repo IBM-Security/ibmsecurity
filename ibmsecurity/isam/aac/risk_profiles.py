@@ -1,6 +1,7 @@
 import logging
 from ibmsecurity.utilities import tools
 from ibmsecurity.isam.aac import attributes as attrib
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -183,9 +184,11 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
                 del ret_obj['data']['attributes'][count]['name']
                 count += 1
             import ibmsecurity.utilities.tools
-            sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+            #sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+            sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
             logger.debug("Sorted input: {0}".format(sorted_json_data))
-            sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
+            #sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
+            sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
             logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
             if sorted_ret_obj != sorted_json_data:
                 logger.info("Changes detected, update needed.")
