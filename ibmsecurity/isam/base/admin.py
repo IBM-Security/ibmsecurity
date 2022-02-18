@@ -1,9 +1,8 @@
 import logging
 import ibmsecurity.utilities.tools
-from ibmsecurity.utilities import tools
+import json
 
 logger = logging.getLogger(__name__)
-
 
 def get(isamAppliance, check_mode=False, force=False):
     """
@@ -48,6 +47,7 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
         enableSSLv3=None, maxFiles=None, maxFileSize=None, enabledTLS=None, sshdPort=None, sessionCachePurge=None,
         sessionInactivityTimeout=None, sshdClientAliveInterval=None, swapFileSize=None, httpProxy=None,
         enabledServerProtocols=None, loginHeader=None, loginMessage=None, pendingChangesLifetime=None,
+        baSessionTimeout=None, httpsProxy=None, accessLogFormat=None, lmiMessageTimeout=None, validVerifyDomains=None,
         check_mode=False, force=False):
     """
     Updating the administrator settings
@@ -61,7 +61,10 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
                                                       excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
                                                       enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
                                                       sshdClientAliveInterval, swapFileSize, httpProxy,
-                                                      enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime, warnings)
+                                                      enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime,
+                                                      baSessionTimeout, httpsProxy, accessLogFormat,
+                                                      lmiMessageTimeout, validVerifyDomains,
+                                                      warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -78,7 +81,8 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
            minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
            validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort,
            sessionCachePurge, sessionInactivityTimeout, sshdClientAliveInterval, swapFileSize, httpProxy,
-           enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime, warnings):
+           baSessionTimeout, httpsProxy, accessLogFormat, lmiMessageTimeout, validVerifyDomains,
+           warnings):
     """
     Check whether target key has already been set with the value
     :param isamAppliance:
@@ -145,9 +149,9 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         elif 'lmiDebuggingEnabled' in ret_obj['data']:
             del ret_obj['data']['lmiDebuggingEnabled']
         if consoleLogLevel is not None:
-            json_data["consoleLogLevel"] = int(consoleLogLevel)
+            json_data["consoleLogLevel"] = consoleLogLevel
             if 'consoleLogLevel' in ret_obj['data'] and ret_obj['data']['consoleLogLevel'] == 'OFF':
-                ret_obj['data']['consoleLogLevel'] = 0
+                ret_obj['data']['consoleLogLevel'] = 'OFF'
         elif 'consoleLogLevel' in ret_obj['data']:
             del ret_obj['data']['consoleLogLevel']
         if acceptClientCerts is not None:
@@ -163,7 +167,12 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         elif 'excludeCsrfChecking' in ret_obj['data']:
             del ret_obj['data']['excludeCsrfChecking']
         if enableSSLv3 is not None:
-            json_data["enableSSLv3"] = enableSSLv3
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.3.0") >= 0:
+                warnings.append(
+                    "Appliance at version: {0}, enableSSLv3: {1} is not supported. Needs max. 10.0.2.0. Ignoring for this call.".format(
+                        isamAppliance.facts["version"], enableSSLv3))
+            else:
+                json_data["enableSSLv3"] = enableSSLv3
         elif 'enableSSLv3' in ret_obj['data']:
             del ret_obj['data']['enableSSLv3']
         if maxFiles is not None:
@@ -180,7 +189,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                     "Appliance at version: {0}, sshdPort: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring sshdPort for this call.".format(
                         isamAppliance.facts["version"], sshdPort))
             else:
-                json_data["sshdPort"] = sshdPort
+                json_data["sshdPort"] = int(sshdPort)
         elif 'sshdPort' in ret_obj['data']:
             del ret_obj['data']['sshdPort']
         if enabledTLS is not None:
@@ -198,7 +207,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                     "Appliance at version: {0}, sessionCachePurge: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring sessionCachePurge for this call.".format(
                         isamAppliance.facts["version"], sessionCachePurge))
             else:
-                json_data["sessionCachePurge"] = sessionCachePurge
+                json_data["sessionCachePurge"] = int(sessionCachePurge)
         elif 'sessionCachePurge' in ret_obj['data']:
             del ret_obj['data']['sessionCachePurge']
         if sessionInactivityTimeout is not None:
@@ -207,7 +216,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                     "Appliance at version: {0}, sessionInactivityTimeout: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring sessionInactivityTimeout for this call.".format(
                         isamAppliance.facts["version"], sessionInactivityTimeout))
             else:
-                json_data["sessionInactivityTimeout"] = sessionInactivityTimeout
+                json_data["sessionInactivityTimeout"] = int(sessionInactivityTimeout)
         elif 'sessionInactivityTimeout' in ret_obj['data']:
             del ret_obj['data']['sessionInactivityTimeout']
         if sshdClientAliveInterval is not None:
@@ -216,7 +225,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                     "Appliance at version: {0}, sshdClientAliveInterval: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring sshdClientAliveInterval for this call.".format(
                         isamAppliance.facts["version"], sshdClientAliveInterval))
             else:
-                json_data["sshdClientAliveInterval"] = sshdClientAliveInterval
+                json_data["sshdClientAliveInterval"] = int(sshdClientAliveInterval)
         elif 'sshdClientAliveInterval' in ret_obj['data']:
             del ret_obj['data']['sshdClientAliveInterval']
         if swapFileSize is not None:
@@ -273,9 +282,50 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
                 json_data["pendingChangesLifetime"] = pendingChangesLifetime
         elif 'pendingChangesLifetime' in ret_obj['data']:
             del ret_obj['data']['pendingChangesLifetime']
-
-    sorted_ret_obj = tools.json_sort(ret_obj['data'])
-    sorted_json_data = tools.json_sort(json_data)
+        if httpsProxy is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
+                warnings.append("Appliance at version: {0}, httpsProxy: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"], httpsProxy))
+            else:
+                json_data["httpsProxy"] = httpsProxy
+        elif 'httpsProxy' in ret_obj['data']:
+            del ret_obj['data']['httpsProxy']
+        #10.0.2 or something.  Also, when Python 3?
+        # baSessionTimeout, httpsProxy, accessLogFormat, lmiMessageTimeout, validVerifyDomains,
+        if baSessionTimeout is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                warnings.append("Appliance at version: {0}, baSessionTimeout: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"], baSessionTimeout))
+                else:
+                json_data["baSessionTimeout"] = int(baSessionTimeout)
+        elif 'baSessionTimeout' in ret_obj['data']:
+            del ret_obj['data']['baSessionTimeout']
+        if accessLogFormat is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") < 0:
+                warnings.append("Appliance at version: {0}, accessLogFormat: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"], accessLogFormat))
+            else:
+                json_data["accessLogFormat"] = accessLogFormat
+        elif 'accessLogFormat' in ret_obj['data']:
+            del ret_obj['data']['accessLogFormat']
+        if lmiMessageTimeout is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                warnings.append("Appliance at version: {0}, lmiMessageTimeout: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"], lmiMessageTimeout))
+            else:
+                json_data["lmiMessageTimeout"] = int(lmiMessageTimeout)
+        elif 'lmiMessageTimeout' in ret_obj['data']:
+            del ret_obj['data']['lmiMessageTimeout']
+        if validVerifyDomains is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                warnings.append("Appliance at version: {0}, validVerifyDomains: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"], validVerifyDomains))
+            else:
+                json_data["validVerifyDomains"] = validVerifyDomains
+        elif 'validVerifyDomains' in ret_obj['data']:
+            del ret_obj['data']['validVerifyDomains']
+    sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
+    sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
     logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
     if sorted_ret_obj != sorted_json_data:
