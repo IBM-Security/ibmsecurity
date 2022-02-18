@@ -77,11 +77,16 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
     return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
 
-def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, sessionTimeout, httpPort, httpsPort,
-           minThreads, maxThreads, maxPoolSize, lmiDebuggingEnabled, consoleLogLevel, acceptClientCerts,
-           validateClientCertIdentity, excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize, enabledTLS, sshdPort,
-           sessionCachePurge, sessionInactivityTimeout, sshdClientAliveInterval, swapFileSize, httpProxy,
-           baSessionTimeout, httpsProxy, accessLogFormat, lmiMessageTimeout, validVerifyDomains,
+def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize,
+           sessionTimeout, httpPort, httpsPort, minThreads, maxThreads,
+           maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
+           acceptClientCerts, validateClientCertIdentity,
+           excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
+           enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
+           sshdClientAliveInterval, swapFileSize, httpProxy,
+           enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime,
+           baSessionTimeout, httpsProxy, accessLogFormat,
+           lmiMessageTimeout, validVerifyDomains,
            warnings):
     """
     Check whether target key has already been set with the value
@@ -296,7 +301,7 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                 warnings.append("Appliance at version: {0}, baSessionTimeout: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring for this call.".format(
                     isamAppliance.facts["version"], baSessionTimeout))
-                else:
+            else:
                 json_data["baSessionTimeout"] = int(baSessionTimeout)
         elif 'baSessionTimeout' in ret_obj['data']:
             del ret_obj['data']['baSessionTimeout']
