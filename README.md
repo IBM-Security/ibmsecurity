@@ -1,7 +1,7 @@
 # IBM Sample Code
 
 This repository contains Python code to manage IBM Security Appliances using their respective REST APIs. ISAM appliance
-has the most mature code, code for ISDS appliance is being developed.
+has the most mature code, code for ISDS appliance is under development.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ This python package provides the following features:
 2. Intuitive layout of code package and naming maps to the GUI interface of appliance
 3. Idempotency - functions that make updates will query the appliance to compare given data to see if a 
 changes is required before making the actual change.
-4. Commit and Deploy steps are provided separately to allow for flexilibity in invoking them
+4. Commit and Deploy steps are provided separately to allow for flexibility in invoking them
 5. Standard logging is included - with the ability to set logging levels.
 6. Parameters to function will use standard default values wherever possible.
 7. A force option is provided to override idempotency.
@@ -97,7 +97,7 @@ This function returns the details of one particular object.
 ### `set()`
 This function will determine if the object to be manipulated exists, if not then it calls add() otherwise it will call update().
 In cases where there is no update() then it will compare to see if there is a difference between existing value on the appliance
-to that being set via the function - if different then it delete()'s the object before calling add().
+to that being set via the function - if different then it `delete()`'s the object before calling add().
 ### `add()`
 Check and see if the object already exists - if so then skip, otherwise add it.
 ### `update()`
