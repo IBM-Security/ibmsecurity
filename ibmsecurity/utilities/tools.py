@@ -27,7 +27,12 @@ def json_sort(json_data):
     else:
         return json_data
 
+
 class jsonSortedListEncoder(json.JSONEncoder):
+   """
+   This is a custom class for use with json.dumps
+   https://docs.python.org/3/library/json.html
+   """
    def encode(self, obj):
        def sort_lists(item):
            if isinstance(item, list):
@@ -36,7 +41,7 @@ class jsonSortedListEncoder(json.JSONEncoder):
                return {k: sort_lists(v) for k, v in item.items()}
            else:
                return item
-       return super(SortedListEncoder, self).encode(sort_lists(obj))
+       return super(jsonSortedListEncoder, self).encode(sort_lists(obj))
 
 
 def json_replace_value(json_data, from_value, to_value):
