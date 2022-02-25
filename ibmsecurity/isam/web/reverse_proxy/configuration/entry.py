@@ -121,12 +121,15 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 
     if force or (newEntriesJSON != currentEntriesJSON):
         for entry in entries:
-            logger.info("Deleting entry, will be re-added: {0}/{1}/{2}".format(reverseproxy_id, stanza_id, entry[0]))
+            logger.info("Deleting entry, will be re-added (if it has a value): {0}/{1}/{2}".format(reverseproxy_id, stanza_id, entry[0]))
             delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
+        entries = [a for a in entries if a[1]] #filter out empty values
+        logger.debug("Filtered entries: {0}".format(entries))
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return _add(isamAppliance, reverseproxy_id, stanza_id, entries)
+            if entries:
+                return _add(isamAppliance, reverseproxy_id, stanza_id, entries)
 
     return isamAppliance.create_return_object()
 
@@ -139,7 +142,7 @@ def _collapse_entries_obj(entries):
     Also converts all values to str for easy compare
     """
     if entries is None or len(entries) < 1:
-        return []
+        return {}
     else:
         prev_key = ""
         new_entry = {}
