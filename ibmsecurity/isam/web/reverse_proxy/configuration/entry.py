@@ -23,7 +23,6 @@ def get_all(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=F
                                            "{0}/{1}/configuration/stanza/{2}".format(uri,
                                                                                      reverseproxy_id,
                                                                                      stanza_id))
-        logger.debug(f"Get All {stanza_id}:\n {ret_obj}")
     except:
         # Return empty array - exception thrown if stanza has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -117,13 +116,13 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     fCurrentEntries = {k: v for k, v in currentEntries.items() if k in newEntries.keys()}
     # compare using json_sort
     newEntriesJSON = json.dumps(newEntries, skipkeys=True, sort_keys=True, cls=jsonSortedListEncoder)
-    logger.debug(f"\nSorted Desired  Stanza {stanza_id}:\n\n {newEntriesJSON}\n")
+    logger.debug("Sorted Desired  Stanza {0}: {1}".format(stanza_id, newEntriesJSON))
     currentEntriesJSON = json.dumps(fCurrentEntries, skipkeys=True, sort_keys=True, cls=jsonSortedListEncoder)
-    logger.debug(f"\nSorted Existing Stanza {stanza_id}:\n\n {currentEntriesJSON}\n")
+    logger.debug("Sorted Existing Stanza {0}:\n\n {1}\n".format(stanza_id, currentEntriesJSON))
 
     if force or (newEntriesJSON != currentEntriesJSON):
         for entry in entries:
-            logger.info(f"Deleting entry, will be re-added: {reverseproxy_id}/{stanza_id}/{entry[0]}")
+            logger.info("Deleting entry, will be re-added: {0}/{1}/{2}".format(reverseproxy_id, stanza_id, entry[0]))
             delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
