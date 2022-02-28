@@ -314,10 +314,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, description=None):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, ignore_password_for_idempotency=False):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
-    TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
+    TODO: Compare all the parameters in the function - BA are some that are not being compared
     """
     warnings = []
     add_required = False
@@ -508,6 +508,23 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         sni_name = None
                     else:
                         jct_json['sni_name'] = sni_name
+                if insert_ltpa_cookies is not None:
+                    if insert_ltpa_cookies != 'no':
+                        jct_json['insert_ltpa_cookies'] = insert_ltpa_cookies
+
+                        if ltpa_keyfile is not None:
+                            jct_json['ltpa_keyfile'] = ltpa_keyfile
+
+                        if version_two_cookies is not None:
+                            jct_json['version_two_cookies'] = version_two_cookies
+
+                        if ltpa_keyfile_password is not None:
+                            if ignore_password_for_idempotency:
+                                warnings.append("Request made to ignore ltpa_keyfile_password for idempotency check.")
+                                if 'ltpa_keyfile_password' in exist_jct:
+                                    del exist_jct['ltpa_keyfile_password']
+                            else:
+                                jct_json['ltpa_keyfile_password'] = ltpa_keyfile_password
                 if description is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
@@ -562,7 +579,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
                    http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, warnings=warnings)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=None):
