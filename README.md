@@ -12,8 +12,13 @@ The following Python Packages are required:
 2. importlib - for the sample code to work
 3. PyYAML - for the sample code to work
 
+The following Python Packages are optional:
+1. pyOpenSSL - to perform action on certificates (used for idempotency in management_ssl_certificate)
+2. python-dateutil - date utilities (used for idempotency in management_ssl_certificate)
+
 Appliances need to have an ip address defined for their LMI. This may mean that appliances have had their initial setup 
 done with license acceptance.
+
 
 ## Versioning
 
