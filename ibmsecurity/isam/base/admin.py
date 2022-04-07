@@ -163,7 +163,12 @@ def _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize, se
         elif 'excludeCsrfChecking' in ret_obj['data']:
             del ret_obj['data']['excludeCsrfChecking']
         if enableSSLv3 is not None:
-            json_data["enableSSLv3"] = enableSSLv3
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.3.0") >= 0:
+                warnings.append(
+                    "Appliance at version: {0}, enableSSLv3 is not supported. Needs 10.0.2.0 or lower. Ignoring enableSSLv3 for this call.".format(
+                        isamAppliance.facts["version"]))
+            else:
+                json_data["enableSSLv3"] = enableSSLv3
         elif 'enableSSLv3' in ret_obj['data']:
             del ret_obj['data']['enableSSLv3']
         if maxFiles is not None:
