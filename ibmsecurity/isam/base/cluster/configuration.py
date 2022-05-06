@@ -1,8 +1,7 @@
 import logging
 import copy
-import json
+import ibmsecurity.utilities.tools
 from ibmsecurity.utilities import tools
-from ibmsecurity.utilities.tools import jsonSortedListEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +11,9 @@ requires_version = None
 requires_model = "Appliance"
 
 try:
-   basestring
+    basestring
 except NameError:
-   basestring = (str, bytes)
+    basestring = (str, bytes)
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -113,7 +112,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_failover_servers is not None:
         #Only if the dbtype isPostgresql.  This is an array [{"address": "postgresql2.domain.com", "port": 5432, "order": 0}]
         if cfgdb_db_type is not None and cfgdb_db_type == "postgresql":
-            cluster_json["cfgdb_failover_servers"] = hvdb_failover_servers
+            cluster_json["cfgdb_failover_servers"] = cfgdb_failover_servers
     if cfgdb_db_type is not None:
         cluster_json["cfgdb_db_type"] = cfgdb_db_type
     if cfgdb_address is not None:
