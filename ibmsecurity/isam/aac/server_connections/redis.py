@@ -225,6 +225,8 @@ def _check_exists(isamAppliance, name=None, id=None):
 def test(isamAppliance, name, check_mode=False, force=False):
    """
    Test Redis Connection
+   Note that to be able to test the connection, the LMI needs to be restarted!
+   Otherwise, you'll run into : FBTSPS137E The Redis configuration is invalid and cannot be processed
    param: name:    the name of the server_connection
    """
    if check_mode is True:
