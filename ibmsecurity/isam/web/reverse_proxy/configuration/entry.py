@@ -1,5 +1,7 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities.tools import jsonSortedListEncoder
+import json
 
 try:
     basestring
@@ -17,21 +19,23 @@ def get_all(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=F
     Retrieving all configuration entries for a stanza - Reverse Proxy
     """
     try:
-        return isamAppliance.invoke_get("Retrieving all configuration entries for a stanza - Reverse Proxy",
-                                        "{0}/{1}/configuration/stanza/{2}".format(uri,
-                                                                                  reverseproxy_id,
-                                                                                  stanza_id))
+        ret_obj = isamAppliance.invoke_get("Retrieving all configuration entries for a stanza - Reverse Proxy",
+                                           "{0}/{1}/configuration/stanza/{2}".format(uri,
+                                                                                     reverseproxy_id,
+                                                                                     stanza_id))
+        logger.debug(f"Get All {stanza_id}:\n {ret_obj}")
     except:
         # Return empty array - exception thrown if stanza has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
         ret_obj['data'] = {}
-        return ret_obj
+
+    return ret_obj
 
 
 def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, force=False):
     """
     Retrieving a specific configuration entry - Reverse Proxy
-    """
+   """
     # URL being encoded primarily to handle request-log-format that has "%" values in them
     f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
                                                                      stanza_id, entry_id)
@@ -53,8 +57,8 @@ def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, f
 
 def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, force=False):
     """
-    Adding a configuration entry or entries by stanza - Reverse Proxy
-    """
+   Adding a configuration entry or entries by stanza - Reverse Proxy
+   """
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
@@ -97,78 +101,75 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     Note: entries has to be [['key', 'value1'], ['key', 'value2]], cannot provide [['key', ['value1', 'value2']]]
     get() returns the second format - thus lots of logic to handle this discrepancy.
 
-    Smart enough to update only that which is needed.
-    """
+    This version will update all entries in the stanza if a single one changes.  But it is a lot faster because it's
+    idempotent.
+
+   """
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
+    # get all entries for the stanza
+    currentEntries = get_all(isamAppliance, reverseproxy_id, stanza_id)
+    currentEntries = currentEntries['data']
+    # make currentEntries into a similar list of dicts
+    newEntries = _collapse_entries_obj(entries)
+    # Filter the current entries to only include the requested entry (keys)
+    fCurrentEntries = {k: v for k, v in currentEntries.items() if k in newEntries.keys()}
+    # compare using json_sort
+    newEntriesJSON = json.dumps(newEntries, skipkeys=True, sort_keys=True, cls=jsonSortedListEncoder)
+    logger.debug(f"\nSorted Desired  Stanza {stanza_id}:\n\n {newEntriesJSON}\n")
+    currentEntriesJSON = json.dumps(fCurrentEntries, skipkeys=True, sort_keys=True, cls=jsonSortedListEncoder)
+    logger.debug(f"\nSorted Existing Stanza {stanza_id}:\n\n {currentEntriesJSON}\n")
 
-    set_update = False
-    set_entries = []
-
-    if force is False:
-        for entry in _collapse_entries(entries):
-            process_entry = False
-            exists, update_required, cur_value = _check(isamAppliance, reverseproxy_id, stanza_id, entry[0], entry[1])
-            if exists is False:
-                set_update = True
-                process_entry = True
-            elif update_required is True:
-                set_update = True
-                process_entry = True
-                # Force delete of existing values, new values will be added
-                logger.info(
-                    'Deleting entry, will be re-added: {0}/{1}/{2}'.format(reverseproxy_id, stanza_id, entry[0]))
-                delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
-            if process_entry is True:
-                if isinstance(entry[1], list):
-                    for v in entry[1]:
-                        set_entries.append([entry[0], v])
-                else:
-                    set_entries.append([entry[0], entry[1]])
-
-    if force is True or set_update is True:
+    if force or (newEntriesJSON != currentEntriesJSON):
+        for entry in entries:
+            logger.info(f"Deleting entry, will be re-added: {reverseproxy_id}/{stanza_id}/{entry[0]}")
+            delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return _add(isamAppliance, reverseproxy_id, stanza_id, set_entries)
+            return _add(isamAppliance, reverseproxy_id, stanza_id, entries)
 
     return isamAppliance.create_return_object()
 
 
-def _collapse_entries(entries):
+def _collapse_entries_obj(entries):
     """
-    Convert [['key', 'value1'], ['key', 'value2]] to [['key', ['value1', 'value2']]]
-    Expect key values to be consecutive. Will maintain order as provided.
-    """
+   Convert [['key', 'value1'], ['key', 'value2]] to {'key': ['value1', 'value2'], ...}
+   the value is an array if multiple values, but a string if it's a single value
+
+   Also converts all values to str for easy compare
+   """
     if entries is None or len(entries) < 1:
         return []
     else:
-        cur_key = entries[0][0]
-        cur_value = []
-        new_entry = []
+        prev_key = ""
+        new_entry = {}
 
     for entry in entries:
-        if entry[0] == cur_key:
-            cur_value.append(entry[1])
+        if entry[0] == prev_key:
+            if isinstance(new_entry.get(entry[0], ""), list):
+                existing_value = new_entry.get(entry[0], [])
+            else:
+                existing_value = [new_entry.get(entry[0], "")]
+            if isinstance(entry[1], list):
+                new_entry[entry[0]] = existing_value + str(entry[1])
+            else:
+                new_entry[entry[0]] = existing_value + [str(entry[1])]
         else:
-            new_entry.append([cur_key, cur_value])
-            # reset current key
-            cur_key = entry[0]
-            cur_value = [entry[1]]
-
-    new_entry.append([cur_key, cur_value])
-
+            new_entry[entry[0]] = str(entry[1])
+        prev_key = entry[0]
     return new_entry
 
 
 def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', check_mode=False, force=False):
     """
-    Deleting a value from a configuration entry - Reverse Proxy
-    """
+   Deleting a value from a configuration entry - Reverse Proxy
+   """
 
     if value_id == '' or value_id is None:
-        return delete_all(isamAppliance=isamAppliance, reverseproxy_id=reverseproxy_id, stanza_id=stanza_id, entry_id=entry_id, check_mode=check_mode, force=force)
+        return delete_all(isamAppliance=isamAppliance, reverseproxy_id=reverseproxy_id, stanza_id=stanza_id,
+                          entry_id=entry_id, check_mode=check_mode, force=force)
 
     if force is False:
         exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
@@ -178,8 +179,8 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, reverseproxy_id,
-                                                                                       stanza_id, entry_id, value_id)
+            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, reverseproxy_id, stanza_id,
+                                                                                       entry_id, value_id)
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -192,7 +193,7 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
                 from urllib import quote
 
             full_uri = quote(ruri)
-            ### Workaround for value_id encoding in 9.0.7.1
+            # Workaround for value_id encoding in 9.0.7.1
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], '9.0.7.1') >= 0:
                 uri_parts = full_uri.split('/value/')
                 uri_parts[1] = uri_parts[1].replace('/', '%2F')
@@ -205,8 +206,8 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
 
 def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, force=False):
     """
-    Deleting all values from a configuration entry - Reverse Proxy
-    """
+   Deleting all values from a configuration entry - Reverse Proxy
+   """
     delete_required = False
     if force is False:
         try:
@@ -244,8 +245,8 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
 
 def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_mode=False, force=False):
     """
-    Updating a configuration entry or entries by stanza - Reverse Proxy
-    """
+   Updating a configuration entry or entries by stanza - Reverse Proxy
+   """
     if force is False:
         exists, update_required, cur_value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
@@ -255,7 +256,7 @@ def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
             f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
-                                                                            stanza_id, entry_id)
+                                                                             stanza_id, entry_id)
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -319,8 +320,8 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
 
 def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id, reverseproxy_id2=None):
     """
-    Compare stanza/entries in two appliances reverse proxy configuration
-    """
+   Compare stanza/entries in two appliances reverse proxy configuration
+   """
     if reverseproxy_id2 is None or reverseproxy_id2 == '':
         reverseproxy_id2 = reverseproxy_id
 
