@@ -140,7 +140,7 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
     return isamAppliance.create_return_object()
 
 
-def import_cert(isamAppliance, kdb_id, label, cert, password, check_mode=False, force=False):
+def import_cert(isamAppliance, kdb_id, label, cert, password=None, check_mode=False, force=False):
     """
     Importing a personal certificate into a certificate database
     """
