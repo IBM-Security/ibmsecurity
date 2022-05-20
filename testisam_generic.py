@@ -1,12 +1,15 @@
 """
 Usage:  testisam_generic.py
-        testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD --lmi_port=443]
+        testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD --lmi_port=443 --method=ibm.isam.appliance.get --method_options="name=test" --commit]
 
 Options:
   --hostname=hostname    Hostname (eg. isamlmi.local.com)
   --username=admin      The LMI administration user.  Defaults to admin@local
   --password=password    The LMI administration user's password.  Defaults to admin
   --lmi_port=443        The lmi port, defaults to 443
+  --method=ibm.isam.method  The method to call
+  --method_options="name=name"  String of key-value pairs "name=test,key2=key2"
+  --commit  Perform commit of the changes.  Not required if you do a GET
   -h --help     Show this screen.
 
 """
@@ -87,6 +90,11 @@ def p(jdata):
 
 def loadArgs(__doc__):
     args = docopt(__doc__)
+    method = None
+    _options = "isamAppliance=isam_server"
+    commit = False
+    if args['--commit']:
+        commit = True
     if args['--hostname']:
         hostname = args['--hostname']
     else:
@@ -103,23 +111,35 @@ def loadArgs(__doc__):
         lmi_port = args['--lmi_port']
     else:
         lmi_port = "443"
+    if args["--method"]:
+        method = args["--method"]
+    if args["--method_options"]:
+        _options = _options + "," + args["---method_options"]
 
-    return hostname, username, password, lmi_port
+
+    return commit, hostname, username, password, lmi_port, method, _options
 
 if __name__ == "__main__":
     """
     This test program should not execute when imported, which would otherwise
     cause problems when generating the documentation.
     """
-    hostname, username, password, lmi_port = loadArgs(__doc__)
+    commit, hostname, username, password, lmi_port, isam_module, options = loadArgs(__doc__)
 
     # Create a user credential for ISAM appliance
     u = ApplianceUser(username=username, password=password)
     # Create an ISAM appliance with above credential
     isam_server = ISAMAppliance(hostname=hostname, user=u, lmi_port=lmi_port)
 
-    # Get the current SNMP monitoring setup details
-    p(ibmsecurity.isam.web.iag.export.features.get(isamAppliance=isam_server))
+    # Run the method with options
+    module_name, method_name = isam_module.rsplit('.', 1)
+    mod = importlib.import_module(module_name)
+    func_ptr = getattr(mod, method_name)  # Convert action to actual function pointer
+    func_call = 'func_ptr(' + options + ')'
+
+    # Execute requested 'action'
+    p(eval(func_call))
 
     # Commit or Deploy the changes
-    #p(ibmsecurity.isam.appliance.commit(isamAppliance=isam_server))
+    if commit:
+        p(ibmsecurity.isam.appliance.commit(isamAppliance=isam_server))
