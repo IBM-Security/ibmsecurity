@@ -8,20 +8,22 @@ logger = logging.getLogger(__name__)
 # URI for this module
 uri = "/wga/iag/export"
 requires_modules = ["wga"]
-requires_version = None
+requires_version = "10.0.4"
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving the wga features for iag
     """
-    return isamAppliance.invoke_get("Retrieving the IAG features", f"{uri}/features")
+    return isamAppliance.invoke_get("Retrieving the IAG features", f"{uri}/features",
+                                    requires_version=requires_version, requires_modules=requires_modules)
 
 def get(isamAppliance, instance, check_mode=False, force=False):
     """
     Retrieving the wga junctions for a specific instance for iag
     """
     if rp._check(isamAppliance, instance):
-        return isamAppliance.invoke_get(f"Retrieving the IAG junction for {instance}", f"{uri}/{instance}/junctions")
+        return isamAppliance.invoke_get(f"Retrieving the IAG junction for {instance}", f"{uri}/{instance}/junctions",
+                                        requires_version=requires_version, requires_modules=requires_modules)
     else:
         logger.debug(f"Instance: {instance} does not exist")
         return isamAppliance.create_return_object(warnings=f"Instance: {instance} does not exist", rc=1)
@@ -41,7 +43,8 @@ def download(isamAppliance, instance, junctions, features, filename="iag.zip", c
                "junctions": junctions,
                "features": features
                }
-          zip_data = isamAppliance.invoke_post(f"Exporting junctions and features for IAG for {instance}", f"{uri}/{instance}/download", data=json_data)
+          zip_data = isamAppliance.invoke_post(f"Exporting junctions and features for IAG for {instance}", f"{uri}/{instance}/download", data=json_data,
+                                               requires_version = requires_version, requires_modules = requires_modules)
           with open(filename, 'wb') as f:
              f.write(zip_data['data'])
         else:
@@ -61,7 +64,8 @@ def validate(isamAppliance, instance, junctions, features, check_mode=False, for
             "features": features
         }
 
-        return isamAppliance.invoke_post(f"Exporting junctions and features for IAG for {instance}", f"{uri}/{instance}/validate", data=json_data)
+        return isamAppliance.invoke_post(f"Exporting junctions and features for IAG for {instance}", f"{uri}/{instance}/validate", data=json_data,
+                                         requires_version=requires_version, requires_modules=requires_modules)
 
     else:
         logger.debug(f"Instance: {instance} does not exist, cannot export")

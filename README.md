@@ -63,7 +63,8 @@ Note: it is preferred to return warnings rather than send back a non-zero rc.
 
 ### Generic test script
 
-For simple tests, an improved version is provided that takes the username, password, hostname, method and options as arguments, with the option to perform a commit or not.
+For simple tests, a modified version is provided that takes the username, password, hostname, method and options as arguments, with the option to perform a commit or not.
+This makes sense for simple tests, for pytest or unittests, this is not useful.
 
 This avoids having to store credentials in a script and allows easier repeat of tests.
 
