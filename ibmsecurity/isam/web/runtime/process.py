@@ -35,6 +35,7 @@ def _check(isamAppliance):
 def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", ldap_host=None, ldap_port=None,
            ldap_dn=None, ldap_pwd=None, ldap_ssl_db=None, ldap_ssl_label=None, ldap_suffix=None, clean_ldap=False,
            domain="Default", admin_cert_lifetime="1460", ssl_compliance="none", isam_host=None, isam_port="7135",
+           local_interface_only=None,
            check_mode=False, force=False):
     """
     Configure Runtime Component
@@ -48,8 +49,7 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_post("Configure web runtime Component", "/isam/runtime_components/",
-                                             {
+            json_data = {
                                                  "ps_mode": ps_mode,
                                                  "user_registry": user_registry,
                                                  "ldap_host": ldap_host,
@@ -66,7 +66,17 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
                                                  "ssl_compliance": ssl_compliance,
                                                  "isam_host": isam_host,
                                                  "isam_port": isam_port
-                                             },requires_model=requires_model)
+                                             }
+            if local_interface_only is not None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.4") < 0:
+                    warnings.append(
+                        "Appliance at version: {0}, ilocal_interface_only: {1} is not supported. Needs 10.0.4 or higher. Ignoring local_interface_only for this call.".format(
+                            isamAppliance.facts["version"], local_interface_only))
+                else:
+                    json_data["local_interface_only"] = local_interface_only
+
+            return isamAppliance.invoke_post("Configure web runtime Component", "/isam/runtime_components/",
+                                             json_data,requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
