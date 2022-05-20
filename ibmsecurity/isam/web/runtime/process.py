@@ -105,6 +105,25 @@ def unconfig(isamAppliance, clean=False, ldap_dn=None, ldap_pwd=None, check_mode
     return isamAppliance.create_return_object(warnings=warnings)
 
 
+def export_configuration(isamAppliance, filename="rte_config.zip",  check_mode=False, force=False):
+    """
+    Exporting the Runtime Environment configuration
+        -filename is file system location to export the file (e.g. /tmp/rte_config.zip)
+    """
+    import os.path
+    if force is True or os.path.exists(os.path.dirname(filename)) is False:
+        if check_mode is True: # No point downloading a file if in check_mode
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_get_file(
+                description="Exporting the Runtime Environment configuration",
+                uri="/isam/runtime_components?action=export",
+                filename=filename,
+                requires_version="10.0.4")
+
+    return isamAppliance.create_return_object()
+
+
 def import_config(isamAppliance, migrate_file, check_mode=False, force=False):
     """
     Import or migrate runtime component

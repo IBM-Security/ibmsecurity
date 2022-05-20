@@ -22,6 +22,7 @@ import importlib
 
 from docopt import docopt
 
+
 def import_submodules(package, recursive=True):
     """
     Import all submodules of a module, recursively, including subpackages
