@@ -5,7 +5,7 @@ import json
 logger = logging.getLogger(__name__)
 
 # URI for this module
-uri = "/wga/iag/export/features"
+uri = "/wga/iag/export"
 requires_modules = ["wga"]
 requires_version = None
 
@@ -13,4 +13,14 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieving the wga features for iag
     """
-    return isamAppliance.invoke_get("Retrieving the administrator settings", uri)
+    return isamAppliance.invoke_get("Retrieving the administrator settings", f"{uri}/features")
+
+#download
+#list
+#features
+
+
+
+
+
+
