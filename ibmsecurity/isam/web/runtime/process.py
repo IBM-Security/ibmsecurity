@@ -68,7 +68,7 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
                           "isam_port": isam_port
                         }
             if local_interface_only is not None:
-                if tools.version_compare(isamAppliance.facts["version"], "10.0.2") < 0:
+                if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2") < 0:
                     warnings.append(
                         "Appliance at version: {0}, local_interface_only: {1} is not supported. Needs 10.0.2 or higher. Ignoring local_interface_only for this call.".format(
                             isamAppliance.facts["version"], local_interface_only))
