@@ -114,7 +114,7 @@ def loadArgs(__doc__):
     if args["--method"]:
         method = args["--method"]
     if args["--method_options"]:
-        _options = _options + "," + args["---method_options"]
+        _options = _options + "," + args["--method_options"]
 
 
     return commit, hostname, username, password, lmi_port, method, _options
@@ -136,7 +136,6 @@ if __name__ == "__main__":
     mod = importlib.import_module(module_name)
     func_ptr = getattr(mod, method_name)  # Convert action to actual function pointer
     func_call = 'func_ptr(' + options + ')'
-
     # Execute requested 'action'
     p(eval(func_call))
 
