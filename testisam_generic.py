@@ -22,7 +22,6 @@ import importlib
 
 from docopt import docopt
 
-
 def import_submodules(package, recursive=True):
     """
     Import all submodules of a module, recursively, including subpackages
@@ -114,8 +113,7 @@ def loadArgs(__doc__):
     if args["--method"]:
         method = args["--method"]
     if args["--method_options"]:
-        _options = _options + "," + args["---method_options"]
-
+        _options = _options + "," + args["--method_options"]
 
     return commit, hostname, username, password, lmi_port, method, _options
 
