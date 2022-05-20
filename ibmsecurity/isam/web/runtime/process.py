@@ -50,33 +50,33 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             json_data = {
-                                                 "ps_mode": ps_mode,
-                                                 "user_registry": user_registry,
-                                                 "ldap_host": ldap_host,
-                                                 "ldap_port": ldap_port,
-                                                 "ldap_dn": ldap_dn,
-                                                 "ldap_pwd": ldap_pwd,
-                                                 "ldap_ssl_db": ldap_ssl_db,
-                                                 "ldap_ssl_label": ldap_ssl_label,
-                                                 "ldap_suffix": ldap_suffix,
-                                                 "clean_ldap": clean_ldap,
-                                                 "domain": domain,
-                                                 "admin_pwd": admin_pwd,
-                                                 "admin_cert_lifetime": admin_cert_lifetime,
-                                                 "ssl_compliance": ssl_compliance,
-                                                 "isam_host": isam_host,
-                                                 "isam_port": isam_port
-                                             }
+                          "ps_mode": ps_mode,
+                          "user_registry": user_registry,
+                          "ldap_host": ldap_host,
+                          "ldap_port": ldap_port,
+                          "ldap_dn": ldap_dn,
+                          "ldap_pwd": ldap_pwd,
+                          "ldap_ssl_db": ldap_ssl_db,
+                          "ldap_ssl_label": ldap_ssl_label,
+                          "ldap_suffix": ldap_suffix,
+                          "clean_ldap": clean_ldap,
+                          "domain": domain,
+                          "admin_pwd": admin_pwd,
+                          "admin_cert_lifetime": admin_cert_lifetime,
+                          "ssl_compliance": ssl_compliance,
+                          "isam_host": isam_host,
+                          "isam_port": isam_port
+                        }
             if local_interface_only is not None:
-                if tools.version_compare(isamAppliance.facts["version"], "10.0.4") < 0:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, ilocal_interface_only: {1} is not supported. Needs 10.0.4 or higher. Ignoring local_interface_only for this call.".format(
+                        "Appliance at version: {0}, local_interface_only: {1} is not supported. Needs 10.0.2 or higher. Ignoring local_interface_only for this call.".format(
                             isamAppliance.facts["version"], local_interface_only))
                 else:
                     json_data["local_interface_only"] = local_interface_only
 
             return isamAppliance.invoke_post("Configure web runtime Component", "/isam/runtime_components/",
-                                             json_data,requires_model=requires_model)
+                                             json_data, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
