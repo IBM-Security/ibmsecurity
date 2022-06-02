@@ -90,7 +90,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, description=None, warnings=[]):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, priority=None, server_cn=None, warnings=[]):
     """
     Creating a standard or virtual junction
 
@@ -146,6 +146,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param http2_proxy:
     :param sni_name:
     :param description:
+    :param priority:
+    :param server_cn:
     :return:
     """
     if force is True or _check(isamAppliance, reverseproxy_id, junction_point) is False:
@@ -270,6 +272,32 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             isamAppliance.facts["version"], description))
                 else:
                     jct_json['description'] = description
+            if priority is None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                    warnings.append(
+                       "Appliance at version: {0}, priority is required. Defaulting to '9'.".format(isamAppliance.facts["version"]))
+                    jct_json['priority'] = 9
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                       "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
+                           isamAppliance.facts["version"], priority))
+                    priority = None
+                else:
+                    jct_json['priority'] = priority
+            if server_cn is None:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                    warnings.append(
+                       "Appliance at version: {0}, server_cn is required. Defaulting to ''.".format(isamAppliance.facts["version"]))
+                    jct_json['server_cn'] = ''
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    warnings.append(
+                       "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
+                           isamAppliance.facts["version"], server_cn))
+                    server_cn = None
+                else:
+                    jct_json['server_cn'] = server_cn
 
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
@@ -314,13 +342,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, description=None):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, priority=None, server_cn=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
     """
     warnings = []
     add_required = False
+    standard_jct = (junction_point[:1] == '/')
     if force is False:
         # Check if record exists
         logger.debug("Check if the junction exists.")
@@ -365,15 +394,42 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         # Server UUID gets generated if not specified
                         if 'server_uuid' in srv:
                             del srv['server_uuid']
-                    if virtual_hostname is None:
-                        if 'virtual_junction_hostname' in srv:
-                            del srv['virtual_junction_hostname']
-                    else:
-                        server_json['virtual_junction_hostname'] = virtual_hostname
+                    # In Standard Junctions the virtual_hostname is compared in the svr objet
+                    # In Virtual Host Junctions the virtual_hostname is compared in the exist_jct objet
+                    if standard_jct:
+                        if virtual_hostname is None or virtual_hostname == '':
+                            if 'virtual_junction_hostname' in srv:
+                                del srv['virtual_junction_hostname']
+                        else:
+                            server_json['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
                     else:
                         server_json['windows_style_url'] = windows_style_url
+                    if priority is None:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                            del srv['priority']
+                    else:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                            warnings.append(
+                               "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
+                                   isamAppliance.facts["version"], priority))
+                            priority = None
+                            del srv['priority']
+                        else:
+                            server_json['priority'] = priority
+                    if server_cn is None:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                            del srv['server_cn']
+                    else:
+                        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                            warnings.append(
+                               "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
+                                   isamAppliance.facts["version"], server_cn))
+                            server_cn = None
+                            del srv['server_cn']
+                        else:
+                            server_json['server_cn'] = server_cn
 
                     # Delete dynamic data shown when we get junctions details
                     if 'current_requests' in srv:
@@ -387,10 +443,13 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     # Not sure what this attribute is supposed to contain?
                     if 'query_contents' in srv:
                         del srv['query_contents']
-                    if tools.json_sort(server_json) != tools.json_sort(srv):
+
+                    sorted_server_json = tools.json_sort(server_json)
+                    sorted_srv = tools.json_sort(srv)
+                    logger.debug("New Junction JSON: {0}".format(sorted_server_json))
+                    logger.debug("Old Junction JSON: {0}".format(sorted_srv))
+                    if sorted_server_json != sorted_srv:
                         logger.debug("Servers are found to be different. See following JSON for difference.")
-                        logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
-                        logger.debug("Old Server JSON: {0}".format(tools.json_sort(srv)))
                         add_required = True
                     break
             if server_found is False:
@@ -405,20 +464,31 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['authz_rules'] = 'no'
                 else:
                     jct_json['authz_rules'] = authz_rules
-                if basic_auth_mode is None:
-                    jct_json['basic_auth_mode'] = 'filter'
+                # basic_auth_mode cannot be set with enable_basic_auth otherwise RESTAPI returns the error:
+                # "The -b option cannot be specified with the -B option."
+                # Nevertheless, RESTAPI returns the basic_auth_mode as the default value (filter) for junction
+                # with enable_basic_auth so it needs to be removed for idempotency.
+                if basic_auth_mode == 'no':
+                    basic_auth_mode = None
+                    if 'basic_auth_mode' in exist_jct:
+                        del exist_jct['basic_auth_mode']
                 else:
-                    jct_json['basic_auth_mode'] = basic_auth_mode
+                    if basic_auth_mode is None:
+                        jct_json['basic_auth_mode'] = 'filter'
+                    else:
+                        jct_json['basic_auth_mode'] = basic_auth_mode
                 if client_ip_http is None or client_ip_http.lower() == 'no':
                     jct_json['client_ip_http'] = 'do not insert'
                 elif client_ip_http.lower() == 'yes':
                     jct_json['client_ip_http'] = 'insert'
                 else:
                     jct_json['client_ip_http'] = client_ip_http
-                if cookie_include_path is None:
-                    jct_json['cookie_include_path'] = 'no'
-                else:
-                    jct_json['cookie_include_path'] = cookie_include_path
+                if standard_jct:
+                    # As per doc parameter not valid for virtual junctions
+                    if cookie_include_path is None or cookie_include_path == '':
+                        jct_json['cookie_include_path'] = 'no'
+                    else:
+                        jct_json['cookie_include_path'] = cookie_include_path
                 if delegation_support is None:
                     jct_json['delegation_support'] = 'no'
                 else:
@@ -443,18 +513,18 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 if junction_cookie_javascript_block is not None and junction_cookie_javascript_block != '':
                     jct_json['junction_cookie_javascript_block'] = junction_cookie_javascript_block.split(',')
                     # Here the list is delimited by space
-                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct[
-                        'junction_cookie_javascript_block'] is not None:
-                        exist_jct['junction_cookie_javascript_block'] = exist_jct[
-                            'junction_cookie_javascript_block'].split(' ')
+                    if 'junction_cookie_javascript_block' in exist_jct and exist_jct['junction_cookie_javascript_block'] is not None:
+                        exist_jct['junction_cookie_javascript_block'] = exist_jct['junction_cookie_javascript_block'].split(' ')
                 if mutual_auth is None:
                     jct_json['mutual_auth'] = 'no'
                 else:
                     jct_json['mutual_auth'] = mutual_auth
-                if preserve_cookie is None:
-                    jct_json['preserve_cookie'] = 'no'
-                else:
-                    jct_json['preserve_cookie'] = preserve_cookie
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if preserve_cookie is None or preserve_cookie == '':
+                        jct_json['preserve_cookie'] = 'no'
+                    else:
+                        jct_json['preserve_cookie'] = preserve_cookie
                 if remote_http_header is None or remote_http_header == []:
                     jct_json['remote_http_header'] = 'do not insert'
                 elif isinstance(remote_http_header, basestring) and remote_http_header.lower() == 'all':
@@ -468,10 +538,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['request_encoding'] = 'UTF-8, URI Encoded'
                 else:
                     jct_json['request_encoding'] = request_encoding
-                if scripting_support is None:
-                    jct_json['scripting_support'] = 'no'
-                else:
-                    jct_json['scripting_support'] = scripting_support
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if scripting_support is None or scripting_support == '':
+                        jct_json['scripting_support'] = 'no'
+                    else:
+                        jct_json['scripting_support'] = scripting_support
                 if stateful_junction is None:
                     jct_json['stateful_junction'] = 'no'
                 else:
@@ -480,10 +552,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['tfim_sso'] = 'no'
                 else:
                     jct_json['tfim_sso'] = tfim_sso
-                if transparent_path_junction is None:
-                    jct_json['transparent_path_junction'] = 'no'
-                else:
-                    jct_json['transparent_path_junction'] = transparent_path_junction
+                if standard_jct:
+                    # as per doc this parameter not valid for virtual junctions
+                    if transparent_path_junction is None or transparent_path_junction == '':
+                        jct_json['transparent_path_junction'] = 'no'
+                    else:
+                        jct_json['transparent_path_junction'] = transparent_path_junction
                 if http2_junction is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
@@ -508,7 +582,31 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         sni_name = None
                     else:
                         jct_json['sni_name'] = sni_name
-                if description is not None:
+                if enable_basic_auth is not None and enable_basic_auth != '' and enable_basic_auth != 'no':
+                    jct_json['enable_basic_auth'] = enable_basic_auth
+                # If enable_basic_auth is set the RESTAPI does not send back the
+                # mutual_auth value as 'no' so we need to remove it for idempotency
+                if enable_basic_auth == 'yes':
+                    if 'mutual_auth' in jct_json:
+                        del jct_json['mutual_auth']
+                # In existing jct 'username' is returned from REST as 'ba_username'
+                if username is not None and username != '':
+                    jct_json['ba_username'] = username
+                # insert_ltpa_cookies is returned by exist_jct only if it is at "yes"
+                if insert_ltpa_cookies == 'yes':
+                    # without an ltpa_keyfile, insert_ltpa_cookies is forced to "no"
+                    if ltpa_keyfile is not None and ltpa_keyfile != '':
+                        jct_json['ltpa_keyfile'] = ltpa_keyfile
+                        jct_json['insert_ltpa_cookies'] = insert_ltpa_cookies
+                # this param is returned by exist_jct only if it is at "yes"
+                if version_two_cookies == 'yes':
+                    jct_json['version_two_cookies'] = version_two_cookies
+                # this param being a pwd, it is returned as "*****" -> not point in comparing
+                if 'ltpa_keyfile_password' in exist_jct:
+                    del exist_jct['ltpa_keyfile_password']
+                if key_label is not None and key_label != '':
+                    jct_json['key_label'] = key_label
+                if description is not None and description != '':
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(
@@ -525,18 +623,30 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 del exist_jct['session_cookie_backend_portal']
                 # We are already comparing server details - so remove this from this compare
                 del exist_jct['servers']
+                if standard_jct:
+                    # virtual_hostname is compared in the svr objet
+                    if 'virtual_junction_hostname' in exist_jct:
+                        del exist_jct['virtual_junction_hostname']
+                else:
+                    # virtual_hostname is compared in the exist_jct objet
+                    if virtual_hostname is not None and virtual_hostname != '':
+                        jct_json['virtual_junction_hostname'] = virtual_hostname
                 # Delete dynamic data shown when we get junctions details
                 del exist_jct['active_worker_threads']
-                if tools.json_sort(jct_json) != tools.json_sort(exist_jct):
-                    logger.debug("Junctions are found to be different. See following JSON for difference.")
-                    logger.debug("New Junction JSON: {0}".format(tools.json_sort(jct_json)))
-                    logger.debug("Old Junction JSON: {0}".format(tools.json_sort(exist_jct)))
+
+                sorted_jct_json = tools.json_sort(jct_json)
+                sorted_exist_jct = tools.json_sort(exist_jct)
+                logger.debug("New Junction JSON: {0}".format(sorted_jct_json))
+                logger.debug("Old Junction JSON: {0}".format(sorted_exist_jct))
+                if sorted_jct_json != sorted_exist_jct:
                     add_required = True
             if add_required is True and srvs_len > 1:
                 warnings.append(
                     "Junction will replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
                         srvs_len))
         else:
+            if basic_auth_mode == 'no':
+                basic_auth_mode = None
             add_required = True
 
     if force is True or add_required is True:
@@ -560,7 +670,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
-                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, warnings=warnings)
+                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description, priority=priority, server_cn=server_cn, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
