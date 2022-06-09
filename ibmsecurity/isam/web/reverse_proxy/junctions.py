@@ -384,8 +384,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             del srv['server_uuid']
                     if virtual_hostname is not None:
                         server_json['virtual_junction_hostname'] = virtual_hostname
-                        if not 'virtual_junction_hostname' in srv:
-                            # this is NOT in the returned servers object
+                        if 'virtual_junction_hostname' not in srv:
+                            # this is not always in the returned servers object, it's in the junction's object
                             srv['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
@@ -449,7 +449,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['delegation_support'] = 'no'
                 else:
                     jct_json['delegation_support'] = delegation_support
-                if fsso_config_file is None:
+                if fsso_config_file is None or fsso_config_file == '':
                     jct_json['fsso_config_file'] = 'disabled'
                 else:
                     jct_json['fsso_config_file'] = fsso_config_file
@@ -489,7 +489,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['remote_http_header'] = remote_http_header
                 # To allow for multiple header values to be sorted during compare convert retrieved data into array
                 if exist_jct['remote_http_header'].startswith('insert - '):
-                    exist_jct['remote_http_header'] = (exist_jct['remote_http_header'][9:]).split(' ')
+                    exist_jct['remote_http_header'] = [_word.replace('_','-') for _word in (exist_jct['remote_http_header'][9:]).split(' ')]
                 if request_encoding is None:
                     jct_json['request_encoding'] = 'UTF-8, URI Encoded'
                 else:
@@ -510,7 +510,9 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_json['transparent_path_junction'] = 'no'
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
-                if http2_junction is not None:
+                if virtual_hostname is not None:
+                    jct_json['virtual_junction_hostname'] = virtual_hostname
+                if http2_junction is not None and http2_junction != "no":
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, http2_junction: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_junction for this call.".format(
@@ -518,7 +520,9 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         http2_junction = None
                     else:
                         jct_json['http2_junction'] = http2_junction
-                if http2_proxy is not None:
+                        if 'http2_junction' not in exist_jct:
+                            exist_jct['http2_junction'] = jct_json['http2_junction']
+                if http2_proxy is not None and http2_proxy != "no":
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
                             "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(
@@ -526,6 +530,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         http2_proxy = None
                     else:
                         jct_json['http2_proxy'] = http2_proxy
+                        if 'http2_proxy' not in exist_jct:
+                            exist_jct['http2_proxy'] = jct_json['http2_proxy']
                 if sni_name is not None:
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
@@ -553,10 +559,22 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 del exist_jct['servers']
                 # Delete dynamic data shown when we get junctions details
                 del exist_jct['active_worker_threads']
+                # Missing cookie_include_path in existing json
+                if 'cookie_include_path' not in exist_jct:
+                    exist_jct['cookie_include_path'] = jct_json['cookie_include_path']
+                if 'preserve_cookie' not in exist_jct:
+                    exist_jct['preserve_cookie'] = jct_json['preserve_cookie']
+                if 'scripting_support' not in exist_jct:
+                    exist_jct['scripting_support'] = jct_json['scripting_support']
+                if 'fsso_config_file' not in exist_jct:
+                    exist_jct['fsso_config_file'] = jct_json['fsso_config_file']
+                if 'transparent_path_junction' not in exist_jct:
+                    exist_jct['transparent_path_junction'] = jct_json['transparent_path_junction']
+                logger.debug("New Junction JSON: {0}".format(tools.json_sort(jct_json)))
+                logger.debug("Old Junction JSON: {0}".format(tools.json_sort(exist_jct)))
+
                 if tools.json_sort(jct_json) != tools.json_sort(exist_jct):
                     logger.debug("Junctions are found to be different. See following JSON for difference.")
-                    logger.debug("New Junction JSON: {0}".format(tools.json_sort(jct_json)))
-                    logger.debug("Old Junction JSON: {0}".format(tools.json_sort(exist_jct)))
                     add_required = True
             if add_required is True and srvs_len > 1:
                 warnings.append(
