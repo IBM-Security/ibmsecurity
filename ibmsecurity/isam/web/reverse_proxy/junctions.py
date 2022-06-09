@@ -382,11 +382,11 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         # Server UUID gets generated if not specified
                         if 'server_uuid' in srv:
                             del srv['server_uuid']
-                    if virtual_hostname is None:
-                        if 'virtual_junction_hostname' in srv:
-                            del srv['virtual_junction_hostname']
-                    else:
+                    if virtual_hostname is not None:
                         server_json['virtual_junction_hostname'] = virtual_hostname
+                        if not 'virtual_junction_hostname' in srv:
+                            # this is NOT in the returned servers object
+                            srv['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
                     else:
@@ -397,7 +397,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             server_json['priority'] = 9
                         else:
                             server_json['priority'] = priority
-
+                        if server_cn is None:
+                            server_json['server_cn'] = ''
+                        else:
+                            server_json['server_cn'] = server_cn
                     # Delete dynamic data shown when we get junctions details
                     if 'current_requests' in srv:
                         del srv['current_requests']
