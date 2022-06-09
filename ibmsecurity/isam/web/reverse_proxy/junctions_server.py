@@ -83,7 +83,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 jct_srv_json["vhost_label"] = vhost_label
             if server_dn is not None:
                 jct_srv_json["server_dn"] = server_dn
-            if virtual_hostname is not None and virtual_hostname != '':
+            if virtual_hostname:
                 jct_srv_json["virtual_hostname"] = virtual_hostname
             if virtual_https_hostname is not None:
                 jct_srv_json["virtual_https_hostname"] = virtual_https_hostname

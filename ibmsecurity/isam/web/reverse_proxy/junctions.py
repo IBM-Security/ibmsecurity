@@ -382,11 +382,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         # Server UUID gets generated if not specified
                         if 'server_uuid' in srv:
                             del srv['server_uuid']
-                    if virtual_hostname is not None:
+                    if virtual_hostname:
                         server_json['virtual_junction_hostname'] = virtual_hostname
-                        if 'virtual_junction_hostname' not in srv:
-                            # this is not always in the returned servers object, it's in the junction's object
-                            srv['virtual_junction_hostname'] = virtual_hostname
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
                     else:
@@ -413,6 +410,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     # Not sure what this attribute is supposed to contain?
                     if 'query_contents' in srv:
                         del srv['query_contents']
+                    if 'virtual_junction_hostname' not in srv:
+                        # this is not always in the returned servers object, it's in the junction's object
+                        if virtual_hostname:
+                            srv['virtual_junction_hostname'] = virtual_hostname
+                        else:
+                            srv['virtual_junction_hostname'] = srv['server_hostname'] + ":" + srv['server_port']
                     if tools.json_sort(server_json) != tools.json_sort(srv):
                         logger.debug("Servers are found to be different. See following JSON for difference.")
                         logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
