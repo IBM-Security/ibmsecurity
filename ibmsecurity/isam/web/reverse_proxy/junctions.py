@@ -398,7 +398,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             logger.debug("Only for standard junctions - {0}.".format(virtual_hostname))
                             server_json['virtual_junction_hostname'] = virtual_hostname
                         else:
-                            server_json['virtual_junction_hostname'] = server_json['server_hostname'] + ":" + server_json['server_port']
+                            if server_json['server_port'] in ['80','443',80,443]:
+                              server_json['virtual_junction_hostname'] = server_json['server_hostname']
+                            else:
+                              server_json['virtual_junction_hostname'] = server_json['server_hostname'] + ":" + server_json['server_port']
                     if windows_style_url is None:
                         server_json['windows_style_url'] = 'no'
                     else:
@@ -406,9 +409,9 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     # v10.0.2
                     if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
                         if priority is None:
-                            server_json['priority'] = 9
+                            server_json['priority'] = '9'
                         else:
-                            server_json['priority'] = priority
+                            server_json['priority'] = str(priority)
                         if server_cn is None:
                             server_json['server_cn'] = ''
                         else:
@@ -535,11 +538,16 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
                 if isVirtualJunction:
-                   logger.debug("Only for virtual junctions - {0}.".format(virtual_hostname))
+                   logger.debug("Only for virtual junctions - virtual hostname {0}.".format(virtual_hostname))
+
+
                    if virtual_hostname:
                        jct_json['virtual_junction_hostname'] = virtual_hostname
                    else:
-                       jct_json['virtual_junction_hostname'] = jct_json['server_hostname'] + ":" + jct_json['server_port']
+                       if jct_json['server_port'] in ['80', '443', 80, 443]:
+                           jct_json['virtual_junction_hostname'] = jct_json['server_hostname']
+                       else:
+                           jct_json['virtual_junction_hostname'] = jct_json['server_hostname'] + ":" +  jct_json['server_port']
                 if http2_junction is not None and http2_junction != "no":
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                         warnings.append(
