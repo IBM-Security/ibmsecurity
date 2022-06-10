@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities import tools
 import ibmsecurity.isam.web.reverse_proxy.junctions
 
 logger = logging.getLogger(__name__)
