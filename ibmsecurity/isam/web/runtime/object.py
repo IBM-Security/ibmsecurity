@@ -12,10 +12,12 @@ version = "v1"
 def retrieve(isamAppliance, admin_id, admin_pwd, object='/', admin_domain='Default', check_mode=False, force=False):
     """
     Retrieve a list of objects
+    Fix: do not consider 404 an error
     """
     _action = "objectlistandshowext"
     ret_obj = isamAppliance.invoke_post(description="Retrieve a list of objects",
                                         uri=f"{uri}/{_action}/{version}",
+                                        ignore_error=True,
                                         data={
                                             "admin_id": admin_id,
                                             "admin_pwd": admin_pwd,
@@ -23,15 +25,20 @@ def retrieve(isamAppliance, admin_id, admin_pwd, object='/', admin_domain='Defau
                                             "object": object
                                         })
     ret_obj['changed'] = False
+    if ret_obj['rc'] == 404:
+        logger.info(f"Object {object} could not be found in {admin_domain} for list and show")
+        return isamAppliance.create_return_object()
     return ret_obj
 
 def get(isamAppliance, admin_id, admin_pwd, object='/', admin_domain='Default', check_mode=False, force=False):
     """
     Retrieve a specific object
+    Fix: do not consider 404 an error
     """
     _action = "objectshowext"
     ret_obj = isamAppliance.invoke_post(description="Retrieve a specific object",
                                         uri=f"{uri}/{_action}/{version}",
+                                        ignore_error=True,
                                         data={
                                             "admin_id": admin_id,
                                             "admin_pwd": admin_pwd,
@@ -39,6 +46,10 @@ def get(isamAppliance, admin_id, admin_pwd, object='/', admin_domain='Default', 
                                             "object": object
                                         })
     ret_obj['changed'] = False
+    if ret_obj['rc'] == 404:
+        logger.info(f"Object {object} could not be found in {admin_domain}")
+        return isamAppliance.create_return_object()
+
     return ret_obj
 
 
