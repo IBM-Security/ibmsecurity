@@ -2,25 +2,37 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-# *** WORK IN PROGRESS - module not done yet
-
-
 def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs):
     """
     Retrieve a list of POPs
+    :param str admin_id: policy administrator, typically sec_master
+    :param str admin_pwd:
+    :param str admin_domain: the webseal domain, defaults to 'Default' if not supplied
+    :param str pop_name: the name of the pop, optional
+    :param str pop_attribute_name: optional
+    :param str pop_attribute_value: optional
+    :param bool check_mode: not used
+    :param bool force: not used
+    :return: the returned data
+    :rtype: object
     """
+
+    input_args = {
+        "admin_id": admin_id,
+        "admin_pwd": admin_pwd,
+        "admin_domain": admin_domain
+    }
+    for k, v in kwargs.items():
+        if k == 'check_mode':
+            continue
+        if k == 'force':
+            continue
+        input_args[k] = v
+
     ret_obj = isamAppliance.invoke_post("Retrieve a list of POPs",
                                         "/isam/pdadmin/poplistext/v1",
                                         ignore_error=True,
-                                        data={
-                                            "admin_id": admin_id,
-                                            "admin_pwd": admin_pwd,
-                                            # "pop_name": pop_name,
-                                            # "pop_attribute_name": pop_attribute_name,
-                                            # "pop_attribute_value": pop_attribute_value,
-                                            "admin_domain": admin_domain
-                                        })
+                                        data=input_args)
     ret_obj['changed'] = False
     if ret_obj['rc'] == 404:
         logger.info(f"No POPs found")
