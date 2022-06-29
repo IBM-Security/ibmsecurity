@@ -1,6 +1,8 @@
 import logging
 
 logger = logging.getLogger(__name__)
+uri = "/isam/pdadmin"
+version = "v1"
 
 def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs):
     """
@@ -19,9 +21,11 @@ def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs
 
     input_args = {
         "admin_id": admin_id,
-        "admin_pwd": admin_pwd,
-        "admin_domain": admin_domain
+        "admin_pwd": admin_pwd
     }
+    if admin_domain:
+        input_args["admin_domain"] = admin_domain
+
     for k, v in kwargs.items():
         if k == 'check_mode':
             continue
@@ -30,7 +34,7 @@ def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs
         input_args[k] = v
 
     ret_obj = isamAppliance.invoke_post("Retrieve a list of POPs",
-                                        "/isam/pdadmin/poplistext/v1",
+                                        f"{uri}/poplistext/{version}",
                                         ignore_error=True,
                                         data=input_args)
     ret_obj['changed'] = False
@@ -45,7 +49,7 @@ def get(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default', **
     Retrieve a specific POP
     """
     ret_obj = isamAppliance.invoke_post("Retrieve a specific POP",
-                                        "/isam/pdadmin/popshowext/v1",
+                                        f"{uri}/popshowext/{version}",
                                         ignore_error=True,
                                         data={
                                             "admin_id": admin_id,
@@ -87,7 +91,7 @@ def get_pop_list(isamAppliance, admin_id, admin_pwd, **kwargs):
         input_args[k] = v
 
     ret_obj = isamAppliance.invoke_post("Retrieve a list of protected objects",
-                                        "/isam/pdadmin/popfindext/v1",
+                                        f"{uri}/popfindext/{version}",
                                         ignore_error=True,
                                         data=input_args)
     if ret_obj['rc'] == 404:
