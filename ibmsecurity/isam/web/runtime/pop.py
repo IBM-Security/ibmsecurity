@@ -7,7 +7,7 @@ version = "v1"
 def get(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs):
     """
     Retrieve a list of POPs that match a specific pop_attribute_name or pop_attribute_value
-    (not very useful at all)
+    (not useful at all)
     :param str admin_id: policy administrator, typically sec_master
     :param str admin_pwd:
     :param str admin_domain: the webseal domain, defaults to 'Default' if not supplied
@@ -98,7 +98,7 @@ def get_objects(isamAppliance, admin_id, admin_pwd, **kwargs):
     ret_obj['changed'] = False
     return ret_obj
 
-#alias for function
+#alias for function get_objects
 get_all = get_objects
 
 def compare(isamAppliance1, isamAppliance2, isamUser, admin_domain='Default', **kwargs):
