@@ -4,15 +4,15 @@ logger = logging.getLogger(__name__)
 uri = "/isam/pdadmin"
 version = "v1"
 
-def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs):
+def get(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs):
     """
-    Retrieve a list of POPs
+    Retrieve a list of POPs that match a specific pop_attribute_name or pop_attribute_value
+    (not very useful at all)
     :param str admin_id: policy administrator, typically sec_master
     :param str admin_pwd:
     :param str admin_domain: the webseal domain, defaults to 'Default' if not supplied
-    :param str pop_name: the name of the pop, optional
-    :param str pop_attribute_name: optional
-    :param str pop_attribute_value: optional
+    :param str pop_attribute_name: required if pop_attribute_value is not defined
+    :param str pop_attribute_value: required if pop_attribute_name is not defined
     :param bool check_mode: not used
     :param bool force: not used
     :return: the returned data
@@ -39,14 +39,13 @@ def get_all(isamAppliance, admin_id, admin_pwd, admin_domain='Default', **kwargs
                                         data=input_args)
     ret_obj['changed'] = False
     if ret_obj['rc'] == 404:
-        logger.info(f"No POPs found")
+        logger.info(f"No POPs found matching your arguments {input_args}")
         return isamAppliance.create_return_object()
     return ret_obj
 
-
-def get(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default', **kwargs):
+def retrieve(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default', **kwargs):
     """
-    Retrieve a specific POP
+    Retrieve a specific POP (show)
     """
     ret_obj = isamAppliance.invoke_post("Retrieve a specific POP",
                                         f"{uri}/popshowext/{version}",
@@ -64,7 +63,7 @@ def get(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default', **
     return ret_obj
 
 
-def get_pop_list(isamAppliance, admin_id, admin_pwd, **kwargs):
+def get_all(isamAppliance, admin_id, admin_pwd, **kwargs):
     """
     Retrieve a list of protected objects
     :param str admin_id: policy administrator, typically sec_master
