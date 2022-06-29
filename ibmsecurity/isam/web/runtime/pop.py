@@ -81,7 +81,7 @@ def get_pop_list(isamAppliance, admin_id, admin_pwd, **kwargs):
     if ret_obj['rc'] == 404:
         logger.info(f"No pops found for your arguments {input_args}")
         return isamAppliance.create_return_object()
-
+    ret_obj['changed'] = False
     return ret_obj
 
 
