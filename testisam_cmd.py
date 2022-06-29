@@ -19,6 +19,7 @@ from ibmsecurity.appliance.isamappliance import ISAMAppliance
 from ibmsecurity.user.applianceuser import ApplianceUser
 import pkgutil
 import importlib
+import json
 
 from docopt import docopt
 
@@ -114,7 +115,16 @@ def loadArgs(__doc__):
     if args["--method"]:
         method = args["--method"]
     if args["--method_options"]:
-        _options = _options + "," + args["--method_options"]
+        _newoptions = args["--method_options"]
+        #split in key/value pairs
+        d = dict(kv.split('=',1) for kv in _newoptions.split(','))
+        for k, v in d.items():
+            logging.debug(f"VALUE: {v}")
+            if 'json.' in v:
+               _options = _options + "," + k + "=" + eval(v)
+            else:
+               _options = _options + "," + k + "='" + str(v) + "'"
+            logging.debug(_options)
 
     return commit, hostname, username, password, lmi_port, method, _options
 
@@ -134,6 +144,7 @@ if __name__ == "__main__":
     module_name, method_name = isam_module.rsplit('.', 1)
     mod = importlib.import_module(module_name)
     func_ptr = getattr(mod, method_name)  # Convert action to actual function pointer
+    logging.debug(func_ptr)
     func_call = 'func_ptr(' + options + ')'
 
     # Execute requested 'action'

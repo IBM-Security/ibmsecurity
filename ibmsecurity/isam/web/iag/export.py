@@ -32,12 +32,13 @@ def get(isamAppliance, instance, check_mode=False, force=False):
 def download(isamAppliance, instance, junctions, features, filename="iag.zip", check_mode=False, force=False):
     """
     Downloads the configuration for the instance and junction and features
-    It will delete the file if it exists already.
+    It will delete the file if it exists already only if force=True.
     """
     if force or rp._check(isamAppliance, instance):
-        if os.path.exists(filename):
+        if force and os.path.exists(filename):
           os.remove(filename)
           logger.debug(f"Removed {filename}")
+
         if not check_mode:
           json_data = {
                "junctions": junctions,

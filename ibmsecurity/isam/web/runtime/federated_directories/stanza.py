@@ -1,5 +1,5 @@
 import logging
-import ibmsecurity.utilities.tools
+import ibmsecurity.utilities.tools as tools
 import json
 
 try:
@@ -168,14 +168,14 @@ def _check(isamAppliance, id, hostname, port, bind_dn, bind_pwd, use_ssl, client
         'use_ssl': use_ssl,
         'suffix': suffix
     }
-    if use_ssl:
+    if use_ssl is True:
         set_value['client_cert_label'] = client_cert_label
     if ignore_if_down and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
         set_value['ignore_if_down'] = ignore_if_down
 
     newEntriesJSON = json.dumps(set_value, skipkeys=True, sort_keys=True)
     logger.debug("\nSorted New Federated Directory {0}: {1}".format(id, newEntriesJSON))
-    currentEntriesJSON = json.dumps(ret_obj, skipkeys=True, sort_keys=True)
+    currentEntriesJSON = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
     logger.debug("\nSorted Existing Federated Directory {0}: {1}".format(id, currentEntriesJSON))
 
     if newEntriesJSON == currentEntriesJSON:
@@ -191,4 +191,4 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj1 = get_all(isamAppliance1)
     ret_obj2 = get_all(isamAppliance2)
 
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
+    return tools.json_compare(ret_obj1, ret_obj2, deleted_keys=[])
