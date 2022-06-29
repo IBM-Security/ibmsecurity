@@ -62,9 +62,6 @@ def retrieve(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default
         return isamAppliance.create_return_object()
     return ret_obj
 
-#alias for function
-get_all = get_objects
-
 def get_objects(isamAppliance, admin_id, admin_pwd, **kwargs):
     """
     Retrieve a list of protected objects
@@ -101,6 +98,8 @@ def get_objects(isamAppliance, admin_id, admin_pwd, **kwargs):
     ret_obj['changed'] = False
     return ret_obj
 
+#alias for function
+get_all = get_objects
 
 def compare(isamAppliance1, isamAppliance2, isamUser, admin_domain='Default', **kwargs):
     """
