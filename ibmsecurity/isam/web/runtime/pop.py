@@ -62,8 +62,10 @@ def retrieve(isamAppliance, admin_id, admin_pwd, pop_name, admin_domain='Default
         return isamAppliance.create_return_object()
     return ret_obj
 
+#alias for function
+get_all = get_objects
 
-def get_all(isamAppliance, admin_id, admin_pwd, **kwargs):
+def get_objects(isamAppliance, admin_id, admin_pwd, **kwargs):
     """
     Retrieve a list of protected objects
     :param str admin_id: policy administrator, typically sec_master
