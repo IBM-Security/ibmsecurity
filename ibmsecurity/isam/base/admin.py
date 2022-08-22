@@ -53,18 +53,17 @@ def set(isamAppliance, oldPassword=None, newPassword=None, minHeapSize=None, max
     Updating the administrator settings
     """
     warnings = []
-    if force is False:
-        update_required, warnings, json_data = _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize,
-                                                      sessionTimeout, httpPort, httpsPort, minThreads, maxThreads,
-                                                      maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
-                                                      acceptClientCerts, validateClientCertIdentity,
-                                                      excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
-                                                      enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
-                                                      sshdClientAliveInterval, swapFileSize, httpProxy,
-                                                      enabledServerProtocols, loginHeader, loginMessage, pendingChangesLifetime,
-                                                      baSessionTimeout, httpsProxy, accessLogFormat,
-                                                      lmiMessageTimeout, validVerifyDomains,
-                                                      warnings)
+
+    update_required, warnings, json_data = _check(isamAppliance, oldPassword, newPassword, minHeapSize, maxHeapSize,
+                                                  sessionTimeout, httpPort, httpsPort, minThreads, maxThreads,
+                                                  maxPoolSize, lmiDebuggingEnabled, consoleLogLevel,
+                                                  acceptClientCerts, validateClientCertIdentity,
+                                                  excludeCsrfChecking, enableSSLv3, maxFiles, maxFileSize,
+                                                  enabledTLS, sshdPort, sessionCachePurge, sessionInactivityTimeout,
+                                                  sshdClientAliveInterval, swapFileSize, httpProxy,
+                                                  enabledServerProtocols, loginHeader, loginMessage,
+                                                  pendingChangesLifetime, baSessionTimeout, httpsProxy, accessLogFormat,
+                                                  lmiMessageTimeout, validVerifyDomains, warnings)
 
     if force is True or update_required is True:
         if check_mode is True:
