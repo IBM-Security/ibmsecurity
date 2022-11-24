@@ -43,7 +43,8 @@ def add(isvgAppliance, name, clientID, secret, certAlias, domains, issuerIdentif
             # Create a simple json with just the openid entry
             openid_json = {
                 "name": name,
-                "clientID": secret,
+                "clientID": clientID,
+                "secret": secret,
                 "certAlias": certAlias,
                 "domains": domains,
                 "issuerIdentifier": issuerIdentifier,
@@ -56,7 +57,8 @@ def add(isvgAppliance, name, clientID, secret, certAlias, domains, issuerIdentif
                 "discoveryUrl": discoveryUrl,
                 "advanced": advanced,
                 "signAlgorithm": signAlgorithm,
-                "scope": scope
+                "scope": scope,
+                "userIDToCreateSubject": userIDToCreateSubject
             }
 
             return isvgAppliance.invoke_post(
