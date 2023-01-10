@@ -25,19 +25,19 @@ def get(isamAppliance, id, check_mode=False, force=False):
                                     "/isam/runtime_components/federated_directories/{0}/v1".format(id))
 
 
-def set(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None,
+def set(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None, ignore_if_down=False,
         check_mode=False, force=False):
     if _exists(isamAppliance, id) is False:
         return add(isamAppliance, id=id, hostname=hostname, port=port, bind_dn=bind_dn, bind_pwd=bind_pwd,
-                   suffix=suffix, use_ssl=use_ssl, client_cert_label=client_cert_label, check_mode=check_mode,
+                   suffix=suffix, use_ssl=use_ssl, client_cert_label=client_cert_label, ignore_if_down=ignore_if_down, check_mode=check_mode, 
                    force=True)
     else:
         return update(isamAppliance, id=id, hostname=hostname, port=port, bind_dn=bind_dn, bind_pwd=bind_pwd,
-                      suffix=suffix, use_ssl=use_ssl, client_cert_label=client_cert_label, check_mode=check_mode,
+                      suffix=suffix, use_ssl=use_ssl, client_cert_label=client_cert_label, ignore_if_down=ignore_if_down, check_mode=check_mode, 
                       force=force)
 
 
-def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None,
+def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None, ignore_if_down=False,
         check_mode=False, force=False):
     """
     Create a new federated directory
@@ -57,7 +57,8 @@ def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=Fa
                 'bind_dn': bind_dn,
                 'bind_pwd': bind_pwd,
                 'use_ssl': use_ssl,
-                'suffix': suffix
+                'suffix': suffix,
+                'ignore_if_down': ignore_if_down
             }
             # Do not pass if there is no value - call fails otherwise
             if client_cert_label is not None:
@@ -69,7 +70,7 @@ def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=Fa
     return isamAppliance.create_return_object()
 
 
-def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None,
+def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=False, client_cert_label=None, ignore_if_down=False,
            check_mode=False, force=False):
     """
     Update an existing federated directory
@@ -86,7 +87,8 @@ def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl
                 'bind_dn': bind_dn,
                 'bind_pwd': bind_pwd,
                 'use_ssl': use_ssl,
-                'suffix': suffix
+                'suffix': suffix,
+                'ignore_if_down': ignore_if_down
             }
             # Do not pass if there is no value - call fails otherwise
             if client_cert_label is not None:
