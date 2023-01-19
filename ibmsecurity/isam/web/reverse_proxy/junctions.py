@@ -90,8 +90,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, vhost_aliases=None, description=None,
-        priority=None, server_cn=None, silent=None,
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None,
+        priority=None, server_cn=None, silent=None, vhost_aliases=None, 
         warnings=[]):
     """
     Creating a standard or virtual junction
@@ -344,8 +344,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         client_ip_http=None, version_two_cookies=None, ltpa_keyfile=None, authz_rules=None, fsso_config_file=None,
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
-        http2_junction=None, http2_proxy=None, sni_name=None, vhost_aliases=None, description=None, 
-        priority=None, server_cn=None, silent=None):
+        http2_junction=None, http2_proxy=None, sni_name=None, description=None, 
+        priority=None, server_cn=None, silent=None, vhost_aliases=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -658,8 +658,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    local_ip=local_ip, ltpa_keyfile_password=ltpa_keyfile_password,
                    delegation_support=delegation_support, scripting_support=scripting_support,
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
-                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, vhost_aliases=vhost_aliases, description=description,
-                   priority=priority, server_cn=server_cn, silent=silent,
+                   http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description,
+                   priority=priority, server_cn=server_cn, silent=silent, vhost_aliases=vhost_aliases,
                    warnings=warnings)
 
     return isamAppliance.create_return_object()
