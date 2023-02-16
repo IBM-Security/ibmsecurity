@@ -166,20 +166,39 @@ def _check_exist(isamAppliance, policy_name):
 
 
 def _check(isamAppliance, policy_name, groups, attributes):
+    """
+    The logic of the get_all() rest api is clunky at best, resulting always in failed checks when using groups or attributes
+    - Extended attributes : output always includes quotes, while input does not work if you include quotes (api works, but the result does not)
+    - Groups : additional groups ('iv-admin', 'webseal-servers') are added to the output.  The groups are put in ACL entries
+    """
     json_data = {}
     ret_obj = get_all(isamAppliance)
 
     for obj in ret_obj['data']:
         if obj['name'] == policy_name:
+            obj1 = {
+                'name': obj['name'],
+            }
+            if 'attributes' in obj:
+                # parse attributes to match the input (no quotes)
+                newAttributes = []
+                for l in obj['attributes']:
+                    newAttributes.append(l.replace("'", ""))
+                obj1["attributes"] = newAttributes
+            if 'groups' in obj:
+                # groups is not placed in the POP, but in a separate ACL
+                #
+                defaultGroups = ['iv-admin', 'webseal-servers']
+                obj1["groups"] = list(filter(lambda g: g not in defaultGroups, obj["groups"]))
             obj2 = {
                 'name': policy_name,
                 'groups': groups,
                 'attributes': attributes
             }
-            sorted_obj1 = tools.json_sort(obj)
+            sorted_obj1 = tools.json_sort(obj1)
             logger.debug("Sorted existing data: {0}".format(sorted_obj1))
             sorted_obj2 = tools.json_sort(obj2)
-            logger.debug("Sorted input data: {0}".format(sorted_obj2))
+            logger.debug("Sorted input data   : {0}".format(sorted_obj2))
             if sorted_obj1 != sorted_obj2:
                 logger.info("Changes detected, update needed.")
                 return True, ret_obj['warnings'], obj2
