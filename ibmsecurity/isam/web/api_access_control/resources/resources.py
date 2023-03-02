@@ -1,7 +1,8 @@
 import logging
 import os
 
-import ibmsecurity
+import ibmsecurity.isam.web.api_access_control.resources.instances
+import ibmsecurity.isam.web.api_access_control.resources.servers
 from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
@@ -457,7 +458,7 @@ def _check_all_resource(isamAppliance, instance_name, resource_server_name):
 
 
 def _check_all_servers(isamAppliance, instance_name):
-    ret_obj = ibmsecurity.isam.web.api_access_control.servers.get_all(isamAppliance, instance_name)
+    ret_obj = ibmsecurity.isam.web.api_access_control.resources.servers.get_all(isamAppliance, instance_name)
     warnings = ret_obj['warnings']
 
     if ret_obj['data'] != []:
