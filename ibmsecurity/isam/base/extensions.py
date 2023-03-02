@@ -154,8 +154,6 @@ def set(isamAppliance, extension=None, extId=None, config_data=None, third_party
         return add(isamAppliance=isamAppliance, extension=extension, config_data=config_data,
                    third_party_package=third_party_package, check_mode=check_mode, force=force)
 
-    return isamAppliance.create_return_object()
-
 
 def delete(isamAppliance, extId, check_mode=False, force=False):
     """
