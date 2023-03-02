@@ -143,13 +143,9 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
 
 def set(isamAppliance, extension=None, extId=None, config_data=None, third_party_package=None, check_mode=False,
         force=False):
-    if extId:
-        if search(isamAppliance, extId):
-            return update(isamAppliance=isamAppliance, extId=extId, config_data=config_data,
+    if extId and search(isamAppliance, extId):
+        return update(isamAppliance=isamAppliance, extId=extId, config_data=config_data,
                           third_party_package=third_party_package, check_mode=check_mode, force=True)
-        else:
-            return add(isamAppliance=isamAppliance, extension=extension, config_data=config_data,
-                    third_party_package=third_party_package, check_mode=check_mode, force=force)
     else:
         return add(isamAppliance=isamAppliance, extension=extension, config_data=config_data,
                    third_party_package=third_party_package, check_mode=check_mode, force=force)
