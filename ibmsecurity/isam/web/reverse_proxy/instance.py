@@ -72,7 +72,7 @@ def add(isamAppliance, inst_name, admin_pwd, host='localhost', listening_port='7
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', check_mode=False, force=False):
+def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', domain='Default', check_mode=False, force=False):
     """
     Unconfigure existing runtime component
     """
@@ -85,7 +85,8 @@ def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', check_mode=False
                                             data={
                                                 "operation": "unconfigure",
                                                 "admin_id": admin_id,
-                                                "admin_pwd": admin_pwd
+                                                "admin_pwd": admin_pwd,
+                                                "domain": domain
                                             },
                                             requires_modules=requires_modules, requires_version=requires_version)
 
