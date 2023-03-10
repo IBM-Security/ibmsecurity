@@ -1,0 +1,34 @@
+[build-system]
+requires = [
+    "setuptools>=61",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibmsecurity"
+version = "2023.3.10.5"
+authors = [
+  { name="IBM", email="secorch@us.ibm.com" },
+]
+description = "Idempotent functions for IBM Security Appliance REST APIs"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Topic :: Software Development :: Build Tools"
+]
+dependencies = [
+    "requests",
+    "jmespath>=1.0.0",
+    "PyYAML"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/IBM-Security/ibmsecurity"
+"Bug Tracker" = "https://github.com/IBM-Security/ibmsecurity/issues"
