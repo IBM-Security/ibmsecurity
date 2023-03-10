@@ -27,8 +27,8 @@ def add(isamAppliance, admin_id, admin_pwd, admin_domain="Default", check_mode=F
     if force is True or exist is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
-    else:
-        return isamAppliance.invoke_post("Store the ISAM administrator credentials",
+        else:
+            return isamAppliance.invoke_post("Store the ISAM administrator credentials",
                                          "{0}".format(uri),
                                          {
                                              'admin_id': admin_id,
