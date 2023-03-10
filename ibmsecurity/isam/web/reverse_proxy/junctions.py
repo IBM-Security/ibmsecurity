@@ -13,18 +13,27 @@ uri = "/wga/reverseproxy"
 requires_modules = ["wga"]
 requires_version = None
 
-
-def get_all(isamAppliance, reverseproxy_id, check_mode=False, force=False):
+def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, force=False):
     """
     Retrieving a list of standard and virtual junctions
 
     :param isamAppliance:
     :param reverseproxy_id:
+    :param detailed: Set to True if you want a detailed junction list (new in v10.0.4)
     :param check_mode:
     :param force:
     :return:
     """
-    return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
+    if detailed and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
+      logger.debug("DETAILED")
+      return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
+                                        "{0}/{1}/junctions?detailed=true".format(uri, reverseproxy_id),
+                                        requires_modules=requires_modules,
+                                        requires_version=requires_version)
+    else:
+      #ignore detailed for older versions
+      logger.debug("IGNORE DETAILED")
+      return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
                                     "{0}/{1}/junctions".format(uri, reverseproxy_id),
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
