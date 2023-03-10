@@ -1,6 +1,7 @@
 """
 Usage:  testisam_generic.py
-        testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD --lmi_port=443 --method=ibm.isam.appliance.get --method_options="name=test" --commit]
+        testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD
+           --lmi_port=443 --method=ibm.isam.appliance.get --method_options="name=test" --commit]
 
 Options:
   --hostname=hostname    Hostname (eg. isamlmi.local.com)
@@ -20,6 +21,7 @@ from ibmsecurity.user.applianceuser import ApplianceUser
 import pkgutil
 import importlib
 import json
+import ibmsecurity
 
 from docopt import docopt
 
@@ -42,8 +44,6 @@ def import_submodules(package, recursive=True):
             results.update(import_submodules(full_name))
     return results
 
-
-import ibmsecurity
 
 # Import all packages within ibmsecurity - recursively
 # Note: Advisable to replace this code with specific imports for production code
@@ -84,12 +84,14 @@ DEFAULT_LOGGING = {
 }
 logging.config.dictConfig(DEFAULT_LOGGING)
 
+
 # Function to pretty print JSON data
 def p(jdata):
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(jdata)
 
-def loadArgs(__doc__):
+
+def load_args(__doc__):
     args = docopt(__doc__)
     method = None
     _options = "isamAppliance=isam_server"
@@ -101,7 +103,7 @@ def loadArgs(__doc__):
     else:
         hostname = "127.0.0.1"
     if args['--username']:
-        hostname = args['--username']
+        username = args['--username']
     else:
         username = "admin@local"
     if args['--password']:
@@ -116,24 +118,25 @@ def loadArgs(__doc__):
         method = args["--method"]
     if args["--method_options"]:
         _newoptions = args["--method_options"]
-        #split in key/value pairs
-        d = dict(kv.split('=',1) for kv in _newoptions.split(','))
+        # split in key/value pairs
+        d = dict(kv.split('=', 1) for kv in _newoptions.split(','))
         for k, v in d.items():
             logging.debug(f"VALUE: {v}")
             if 'json.' in v:
-               _options = _options + "," + k + "=" + eval(v)
+                _options = _options + "," + k + "=" + eval(v)
             else:
-               _options = _options + "," + k + "='" + str(v) + "'"
+                _options = _options + "," + k + "='" + str(v) + "'"
             logging.debug(_options)
 
     return commit, hostname, username, password, lmi_port, method, _options
+
 
 if __name__ == "__main__":
     """
     This test program should not execute when imported, which would otherwise
     cause problems when generating the documentation.
     """
-    commit, hostname, username, password, lmi_port, isam_module, options = loadArgs(__doc__)
+    commit, hostname, username, password, lmi_port, isam_module, options = load_args(__doc__)
 
     # Create a user credential for ISAM appliance
     u = ApplianceUser(username=username, password=password)
