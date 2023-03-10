@@ -73,6 +73,7 @@ def import_file(isamAppliance, filename, delete_missing=False, check_mode=False,
                     if search_dir not in missing_client_files:
                         logger.debug("delete file on the server: {0}.".format(x))
                         delete(isamAppliance, x, "file", check_mode=check_mode)
+            zServerFile.close()
             shutil.rmtree(tempdir)
 
         if check_mode is True:
