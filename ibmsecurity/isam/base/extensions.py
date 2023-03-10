@@ -25,6 +25,18 @@ def get_all(isamAppliance, check_mode=False, force=False):
                                     requires_version=requires_version)
 
 
+def get(isamAppliance, extId, check_mode=False, force=False):
+    """
+    Retrieve installed extension by id
+    """
+    ret_obj = isamAppliance.create_return_object()
+    extensions = get_all(isamAppliance)
+    for obj in extensions['data']:
+        if obj['id'] == extId:
+            ret_obj['data'] = obj
+            break
+    return ret_obj
+
 def add(isamAppliance, extension, config_data=None, third_party_package=None, check_mode=False, force=False):
     """
     Installing an Extension
@@ -32,26 +44,27 @@ def add(isamAppliance, extension, config_data=None, third_party_package=None, ch
     :param isamAppliance:
     :param extension: path/filename to .ext file
     :param config_data: all the config data in a single string.  For example, "agentName:ISAM_Monitoring,ipAddress:10.10.10.10,port:9998"
+    :                   or pass dictionary of parameters
     :param third_party_package: an array of the supporting files required.
     :param check_mode:
     :param force:
     :return:
     """
 
+    if extension is None:
+        warning_str = "extension is required for add"
+        return isamAppliance.create_return_object(warnings=[warning_str])
     try:
-        id = inspect(isamAppliance, extension)
+        extId = inspect(isamAppliance, extension)
     except Exception as e:
         warning_str = "Exception occurred: {0}".format(e)
         return isamAppliance.create_return_object(warnings=[warning_str])
 
-    if config_data:
-        config_str = '{extId:' + id + ',' + config_data + '}'
-    else:
-        config_str = '{extId:' + id + '}'
+    config_str = _get_config_data(extId, config_data)
 
     files = {}
 
-    files['extension_support_package'] = (tools.path_leaf(extension), open(extension, 'rb'))
+    # files['extension_support_package'] = (tools.path_leaf(extension), open(extension, 'rb'))
     files['config_data'] = (None, config_str)
 
     if third_party_package:
@@ -97,13 +110,8 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if config_data:
-                config_str = '{extId:' + extId + ',' + config_data + '}'
-            else:
-                config_str = '{extId:' + extId + '}'
-
+            config_str = _get_config_data(extId, config_data)
             files = {}
-
             files['config_data'] = (None, config_str)
 
             if third_party_package:
@@ -135,15 +143,12 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
 
 def set(isamAppliance, extension=None, extId=None, config_data=None, third_party_package=None, check_mode=False,
         force=False):
-    if extId:
-        if search(isamAppliance, extId):
-            return update(isamAppliance=isamAppliance, extId=extId, config_data=config_data,
+    if extId and search(isamAppliance, extId):
+        return update(isamAppliance=isamAppliance, extId=extId, config_data=config_data,
                           third_party_package=third_party_package, check_mode=check_mode, force=True)
     else:
         return add(isamAppliance=isamAppliance, extension=extension, config_data=config_data,
                    third_party_package=third_party_package, check_mode=check_mode, force=force)
-
-    return isamAppliance.create_return_object()
 
 
 def delete(isamAppliance, extId, check_mode=False, force=False):
@@ -192,6 +197,17 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
     json_obj = json.loads(m_obj)
     return json_obj['id']
 
+
+def _get_config_data(extId, config_data):
+    """
+    Generate a JSON payload for activate/update
+    """
+    if config_data is None:
+        return json.dumps({extId: extId})
+    if isinstance(config_data, basestring):
+        return '{extId:}' + extId + ',' + config_data + '}'
+    config_data['extId'] = extId
+    return json.dumps(config_data)
 
 def search(isamAppliance, extId, check_mode=False, force=False):
     """
