@@ -65,7 +65,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
-def set(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, check_mode=False, force=False):
+def set(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=None, check_mode=False, force=False):
     """
     Create or Update a FIDO2 Relying Party
     """
@@ -73,14 +73,14 @@ def set(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, check
         # Force the add - we already know FIDO2 Relying Party does not exist
         logger.info("FIDO2 relying party {0} had no match, requesting to add new one.".format(name))
         return add(isamAppliance, name=name, rpId=rpId, fidoServerOptions=fidoServerOptions, relyingPartyOptions=relyingPartyOptions,
-                   check_mode=check_mode, force=True)
+                   id=id, check_mode=check_mode, force=True)
     else:
         # Update request
         logger.info("FIDO2 relying party {0} exists, requesting to update.".format(name))
         return update(isamAppliance, name=name, rpId=rpId, fidoServerOptions=fidoServerOptions, relyingPartyOptions=relyingPartyOptions,
                       check_mode=check_mode, force=force)
 
-def add(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, check_mode=False, force=False):
+def add(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=None, check_mode=False, force=False):
     """
     Create a new FIDO2 Relying Party
     """
@@ -90,14 +90,15 @@ def add(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, check
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            json_data = {
+                "name": name,
+                "rpId": rpId,
+                "fidoServerOptions": fidoServerOptions,
+                "relyingPartyOptions": relyingPartyOptions
+            }
+            if id is not None: json_data["id"] = id
             return isamAppliance.invoke_post(
-                "Create a new FIDO2 relying party", uri,
-                {
-                    "name": name,
-                    "rpId": rpId,
-                    "fidoServerOptions": fidoServerOptions,
-                    "relyingPartyOptions": relyingPartyOptions
-                }, requires_modules=requires_modules, requires_version=requires_version)
+                "Create a new FIDO2 relying party", uri, json_data, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
