@@ -30,23 +30,37 @@ def get_template(isamAppliance, id, check_mode=False, force=False):
                                     "/isam/wga_templates/{0}".format(id))
 
 
-def add(isamAppliance, id, template, check_mode=False, force=False):
+def add(isamAppliance, id, template=None, content=None, check_mode=False, force=False):
     """
     Add a HTTP Transformation
     """
-    if force is True or _check(isamAppliance, id) is False:
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            return isamAppliance.invoke_post(
-                "Add a HTTP Transformation",
-                "/wga/http_transformation_rules",
-                {
-                    "name": id,
-                    "template": template
-                })
+    warnings = []
+    if template is None and content is None:
+        warnings.append("content or a template must be specified. Skipping transformation add")
+    elif template and content:
+        warnings.append("cannot process both content and a template. Skipping transformation add")
+    else:
+        if force is True or _check(isamAppliance, id) is False:
+            if check_mode is True:
+                return isamAppliance.create_return_object(changed=True)
+            elif template:
+                return isamAppliance.invoke_post(
+                    "Add a HTTP Transformation",
+                    "/wga/http_transformation_rules",
+                    {
+                        "name": id,
+                        "template": template
+                    })
+            elif content:
+                return isamAppliance.invoke_post(
+                    "Add a HTTP Transformation",
+                    "/wga/http_transformation_rules",
+                    {
+                        "name": id,
+                        "content": content
+                    })
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def delete(isamAppliance, id, check_mode=False, force=False):
