@@ -8,6 +8,20 @@ requires_version = None
 version = "v1"
 
 
+def get_all(isamAppliance, admin_id, admin_pwd, domain="Default", check_mode=False, force=False):
+    """
+    Retrieving the list of authorization servers - Ansible parameter pattern
+    """
+    return isamAppliance.invoke_post("Retrieving all authorization servers",
+                                     "{0}".format(uri),
+                                     {
+                                         "user": admin_id,
+                                         "password": admin_pwd,
+                                         "domain": domain
+                                     },
+                                     requires_modules=requires_modules, requires_version=requires_version)
+
+
 def get(isamAppliance, isamUser, domain="Default", check_mode=False, force=False):
     """
     Retrieving the list of authorization servers
