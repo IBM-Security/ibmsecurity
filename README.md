@@ -2,17 +2,19 @@
 
 This repository contains Python code to manage IBM Security Appliances using their respective REST APIs.
 ISAM appliance has the most mature code.
+
 Code for ISDS appliance is under development.
+
 Code for ISVG appliance is brand new (tested with 10.0.1.0 and higher only).
 
 ## Requirements
 
-Python v3.7 and above is required for this package. Python v2.7.10 may still work.
+Python v3.7 and above is required for this package.
 
 The following Python Packages are required:
 1. requests - for making REST API calls
-2. importlib - for the sample code to work
-3. PyYAML - for the sample code to work
+2. PyYAML - for the sample code to work
+3. jmespath - is required for sample code
 
 The following Python Packages are optional:
 1. pyOpenSSL - to perform action on certificates (used for idempotency in management_ssl_certificate)
@@ -20,6 +22,7 @@ The following Python Packages are optional:
 
 Appliances need to have an ip address defined for their LMI. This may mean that appliances have had their initial setup 
 done with license acceptance.
+
 
 
 ## Versioning
@@ -66,14 +69,14 @@ Note: it is preferred to return warnings rather than send back a non-zero rc.
 ### Generic test script
 
 For simple tests, a modified version is provided that takes the username, password, hostname, method and options as arguments, with the option to perform a commit or not.
-This makes sense for simple tests, for pytest or unittests, this is not useful.
+This makes sense for simple tests but for pytest or unittests, this is not useful.
 
 This avoids having to store credentials in a script and allows easier repeat of tests.
 
 Example:
 
 ~~~~
-python testisam_generic.py --hostname 192.168.1.1 --method "ibmsecurity.isam.web.iag.export.features.get" --commit 
+python testisam_cmd.py --hostname 192.168.1.1 --method "ibmsecurity.isam.web.iag.export.features.get" --commit 
 ~~~~
 
 ## Organization of code
