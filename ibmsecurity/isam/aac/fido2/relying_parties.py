@@ -19,8 +19,10 @@ def get_all(isamAppliance, check_mode=False, force=False):
 def get(isamAppliance, name, id=None, check_mode=False, force=False):
     """
     Retrieve a specific FIDO2 Relying Party
+
+    Ignore the id if appliance is less than version 10.0.1
     """
-    if id is None:
+    if id is None or tools.version_compare(isamAppliance.facts['version'], '10.0.1') < 0:
         ret_obj = search(isamAppliance, name=name, check_mode=check_mode, force=force)
         id = ret_obj['data']
 
@@ -83,6 +85,8 @@ def set(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=No
 def add(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=None, check_mode=False, force=False):
     """
     Create a new FIDO2 Relying Party
+
+    The id parameter is ignored if appliance is less than version 10.0.1
     """
     if force is False:
         ret_obj = search(isamAppliance, name)
@@ -96,7 +100,8 @@ def add(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=No
                 "fidoServerOptions": fidoServerOptions,
                 "relyingPartyOptions": relyingPartyOptions
             }
-            if id is not None: json_data["id"] = id
+            if id is not None and tools.version_compare(isamAppliance.facts['version'], '10.0.1') >= 0:
+                json_data["id"] = id
             return isamAppliance.invoke_post(
                 "Create a new FIDO2 relying party", uri, json_data, requires_modules=requires_modules, requires_version=requires_version)
 
