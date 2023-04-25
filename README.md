@@ -17,7 +17,7 @@ The following Python Packages are required:
 3. jmespath - is required for sample code
 
 The following Python Packages are optional:
-1. pyOpenSSL - to perform action on certificates (used for idempotency in management_ssl_certificate)
+1. cryptography - to perform action on certificates (used for idempotency in management_ssl_certificate)
 2. python-dateutil - date utilities (used for idempotency in management_ssl_certificate)
 
 Appliances need to have an ip address defined for their LMI. This may mean that appliances have had their initial setup 
