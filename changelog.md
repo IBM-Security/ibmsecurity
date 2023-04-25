@@ -10,6 +10,14 @@
 - fix: add id parameter to ibmsecurity/isam/aac/fido2/relying_parties.py (#377)
 - fix: add __init__.py in ibmsecurity/isvg sub folders (#380)
 
+## 2023.4.21.0
+
+- new: Add domain parameter to delete method. (#374)
+- fix: indentation in add method. (#373)
+- new: Add get_all method to ibmsecurity/isam/web/authorization_server/cleanup.py (#375)
+- new: Add http transform from content (#319) 
+- fix: syntax in test_isam.py (no pull request)
+
 ## 2023.3.10.0
 
 - new: testisam_cmd.py test script (accepts parameters)
@@ -26,7 +34,7 @@
 - feature: Extension enhancements (#369)
 - feature: close temp file before delete in runtime_template root (#370)
 
-## 2023.8.22.0
+## 2022.8.22.0
 
 - fix: admin.py (#356)
 - fix: priority junction option (#359)
