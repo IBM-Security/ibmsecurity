@@ -5,6 +5,11 @@
 
 - move to pyproject.toml for building 
 
+## 2023.4.25.0
+
+- fix: add id parameter to ibmsecurity/isam/aac/fido2/relying_parties.py (#377)
+- fix: add __init__.py in ibmsecurity/isvg sub folders (#380)
+
 ## 2023.3.10.0
 
 - new: testisam_cmd.py test script (accepts parameters)
