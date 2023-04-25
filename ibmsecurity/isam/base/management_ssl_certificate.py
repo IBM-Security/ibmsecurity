@@ -55,7 +55,7 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
 
 def _check(isamAppliance, certificate, password):
     """
-    requires additionally pyOpenSSL to load the p12 and extract the issuer, subject, etc
+    requires additionally cryptography to load the p12 and extract the issuer, subject, etc
     Comparing issuer, subject, notafter (date only) and notbefore (date only)
     This DOES NOT check if the certificate is newer , just that it's different from the one that is deployed.
     """
