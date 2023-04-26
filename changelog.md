@@ -3,7 +3,10 @@
 
 ## Unreleased
 
+## 2023.4.26.0
+
 - fix: remove pyOpenSSL dependency in management_ssl_certificate.py (#366)
+- fix: setuptools does not support pip -e - previous build is wrong (#383)
 
 ## 2023.4.25.0
 
