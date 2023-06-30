@@ -2,6 +2,7 @@
 # Manual change log
 
 ## Unreleased
+- fix: state parameter no longer exists in v10.0.5 in available_updates.py (#385)
 
 ## 2023.4.26.0
 
