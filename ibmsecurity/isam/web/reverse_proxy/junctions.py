@@ -101,6 +101,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
         priority=None, server_cn=None, silent=None,
+        case_insensitive_url=None,
         warnings=[]):
     """
     Creating a standard or virtual junction
@@ -116,6 +117,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param query_contents:
     :param stateful_junction:
     :param case_sensitive_url:
+    :param case_insensitive_url: #v10.0.6
     :param windows_style_url:
     :param https_port:
     :param http_port:
@@ -237,8 +239,18 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 jct_json["local_ip"] = local_ip
             if query_contents is not None:
                 jct_json["query_contents"] = query_contents
-            if case_sensitive_url is not None:
-                jct_json["case_sensitive_url"] = case_sensitive_url
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is not None:
+                    jct_json["case_insensitive_url"] = case_insensitive_url
+                elif case_sensitive_url is not None:
+                    if case_sensitive_url.lower() == 'yes':
+                        jct_json["case_insensitive_url"] = 'no'
+                    else:
+                        jct_json["case_insensitive_url"] = 'yes'
+            elif case_sensitive_url is not None:
+                jct_json['case_sensitive_url'] = case_sensitive_url
             if windows_style_url is not None:
                 jct_json["windows_style_url"] = windows_style_url
             if ltpa_keyfile_password is not None:
@@ -347,7 +359,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
-        priority=None, server_cn=None, silent=None):
+        priority=None, server_cn=None, silent=None,
+        case_insensitive_url=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
@@ -377,10 +390,22 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         'server_hostname': server_hostname,
                         'server_port': str(server_port)
                     }
-                    if case_sensitive_url is None:
-                        server_json['case_sensitive_url'] = 'no'
-                    else:
+                    if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                        # If no case_insensitive_url is passed, we take the old one and invert it.
+                        # Who thinks it's a good idea to make changes in an API like this ?
+                        if case_insensitive_url is not None:
+                            server_json["case_insensitive_url"] = case_insensitive_url
+                        elif case_sensitive_url is not None:
+                            if case_sensitive_url.lower() == 'yes':
+                                server_json["case_insensitive_url"] = 'no'
+                            else:
+                                server_json["case_insensitive_url"] = 'yes'
+                        else:
+                            server_json["case_insensitive_url"] = 'yes'
+                    elif case_sensitive_url is not None:
                         server_json['case_sensitive_url'] = case_sensitive_url
+                    else:
+                        server_json['case_sensitive_url'] = 'no'
                     if http_port is None:
                         server_json['http_port'] = str(server_port)
                     else:
@@ -655,6 +680,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
                    http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description,
                    priority=priority, server_cn=server_cn, silent=silent,
+                   case_insensitive_url=case_insensitive_url,
                    warnings=warnings)
 
     return isamAppliance.create_return_object()

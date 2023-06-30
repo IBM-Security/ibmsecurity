@@ -2,7 +2,11 @@
 # Manual change log
 
 ## Unreleased
+
+## 2023.6.30.0
+
 - fix: state parameter no longer exists in v10.0.5 in available_updates.py (#385)
+- critical change: case_sensitive_url -> case_insensitive_url in v10.0.6 (#386)
 
 ## 2023.4.26.0
 
