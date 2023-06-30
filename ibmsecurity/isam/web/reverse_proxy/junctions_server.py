@@ -23,7 +23,8 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
 def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junction_type, server_port, server_dn=None,
         stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
         virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
-        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, priority=None, server_cn=None, check_mode=False, force=False):
+        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, priority=None, server_cn=None,
+        case_insensitive_url=None, check_mode=False, force=False):
     """
     Adding a back-end server to an existing standard or virtual junctions
 
@@ -39,6 +40,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
     :param query_contents:
     :param stateful_junction:
     :param case_sensitive_url:
+    :param case_insensitive_url:  #v1.0.6+
     :param windows_style_url:
     :param https_port:
     :param http_port:
@@ -67,9 +69,20 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 "server_hostname": server_hostname,
                 "server_port": server_port,
                 "stateful_junction": stateful_junction,
-                "case_sensitive_url": case_sensitive_url,
                 "windows_style_url": windows_style_url,
             }
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is None:
+                    if case_sensitive_url.lower() == 'yes':
+                        jct_srv_json["case_insensitive_url"] = 'no'
+                    else:
+                        jct_srv_json["case_insensitive_url"] = 'yes'
+                else:
+                    jct_srv_json["case_insensitive_url"] = case_sensitive_url
+            else:
+                jct_srv_json["case_sensitive_url"] = case_sensitive_url
             if https_port is not None:
                 jct_srv_json["https_port"] = https_port
             if http_port is not None:
