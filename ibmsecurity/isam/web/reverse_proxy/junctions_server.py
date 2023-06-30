@@ -80,7 +80,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                     else:
                         jct_srv_json["case_insensitive_url"] = 'yes'
                 else:
-                    jct_srv_json["case_insensitive_url"] = case_sensitive_url
+                    jct_srv_json["case_insensitive_url"] = case_insensitive_url
             else:
                 jct_srv_json["case_sensitive_url"] = case_sensitive_url
             if https_port is not None:
