@@ -3,6 +3,10 @@
 
 ## Unreleased
 
+## 2023.7.4.0
+- fix: management_ssl_certificate.py warnings cannot be None
+- known_issue: management_ssl_certificate.py idempotency checks do not always work (issuer contains oid for email=)
+
 ## 2023.6.30.0
 
 - fix: state parameter no longer exists in v10.0.5 in available_updates.py (#385)
