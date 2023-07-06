@@ -3,6 +3,8 @@
 
 ## Unreleased
 
+## 2023.7.6.0
+
 - feature: new acl api (v10.0.6)
 - feature: ssh keys admin and sysaccount (v10.0.6)
 - feature: waf and waf_config api (v10.0.5)
@@ -10,6 +12,7 @@
 - feature: fido metadata services (v10.0.4)
 
 ## 2023.7.4.0
+
 - fix: management_ssl_certificate.py warnings cannot be None
 - known_issue: management_ssl_certificate.py idempotency checks do not always work (issuer contains oid for email=)
 
