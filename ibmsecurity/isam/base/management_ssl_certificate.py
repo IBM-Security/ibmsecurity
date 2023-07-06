@@ -30,7 +30,7 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
     if not performCertCheck:
         warnings = ["Idempotency not available. Unable to extract existing certificate to compare with provided one.  Install Python modules python-dateutil and cryptography."]
     else:
-        warnings = None
+        warnings = []
     if force is True or not _check(isamAppliance, certificate, password):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
