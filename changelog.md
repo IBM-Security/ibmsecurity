@@ -3,6 +3,12 @@
 
 ## Unreleased
 
+- feature: new acl api (v10.0.6)
+- feature: ssh keys admin and sysaccount (v10.0.6)
+- feature: waf and waf_config api (v10.0.5)
+- feature: ivg configuration (v10.0.2)
+- feature: fido metadata services (v10.0.4)
+
 ## 2023.4.26.0
 
 - fix: remove pyOpenSSL dependency in management_ssl_certificate.py (#366)
