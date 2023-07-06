@@ -46,6 +46,7 @@ def add(isamAppliance, instance_name, server_hostname, junction_point, junction_
         query_contents=None, case_sensitive_url=None, windows_style_url=None, ltpa_keyfile_password=None,
         https_port=None, http_port=None, proxy_hostname=None, proxy_port=None, sms_environment=None,
         vhost_label=None, junction_force=None, delegation_support=None, scripting_support=None,
+        case_insensitive_url=None,
         check_mode=False, force=False):
     """
     Creating a new API Access Control Resource Server
@@ -169,7 +170,17 @@ def add(isamAppliance, instance_name, server_hostname, junction_point, junction_
             if query_contents is not None:
                 json_data['query_contents'] = query_contents
 
-            if case_sensitive_url is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is not None:
+                    json_data["case_insensitive_url"] = case_insensitive_url
+                elif case_sensitive_url is not None:
+                    if case_sensitive_url.lower() == 'yes':
+                        jct_srv_json["case_insensitive_url"] = 'no'
+                    else:
+                        jct_srv_json["case_insensitive_url"] = 'yes'
+            elif case_sensitive_url is not None:
                 json_data['case_sensitive_url'] = case_sensitive_url
 
             if windows_style_url is not None:
@@ -226,6 +237,7 @@ def update(isamAppliance, instance_name, junction_point, server_hostname, juncti
            query_contents=None, case_sensitive_url=None, windows_style_url=None, ltpa_keyfile_password=None,
            https_port=None, http_port=None, proxy_hostname=None, proxy_port=None, sms_environment=None,
            vhost_label=None, junction_force=True, delegation_support=None, scripting_support=None,
+           case_insensitive_url=None,
            check_mode=False, force=False):
     """
     Updating an existing API Access Control Resource Server
@@ -271,6 +283,7 @@ def update(isamAppliance, instance_name, junction_point, server_hostname, juncti
                                                           server_dn=server_dn,
                                                           local_ip=local_ip, query_contents=query_contents,
                                                           case_sensitive_url=case_sensitive_url,
+                                                          case_insensitive_url=case_insensitive_url,
                                                           windows_style_url=windows_style_url,
                                                           ltpa_keyfile_password=ltpa_keyfile_password,
                                                           https_port=https_port,
@@ -401,7 +414,17 @@ def update(isamAppliance, instance_name, junction_point, server_hostname, juncti
             if query_contents is not None:
                 json_data['query_contents'] = query_contents
 
-            if case_sensitive_url is not None:
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is not None:
+                    json_data["case_insensitive_url"] = case_insensitive_url
+                elif case_sensitive_url is not None:
+                    if case_sensitive_url.lower() == 'yes':
+                        json_data["case_insensitive_url"] = 'no'
+                    else:
+                        json_data["case_insensitive_url"] = 'yes'
+            elif case_sensitive_url is not None:
                 json_data['case_sensitive_url'] = case_sensitive_url
 
             if windows_style_url is not None:
@@ -458,6 +481,7 @@ def set(isamAppliance, instance_name, junction_point, server_hostname, junction_
         query_contents=None, case_sensitive_url=None, windows_style_url=None, ltpa_keyfile_password=None,
         https_port=None, http_port=None, proxy_hostname=None, proxy_port=None, sms_environment=None,
         vhost_label=None, junction_force=True, delegation_support=None, scripting_support=None,
+        case_insensitive_url=None,
         check_mode=False, force=False):
     server_exist, warnings = _check_server_exist(isamAppliance, instance_name, junction_point)
 
@@ -486,7 +510,9 @@ def set(isamAppliance, instance_name, junction_point, server_hostname, junction_
                       https_port=https_port, http_port=http_port, proxy_hostname=proxy_hostname,
                       proxy_port=proxy_port, sms_environment=sms_environment, vhost_label=vhost_label,
                       junction_force=junction_force, delegation_support=delegation_support,
-                      scripting_support=scripting_support, check_mode=check_mode, force=force)
+                      scripting_support=scripting_support,
+                      case_insensitive_url=case_insensitive_url,
+                      check_mode=check_mode, force=force)
     else:
         return add(isamAppliance=isamAppliance, instance_name=instance_name, server_hostname=server_hostname,
                    junction_point=junction_point, junction_type=junction_type, policy=policy,
@@ -509,7 +535,9 @@ def set(isamAppliance, instance_name, junction_point, server_hostname, junction_
                    https_port=https_port, http_port=http_port, proxy_hostname=proxy_hostname,
                    proxy_port=proxy_port, sms_environment=sms_environment, vhost_label=vhost_label,
                    junction_force=junction_force, delegation_support=delegation_support,
-                   scripting_support=scripting_support, check_mode=check_mode, force=force)
+                   scripting_support=scripting_support,
+                   case_insensitive_url=case_insensitive_url,
+                   check_mode=check_mode, force=force)
 
 
 def delete(isamAppliance, instance_name, resource_server_name, server_type='standard',
@@ -739,7 +767,7 @@ def _check_server_content(isamAppliance, instance_name, junction_point, server_h
                           ltpa_keyfile, authz_rules, fsso_config_file, username, password, server_uuid, server_port,
                           virtual_hostname, server_dn, local_ip, query_contents, case_sensitive_url,
                           windows_style_url, ltpa_keyfile_password, https_port, http_port, proxy_hostname, proxy_port,
-                          sms_environment, vhost_label, delegation_support, scripting_support):
+                          sms_environment, vhost_label, delegation_support, scripting_support, case_insensitive_url):
     ret_obj = get(isamAppliance, instance_name, junction_point)
     current_data = ret_obj['data']
     add_required = False
@@ -776,10 +804,23 @@ def _check_server_content(isamAppliance, instance_name, junction_point, server_h
                 'server_hostname': server_hostname,
                 'server_port': str(server_port)
             }
-            if case_sensitive_url is None:
-                server_json['case_sensitive_url'] = 'no'
-            else:
+
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is not None:
+                    server_json["case_insensitive_url"] = case_insensitive_url
+                elif case_sensitive_url is not None:
+                    if case_sensitive_url.lower() == 'yes':
+                        server_json["case_insensitive_url"] = 'no'
+                    else:
+                        server_json["case_insensitive_url"] = 'yes'
+                else:
+                    server_json["case_insensitive_url"] = 'yes'
+            elif case_sensitive_url is not None:
                 server_json['case_sensitive_url'] = case_sensitive_url
+            else:
+                server_json['case_sensitive_url'] = 'no'
 
             if http_port is None:
                 server_json['http_port'] = str(server_port)
