@@ -121,8 +121,6 @@ def install(isamAppliance, type, version, release_date, name, check_mode=False, 
                                                     {
                                                         "type": type,
                                                         "version": version,
-                                                        "release_date": release_date,
-                                                        "name": name
                                                     }
                                                 ]
                                                 })
@@ -137,7 +135,7 @@ def _check(isamAppliance, type, version, release_date, name):
     for upd in ret_obj['data']:
         # If there is an installation in progress then abort
         # API changed in v10.0.5.0 , state, schedule_date, iso_scheduled_date and expired_install are no longer available.
-        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.5.0") < 0:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.5.0") >= 0:
             if upd['state'] == 'Installing':
                 logger.debug("Detecting a state of installing...")
                 return False
@@ -147,8 +145,7 @@ def _check(isamAppliance, type, version, release_date, name):
 
         logger.info(upd)
 
-        if upd['type'] == type and upd['version'] == version and upd['release_date'] == release_date and upd[
-            'name'] == name:
+        if upd['type'] == type and upd['version'] == version and upd['release_date'] == release_date and upd['name'] == name:
             logger.debug("Requested firmware ready for install...")
             return True
 
