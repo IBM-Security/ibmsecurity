@@ -107,7 +107,7 @@ def _check_file(isamAppliance, file):
     return False
 
 
-def install(isamAppliance, type, version, release_date, name='isva', check_mode=False, force=False):
+def install(isamAppliance, type, version, release_date, name, check_mode=False, force=False):
     """
     Install Available Update
     """
@@ -120,7 +120,9 @@ def install(isamAppliance, type, version, release_date, name='isva', check_mode=
                                                 {"updates": [
                                                     {
                                                         "type": type,
-                                                        "version": version
+                                                        "version": version,
+                                                        "release_date": release_date,
+                                                        "name": name
                                                     }
                                                 ]
                                                 })
