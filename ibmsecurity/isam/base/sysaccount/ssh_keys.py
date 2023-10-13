@@ -67,7 +67,7 @@ def update(isamAppliance, user, key, name, check_mode=False, force=False):
     if not ret_obj:
         # means we cannot find the name
         logger.debug(f"Cannot find sshkeys by name ({name}).  This happens when we had a match on fingerprint (not on name)")
-        warnings.append(f"This publi key ({name}) is already there by another name.")
+        warnings.append(f"This public key ({name}) is already there by another name.")
         update_required = False
     elif key:
         # Extract the comment from the new ssh public key
