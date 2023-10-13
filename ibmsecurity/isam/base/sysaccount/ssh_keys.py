@@ -20,7 +20,7 @@ def get(isamAppliance, user, name=None, uuid=None, check_mode=False, force=False
 
     """
     if uuid is not None and name is None:
-        return isamAppliance.invoke_get("Retrieving user", f"/sysaccount/users/{user}/ssh-keys/{uuid}/v1")
+        return isamAppliance.invoke_get("Retrieving key", f"/sysaccount/users/{user}/ssh-keys/{uuid}/v1")
     elif name is not None and uuid is None:
         # Get the key based on the name
         allKeys = get_all(isamAppliance, user)
@@ -29,7 +29,7 @@ def get(isamAppliance, user, name=None, uuid=None, check_mode=False, force=False
         # I expect we'll have 0 or 1 results now
         if uuids:
             uuid = uuids[0]
-            return isamAppliance.invoke_get("Retrieving user", f"/sysaccount/users/{user}/ssh-keys/{uuid}/v1")
+            return isamAppliance.invoke_get("Retrieving key", f"/sysaccount/users/{user}/ssh-keys/{uuid}/v1")
         else:
             return None
     else:

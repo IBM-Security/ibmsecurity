@@ -20,6 +20,29 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving key", f"/admin_cfg/ssh-keys/{uuid}/v1")
 
 
+def get(isamAppliance, name=None, uuid=None, check_mode=False, force=False):
+    """
+    Get specific ssh key for admin user
+
+    """
+    if uuid is not None and name is None:
+        return isamAppliance.invoke_get("Retrieving key", f"/admin_cfg/ssh-keys/{uuid}/v1")
+    elif name is not None and uuid is None:
+        # Get the key based on the name
+        allKeys = get_all(isamAppliance)
+        logger.debug(allKeys.get('data'))
+        uuids = [d.get('uuid') for d in allKeys.get('data') if d['name'] == name]
+        # I expect we'll have 0 or 1 results now
+        if uuids:
+            uuid = uuids[0]
+            return isamAppliance.invoke_get("Retrieving key", f"/admin_cfg/ssh-keys/{uuid}/v1")
+        else:
+            return None
+    else:
+        # Input error
+        raise IBMError("999", "Cannot get the ssh keys for the administrator. Provide exactly 1 of the parameters uuid or name")
+
+
 def add(isamAppliance, key, name, check_mode=False, force=False):
     """
     Import ssh public key for the default admin user
@@ -111,19 +134,21 @@ def _check(isamAppliance, name=None, fingerprint=None):
     return False
 
 
-def delete(isamAppliance, uuid, check_mode=False, force=False):
+def delete(isamAppliance, name=None, uuid=None, check_mode=False, force=False):
     """
     Delete a public ssh_key for the default admin user
     """
-    if force is True or _check(isamAppliance, uuid=uuid) is True:
+    ret_obj = get(isamAppliance, name, uuid)
+    if force or ret_obj.get('data'):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
+            if not uuid:
+                uuid = ret_obj.get('data').get('uuid')
             return isamAppliance.invoke_delete("Deleting key",
-            "/admin_cfg/ssh-keys/{0}/v1".format(uuid))
+                                               f"/admin_cfg/ssh-keys/{uuid}/v1")
 
     return isamAppliance.create_return_object()
-
 
 def compare(isamAppliance1, isamAppliance2):
     """
