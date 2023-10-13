@@ -63,9 +63,11 @@ def update(isamAppliance, user, key, name, check_mode=False, force=False):
     # We know we need to do an update.  The only thing we can verify is that the comment is part
     update_required = True
     ret_obj = get(isamAppliance, user, name)
+    warnings = []
     if not ret_obj:
         # means we cannot find the name
-        logger.debug("Cannot find sshkeys by name")
+        logger.debug(f"Cannot find sshkeys by name ({name}).  This happens when we had a match on fingerprint (not on name)")
+        warnings.append(f"This publi key ({name}) is already there by another name.")
         update_required = False
     elif key:
         # Extract the comment from the new ssh public key
@@ -80,7 +82,7 @@ def update(isamAppliance, user, key, name, check_mode=False, force=False):
         delete(isamAppliance, user, name)
         return add(isamAppliance, user, key, name)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 def set(isamAppliance, user, key, name, fingerprint=None, check_mode=False, force=False):
     """
@@ -116,6 +118,7 @@ def _check(isamAppliance, user=None, name=None, fingerprint=None):
     # Fingerprint rules
     if fingerprint:
         for sshkeys in ret_obj['data']:
+            logger.debug(sshkeys.get('fingerprint'))
             if sshkeys.get('fingerprint') == fingerprint:
                 logger.debug(f"Fingerprint matched on {sshkeys.get('name')} for {user}")
                 return True
