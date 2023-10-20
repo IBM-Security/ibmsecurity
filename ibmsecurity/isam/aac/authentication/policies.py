@@ -18,11 +18,11 @@ def get_all(isamAppliance, start=None, count=None, filter=None, sortBy=None, for
     formatting can be xml or json (actually, if it's not json, it's going to return xml) for version 10.0.6+
     """
     warnings = []
+
     if formatting == 'json':
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
             warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                    isamAppliance.facts["version"]))
+                f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
             formatting = 'xml'
     if formatting == 'json':
         return isamAppliance.invoke_get("Retrieve a list of authentication policies (JSON)", "{0}/{1}".format(module_uri_json,
@@ -46,9 +46,10 @@ def get(isamAppliance, name, formatting='xml', check_mode=False, force=False):
     """
     Retrieve a specific authentication policy
     """
-    ret_obj = search(isamAppliance, name)
+    logger.debug("\n\nGET\n\n")
+    ret_obj = search(isamAppliance, name, formatting)
     if ret_obj['data'] != {}:
-        return _get(isamAppliance, ret_obj['data'], formatting)
+        return _get(isamAppliance, ret_obj['data'], formatting=formatting)
     else:
         return isamAppliance.create_return_object()
 
@@ -85,11 +86,11 @@ def set_file(isamAppliance, name, policy_file, uri, description="",
 
 def set(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
         enabled=None, formatting='xml', check_mode=False, force=False):
-    ret_obj = search(isamAppliance, name)
+    ret_obj = search(isamAppliance, name, formatting)
     if ret_obj['data'] == {}:
         return add(isamAppliance, name, policy, uri, description, dialect, enabled, formatting, check_mode, True)
     else:
-        return update(isamAppliance, name, policy, uri, description, dialect, formatting, enabled, check_mode, force)
+        return update(isamAppliance, name, policy, uri, description, dialect, enabled, formatting, check_mode, force)
 
 
 def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
@@ -119,13 +120,15 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
 
             if formatting == 'json':
                  if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
-                    warnings.append(
+                     warnings.append(
                             "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
                                 isamAppliance.facts["version"]))
-                 formatting = 'xml'
+                     formatting = 'xml'
+
+
             if formatting == 'json':
                 return isamAppliance.invoke_post(
-                    "Duplicate and create an authentication policy", module_uri_json, json_data,
+                    "Duplicate and create an authentication policy (JSON)", module_uri_json, json_data,
                     requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
             else:
                 return isamAppliance.invoke_post(
@@ -163,6 +166,7 @@ def update(isamAppliance, name, policy, uri, description="",
     """
     Update a specified authentication policy
     """
+    logger.debug(f"\n\nPERFORMING UPDATE {formatting}\n\n")
     warnings = []
     needs_update = False
     json_data = {
@@ -177,7 +181,7 @@ def update(isamAppliance, name, policy, uri, description="",
             warnings.append(
                 "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
                     isamAppliance.facts["version"]))
-        formatting = 'xml'
+            formatting = 'xml'
     if enabled is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
             warnings.append(
@@ -186,23 +190,24 @@ def update(isamAppliance, name, policy, uri, description="",
         else:
             json_data["enabled"] = enabled
     if force is not True:
-        try:
-            ret_obj = get(isamAppliance, name, formatting)
-            id = ret_obj['data']['id']
-            del ret_obj['data']['id']
-            del ret_obj['data']['datecreated']
-            del ret_obj['data']['lastmodified']
-            del ret_obj['data']['userlastmodified']
-            del ret_obj['data']['predefined']
+        ret_obj = get(isamAppliance, name, formatting=formatting)
+        id = ret_obj['data']['id']
 
-            exist_data = tools.json_sort(ret_obj['data'])
-            new_data = tools.json_sort(json_data)
-            logger.debug("Existing Data: {0}".format(exist_data))
-            logger.debug("Provided Data: {0}".format(new_data))
-            if exist_data != new_data:
-                needs_update = True
-        except:
-            pass
+        ret_obj['data'].pop('id', None)
+        ret_obj['data'].pop('datecreated', None)
+        ret_obj['data'].pop('dateCreated', None)
+        ret_obj['data'].pop('lastmodified', None)
+        ret_obj['data'].pop('lastModified', None)
+        ret_obj['data'].pop('userlastmodified', None)
+        ret_obj['data'].pop('userLastModified', None)
+        ret_obj['data'].pop('predefined', None)
+
+        exist_data = tools.json_sort(ret_obj['data'])
+        new_data = tools.json_sort(json_data)
+        logger.debug("\n\nExisting Data: {0}".format(exist_data))
+        logger.debug("\n\nProvided Data: {0}".format(new_data))
+        if exist_data != new_data:
+            needs_update = True
 
     if force is True or needs_update is True:
         if check_mode is True:
@@ -235,12 +240,12 @@ def _check(isamAppliance, id=None, name=None):
     return False
 
 
-def search(isamAppliance, name, check_mode=False, force=False):
+def search(isamAppliance, name, formatting='xml', check_mode=False, force=False):
     """
     Retrieve the id for a given policy name
     """
     ret_obj = isamAppliance.create_return_object()
-    ret_obj_all = get_all(isamAppliance)
+    ret_obj_all = get_all(isamAppliance, formatting=formatting)
 
     for obj in ret_obj_all['data']:
         if obj['name'] == name:
