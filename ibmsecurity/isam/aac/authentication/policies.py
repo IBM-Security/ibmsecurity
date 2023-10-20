@@ -77,11 +77,11 @@ def _get(isamAppliance, id, formatting='xml'):
                                     requires_version=requires_version)
 
 def set_file(isamAppliance, name, policy_file, uri, description="",
-             dialect="urn:ibm:security:authentication:policy:1.0:schema", enabled=None, check_mode=False, force=False):
+             dialect="urn:ibm:security:authentication:policy:1.0:schema", enabled=None, formatting='xml', check_mode=False, force=False):
     # Read policy from file and call set()
     with open(policy_file, 'r') as myfile:
         policy = myfile.read().replace('\n', '')
-    return set(isamAppliance, name, policy, uri, description, dialect, enabled, check_mode, force)
+    return set(isamAppliance, name, policy, uri, description=description, dialect=dialect, enabled=enabled, formatting=formatting, check_mode=check_mode, force=force)
 
 
 def set(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
