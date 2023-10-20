@@ -4,6 +4,7 @@
 ## Unreleased
 - fix: available_updates.py state is no longer available in 10.0.5 or higher, and too many variables in post request
 - fix: ssh_keys api added proper idempotency (#395)
+- feature: json input and output for aac authentication policies (#399)
 
 ## 2023.7.6.0
 
