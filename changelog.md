@@ -2,7 +2,8 @@
 # Manual change log
 
 ## Unreleased
-- fix: availabe_updates.py state is no longer available in 10.0.5 or higher, and too many variables in post request
+- fix: available_updates.py state is no longer available in 10.0.5 or higher, and too many variables in post request
+- fix: ssh_keys api added proper idempotency (#395)
 
 ## 2023.7.6.0
 
