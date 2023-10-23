@@ -46,8 +46,7 @@ def get(isamAppliance, name, formatting='xml', check_mode=False, force=False):
     """
     Retrieve a specific authentication policy
     """
-    logger.debug("\n\nGET\n\n")
-    ret_obj = search(isamAppliance, name, formatting)
+    ret_obj = search(isamAppliance, name, formatting=formatting)
     if ret_obj['data'] != {}:
         return _get(isamAppliance, ret_obj['data'], formatting=formatting)
     else:
@@ -86,11 +85,13 @@ def set_file(isamAppliance, name, policy_file, uri, description="",
 
 def set(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
         enabled=None, formatting='xml', check_mode=False, force=False):
-    ret_obj = search(isamAppliance, name, formatting)
+    ret_obj = search(isamAppliance, name, formatting=formatting)
     if ret_obj['data'] == {}:
-        return add(isamAppliance, name, policy, uri, description, dialect, enabled, formatting, check_mode, True)
+        return add(isamAppliance, name, policy, uri, description=description, dialect=dialect, enabled=enabled,
+                   formatting=formatting, check_mode=check_mode, force=True)
     else:
-        return update(isamAppliance, name, policy, uri, description, dialect, enabled, formatting, check_mode, force)
+        return update(isamAppliance, name, policy, uri, description=description, dialect=dialect, enabled=enabled,
+                    formatting=formatting, check_mode=check_mode, force=force)
 
 
 def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:security:authentication:policy:1.0:schema",
