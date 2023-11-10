@@ -70,6 +70,12 @@ def export_xacml(isamAppliance, name, filename, formatting='xml', overwrite=Fals
     """
     warnings = []
     import os.path
+    if formatting == 'json':
+        if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
+            warnings.append(
+                "Appliance is at version: {0}. JSON format not supported unless at 10.0.6.0 or higher. Setting to xml.".format(
+                    isamAppliance.facts["version"]))
+            formatting = 'xml'
     if not force:
         ret_obj = get(isamAppliance, name=name, formatting=formatting, check_mode=check_mode, force=force)
 
@@ -125,18 +131,22 @@ def set_file(isamAppliance, name, attributesrequired, policy_file, description="
     import re
     # Read policy from file and call set()
     # The policy file no longer needs to contain the xml as a single line.
+
     with open(policy_file, 'r') as myfile:
         policy = myfile.read()
-        # // 4. remove \n before an end tag
-        policy = re.sub(r"([\w0-9>*$-._]+)\n\s+", r"\1", policy)
-        # // 1. remove all white space preceding a begin element tag:
-        policy = re.sub(r"[\n\s]+(<[^/])", r"\1", policy)
-        # // 2. remove all white space following an end element tag:
-        policy = re.sub(r"(</[a-zA-Z0-9-_.:]+>)\s+", r"\1", policy)
-        # // 3. remove all white space following an empty element tag
-        policy = re.sub(r"(/>)\s+", r"\1", policy)
-        # // 5. remove remaining /n+any whitespace
-        policy = re.sub(r"\n\s+", " ", policy)
+        if formatting == 'xml':
+            # // 4. remove \n before an end tag
+            policy = re.sub(r"([\w0-9>*$-._]+)\n\s+", r"\1", policy)
+            # // 1. remove all white space preceding a begin element tag:
+            policy = re.sub(r"[\n\s]+(<[^/])", r"\1", policy)
+            # // 2. remove all white space following an end element tag:
+            policy = re.sub(r"(</[a-zA-Z0-9-_.:]+>)\s+", r"\1", policy)
+            # // 3. remove all white space following an empty element tag
+            policy = re.sub(r"(/>)\s+", r"\1", policy)
+            # // 5. remove remaining /n+any whitespace
+            policy = re.sub(r"\n\s+", " ", policy)
+        else:
+            policy = json.loads(policy)
 
     return set(isamAppliance, name, attributesrequired, policy=policy, description=description, dialect=dialect, predefined=predefined,
                new_name=new_name, formatting=formatting,
