@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 # URI for this module
 uri = "/iam/access/v8/audit"
+comp_uri = uri + "/components"
 requires_modules = ["mga", "federation"]
 requires_version = None
 
@@ -21,8 +22,15 @@ def get(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieve audit configuration", uri, requires_modules=requires_modules,
                                     requires_version=requires_version)
 
+def getComponents(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieve audit configuration components
+    """
+    return isamAppliance.invoke_get("Retrieve audit configuration components", comp_uri, requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
-def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False):
+
+def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, components=None):
     """
     Update Audit Configuration
 
@@ -150,7 +158,7 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
     type: Syslog
     verbose: false
     """
-    pol_id, update_required, json_data = _check(isamAppliance, id, config, enabled, type, verbose)
+    pol_id, update_required, json_data = _check(isamAppliance, id, config, enabled, type, verbose, use_json, components)
     if pol_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
         raise IBMError("999", "Cannot update data for unknown Audit Configuration ID: {0}".format(id))
@@ -167,7 +175,7 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, id, config, enabled, type, verbose):
+def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, components=None):
     """
     Check and return True if update needed
     """
@@ -180,22 +188,28 @@ def _check(isamAppliance, id, config, enabled, type, verbose):
         else:
             cfg['value'] = str(cfg['value'])
     # Ensure boolean variables are set correctly
-    if isinstance(verbose, basestring):
+    if isinstance(verbose, str):
         if verbose.lower() == "true":
             verbose = True
         else:
             verbose = False
-    if isinstance(enabled, basestring):
+    if isinstance(enabled, str):
         if enabled.lower() == "true":
             enabled = True
         else:
             enabled = False
+    if isinstance(use_json, str):
+        if use_json.lower() == "true":
+            use_json = True
+        else:
+            use_json = False
     json_data = {
         "id": id,
         "config": config,
         "enabled": enabled,
         "type": type,
-        "verbose": verbose
+        "verbose": verbose,
+        "useJSONFormat": use_json
     }
     ret_obj = get(isamAppliance)
     for aud_cfg in ret_obj['data']:
@@ -205,6 +219,9 @@ def _check(isamAppliance, id, config, enabled, type, verbose):
     if pol_id is None:
         logger.warning("Audit Configuration not found, returning no update required.")
         return pol_id, update_required, json_data
+    elif components is not None:
+        json_data["components"] = components
+        update_required = True
     else:
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
