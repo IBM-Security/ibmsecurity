@@ -1,5 +1,6 @@
 import logging
 from ibmsecurity.utilities import tools
+import json
 
 try:
     basestring
@@ -79,8 +80,14 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     return ret_obj
 
 
-def _check(isamAppliance, reverseproxy_id, junctionname):
-    ret_obj = get_all(isamAppliance, reverseproxy_id)
+def _check(isamAppliance, reverseproxy_id, junctionname, currentJunctions=None):
+    """ CurrentJunctions is the output of get_all.
+        This avoids constantly having to call the get_all function.
+    """
+    if currentJunctions is not None:
+        ret_obj = get_all(isamAppliance, reverseproxy_id)
+    else:
+        ret_obj = currentJunctions
 
     for jct in ret_obj['data']:
         if jct['id'] == junctionname:
@@ -365,95 +372,25 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         if _check(isamAppliance, reverseproxy_id, junction_point) is True:
             logger.debug("Junction exists. Compare junction details.")
             ret_obj = get(isamAppliance, reverseproxy_id=reverseproxy_id, junctionname=junction_point)
-            server_found = False
+
             logger.debug("See if the backend junction server matches any on the junction. Look for just one match.")
             srvs = ret_obj['data']['servers']
             srvs_len = len(srvs)
-            for srv in srvs:
-                if srv['server_hostname'] == server_hostname and str(srv['server_port']) == str(server_port):
-                    logger.debug("Matched a server - {0}.".format(srv))
-                    server_found = True
-                    server_json = {
-                        'server_hostname': server_hostname,
-                        'server_port': str(server_port)
-                    }
-                    if case_sensitive_url is None:
-                        server_json['case_sensitive_url'] = 'no'
-                    else:
-                        server_json['case_sensitive_url'] = case_sensitive_url
-                    if http_port is None:
-                        server_json['http_port'] = str(server_port)
-                    else:
-                        server_json['http_port'] = str(http_port)
-                    if local_ip is None:
-                        server_json['local_ip'] = ''
-                    else:
-                        server_json['local_ip'] = local_ip
-                    if query_contents is None or query_contents == '':
-                        server_json['query_content_url'] = '/cgi-bin/query_contents'
-                    else:
-                        server_json['query_content_url'] = query_contents
-                    if server_dn is None:
-                        server_json['server_dn'] = ''
-                    else:
-                        server_json['server_dn'] = server_dn
-                    if server_uuid is not None:
-                        server_json['server_uuid'] = server_uuid
-                    else:
-                        # Server UUID gets generated if not specified
-                        if 'server_uuid' in srv:
-                            del srv['server_uuid']
-                    if not isVirtualJunction:
-                        if virtual_hostname:
-                            logger.debug("Only for standard junctions - {0}.".format(virtual_hostname))
-                            server_json['virtual_junction_hostname'] = virtual_hostname
-                        else:
-                            if server_json['server_port'] in ['80','443',80,443]:
-                              server_json['virtual_junction_hostname'] = server_json['server_hostname']
-                            else:
-                              server_json['virtual_junction_hostname'] = server_json['server_hostname'] + ":" + server_json['server_port']
-                    if windows_style_url is None:
-                        server_json['windows_style_url'] = 'no'
-                    else:
-                        server_json['windows_style_url'] = windows_style_url
-                    # v10.0.2
-                    if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
-                        if priority is None:
-                            server_json['priority'] = '9'
-                        else:
-                            server_json['priority'] = str(priority)
-                        if server_cn is None:
-                            server_json['server_cn'] = ''
-                        else:
-                            server_json['server_cn'] = server_cn
-                    # Delete dynamic data shown when we get junctions details
-                    if 'current_requests' in srv:
-                        del srv['current_requests']
-                    if 'total_requests' in srv:
-                        del srv['total_requests']
-                    if 'operation_state' in srv:
-                        del srv['operation_state']
-                    if 'server_state' in srv:
-                        del srv['server_state']
-                    # Not sure what this attribute is supposed to contain?
-                    if 'query_contents' in srv:
-                        del srv['query_contents']
-                    if not isVirtualJunction:
-                        if 'virtual_junction_hostname' not in srv:
-                            # this is not in the returned servers object for virtual host junctions, it's in the junction's object
-                            if virtual_hostname:
-                                srv['virtual_junction_hostname'] = virtual_hostname
-                            else:
-                                srv['virtual_junction_hostname'] = srv['server_hostname'] + ":" + srv['server_port']
-                    if tools.json_sort(server_json) != tools.json_sort(srv):
-                        logger.debug("Servers are found to be different. See following JSON for difference.")
-                        logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
-                        logger.debug("Old Server JSON: {0}".format(tools.json_sort(srv)))
-                        add_required = True
-                    break
-            if server_found is False:
+
+            if not junction_server_exists(srvs, server_hostname, server_port,
+                         case_sensitive_url,
+                         isVirtualJunction,
+                         http_port,
+                         local_ip,
+                         query_contents,
+                         server_dn,
+                         server_uuid,
+                         virtual_hostname,
+                         windows_style_url,
+                         priority,
+                         server_cn):
                 add_required = True
-            elif add_required is False:
+            elif not add_required:
                 exist_jct = ret_obj['data']
                 jct_json = {
                     'junction_point': junction_point,
@@ -625,7 +562,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 if tools.json_sort(jct_json) != tools.json_sort(exist_jct):
                     logger.debug("Junctions are found to be different. See following JSON for difference.")
                     add_required = True
-            if add_required is True and srvs_len > 1:
+            if add_required and srvs_len > 1:
                 warnings.append(
                     "Junction will replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
                         srvs_len))
@@ -696,3 +633,135 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
     return tools.json_compare(ret_obj1, ret_obj2, deleted_keys=['active_worker_threads', 'servers/current_requests',
                                                                 'servers/operation_state', 'servers/server_state',
                                                                 'servers/server_uuid', 'servers/total_requests'])
+
+def set_all(isamAppliance, reverseproxy_id, junctions=[], check_mode=False, force=False):
+    """
+    Set junctions
+    The input is a list of junction objects, that can be passed to the `set` function
+    The list of junctions is first compared to the output of `get_all`, so we only need to update junctions that are changed.
+
+    :param isamAppliance:
+    :param reverseproxy_id:
+    :param junction: List of junctions to set
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    currentJunctions = get_all(isamAppliance, reverseproxy_id=reverseproxy_id, detailed=True)
+
+    if currentJunctions['rc'] == 0:
+        logger.debug(f"\nCurrent junctions:\n{currentJunctions}")
+
+    else:
+        # no junctions exists
+        # TODO
+        logger.debug("No junctions exist yet.  Create them all.")
+    # Compare the junctions and the currentJunctions.
+    for j in junctions:
+        #result = next((item for item in currentJunctions if item["junction_name"] == j["junction_name"]), None)
+        logger.debug(f"New junction: {j['junction_point']}")
+        _checkUpdate = False
+        for c in currentJunctions['data']:
+            if c['junction_point'] == j['junction_point']:
+                logger.debug(f"The junction at {j['junction_point']} already exists.")
+                _checkUpdate = True
+        if _checkUpdate:
+            # perform a comparison.
+            cj = json.dumps(c, skipkeys=True, sort_keys=True)
+            logger.debug(f"\nSorted Current  Junction:\n {c}\n")
+
+            nj = json.dumps(j, skipkeys=True, sort_keys=True)
+            logger.debug(f"\nSorted Desired  Junction:\n {j}\n")
+        else:
+            set(isamAppliance, reverseproxy_id, j['junction_point'], j['server_hostname'], j['server_port'], force=True)
+
+
+def junction_server_exists(srvs, server_hostname, server_port, case_sensitive_url='no',
+                         isVirtualJunction=False, http_port=None, local_ip=None,
+                         query_contents=None, server_dn=None,
+                         server_uuid=None, virtual_hostname=None, windows_style_url=None, priority=None, server_cn=None):
+  server_found = False
+  for srv in srvs:
+    if srv['server_hostname'] == server_hostname and str(srv['server_port']) == str(server_port):
+        logger.debug("Matched a server - {0}.".format(srv))
+        server_found = True
+        server_json = {
+            'server_hostname': server_hostname,
+            'server_port': str(server_port)
+        }
+        if case_sensitive_url is None:
+            server_json['case_sensitive_url'] = 'no'
+        else:
+            server_json['case_sensitive_url'] = case_sensitive_url
+        if http_port is None:
+            server_json['http_port'] = str(server_port)
+        else:
+            server_json['http_port'] = str(http_port)
+        if local_ip is None:
+            server_json['local_ip'] = ''
+        else:
+            server_json['local_ip'] = local_ip
+        if query_contents is None or query_contents == '':
+            server_json['query_content_url'] = '/cgi-bin/query_contents'
+        else:
+            server_json['query_content_url'] = query_contents
+        if server_dn is None:
+            server_json['server_dn'] = ''
+        else:
+            server_json['server_dn'] = server_dn
+        if server_uuid is not None:
+            server_json['server_uuid'] = server_uuid
+        else:
+            # Server UUID gets generated if not specified
+            if 'server_uuid' in srv:
+                del srv['server_uuid']
+        if not isVirtualJunction:
+            if virtual_hostname:
+                logger.debug("Only for standard junctions - {0}.".format(virtual_hostname))
+                server_json['virtual_junction_hostname'] = virtual_hostname
+            else:
+                if server_json['server_port'] in ['80', '443', 80, 443]:
+                    server_json['virtual_junction_hostname'] = server_json['server_hostname']
+                else:
+                    server_json['virtual_junction_hostname'] = server_json['server_hostname'] + ":" + server_json[
+                        'server_port']
+        if windows_style_url is None:
+            server_json['windows_style_url'] = 'no'
+        else:
+            server_json['windows_style_url'] = windows_style_url
+        # v10.0.2
+        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+            if priority is None:
+                server_json['priority'] = '9'
+            else:
+                server_json['priority'] = str(priority)
+            if server_cn is None:
+                server_json['server_cn'] = ''
+            else:
+                server_json['server_cn'] = server_cn
+        # Delete dynamic data shown when we get junctions details
+        if 'current_requests' in srv:
+            del srv['current_requests']
+        if 'total_requests' in srv:
+            del srv['total_requests']
+        if 'operation_state' in srv:
+            del srv['operation_state']
+        if 'server_state' in srv:
+            del srv['server_state']
+        # Not sure what this attribute is supposed to contain?
+        if 'query_contents' in srv:
+            del srv['query_contents']
+        if not isVirtualJunction:
+            if 'virtual_junction_hostname' not in srv:
+                # this is not in the returned servers object for virtual host junctions, it's in the junction's object
+                if virtual_hostname:
+                    srv['virtual_junction_hostname'] = virtual_hostname
+                else:
+                    srv['virtual_junction_hostname'] = srv['server_hostname'] + ":" + srv['server_port']
+        if tools.json_sort(server_json) != tools.json_sort(srv):
+            logger.debug("Servers are found to be different. See following JSON for difference.")
+            logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
+            logger.debug("Old Server JSON: {0}".format(tools.json_sort(srv)))
+            add_required = True
+        break
+  return server_found
