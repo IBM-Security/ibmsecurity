@@ -115,6 +115,105 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
 
     return isamAppliance.create_return_object()
 
+def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],
+        **optionargs):
+    """
+    Adding a back-end server to an existing standard or virtual junctions
+
+    :param isamAppliance:
+    :param reverseproxy_id:
+    :param junction_point:
+    :param server_hostname:
+    :param junction_type:
+    :param server_port:
+    :param virtual_hostname:
+    :param virtual_https_hostname:
+    :param server_dn:
+    :param query_contents:
+    :param stateful_junction:
+    :param case_sensitive_url:
+    :param windows_style_url:
+    :param https_port:
+    :param http_port:
+    :param proxy_hostname:
+    :param proxy_port:
+    :param sms_environment:
+    :param vhost_label:
+    :param server_uuid:
+    :param server_cn:
+    :param priority:
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    # load option args
+    #   server_dn=None,
+    #   stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
+    #   virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
+    #   proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None,
+    #   server_cn=None, priority='9'
+
+    # Search an existing server
+    ret_obj = get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port)
+    exist_jct = {}
+    jct_srv_json = {}
+    if ret_obj:
+        exist_jct = ret_obj.get('data', {})
+        exist_jct.pop('current_requests', None)
+        exist_jct.pop('total_requests', None)
+        exist_jct.pop('operation_state', None)
+        exist_jct.pop('server_state', None)
+        exist_jct.pop('query_contents', None)
+
+    for _k, _v in optionargs.items():
+        if _v is not None:
+            jct_srv_json[_k] = _v
+
+    # add defaults
+    #defaults_no = ["stateful_junction", "case_sensitive_url", "windows_style_url"]
+    #for d in defaults_no:
+    #    if jct_srv_json.get(d, None) is None:
+    #        jct_srv_json[d] = 'no'
+    # 10.0.0.2
+    if jct_srv_json.get('priority', None) is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring description for this call.".format(
+                    isamAppliance.facts["version"], priority))
+            jct_srv_json.pop('priority', None)
+    else:
+        if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+            warnings.append(
+                "Appliance at version: {0}, priority is required".format(
+                    isamAppliance.facts["version"]))
+            jct_srv_json['priority'] = "9"
+
+    # only compare values that are in the new request
+    exist_jct = {k: v for k, v in exist_jct.items() if k in jct_srv_json.keys()}
+
+    newJSON = json.dumps(jct_srv_json, skipkeys=True, sort_keys=True)
+    logger.debug(f"\nSorted Desired  Junction {junction_point} - {server_hostname}:\n\n {newJSON}\n")
+
+    oldJSON = json.dumps(exist_jct, skipkeys=True, sort_keys=True)
+    logger.debug(f"\nSorted Current  Junction {junction_point} - {server_hostname}:\n\n {oldJSON}\n")
+
+    jct_srv_json["junction_point"] = junction_point
+    jct_srv_json["junction_type"] = junction_type
+    jct_srv_json["server_hostname"] = server_hostname
+    jct_srv_json["server_port"] = server_port
+
+    if force or (newJSON != newJSON):
+        logger.debug(f"The JSONs are different.  We're going to add the servers.")
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_put(
+                "Adding a back-end server to an existing standard or virtual junctions",
+                "{0}/{1}/junctions".format(uri, reverseproxy_id), data=jct_srv_json, warnings=warnings)
+    else:
+        logger.debug("Servers are the same")
+        return isamAppliance.create_return_object(warnings=warnings)
+
 
 def delete(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, check_mode=False, force=False):
     """
