@@ -1,5 +1,6 @@
 import logging
 from ibmsecurity.utilities import tools
+import ibmsecurity.isam.web.reverse_proxy.junctions_server as junctions_server
 import json
 
 try:
@@ -354,13 +355,14 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
-        priority=None, server_cn=None, silent=None):
+        priority=None, server_cn=None, silent=None, servers=None):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
     """
     warnings = []
     add_required = False
+    servers = None # servers is merely there to allow it as a parameter.
     # See if it's a virtual or standard junction
     isVirtualJunction = True
     if junction_point[:1] == '/':
@@ -377,7 +379,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             srvs = ret_obj['data']['servers']
             srvs_len = len(srvs)
 
-            if not junction_server_exists(srvs, server_hostname, server_port,
+            if not junction_server_exists(isamAppliance, srvs, server_hostname, server_port,
                          case_sensitive_url,
                          isVirtualJunction,
                          http_port,
@@ -564,12 +566,12 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     add_required = True
             if add_required and srvs_len > 1:
                 warnings.append(
-                    "Junction will replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
+                    "Junction will be replaced. Existing multiple servers #{0} will be overwritten. Please re-add as needed.".format(
                         srvs_len))
         else:
             add_required = True
 
-    if force is True or add_required is True:
+    if force is True or add_required:
         # Junction force add will replace the junction, no need for delete (force set to True as a result)
         return add(isamAppliance=isamAppliance, reverseproxy_id=reverseproxy_id, junction_point=junction_point,
                    server_hostname=server_hostname, server_port=server_port, junction_type=junction_type,
@@ -634,52 +636,231 @@ def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=No
                                                                 'servers/operation_state', 'servers/server_state',
                                                                 'servers/server_uuid', 'servers/total_requests'])
 
-def set_all(isamAppliance, reverseproxy_id, junctions=[], check_mode=False, force=False):
+def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=False, force=False, warnings=[]):
     """
-    Set junctions
+    Set junctions with all the servers
     The input is a list of junction objects, that can be passed to the `set` function
     The list of junctions is first compared to the output of `get_all`, so we only need to update junctions that are changed.
 
     :param isamAppliance:
     :param reverseproxy_id:
-    :param junction: List of junctions to set
+    :param junctions: List of junctions to set
     :param check_mode:
     :param force:
     :return:
     """
     currentJunctions = get_all(isamAppliance, reverseproxy_id=reverseproxy_id, detailed=True)
 
+    server_fields = {'server_hostname': {'type': 'string'},
+                         'server_port': {'type': 'number'},
+                         'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
+                         'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
+                         'http_port': {'type': 'number'},
+                         'local_ip': {'type': 'string'},
+                         'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
+                         'server_dn': {'type': 'string'},
+                         'server_uuid': {'type': 'ignore'},
+                         'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
+                         'windows_style_url': {'type': 'yesno'},
+                         'current_requests': {'type': 'ignore'},
+                         'total_requests': {'type': 'ignore'},
+                         'operation_state': {'type': 'ignore'},
+                         'server_state': {'type': 'ignore'},
+                         'priority': {'type': 'number', 'min_version': "10.0.2.0"},
+                         'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
+
     if currentJunctions['rc'] == 0:
         logger.debug(f"\nCurrent junctions:\n{currentJunctions}")
-
     else:
         # no junctions exists
-        # TODO
         logger.debug("No junctions exist yet.  Create them all.")
+        # Force create - There are no junctions yet
+        # use expansion
+        for j in junctions:
+            j.pop('isVirtualJunction', None)
+            __firstserver = j.get('servers', [''])[0]
+            for _field in list(server_fields.keys()):
+                if __firstserver.get(_field, None) is not None and j.get(_field, None) is None:
+                    # only use server_fields if they are not defined on junction level
+                        logger.debug(f"{_field} from {__firstserver.get('server_hostname')} copied to junction level")
+                        j[_field] = __firstserver.get(_field, None)
+            if len(j.get('servers', [''])) > 1:
+                __servers = j.get('servers', [''])[1:]
+            else:
+                __servers = None
+            j.pop('servers', None)
+            set(isamAppliance, reverseproxy_id, **j, force=True)
+            # Also add servers (if servers[] has more than 1 item)
+            if __servers is not None:
+                for s in __servers:
+                    for _field, kval in server_fields.items():
+                        if s.get(_field, None) is not None:
+                            j[_field] = s.get(_field, None)
+                    junctions_server.set(isamAppliance, reverseproxy_id, **j)
     # Compare the junctions and the currentJunctions.
     for j in junctions:
         #result = next((item for item in currentJunctions if item["junction_name"] == j["junction_name"]), None)
-        logger.debug(f"New junction: {j['junction_point']}")
+        logger.debug(f"Processing junction: {j['junction_point']}")
         _checkUpdate = False
+        j['isVirtualJunction'] = True
+        if j['junction_point'][:1] == '/':
+            j['isVirtualJunction'] = False
+        if j.get('junction_soft_limit', None) is None:
+            j['junction_soft_limit'] = '0 - using global value'
+        else:
+           j['junction_soft_limit'] = str( j.get('junction_soft_limit', None))
+        if j.get('junction_hard_limit', None) is None:
+            j['junction_hard_limit'] = '0 - using global value'
+        else:
+           j['junction_hard_limit'] = str( j.get('junction_hard_limit', None))
+
+        # convenience.
+        # check that we have the required fields, if not, get them from the first server (if that exists)
+        __firstserver = j.get('servers', [''])[0]
+        for _field in list(server_fields.keys()):
+            if __firstserver.get(_field, None) is not None and j.get(_field, None) is None:
+                # only use server_fields if they are not defined on junction level
+                logger.debug(f"{_field} from {__firstserver.get('server_hostname')} copied to junction level")
+                j[_field] = __firstserver.get(_field, None)
+        if len(j.get('servers', [''])) > 1:
+            __servers = j.get('servers', [''])[1:]
+
         for c in currentJunctions['data']:
+            servers = []
+            if tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") > 0:
+                srv_separator = '#'
+            else:
+                srv_separator = '&'
+
+            if c.get('servers', None) is not None:
+                if type(c.get('servers',[])) is str:
+                  srvs = c['servers'].split(srv_separator)
+                  logger.debug("Servers in raw string: {0}".format(c['servers']))
+                  logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+                  for srv in srvs:
+                      logger.debug("Parsing Server: {0}".format(srv))
+                      server = {}
+                      for s in srv.split(';'):
+                          if s != '':
+                              kv = s.split('!')
+                              server[kv[0]] = kv[1]
+                      servers.append(server)
+                  c['servers'] = servers
+            else:
+                c['servers'] = []
+
             if c['junction_point'] == j['junction_point']:
                 logger.debug(f"The junction at {j['junction_point']} already exists.")
-                _checkUpdate = True
+                _checkUpdate = c
+                break
+
         if _checkUpdate:
-            # perform a comparison.
-            cj = json.dumps(c, skipkeys=True, sort_keys=True)
-            logger.debug(f"\nSorted Current  Junction:\n {c}\n")
+            # perform a comparison.  we receive the actual current junction as input here
+            srvs = c['servers']
+            logger.debug(f"\n\nServers in junction {j['junction_point']}:\n{srvs}")
+            add_required = False
+            if not junction_server_exists(isamAppliance, srvs, **j):
+                add_required = True
+            if not add_required:
+                # ok we still need to compare
+                exist_jct = c
+                j.pop('isVirtualJunction', None)
+                new_jct = dict(j)
 
-            nj = json.dumps(j, skipkeys=True, sort_keys=True)
-            logger.debug(f"\nSorted Desired  Junction:\n {j}\n")
+                exist_jct.pop('active_worker_threads', None)
+                # remove the server fields - this has already been compared
+                for _field, kval in server_fields.items():
+                    exist_jct.pop(_field, None)
+                    new_jct.pop(_field, None)
+                # remove the servers for the comparison
+                new_jct.pop('servers', None)
+                exist_jct.pop('servers', None)
+                #insert_ltpa_cookies
+                if exist_jct.get('insert_ltpa_cookies', None) is None:
+                    exist_jct['insert_ltpa_cookies'] = 'no'
+                #sms_environment
+                if exist_jct.get('sms_environment', None) is None:
+                    exist_jct['sms_environment'] = ""
+                #vhost_label
+                if exist_jct.get('vhost_label', None) is None:
+                    exist_jct['vhost_label'] = ""
+                # request_encoding utf8_bin, utf8_uri, lcp_bin, and lcp_uri.
+                __re = exist_jct.get('request_encoding', None)
+                if __re is not None:
+                    if __re == 'UTF-8, URI Encoded':
+                        exist_jct['request_encoding'] = 'utf8_uri'
+                    elif __re == 'UTF-8, Binary':
+                        exist_jct['request_encoding'] = 'utf8_bin'
+                    elif __re == 'Local Code Page, Binary':
+                        exist_jct['request_encoding'] = 'lcp_bin'
+                    elif __re == 'Local Code Page, URI Encoded':
+                        exist_jct['request_encoding'] = 'lcp_uri'
+
+                # To allow for multiple header values to be sorted during compare convert retrieved data into array
+                if exist_jct['remote_http_header'].startswith('insert - '):
+                    exist_jct['remote_http_header'] = [_word.replace('_','-') for _word in (exist_jct['remote_http_header'][9:]).split(' ')]
+                elif exist_jct['remote_http_header'] == 'do not insert':
+                    exist_jct['remote_http_header'] = []
+                exist_jct['junction_type'] = exist_jct['junction_type'].lower()
+                # only compare values that are in the new request
+                # This may give unexpected results.
+                exist_jct = {k: v for k, v in exist_jct.items() if k in j.keys()}
+
+                newJSON = json.dumps(new_jct, skipkeys=True, sort_keys=True)
+                logger.debug(f"\nSorted Desired  Junction {j['junction_point']}:\n\n {newJSON}\n")
+
+                oldJSON = json.dumps(exist_jct, skipkeys=True, sort_keys=True)
+                logger.debug(f"\nSorted Current  Junction {c['junction_point']}:\n\n {oldJSON}\n")
+
+                if newJSON != oldJSON:
+                    logger.debug("Junctions are found to be different. See JSON for difference.")
+                    add_required = True
+            if add_required:
+                # Run set()
+                logger.debug("\n\nUpdate junction\n\n")
+
+                set(isamAppliance, reverseproxy_id, **j, force=True)
+                logger.debug(f"Adding servers")
+                # Also add servers (if servers[] has more than 1 item)
+                if len(j.get('servers', [''])) > 1:
+
+                    j.pop('servers', None)
+                    for s in __servers:
+                        for _field, kval in server_fields.items():
+                            if s.get(_field, None) is not None:
+                                j[_field] = s.get(_field, None)
+                        junctions_server.set(isamAppliance, reverseproxy_id, **j)
+            else:
+                logger.debug(f"\n\nJunction {j.get('junction_point','')}does not need updating\n\n")
+                warnings.append(f"Junction {j.get('junction_point','')}does not need updating")
+
         else:
-            set(isamAppliance, reverseproxy_id, j['junction_point'], j['server_hostname'], j['server_port'], force=True)
+            # Force create - this junction does not exist yet
+            j.pop('isVirtualJunction', None)
+            __firstserver = j.get('servers', [''])[0]
+            for _field in list(server_fields.keys()):
+                if __firstserver.get(_field, None) is not None and j.get(_field, None) is None:
+                    # only use server_fields if they are not defined on junction level
+                        logger.debug(f"{_field} from {__firstserver.get('server_hostname')} copied to junction level")
+                        j[_field] = __firstserver.get(_field, None)
+            logger.debug(f"Creating new junction with {j}")
+            set(isamAppliance, reverseproxy_id, **j, force=True)
+            logger.debug(f"Adding servers")
+            # Also add servers (if servers[] has more than 1 item)
+            if len(j.get('servers', [''])) > 1:
+                __servers = j.get('servers', [''])[1:]
+                j.pop('servers', None)
+                for s in __servers:
+                    for _field, kval in server_fields.items():
+                        if s.get(_field, None) is not None:
+                            j[_field] = s.get(_field, None)
+                    junctions_server.set(isamAppliance, reverseproxy_id, **j)
+#def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],        **optionargs):
 
-
-def junction_server_exists(srvs, server_hostname, server_port, case_sensitive_url='no',
+def junction_server_exists(isamAppliance, srvs, server_hostname: str, server_port, case_sensitive_url='no',
                          isVirtualJunction=False, http_port=None, local_ip=None,
                          query_contents=None, server_dn=None,
-                         server_uuid=None, virtual_hostname=None, windows_style_url=None, priority=None, server_cn=None):
+                         server_uuid=None, virtual_hostname=None, windows_style_url=None, priority=None, server_cn=None, **kwargs) -> bool:
   server_found = False
   for srv in srvs:
     if srv['server_hostname'] == server_hostname and str(srv['server_port']) == str(server_port):
@@ -762,6 +943,8 @@ def junction_server_exists(srvs, server_hostname, server_port, case_sensitive_ur
             logger.debug("Servers are found to be different. See following JSON for difference.")
             logger.debug("New Server JSON: {0}".format(tools.json_sort(server_json)))
             logger.debug("Old Server JSON: {0}".format(tools.json_sort(srv)))
-            add_required = True
+
         break
   return server_found
+
+

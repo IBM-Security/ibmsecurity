@@ -2,6 +2,7 @@ import logging
 import ibmsecurity.utilities.tools
 from ibmsecurity.utilities import tools
 import ibmsecurity.isam.web.reverse_proxy.junctions
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,18 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
 
     return ret_obj_new
 
+def get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port):
+    ret_obj_new = isamAppliance.create_return_object()
+    ret_obj = ibmsecurity.isam.web.reverse_proxy.junctions.get(isamAppliance, reverseproxy_id, junction_point)
+    for s in ret_obj['data']['servers']:
+        logger.debug("Servers in Junction server: {0} port: {1}".format(s['server_hostname'], s['server_port']))
+        if str(server_hostname) == str(s['server_hostname']) and str(server_port) == str(s['server_port']):
+            ret_obj_new['data'] = s
+            break
+    return ret_obj_new
 
-def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junction_type, server_port, server_dn=None,
-        stateful_junction='no', case_sensitive_url='no', windows_style_url='no', virtual_hostname=None,
-        virtual_https_hostname=None, query_contents=None, https_port=None, http_port=None, proxy_hostname=None,
-        proxy_port=None, sms_environment=None, vhost_label=None, server_uuid=None, priority=None, server_cn=None, check_mode=False, force=False):
+def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False,
+        **optionargs):
     """
     Adding a back-end server to an existing standard or virtual junctions
 
@@ -66,49 +74,47 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, junctio
                 "junction_type": junction_type,
                 "server_hostname": server_hostname,
                 "server_port": server_port,
-                "stateful_junction": stateful_junction,
-                "case_sensitive_url": case_sensitive_url,
-                "windows_style_url": windows_style_url,
             }
-            if https_port is not None:
-                jct_srv_json["https_port"] = https_port
-            if http_port is not None:
-                jct_srv_json["http_port"] = http_port
-            if proxy_hostname is not None:
-                jct_srv_json["proxy_hostname"] = proxy_hostname
-            if proxy_port is not None:
-                jct_srv_json["proxy_port"] = proxy_port
-            if sms_environment is not None:
-                jct_srv_json["sms_environment"] = sms_environment
-            if vhost_label is not None:
-                jct_srv_json["vhost_label"] = vhost_label
-            if server_dn is not None:
-                jct_srv_json["server_dn"] = server_dn
-            if virtual_hostname:
-                jct_srv_json["virtual_hostname"] = virtual_hostname
-            if virtual_https_hostname is not None:
-                jct_srv_json["virtual_https_hostname"] = virtual_https_hostname
-            if query_contents is not None:
-                jct_srv_json["query_contents"] = query_contents
-            if server_uuid is not None and server_uuid != '':
-                jct_srv_json["server_uuid"] = server_uuid
-            if server_cn is not None:
-                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+            for _k, _v in optionargs.items():
+                if _v is not None:
+                    jct_srv_json[_k] = _v
+            if jct_srv_json.get('stateful_junction', None) is None:
+                jct_srv_json['stateful_junction'] = 'no'
+            if jct_srv_json.get('windows_style_url', None) is None:
+                jct_srv_json['windows_style_url'] = 'no'
+
+            # case_insensitive/case_sensitive
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if jct_srv_json.get('case_insensitive_url', None) is None:
+                    case_sensitive_url = jct_srv_json.get('case_sensitive_url', None)
+                    if case_sensitive_url is not None and case_sensitive_url.lower() == 'no':
+                        jct_srv_json["case_insensitive_url"] = 'yes'
+                    else:
+                        jct_srv_json["case_insensitive_url"] = 'no' # default
+            else:
+                jct_srv_json.pop("case_insensitive_url", None)
+
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                if jct_srv_json.get('server_cn', None) is not None:
                     warnings.append(
                         "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
                             isamAppliance.facts["version"], server_cn))
-                    server_cn = None
-                else:
-                    jct_srv_json["server_cn"] = server_cn
-            if priority is not None:
-                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                    jct_srv_json.pop("server_cn", None)
+
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                if jct_srv_json.get('priority', None) is not None:
                     warnings.append(
                         "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
                             isamAppliance.facts["version"], priority))
-                    priority = None
-                else:
-                    jct_srv_json["priority"] = priority
-
+                    jct_srv_json.pop("priority", None)
+            else:
+                if jct_srv_json.get('priority', None) is None:
+                    warnings.append(
+                        "Appliance at version: {0}, priority is required on 10.0.2 or higher".format(
+                            isamAppliance.facts["version"]))
+                    jct_srv_json['priority'] = "9"
             return isamAppliance.invoke_put(
                 "Adding a back-end server to an existing standard or virtual junctions",
                 "{0}/{1}/junctions".format(uri, reverseproxy_id), jct_srv_json)
@@ -165,10 +171,31 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         exist_jct.pop('server_state', None)
         exist_jct.pop('query_contents', None)
 
-    for _k, _v in optionargs.items():
-        if _v is not None:
-            jct_srv_json[_k] = _v
+    server_fields = {'server_hostname': {'type': 'string'},
+                         'server_port': {'type': 'number'},
+                         'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
+                         'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
+                         'http_port': {'type': 'number'},
+                         'local_ip': {'type': 'string'},
+                         'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
+                         'server_dn': {'type': 'string'},
+                         'server_uuid': {'type': 'ignore'},
+                         'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
+                         'windows_style_url': {'type': 'yesno'},
+                         'current_requests': {'type': 'ignore'},
+                         'total_requests': {'type': 'ignore'},
+                         'operation_state': {'type': 'ignore'},
+                         'server_state': {'type': 'ignore'},
+                         'priority': {'type': 'number', 'min_version': "10.0.2.0"},
+                         'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
 
+    for _k, _v in optionargs.items():
+        # only keep valid arguments
+        if _k in list(server_fields.keys()):
+            jct_srv_json[_k] = _v
+        else:
+            logger.debug(f"Invalid input parameter used {_k}")
+            warnings.append(f"Invalid input parameter used in function junctions_server.set() : {_k}")
     # add defaults
     #defaults_no = ["stateful_junction", "case_sensitive_url", "windows_style_url"]
     #for d in defaults_no:
@@ -202,7 +229,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     jct_srv_json["server_hostname"] = server_hostname
     jct_srv_json["server_port"] = server_port
 
-    if force or (newJSON != newJSON):
+    if force or (newJSON != oldJSON):
         logger.debug(f"The JSONs are different.  We're going to add the servers.")
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
