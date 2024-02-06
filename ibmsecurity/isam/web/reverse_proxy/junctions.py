@@ -85,7 +85,7 @@ def _check(isamAppliance, reverseproxy_id, junctionname, currentJunctions=None):
     """ CurrentJunctions is the output of get_all.
         This avoids constantly having to call the get_all function.
     """
-    if currentJunctions is not None:
+    if currentJunctions is None:
         ret_obj = get_all(isamAppliance, reverseproxy_id)
     else:
         ret_obj = currentJunctions
@@ -355,7 +355,8 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
-        priority=None, server_cn=None, silent=None, servers=None):
+        priority=None, server_cn=None, silent=None, servers=None
+        ):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared

@@ -8,6 +8,23 @@ logger = logging.getLogger(__name__)
 
 uri = "/wga/reverseproxy"
 
+server_fields = {'server_hostname': {'type': 'string'},
+                 'server_port': {'type': 'number'},
+                 'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
+                 'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
+                 'http_port': {'type': 'number'},
+                 'local_ip': {'type': 'string'},
+                 'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
+                 'server_dn': {'type': 'string'},
+                 'server_uuid': {'type': 'ignore'},
+                 'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
+                 'windows_style_url': {'type': 'yesno'},
+                 'current_requests': {'type': 'ignore'},
+                 'total_requests': {'type': 'ignore'},
+                 'operation_state': {'type': 'ignore'},
+                 'server_state': {'type': 'ignore'},
+                 'priority': {'type': 'number', 'min_version': "10.0.2.0"},
+                 'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
 
 def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port):
     ret_obj_new = isamAppliance.create_return_object()
@@ -30,7 +47,7 @@ def get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             break
     return ret_obj_new
 
-def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False,
+def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],
         **optionargs):
     """
     Adding a back-end server to an existing standard or virtual junctions
@@ -93,6 +110,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         jct_srv_json["case_insensitive_url"] = 'yes'
                     else:
                         jct_srv_json["case_insensitive_url"] = 'no' # default
+                    jct_srv_json.pop("case_sensitive_url", None)
             else:
                 jct_srv_json.pop("case_insensitive_url", None)
 
@@ -170,24 +188,6 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         exist_jct.pop('operation_state', None)
         exist_jct.pop('server_state', None)
         exist_jct.pop('query_contents', None)
-
-    server_fields = {'server_hostname': {'type': 'string'},
-                         'server_port': {'type': 'number'},
-                         'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
-                         'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
-                         'http_port': {'type': 'number'},
-                         'local_ip': {'type': 'string'},
-                         'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
-                         'server_dn': {'type': 'string'},
-                         'server_uuid': {'type': 'ignore'},
-                         'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
-                         'windows_style_url': {'type': 'yesno'},
-                         'current_requests': {'type': 'ignore'},
-                         'total_requests': {'type': 'ignore'},
-                         'operation_state': {'type': 'ignore'},
-                         'server_state': {'type': 'ignore'},
-                         'priority': {'type': 'number', 'min_version': "10.0.2.0"},
-                         'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
 
     for _k, _v in optionargs.items():
         # only keep valid arguments
