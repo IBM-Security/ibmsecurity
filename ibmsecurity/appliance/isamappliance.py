@@ -309,6 +309,8 @@ class ISAMAppliance(IBMAppliance):
         used directly.  The invoke_get/invoke_put/etc functions should be used instead.
         """
         self._log_desc(description=description)
+        self.session.cookies.pop('LtpaToken2', None)
+        self.session.cookies.pop('JSESSIONID', None)
 
         warnings, return_call = self._process_warnings(uri=uri, requires_modules=requires_modules,
                                                        requires_version=requires_version, requires_model=requires_model,
