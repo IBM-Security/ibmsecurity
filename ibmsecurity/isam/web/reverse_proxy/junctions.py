@@ -8,14 +8,34 @@ try:
 except NameError:
     basestring = (str, bytes)
 
+# does not work anymore in Python 3.11+
 logger = logging.getLogger(__name__)
+
 
 # URI for this module
 uri = "/wga/reverseproxy"
 requires_modules = ["wga"]
 requires_version = None
 
-def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, force=False):
+server_fields = {'server_hostname': {'type': 'string'},
+                 'server_port': {'type': 'number'},
+                 'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
+                 'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
+                 'http_port': {'type': 'number'},
+                 'local_ip': {'type': 'string'},
+                 'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
+                 'server_dn': {'type': 'string'},
+                 'server_uuid': {'type': 'ignore'},
+                 'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
+                 'windows_style_url': {'type': 'yesno'},
+                 'current_requests': {'type': 'ignore'},
+                 'total_requests': {'type': 'ignore'},
+                 'operation_state': {'type': 'ignore'},
+                 'server_state': {'type': 'ignore'},
+                 'priority': {'type': 'number', 'min_version': "10.0.2.0"},
+                 'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
+
+def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, force=False, warnings=[]):
     """
     Retrieving a list of standard and virtual junctions
 
@@ -26,22 +46,32 @@ def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, for
     :param force:
     :return:
     """
+    logger = isamAppliance.logger
     if detailed and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
-      logger.debug("DETAILED")
-      return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
+        try:
+            returnValue = isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
                                         "{0}/{1}/junctions?detailed=true".format(uri, reverseproxy_id),
                                         requires_modules=requires_modules,
                                         requires_version=requires_version)
+        except:
+            warnings.append("Detailed retrieval of junctions failed unexpectedly.  Falling back to simple version.")
+            returnValue = isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions (fallback)",
+                                    "{0}/{1}/junctions".format(uri, reverseproxy_id),
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version,
+                                    warnings=warnings
+            )
+            returnValue['warnings'] = warnings
+        return returnValue
     else:
       #ignore detailed for older versions
-      logger.debug("IGNORE DETAILED")
       return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
                                     "{0}/{1}/junctions".format(uri, reverseproxy_id),
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
 
-def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=False):
+def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=False, warnings=[]):
     """
     Retrieving the parameters for a single standard or virtual junction
 
@@ -52,18 +82,19 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     :param force:
     :return:
     """
+    logger = isamAppliance.logger
     ret_obj = isamAppliance.invoke_get("Retrieving the parameters for a single standard or virtual junction",
                                        "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id,
                                                                                    junctionname),
                                        requires_modules=requires_modules,
-                                       requires_version=requires_version)
+                                       requires_version=requires_version,
+                                       warnings=warnings)
     # servers are provided as a single string, here we parse it out into a list + dict
     servers = []
     if tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") > 0:
         srv_separator = '#'
     else:
         srv_separator = '&'
-    logger.debug("Server Separator being used: {0}".format(srv_separator))
     srvs = ret_obj['data']['servers'].split(srv_separator)
     logger.debug("Servers in raw string: {0}".format(ret_obj['data']['servers']))
     logger.debug("Number of servers in junction: {0}".format(len(srvs)))
@@ -77,7 +108,6 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
         servers.append(server)
 
     ret_obj['data']['servers'] = servers
-
     return ret_obj
 
 
@@ -109,6 +139,8 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
         priority=None, server_cn=None, silent=None,
+        case_insensitive_url=None,
+        servers=None,
         warnings=[]):
     """
     Creating a standard or virtual junction
@@ -124,6 +156,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param query_contents:
     :param stateful_junction:
     :param case_sensitive_url:
+    :param case_insensitive_url: #v10.0.6
     :param windows_style_url:
     :param https_port:
     :param http_port:
@@ -172,6 +205,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     """
     # See if it's a virtual or standard junction
     isVirtualJunction = True
+    logger = isamAppliance.logger
     if junction_point[:1] == '/':
         isVirtualJunction = False
     if force is True or _check(isamAppliance, reverseproxy_id, junction_point) is False:
@@ -181,7 +215,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             # Create a simple json with just the main junction attributes
             jct_json = {
                 "junction_point": junction_point,
-                "junction_type": junction_type,
+                "junction_type": junction_type.lower(),
                 "server_hostname": server_hostname,
                 "server_port": server_port,
                 "force": force
@@ -245,8 +279,18 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 jct_json["local_ip"] = local_ip
             if query_contents is not None:
                 jct_json["query_contents"] = query_contents
-            if case_sensitive_url is not None:
-                jct_json["case_sensitive_url"] = case_sensitive_url
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
+                # If no case_insensitive_url is passed, we take the old one and invert it.
+                # Who thinks it's a good idea to make changes in an API like this ?
+                if case_insensitive_url is not None:
+                    jct_json["case_insensitive_url"] = case_insensitive_url
+                elif case_sensitive_url is not None:
+                    if case_sensitive_url.lower() == 'no':
+                        jct_json["case_insensitive_url"] = 'yes'
+                    else:
+                        jct_json["case_insensitive_url"] = 'no' # default
+            elif case_sensitive_url is not None:
+                jct_json['case_sensitive_url'] = case_sensitive_url
             if windows_style_url is not None:
                 jct_json["windows_style_url"] = windows_style_url
             if ltpa_keyfile_password is not None:
@@ -355,14 +399,13 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         username=None, password=None, server_uuid=None, local_ip=None, ltpa_keyfile_password=None,
         delegation_support=None, scripting_support=None, insert_ltpa_cookies=None, check_mode=False, force=False,
         http2_junction=None, http2_proxy=None, sni_name=None, description=None,
-        priority=None, server_cn=None, silent=None, servers=None
-        ):
+        priority=None, server_cn=None, silent=None, case_insensitive_url=None, servers=None, warnings=[]):
     """
     Setting a standard or virtual junction - compares with existing junction and replaces if changes are detected
     TODO: Compare all the parameters in the function - LTPA, BA are some that are not being compared
     """
-    warnings = []
     add_required = False
+    logger = isamAppliance.logger
     servers = None # servers is merely there to allow it as a parameter.
     # See if it's a virtual or standard junction
     isVirtualJunction = True
@@ -374,7 +417,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         logger.debug("Check if the junction exists.")
         if _check(isamAppliance, reverseproxy_id, junction_point) is True:
             logger.debug("Junction exists. Compare junction details.")
-            ret_obj = get(isamAppliance, reverseproxy_id=reverseproxy_id, junctionname=junction_point)
+            ret_obj = get(isamAppliance, reverseproxy_id=reverseproxy_id, junctionname=junction_point, warnings=warnings)
 
             logger.debug("See if the backend junction server matches any on the junction. Look for just one match.")
             srvs = ret_obj['data']['servers']
@@ -397,7 +440,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 exist_jct = ret_obj['data']
                 jct_json = {
                     'junction_point': junction_point,
-                    'junction_type': junction_type.upper()
+                    'junction_type': junction_type.lower()
                 }
                 if authz_rules is None:
                     jct_json['authz_rules'] = 'no'
@@ -461,7 +504,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 if remote_http_header is None or remote_http_header == []:
                     jct_json['remote_http_header'] = 'do not insert'
                 elif isinstance(remote_http_header, basestring) and remote_http_header.lower() == 'all':
-                    jct_json['remote_http_header'] = ['iv_creds', 'iv_groups', 'iv_user']
+                    jct_json['remote_http_header'] = ['iv-creds', 'iv-groups', 'iv-user']
                 else:
                     jct_json['remote_http_header'] = remote_http_header
                 # To allow for multiple header values to be sorted during compare convert retrieved data into array
@@ -559,6 +602,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     exist_jct['fsso_config_file'] = jct_json['fsso_config_file']
                 if 'transparent_path_junction' not in exist_jct:
                     exist_jct['transparent_path_junction'] = jct_json['transparent_path_junction']
+
                 logger.debug("New Junction JSON: {0}".format(tools.json_sort(jct_json)))
                 logger.debug("Old Junction JSON: {0}".format(tools.json_sort(exist_jct)))
 
@@ -595,9 +639,10 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                    insert_ltpa_cookies=insert_ltpa_cookies, check_mode=check_mode, force=True,
                    http2_junction=http2_junction, http2_proxy=http2_proxy, sni_name=sni_name, description=description,
                    priority=priority, server_cn=server_cn, silent=silent,
+                   case_insensitive_url=case_insensitive_url,
                    warnings=warnings)
 
-    return isamAppliance.create_return_object()
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def compare(isamAppliance1, isamAppliance2, reverseproxy_id, reverseproxy_id2=None):
@@ -650,25 +695,12 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
     :param force:
     :return:
     """
+    logger = isamAppliance.logger
+
     currentJunctions = get_all(isamAppliance, reverseproxy_id=reverseproxy_id, detailed=True)
 
-    server_fields = {'server_hostname': {'type': 'string'},
-                         'server_port': {'type': 'number'},
-                         'case_sensitive_url': {'type': 'yesno', 'max_version': "10.0.6.0"},
-                         'case_insensitive_url': {'type': 'yesno', 'min_version': "10.0.6.0"},
-                         'http_port': {'type': 'number'},
-                         'local_ip': {'type': 'string'},
-                         'query_contents': {'type': 'string', 'alt_name': 'query_content_url'},
-                         'server_dn': {'type': 'string'},
-                         'server_uuid': {'type': 'ignore'},
-                         'virtual_hostname': {'type': 'string', 'alt_name': 'virtual_junction_hostname'},
-                         'windows_style_url': {'type': 'yesno'},
-                         'current_requests': {'type': 'ignore'},
-                         'total_requests': {'type': 'ignore'},
-                         'operation_state': {'type': 'ignore'},
-                         'server_state': {'type': 'ignore'},
-                         'priority': {'type': 'number', 'min_version': "10.0.2.0"},
-                         'server_cn': {'type': 'string', 'min_version': "10.0.2.0"}}
+    __markChanged = False # use this bool to indicate if there's been a change or not.
+
 
     if currentJunctions['rc'] == 0:
         logger.debug(f"\nCurrent junctions:\n{currentJunctions}")
@@ -677,6 +709,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
         logger.debug("No junctions exist yet.  Create them all.")
         # Force create - There are no junctions yet
         # use expansion
+        __markChanged = True
         for j in junctions:
             j.pop('isVirtualJunction', None)
             __firstserver = j.get('servers', [''])[0]
@@ -690,7 +723,8 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
             else:
                 __servers = None
             j.pop('servers', None)
-            set(isamAppliance, reverseproxy_id, **j, force=True)
+            j['force'] = True  # Force create
+            set(isamAppliance, reverseproxy_id, **j)
             # Also add servers (if servers[] has more than 1 item)
             if __servers is not None:
                 for s in __servers:
@@ -702,6 +736,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
     for j in junctions:
         #result = next((item for item in currentJunctions if item["junction_name"] == j["junction_name"]), None)
         logger.debug(f"Processing junction: {j['junction_point']}")
+
         _checkUpdate = False
         j['isVirtualJunction'] = True
         if j['junction_point'][:1] == '/':
@@ -714,6 +749,12 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
             j['junction_hard_limit'] = '0 - using global value'
         else:
            j['junction_hard_limit'] = str( j.get('junction_hard_limit', None))
+        if j.get('client_ip_http', None) is None or j.get('client_ip_http', '').lower() == 'no':
+            j['client_ip_http'] = 'do not insert'
+        elif j.get('client_ip_http', '').lower() == 'yes':
+            j['client_ip_http'] = 'insert'
+        if j.get('junction_type', None) is not None:
+            j['junction_type'] = j.get('junction_type', '').lower() # if junction_type is empty, rest api will fail anyway
 
         # convenience.
         # check that we have the required fields, if not, get them from the first server (if that exists)
@@ -733,38 +774,61 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
             else:
                 srv_separator = '&'
 
-            if c.get('servers', None) is not None:
-                if type(c.get('servers',[])) is str:
-                  srvs = c['servers'].split(srv_separator)
-                  logger.debug("Servers in raw string: {0}".format(c['servers']))
-                  logger.debug("Number of servers in junction: {0}".format(len(srvs)))
-                  for srv in srvs:
-                      logger.debug("Parsing Server: {0}".format(srv))
-                      server = {}
-                      for s in srv.split(';'):
-                          if s != '':
-                              kv = s.split('!')
-                              server[kv[0]] = kv[1]
-                      servers.append(server)
-                  c['servers'] = servers
-            else:
-                c['servers'] = []
+            if c.get('junction_point', None) == j['junction_point']:
+                if c.get('servers', None) is not None:
+                    if type(c.get('servers', [])) is str:
+                        srvs = c['servers'].split(srv_separator)
+                        logger.debug("Servers in raw string: {0}".format(c['servers']))
+                        logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+                        for srv in srvs:
+                            logger.debug("Parsing Server: {0}".format(srv))
+                            server = {}
+                            for s in srv.split(';'):
+                                if s != '':
+                                    kv = s.split('!')
+                                    server[kv[0]] = kv[1]
+                            servers.append(server)
+                        c['servers'] = servers
+                else:
+                    c['servers'] = []
 
-            if c['junction_point'] == j['junction_point']:
                 logger.debug(f"The junction at {j['junction_point']} already exists.")
-                _checkUpdate = c
+                _checkUpdate = dict(c)
+                break
+            elif c.get('id', None) == j['junction_point']:
+                logger.debug(f"The junction at {j['junction_point']} already exists (simple syntax)")
+                logger.debug(f"Retrieve the details for this junction.")
+                warnings.append(f"Had to use simple get syntax unexpectedly for {j['junction_point']}")
+                _checkUpdate = get(isamAppliance, reverseproxy_id, j['junction_point'], check_mode=False, force=False, warnings=warnings)
+                _checkUpdate = _checkUpdate.get('data', _checkUpdate)
+                if _checkUpdate.get('servers', None) is not None:
+                    if type(_checkUpdate.get('servers', [])) is str:
+                        srvs = _checkUpdate['servers'].split(srv_separator)
+                        logger.debug("Servers in raw string: {0}".format(_checkUpdate['servers']))
+                        logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+                        for srv in srvs:
+                            logger.debug("Parsing Server: {0}".format(srv))
+                            server = {}
+                            for s in srv.split(';'):
+                                if s != '':
+                                    kv = s.split('!')
+                                    server[kv[0]] = kv[1]
+                            servers.append(server)
+                        _checkUpdate['servers'] = servers
+                else:
+                    _checkUpdate['servers'] = []
                 break
 
         if _checkUpdate:
             # perform a comparison.  we receive the actual current junction as input here
-            srvs = c['servers']
+            srvs = _checkUpdate.get('servers', None)
             logger.debug(f"\n\nServers in junction {j['junction_point']}:\n{srvs}")
             add_required = False
-            if not junction_server_exists(isamAppliance, srvs, **j):
+            if srvs is not None and not junction_server_exists(isamAppliance, srvs, **j):
                 add_required = True
             if not add_required:
                 # ok we still need to compare
-                exist_jct = c
+                exist_jct = dict(_checkUpdate)
                 j.pop('isVirtualJunction', None)
                 new_jct = dict(j)
 
@@ -775,7 +839,11 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                     new_jct.pop(_field, None)
                 # remove the servers for the comparison
                 new_jct.pop('servers', None)
+                new_jct.pop('force', None)
                 exist_jct.pop('servers', None)
+                # junction_type
+                if exist_jct.get('junction_type', None) is not None:
+                    exist_jct['junction_type'] = exist_jct.get('junction_type', '').lower()
                 #insert_ltpa_cookies
                 if exist_jct.get('insert_ltpa_cookies', None) is None:
                     exist_jct['insert_ltpa_cookies'] = 'no'
@@ -798,33 +866,44 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                         exist_jct['request_encoding'] = 'lcp_uri'
 
                 # To allow for multiple header values to be sorted during compare convert retrieved data into array
-                if exist_jct['remote_http_header'].startswith('insert - '):
-                    exist_jct['remote_http_header'] = [_word.replace('_','-') for _word in (exist_jct['remote_http_header'][9:]).split(' ')]
-                elif exist_jct['remote_http_header'] == 'do not insert':
-                    exist_jct['remote_http_header'] = []
-                exist_jct['junction_type'] = exist_jct['junction_type'].lower()
+                __rehh = exist_jct.get('remote_http_header', None)
+                if __rehh is not None:
+                    if __rehh.startswith('insert - '):
+                        exist_jct['remote_http_header'] = [_word.replace('_','-') for _word in (__rehh[9:]).split(' ')]
+                    elif exist_jct['remote_http_header'] == 'do not insert':
+                        exist_jct['remote_http_header'] = []
+
+                # basic_auth_mode - filter (default), ignore, supply, gso.
+                __bamode =  exist_jct.get('basic_auth_mode', None)
+                if __bamode is not None:
+                    # GSO
+                    if __bamode == "use GSO":
+                        exist_jct['basic_auth_mode'] = 'gso'
+
                 # only compare values that are in the new request
-                # This may give unexpected results.
+                # This may lead to unexpected results...although I can't think of any
                 exist_jct = {k: v for k, v in exist_jct.items() if k in j.keys()}
 
                 newJSON = json.dumps(new_jct, skipkeys=True, sort_keys=True)
                 logger.debug(f"\nSorted Desired  Junction {j['junction_point']}:\n\n {newJSON}\n")
 
                 oldJSON = json.dumps(exist_jct, skipkeys=True, sort_keys=True)
-                logger.debug(f"\nSorted Current  Junction {c['junction_point']}:\n\n {oldJSON}\n")
+                logger.debug(f"\nSorted Current  Junction {exist_jct.get('junction_point', '')}:\n\n {oldJSON}\n")
 
                 if newJSON != oldJSON:
                     logger.debug("Junctions are found to be different. See JSON for difference.")
                     add_required = True
             if add_required:
+                __markChanged = True
                 # Run set()
                 logger.debug("\n\nUpdate junction\n\n")
-
-                set(isamAppliance, reverseproxy_id, **j, force=True)
+                warnings.append(f"Updating junction {j['junction_point']}")
+                j['force'] = True  # force create
+                j['warnings'] = warnings
+                __result = set(isamAppliance, reverseproxy_id, **j)
                 logger.debug(f"Adding servers")
                 # Also add servers (if servers[] has more than 1 item)
                 if len(j.get('servers', [''])) > 1:
-
                     j.pop('servers', None)
                     for s in __servers:
                         for _field, kval in server_fields.items():
@@ -832,12 +911,15 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                                 j[_field] = s.get(_field, None)
                         junctions_server.set(isamAppliance, reverseproxy_id, **j)
             else:
-                logger.debug(f"\n\nJunction {j.get('junction_point','')}does not need updating\n\n")
-                warnings.append(f"Junction {j.get('junction_point','')}does not need updating")
+                logger.debug(f"\n\nJunction {j.get('junction_point','')} does not need updating\n\n")
+                warnings.append(f"Junction {j.get('junction_point','')} does not need updating")
 
         else:
             # Force create - this junction does not exist yet
             j.pop('isVirtualJunction', None)
+            j['force'] = True # force create
+            __markChanged = True
+            j['warnings'] = warnings
             __firstserver = j.get('servers', [''])[0]
             for _field in list(server_fields.keys()):
                 if __firstserver.get(_field, None) is not None and j.get(_field, None) is None:
@@ -845,7 +927,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                         logger.debug(f"{_field} from {__firstserver.get('server_hostname')} copied to junction level")
                         j[_field] = __firstserver.get(_field, None)
             logger.debug(f"Creating new junction with {j}")
-            set(isamAppliance, reverseproxy_id, **j, force=True)
+            set(isamAppliance, reverseproxy_id, **j)
             logger.debug(f"Adding servers")
             # Also add servers (if servers[] has more than 1 item)
             if len(j.get('servers', [''])) > 1:
@@ -855,7 +937,11 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                     for _field, kval in server_fields.items():
                         if s.get(_field, None) is not None:
                             j[_field] = s.get(_field, None)
-                    junctions_server.set(isamAppliance, reverseproxy_id, **j)
+                    return junctions_server.set(isamAppliance, reverseproxy_id, **j)
+    if __markChanged:
+        return isamAppliance.create_return_object(changed=True, warnings=warnings)
+    else:
+        return isamAppliance.create_return_object(warnings=warnings)
 #def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],        **optionargs):
 
 def junction_server_exists(isamAppliance, srvs, server_hostname: str, server_port, case_sensitive_url='no',

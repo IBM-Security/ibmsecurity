@@ -47,7 +47,7 @@ def get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             break
     return ret_obj_new
 
-def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],
+def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False,
         **optionargs):
     """
     Adding a back-end server to an existing standard or virtual junctions
@@ -64,6 +64,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :param query_contents:
     :param stateful_junction:
     :param case_sensitive_url:
+    :param case_insensitive_url:  #v1.0.6+
     :param windows_style_url:
     :param https_port:
     :param http_port:
@@ -79,10 +80,10 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     :return:
     """
     # Search for the UUID of the junctioned server
-    if force is False:
+    if not force:
         ret_obj = search(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port)
 
-    if force is True or ret_obj['data'] == {}:
+    if force or ret_obj['data'] == {}:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -90,7 +91,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 "junction_point": junction_point,
                 "junction_type": junction_type,
                 "server_hostname": server_hostname,
-                "server_port": server_port,
+                "server_port": server_port
             }
             for _k, _v in optionargs.items():
                 if _v is not None:
