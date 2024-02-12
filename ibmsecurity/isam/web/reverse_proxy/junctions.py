@@ -734,7 +734,6 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                     junctions_server.set(isamAppliance, reverseproxy_id, **j)
     # Compare the junctions and the currentJunctions.
     for j in junctions:
-        #result = next((item for item in currentJunctions if item["junction_name"] == j["junction_name"]), None)
         logger.debug(f"Processing junction: {j['junction_point']}")
 
         _checkUpdate = False
@@ -831,16 +830,12 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                 exist_jct = dict(_checkUpdate)
                 j.pop('isVirtualJunction', None)
                 new_jct = dict(j)
-
-                exist_jct.pop('active_worker_threads', None)
                 # remove the server fields - this has already been compared
                 for _field, kval in server_fields.items():
-                    exist_jct.pop(_field, None)
                     new_jct.pop(_field, None)
                 # remove the servers for the comparison
                 new_jct.pop('servers', None)
                 new_jct.pop('force', None)
-                exist_jct.pop('servers', None)
                 # junction_type
                 if exist_jct.get('junction_type', None) is not None:
                     exist_jct['junction_type'] = exist_jct.get('junction_type', '').lower()
@@ -881,8 +876,8 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                         exist_jct['basic_auth_mode'] = 'gso'
 
                 # only compare values that are in the new request
-                # This may lead to unexpected results...although I can't think of any
-                exist_jct = {k: v for k, v in exist_jct.items() if k in j.keys()}
+                # This does not (always) compare values correctly where you just remove the key.  In that case, you'd have to change a different key as well (eg. description)
+                exist_jct = {k: v for k, v in exist_jct.items() if k in new_jct.keys()}
 
                 newJSON = json.dumps(new_jct, skipkeys=True, sort_keys=True)
                 logger.debug(f"\nSorted Desired  Junction {j['junction_point']}:\n\n {newJSON}\n")
@@ -942,7 +937,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
         return isamAppliance.create_return_object(changed=True, warnings=warnings)
     else:
         return isamAppliance.create_return_object(warnings=warnings)
-#def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],        **optionargs):
+
 
 def junction_server_exists(isamAppliance, srvs, server_hostname: str, server_port, case_sensitive_url='no',
                          isVirtualJunction=False, http_port=None, local_ip=None,
