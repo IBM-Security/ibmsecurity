@@ -1,7 +1,11 @@
----
 # Manual change log
 
 ## Unreleased
+
+## 2024.2.23.0
+
+- feature: set_all function for reverse proxy junctions
+- fix: ignore_if_down cannot be set to False (#410)
 
 ## 2023.11.10.0
 

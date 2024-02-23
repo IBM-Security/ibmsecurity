@@ -67,7 +67,7 @@ def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=Fa
                 'suffix': suffix
             }
 
-            if ignore_if_down and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
                 json_data['ignore_if_down'] = ignore_if_down
 
             # Do not pass if there is no value - call fails otherwise
@@ -86,11 +86,11 @@ def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl
     """
     Update an existing federated directory
     """
-    if force is True or (
+    if force or (
             _exists(isamAppliance, id) and _check(isamAppliance, id, hostname, port, bind_dn, bind_pwd,
                                                           use_ssl, client_cert_label, suffix, ignore_if_down) is False):
 
-        if check_mode is True:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             json_data = {
@@ -101,7 +101,7 @@ def update(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl
                 'use_ssl': use_ssl,
                 'suffix': suffix
             }
-            if ignore_if_down and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
                 json_data['ignore_if_down'] = ignore_if_down
             # Do not pass if there is no value - call fails otherwise
             if client_cert_label is not None:
@@ -170,7 +170,7 @@ def _check(isamAppliance, id, hostname, port, bind_dn, bind_pwd, use_ssl, client
     }
     if use_ssl is True:
         set_value['client_cert_label'] = client_cert_label
-    if ignore_if_down and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
+    if tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
         set_value['ignore_if_down'] = ignore_if_down
 
     newEntriesJSON = json.dumps(set_value, skipkeys=True, sort_keys=True)
