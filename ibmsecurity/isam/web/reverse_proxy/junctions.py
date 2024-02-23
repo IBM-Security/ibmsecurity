@@ -65,6 +65,7 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     :param junctionname:
     :param check_mode:
     :param force:
+    :param warnings
     :return:
     """
     logger = isamAppliance.logger

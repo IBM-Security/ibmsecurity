@@ -2,8 +2,36 @@
 
 ## Unreleased
 
+## 2024.2.23.0
+
 - feature: set_all function for reverse proxy junctions
 - fix: ignore_if_down cannot be set to False (#410)
+
+## 2023.11.10.0
+
+- fix: available_updates.py state is no longer available in 10.0.5 or higher, and too many variables in post request
+- fix: ssh_keys api added proper idempotency (#395)
+- feature: json input and output for aac authentication policies (#399)
+- feature: json input and output for aac access control policies (#400)
+- feature: add use_json flag in audit configuration
+
+## 2023.7.6.0
+
+- feature: new acl api (v10.0.6)
+- feature: ssh keys admin and sysaccount (v10.0.6)
+- feature: waf and waf_config api (v10.0.5)
+- feature: ivg configuration (v10.0.2)
+- feature: fido metadata services (v10.0.4)
+
+## 2023.7.4.0
+
+- fix: management_ssl_certificate.py warnings cannot be None
+- known_issue: management_ssl_certificate.py idempotency checks do not always work (issuer contains oid for email=)
+
+## 2023.6.30.0
+
+- fix: state parameter no longer exists in v10.0.5 in available_updates.py (#385)
+- critical change: case_sensitive_url -> case_insensitive_url in v10.0.6 (#386)
 
 ## 2023.4.26.0
 

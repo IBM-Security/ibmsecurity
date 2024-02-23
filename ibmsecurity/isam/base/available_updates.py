@@ -1,4 +1,5 @@
 import logging
+import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
 
@@ -130,16 +131,25 @@ def install(isamAppliance, type, version, release_date, name, check_mode=False, 
 
     return isamAppliance.create_return_object()
 
-
 def _check(isamAppliance, type, version, release_date, name):
     ret_obj = get(isamAppliance)
+    warnings = []
     for upd in ret_obj['data']:
         # If there is an installation in progress then abort
-        if upd['state'] == 'Installing':
-            logger.debug("Detecting a state of installing...")
-            return False
-        if upd['type'] == type and upd['version'] == version and upd['release_date'] == release_date and upd[
-            'name'] == name:
+        # API changed in v10.0.5.0 , state, schedule_date,
+        #   iso_scheduled_date and expired_install are no longer available.
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.5.0") >= 0:
+            if 'state' in upd and upd['state'] == 'Installing':
+                logger.debug("Detecting a state of installing...")
+                return False
+        else:
+            warnings.append("Appliance at version: {0}, state can no longer be checked in 10.0.5.0 or higher. Ignoring for this call.".format(
+                    isamAppliance.facts["version"]))
+
+        logger.info(upd)
+
+        if upd['type'] == type and upd['version'] == version and \
+                upd['release_date'] == release_date and upd['name'] == name:
             logger.debug("Requested firmware ready for install...")
             return True
 
