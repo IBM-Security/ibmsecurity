@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibmsecurity"
-version = "2023.4.26.0"
+version = "2024.2.23.0"
 authors = [
   { name="IBM", email="secorch@us.ibm.com" },
 ]
