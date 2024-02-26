@@ -2,10 +2,12 @@
 
 ## Unreleased
 
-## 2024.2.23.0
+## 2024.2.26.0
 
 - feature: set_all function for reverse proxy junctions
 - fix: ignore_if_down cannot be set to False (#410)
+- fix: resolve issues created in reverse proxy junctions (set() function)
+- refactor: change email address for author
 
 ## 2023.11.10.0
 
