@@ -404,11 +404,16 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         if _check(isamAppliance, reverseproxy_id, junction_point):
             logger.debug("Junction exists. Compare junction details.")
             ret_obj = get(isamAppliance, reverseproxy_id=reverseproxy_id, junctionname=junction_point, warnings=warnings)
-
+            exist_jct = ret_obj['data']
+            jct_json = {
+                'junction_point': junction_point,
+                'junction_type': junction_type.lower(),
+                'server_hostname': server_hostname,
+                'server_port': server_port
+            }
             logger.debug("See if the backend junction server matches any on the junction. Look for just one match.")
             srvs = ret_obj['data']['servers']
             srvs_len = len(srvs)
-
 
             if not junction_server_exists(isamAppliance, srvs=srvs,
                                           server_hostname=server_hostname,
@@ -427,13 +432,6 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                                           case_insensitive_url=case_insensitive_url):
                 add_required = True
             elif not add_required:
-                exist_jct = ret_obj['data']
-                jct_json = {
-                    'junction_point': junction_point,
-                    'junction_type': junction_type.lower(),
-                    'server_hostname': server_hostname,
-                    'server_port': server_port
-                }
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") >= 0:
                     # If no case_insensitive_url is passed, we take the old one and invert it.
                     # Who thinks it's a good idea to make changes in an API like this ?
@@ -501,9 +499,11 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                         jct_json['preserve_cookie'] = preserve_cookie
 
                 if remote_http_header is None or remote_http_header == []:
-                    jct_json['remote_http_header'] = 'do not insert'
+                    logger.debug("\nSetting remote_http_header to do not insert")
+                    if not isVirtualJunction:
+                        jct_json['remote_http_header'] = 'do not insert'
                 else:
-                    jct_json['remote_http_header'] = [_word.replace('_', '-') for _word in
+                   jct_json['remote_http_header'] = [_word.replace('_', '-') for _word in
                                                      list(remote_http_header)]
                 # To allow for multiple header values to be sorted during compare convert retrieved data into array
                 if request_encoding is None:
@@ -724,13 +724,13 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
         if j.get('junction_type', None) is not None:
             j['junction_type'] = j.get('junction_type', '').lower() # if junction_type is empty, rest api will fail anyway
         # update remote http header logic here
-        if j.get('remote_http_header', None) is None or j.get('remote_http_header', None) == []:
-            j['remote_http_header'] = 'do not insert'
+        if j.get('remote_http_header', None) is None:
+            logger.debug("No remote http header")
         elif isinstance(j.get('remote_http_header', None), list):
             j['remote_http_header'] = [_word.replace('_', '-') for _word in
                                               j.get('remote_http_header', None)]
         else:
-            j['remote_http_header'] = [j.get('remote_http_header', None)]
+            j['remote_http_header'] = [j.get('remote_http_header', '')]
 
         # check that we have the required fields, if not, get them from the first server (if that exists)
         __firstserver = j.get('servers', [''])[0]
@@ -804,7 +804,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                 __markChanged = True
                 # Run set()
                 logger.debug("\n\nUpdate junction\n\n")
-                warnings.append(f"Updating junction {j['junction_point']}")
+                warnings.append(f"Instance {reverseproxy_id}: Updating junction {j['junction_point']}")
                 j['force'] = True  # force create
                 j['warnings'] = warnings
                 j.pop('isVirtualJunction', None)
@@ -820,7 +820,7 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                         junctions_server.set(isamAppliance, reverseproxy_id, **j)
             else:
                 logger.debug(f"\n\n{reverseproxy_id}: Junction {j.get('junction_point','')} does not need updating\n\n")
-                warnings.append(f"{reverseproxy_id}: Junction {j.get('junction_point','')} does not need updating")
+                warnings.append(f"Instance {reverseproxy_id}: Junction {j.get('junction_point','')} does not need updating")
         else:
             # Force create - this junction does not exist yet
             j.pop('isVirtualJunction', None)
@@ -997,6 +997,18 @@ def junction_exists(isamAppliance, exist_jct, new_j):
             logger.debug(f"Sorted string content of remote_http_header {__nrehh}")
             if __nrehh == '["iv-creds", "iv-groups", "iv-user"]':
                 exist_jct['remote_http_header'] = ['all']
+            if __nrehh.replace('"', '') == "do not insert":
+                exist_jct['remote_http_header'] = []
+
+        # scripting support default
+        __scripting_support = exist_jct.get('scripting_support', None)
+        if __scripting_support is None:
+            exist_jct['scripting_support'] = 'no'
+
+        # scripting support default
+        __transparent_path_junction = exist_jct.get('transparent_path_junction', None)
+        if __transparent_path_junction is None:
+            exist_jct['transparent_path_junction'] = 'no'
 
         # basic_auth_mode - filter (default), ignore, supply, gso.
         __bamode = exist_jct.get('basic_auth_mode', None)
@@ -1004,6 +1016,7 @@ def junction_exists(isamAppliance, exist_jct, new_j):
             # GSO
             if __bamode == "use GSO":
                 exist_jct['basic_auth_mode'] = 'gso'
+
         # Remove servers field for comparing
         new_jct.pop("servers", None)
         # only compare values that are in the new request
