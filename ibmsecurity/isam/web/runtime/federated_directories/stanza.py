@@ -64,15 +64,13 @@ def add(isamAppliance, id, hostname, port, bind_dn, bind_pwd, suffix, use_ssl=Fa
                 'bind_dn': bind_dn,
                 'bind_pwd': bind_pwd,
                 'use_ssl': use_ssl,
-                'suffix': suffix
+                'suffix': suffix,
+                'client_cert_label': client_cert_label
             }
 
             if tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
                 json_data['ignore_if_down'] = ignore_if_down
 
-            # Do not pass if there is no value - call fails otherwise
-            if client_cert_label is not None:
-                json_data['client_cert_label'] = client_cert_label
             return isamAppliance.invoke_post(
                 "Create a new federated directory",
                 "/isam/runtime_components/federated_directories/v1", json_data)
