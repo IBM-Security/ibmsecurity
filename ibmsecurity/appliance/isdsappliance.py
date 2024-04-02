@@ -4,25 +4,25 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
 from .ibmappliance import IBMError
+from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 from io import open
 
 try:
     basestring
 except NameError:
-
     basestring = (str, bytes)
 
 
 class ISDSAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443):
+    def __init__(self, hostname, user, lmi_port=443, verify=False):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISDSAppliance')
         if isinstance(lmi_port, basestring):
             self.lmi_port = int(lmi_port)
         else:
             self.lmi_port = lmi_port
-
+        self.verify = verify
         IBMAppliance.__init__(self, hostname, user)
 
     def _url(self, uri):
@@ -37,15 +37,19 @@ class ISDSAppliance(IBMAppliance):
             self.logger.info('*** ' + description + ' ***')
 
     def _suppress_ssl_warning(self):
-        # Disable https warning because of non-standard certs on appliance
+        # Don't suppress ssl warnings if verifying ssl certificates is enabled.
+        # The ssl warnings are disabled, but there's still a warning shown.
+        if self.verify:
+            return
         try:
-            self.logger.debug("Suppressing SSL Warnings.")
+            self.logger.warning("Suppressing SSL Warnings.")
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         except AttributeError:
             self.logger.warning("load requests.packages.urllib3.disable_warnings() failed")
 
     def _process_response(self, return_obj, http_response, ignore_error):
 
+        return_obj['rsp'] = http_response
         return_obj['rc'] = http_response.status_code
 
         # Examine the response.
@@ -60,7 +64,8 @@ class ISDSAppliance(IBMAppliance):
         else:
             return_obj['rc'] = 0
 
-            # Handle if there was json on input but response was not in json format
+        # Handle if there was json on input but response was not in json format
+        json_data = {}
         try:
             json_data = json.loads(http_response.text)
         except ValueError:
@@ -78,9 +83,7 @@ class ISDSAppliance(IBMAppliance):
                     return_obj.data = http_response.content
                     return
 
-        if http_response.text == "":
-            json_data = {}
-        else:
+        if http_response.text != "":
             json_data = json.loads(http_response.text)
 
         return_obj['data'] = json_data
@@ -167,7 +170,7 @@ class ISDSAppliance(IBMAppliance):
 
         try:
             r = requests.post(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
-                              files=files, verify=False, headers=headers)
+                              files=files, verify=self.verify, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -211,7 +214,7 @@ class ISDSAppliance(IBMAppliance):
 
         try:
             r = requests.put(url=self._url(uri=uri), data=data, auth=(self.user.username, self.user.password),
-                             files=files, verify=False, headers=headers)
+                             files=files, verify=self.verify, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -251,7 +254,7 @@ class ISDSAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = requests.get(url=self._url(uri=uri), auth=(self.user.username, self.user.password), verify=False,
+            r = requests.get(url=self._url(uri=uri), auth=(self.user.username, self.user.password), verify=self.verify,
                              stream=True, headers=headers)
 
             if (r.status_code != 200 and r.status_code != 204 and r.status_code != 201):
@@ -319,14 +322,14 @@ class ISDSAppliance(IBMAppliance):
 
                 if data != {}:
                     r = func(url=self._url(uri), data=json_data, auth=(self.user.username, self.user.password),
-                             verify=False, headers=headers)
+                             verify=self.verify, headers=headers)
                 else:
                     r = func(url=self._url(uri), auth=(self.user.username, self.user.password),
-                             verify=False, headers=headers)
+                             verify=self.verify, headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
                          auth=(self.user.username, self.user.password),
-                         verify=False, headers=headers)
+                         verify=self.verify, headers=headers)
 
             if func != requests.get:
                 return_obj['changed'] = True  # Anything but GET should result in change
