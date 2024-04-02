@@ -205,7 +205,7 @@ def _get_config_data(extId, config_data):
     if config_data is None:
         return json.dumps({extId: extId})
     if isinstance(config_data, basestring):
-        return '{extId:}' + extId + ',' + config_data + '}'
+        return '{extId:' + extId + ',' + config_data + '}'
     config_data['extId'] = extId
     return json.dumps(config_data)
 
