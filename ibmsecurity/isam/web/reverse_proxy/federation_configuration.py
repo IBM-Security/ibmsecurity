@@ -25,11 +25,11 @@ def config(isamAppliance, instance_id, federation_id=None, federation_name=None,
     """
     if username is None:
         logger.info("Required parameter username missing. Skipping config.")
-        return isamAppliance.create_return_object()
+        return isamAppliance.create_return_object(warning=["Required parameter username missing. Skipping config."])
 
     if password is None:
         logger.info("Required parameter password missing. Skipping config.")
-        return isamAppliance.create_return_object()
+        return isamAppliance.create_return_object(warning=["Required parameter password missing. Skipping config."])
 
     if federation_name is not None:
         ret_obj = ibmsecurity.isam.fed.federations.search(isamAppliance, name=federation_name, check_mode=check_mode,
