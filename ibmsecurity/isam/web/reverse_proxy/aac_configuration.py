@@ -6,7 +6,7 @@ requires_modules = ["wga"]
 requires_version = "9.0.6.0"
 
 
-def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username='easuser', password='passw0rd',
+def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=None, password=None,
            junction="/mga", reuse_certs=False, reuse_acls=False, check_mode=False, force=False):
     """
     Authentication and Context based access configuration for a reverse proxy instance
@@ -24,6 +24,13 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     :param force:
     :return:
     """
+    if username is None:
+        logger.info("Required parameter username missing. Skipping config.")
+        return isamAppliance.create_return_object(warning=["Required parameter username missing. Skipping config."])
+
+    if password is None:
+        logger.info("Required parameter password missing. Skipping config.")
+        return isamAppliance.create_return_object(warning=["Required parameter password missing. Skipping config."])
     warnings = [
         "Idempotency logic will check for existence of {} junction. Use force=True to override.".format(junction)]
     if force is True or _check_config(isamAppliance, instance_id, junction) is False:

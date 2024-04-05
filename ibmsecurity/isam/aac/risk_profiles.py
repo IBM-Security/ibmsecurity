@@ -155,6 +155,7 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
     """
     update_required = False
     ret_obj = get(isamAppliance, name)
+    json_data = {}
     if ret_obj['data'] == {}:
         logger.warning("Risk Profile not found, returning no update required.")
         return None, update_required, json_data

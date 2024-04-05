@@ -101,6 +101,7 @@ def _check(isamAppliance, description, properties):
     """
     update_required = False
     ret_obj = get(isamAppliance, description)
+    json_data = {}
     if ret_obj['data'] == {}:
         logger.warning("Attribute Matcher not found, returning no update required.")
         return None, update_required, json_data

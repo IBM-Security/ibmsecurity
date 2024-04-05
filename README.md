@@ -23,7 +23,91 @@ The following Python Packages are optional:
 Appliances need to have an ip address defined for their LMI. This may mean that appliances have had their initial setup 
 done with license acceptance.
 
+## TLS verification enabled (v2024.4.5)
 
+These changes are backwards compatible. We default to not verifying but always display a notice:
+
+````markdown
+Certificate verification has been disabled. Python is NOT verifying the SSL 
+certificate of the host appliance and InsecureRequestWarning messages are 
+
+being suppressed for the following host:
+
+https://{0}:{1}
+
+To use certificate verification:
+
+1. When the certificate is trusted by your Python environment:
+   Instantiate all instances of ISAMAppliance with verify=True or set 
+   the environment variable IBMSECLIB_VERIFY_CONNECTION=True.
+2. When the certificate is not already trusted in your Python environment:
+   Instantiate all instances of ISAMAppliance with the verify parameter
+   set to the fully qualified path to a CA bundle.
+
+See the following URL for more details:
+https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification
+````
+To remediate this cert validation warning, consider the instructions below:
+
+Correct usage:
+
+If you have the cert on disk somewhere,
+instantiate the ISAMAppliance with:
+
+    ISAMAppliance(…, verify=<path to cert>)
+
+You can retrieve this from appliance using a command like:
+
+    openssl s_client -connect ${HOSTNAME}:${PORT} </dev/null 2>/dev/null | openssl x509 -outform pem >  isamAppliance.pem
+
+If the cert is already trusted in your Python environment,
+instantiate the ISAMAppliance with:
+
+    ISAMAppliance(…, verify=True)
+
+or set the environment variable: `IBMSECLIB_VERIFY_CONNECTION=true`
+
+If you receive errors about the hostname not matching the certificate:
+
+This might look like:
+````
+<stack trace>
+
+…
+
+    raise CertificateError("hostname %r doesn't match %r" % (hostname, dnsnames[0]))
+
+urllib3.util.ssl_match_hostname.CertificateError: hostname '192.168.42.111' doesn't match 'appliance.ibm.com'
+
+````
+
+Ensure the hostname used when instantiating your ISAMAppliance matches the Subject Alternative Name of the cert.
+
+Check with: 
+
+    openssl x509 -in <cert-pem-file> -text
+
+Example:
+
+    $ openssl x509 -in /path/to/appliance.pem -text
+
+Certificate:
+
+    Data:
+        Version: 3 (0x2)
+        …
+            X509v3 Subject Alternative Name:
+                DNS:appliance.ibm.com
+…
+
+The following will generate errors:
+
+    ISAMAppliance(host=”192.168.42.111”, lmi_port=443, verify=/path/to/appliance.pem)
+
+as host does not match the Subject Alternative Name.
+Instead, use:
+
+    ISAMAppliance(host=”appliance.ibm.com”, lmi_port=443, verify=/path/to/appliance.pem)
 
 ## Versioning
 
