@@ -94,7 +94,7 @@ See the following URL for more details:
 
     def _process_response(self, return_obj, http_response, ignore_error):
 
-        return_obj['rsp'] = http_response
+        # return_obj['rsp'] = http_response # Do not add this - breaks the ISAM Collection's connection
         return_obj['rc'] = http_response.status_code
 
         # Examine the response.
