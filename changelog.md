@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+# 2024.4.5.0
+
+- fix: update stanza.py (#414)
+- fix: remove curly braces from get_config_data function (#417)
+- security fix: enable verify ssl (V-94) (#416)
+- security fix: show a warning about not verifying tls for connections to the LMI (V-93) (#416)
+- security fix: remove hardcoded usernames and passwords (V-95) (#416)
+- security fix: uninitialized variables (V-96) (#416)
+- documentation: update readme with info on how to handle the tls verification
+
 ## 2024.2.26.0
 
 - feature: set_all function for reverse proxy junctions
