@@ -7,6 +7,7 @@ from .ibmappliance import IBMError
 from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 from io import open
+from os import environ
 
 try:
     basestring
@@ -15,15 +16,56 @@ except NameError:
 
 
 class ISVGAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443, verify=False):
+    def __init__(self, hostname, user, lmi_port=443, verify=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISVGAppliance')
         if isinstance(lmi_port, basestring):
             self.lmi_port = int(lmi_port)
         else:
             self.lmi_port = lmi_port
-        self.verify = verify
+        self.hostname = hostname
+        self.session = requests.session()
+
+        # If we did not get a value for verify, try the environment variable
+        if verify is None:
+            verify = str(environ.get("IBMSECLIB_VERIFY_CONNECTION", False)).lower() in ["true", "yes"]
+
+        self.cert = cert
+
+        self.disable_urllib_warnings = False
+        if self.cert is None:
+            self.logger.debug('Cert object is None, using BA Auth with userid/password.')
+            self.session.auth = (user.username, user.password)
+        else:
+            self.logger.debug('Using cert based auth, since cert object is not None.')
+            self.session.cert = self.cert
+
+        self._set_ssl_verification(requests_verify_param=verify)
+
         IBMAppliance.__init__(self, hostname, user)
+
+    def _set_ssl_verification(self, requests_verify_param):
+        self.verify = requests_verify_param
+        self.session.verify = self.verify
+        if self.verify is None or self.verify is False:
+            self.disable_urllib_warnings = True
+            self.logger.warning("""
+Certificate verification has been disabled. Python is NOT verifying the SSL 
+certificate of the host appliance and InsecureRequestWarning messages are 
+being suppressed for the following host:
+  https://{0}:{1}
+
+To use certificate verification:
+  1. When the certificate is trusted by your Python environment:
+        Instantiate all instances of ISVGAppliance with verify=True or set 
+        the environment variable IBMSECLIB_VERIFY_CONNECTION=True.
+  2. When the certificate is not already trusted in your Python environment:
+        Instantiate all instances of ISAMAppliance with the verify parameter
+        set to the fully qualified path to a CA bundle.
+        
+See the following URL for more details:
+  https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification
+""".format(self.hostname, self.lmi_port))
 
     def _url(self, uri):
         # Build up the URL
@@ -37,10 +79,11 @@ class ISVGAppliance(IBMAppliance):
             self.logger.info('*** ' + description + ' ***')
 
     def _suppress_ssl_warning(self):
-        # Don't suppress ssl warnings if verifying ssl certificates is enabled.
-        # The ssl warnings are disabled, but there's still a warning shown.
-        if self.verify:
+        # If we have trust setup correctly, we do not want to suppress these warnings.
+        if not self.disable_urllib_warnings:
             return
+
+        # Disable https warning because of non-standard certs on appliance
         try:
             self.logger.warning("Suppressing SSL Warnings.")
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
