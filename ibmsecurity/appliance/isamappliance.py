@@ -1,5 +1,6 @@
 import json
 import requests
+import traceback
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import logging
 from .ibmappliance import IBMAppliance
@@ -111,7 +112,7 @@ See the following URL for more details:
             if http_response.text != "":
                 self.logger.error("     text: " + http_response.text)
             if not ignore_error:
-                raise IBMError("HTTP Return code: {0}".format(http_response.status_code), http_response.text, http_response)
+                raise IBMError("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
             return_obj['changed'] = False  # force changed to be False as there is an error
         else:
             return_obj['rc'] = 0
@@ -157,7 +158,7 @@ See the following URL for more details:
             self.logger.critical("Failed to connect to server.")
             raise IBMError("HTTP Return code: 502", "Failed to connect to server")
         else:
-            if self.debug: self.logger.debug("Failed to connect to server.")
+            self.logger.debug("Failed to connect to server.")
             return_obj['rc'] = 502
 
     def _process_warnings(self, uri, requires_modules, requires_version, requires_model, warnings=[]):
@@ -342,7 +343,7 @@ See the following URL for more details:
                 if r.text != "":
                     self.logger.error("     text: " + r.text)
                 if not ignore_error:
-                    raise IBMError("HTTP Return code: {0}".format(r.status_code), r.text, r)
+                    raise IBMError("HTTP Return code: {0}".format(r.status_code), r.text)
                 else:
                     return_obj['rc'] = r.status_code
                     return_obj['data'] = {'msg': 'Unable to extract contents to file!'}
@@ -525,7 +526,7 @@ See the following URL for more details:
                 self.logger.critical("Failed to connect to server.")
                 raise IBMError("HTTP Return code: 502", "Failed to connect to server")
             else:
-                if self.debug: self.logger.debug("Failed to connect to server.")
+                self.logger.debug("Failed to connect to server.")
                 return_obj.rc = 502
 
         return return_obj
@@ -632,7 +633,7 @@ See the following URL for more details:
                         if r.text != "":
                             self.logger.error("     text: " + r.text)
                         if not ignore_error:
-                            raise IBMError("HTTP Return code: {0}".format(r.status_code), r.text, r)
+                            raise IBMError("HTTP Return code: {0}".format(r.status_code), r.text)
                         else:
                             return_obj['rc'] = r.status_code
                             return_obj['data'] = {'msg': 'Unable to extract contents to file!'}
@@ -741,14 +742,14 @@ See the following URL for more details:
                 self.facts['activations'].append(activation['id'])
 
     def _log_request(self, method, url, desc):
-        if self.debug: self.logger.debug("Request: %s %s desc=%s", method, url, desc)
+        self.logger.debug("Request: %s %s desc=%s", method, url, desc)
 
     def _log_response(self, response):
         if response:
-            if self.debug: self.logger.debug("Response: %d", response.get('rc'))
+            self.logger.debug("Response: %d", response.get('rc'))
             # self.logger.debug("Response: %i %i warnings:%s",
             #                     response.get('rc'),
             #                     response.get('status_code'),
             #                     response.get('warnings'))
         else:
-            if self.debug: self.logger.debug("Response: None")
+            self.logger.debug("Response: None")
