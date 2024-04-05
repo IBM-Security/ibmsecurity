@@ -402,9 +402,9 @@ See the following URL for more details:
         try:
             if func == self.session.get or func == self.session.delete:
                 if data != {}:
-                    r = func(url=self._url(uri), data=json_data, headers=headers)
+                    r = func(url=self._url(uri), data=json_data, headers=headers, verify=self.verify)
                 else:
-                    r = func(url=self._url(uri), headers=headers)
+                    r = func(url=self._url(uri), headers=headers, verify=self.verify)
             else:
                 r = func(url=self._url(uri), data=json_data,
                          headers=headers, verify=self.verify, cert=self.cert)
