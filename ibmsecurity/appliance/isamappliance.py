@@ -7,6 +7,7 @@ from .ibmappliance import IBMError
 from .ibmappliance import IBMFatal
 from ibmsecurity.utilities import tools
 from io import open
+from os import environ
 
 try:
     basestring
@@ -15,7 +16,7 @@ except NameError:
 
 
 class ISAMAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443, cert=None, verify=False, debug=True):
+    def __init__(self, hostname, user, lmi_port=443, cert=None, verify=None, debug=True):
         self.logger = logging.getLogger(__name__)
         self.debug = debug
         if self.debug: self.logger.debug('Creating an ISAMAppliance')
@@ -23,15 +24,49 @@ class ISAMAppliance(IBMAppliance):
             self.lmi_port = int(lmi_port)
         else:
             self.lmi_port = lmi_port
+        self.hostname = hostname
         self.session = requests.session()
-        if cert is None:
+
+        # If we did not get a value for verify, try the environment variable
+        if verify is None:
+            verify = str(environ.get("IBMSECLIB_VERIFY_CONNECTION", False)).lower() in ["true", "yes"]
+
+        self.cert = cert
+
+        self.disable_urllib_warnings = False
+        if self.cert is None:
             self.logger.debug('Cert object is None, using BA Auth with userid/password.')
             self.session.auth = (user.username, user.password)
         else:
             self.logger.debug('Using cert based auth, since cert object is not None.')
-            self.session.cert = cert
-        self.verify = verify
+            self.session.cert = self.cert
+
+        self._set_ssl_verification(requests_verify_param=verify)
+
         IBMAppliance.__init__(self, hostname, user)
+
+    def _set_ssl_verification(self, requests_verify_param):
+        self.verify = requests_verify_param
+        self.session.verify = self.verify
+        if self.verify is None or self.verify is False:
+            self.disable_urllib_warnings = True
+            self.logger.warning("""
+Certificate verification has been disabled. Python is NOT verifying the SSL 
+certificate of the host appliance and InsecureRequestWarning messages are 
+being suppressed for the following host:
+  https://{0}:{1}
+
+To use certificate verification:
+  1. When the certificate is trusted by your Python environment:
+        Instantiate all instances of ISAMAppliance with verify=True or set 
+        the environment variable IBMSECLIB_VERIFY_CONNECTION=True.
+  2. When the certificate is not already trusted in your Python environment:
+        Instantiate all instances of ISAMAppliance with the verify parameter
+        set to the fully qualified path to a CA bundle.
+        
+See the following URL for more details:
+  https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification
+""".format(self.hostname, self.lmi_port))
 
     def _url(self, uri):
         # Build up the URL
@@ -45,12 +80,13 @@ class ISAMAppliance(IBMAppliance):
             self.logger.info('*** ' + description + ' ***')
 
     def _suppress_ssl_warning(self):
-        # Don't suppress ssl warnings if verifying ssl certificates is enabled.
-        # The ssl warnings are disabled, but there's still a warning shown.
-        if self.verify:
+        # If we have trust setup correctly, we do not want to suppress these warnings.
+        if not self.disable_urllib_warnings:
             return
+
+        # Disable https warning because of non-standard certs on appliance
         try:
-            self.logger.warning("Suppressing SSL Warnings.")
+            if self.debug: self.logger.debug("Suppressing SSL Warnings.")
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         except AttributeError:
             self.logger.warning("load requests.packages.urllib3.disable_warnings() failed")
@@ -213,9 +249,9 @@ class ISAMAppliance(IBMAppliance):
 
         try:
             if data_as_files is False:
-                r = self.session.post(url=self._url(uri=uri), data=data, files=files, verify=self.verify, headers=headers)
+                r = self.session.post(url=self._url(uri=uri), data=data, files=files, headers=headers)
             else:
-                r = self.session.post(url=self._url(uri=uri), files=files, verify=self.verify, headers=headers)
+                r = self.session.post(url=self._url(uri=uri), files=files, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -258,7 +294,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = self.session.put(url=self._url(uri=uri), data=data, files=files, verify=self.verify, headers=headers)
+            r = self.session.put(url=self._url(uri=uri), data=data, files=files, headers=headers)
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -298,7 +334,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = self.session.get(url=self._url(uri=uri), verify=self.verify, stream=True, headers=headers)
+            r = self.session.get(url=self._url(uri=uri), stream=True, headers=headers)
 
             if (r.status_code != 200 and r.status_code != 204 and r.status_code != 201):
                 self.logger.error("  Request failed: ")
@@ -364,14 +400,13 @@ class ISAMAppliance(IBMAppliance):
 
         try:
             if func == self.session.get or func == self.session.delete:
-
                 if data != {}:
-                    r = func(url=self._url(uri), data=json_data, verify=self.verify, headers=headers)
+                    r = func(url=self._url(uri), data=json_data, headers=headers)
                 else:
-                    r = func(url=self._url(uri), verify=self.verify, headers=headers)
+                    r = func(url=self._url(uri), headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
-                         verify=self.verify, headers=headers)
+                         headers=headers, verify=self.verify, cert=self.cert)
 
             if func != self.session.get:
                 return_obj['changed'] = True  # Anything but GET should result in change
@@ -411,12 +446,12 @@ class ISAMAppliance(IBMAppliance):
             if func == self.session.get or func == self.session.delete:
 
                 if data != {}:
-                    r = func(url=self._url(uri), data=json_data, verify=self.verify, headers=headers)
+                    r = func(url=self._url(uri), data=json_data, headers=headers)
                 else:
-                    r = func(url=self._url(uri), verify=self.verify, headers=headers)
+                    r = func(url=self._url(uri), headers=headers)
             else:
                 r = func(url=self._url(uri), data=json_data,
-                         verify=self.verify, headers=headers)
+                         headers=headers, verify=self.verify, cert=self.cert)
 
             if func != self.session.get:
                 return_obj['changed'] = True  # Anything but GET should result in change
@@ -481,7 +516,7 @@ class ISAMAppliance(IBMAppliance):
         self._suppress_ssl_warning()
 
         try:
-            r = self.session.post(url=self._url(uri=uri), data=data, verify=self.verify, headers=headers)
+            r = self.session.post(url=self._url(uri=uri), data=data, headers=headers)
             return_obj['changed'] = False  # POST of snapshot id would not be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
@@ -581,7 +616,7 @@ class ISAMAppliance(IBMAppliance):
 
         try:
             streaminargs = False
-            r = self.session.request(method, url=self._url(uri), verify=self.verify, **args)
+            r = self.session.request(method, url=self._url(uri), **args)
             # check for stream=True
             if "stream" in args and args["stream"] == True:
                 streaminargs = True
@@ -638,6 +673,7 @@ class ISAMAppliance(IBMAppliance):
         # Be sure to let fatal error unconditionally percolate up the stack
         except IBMFatal:
             raise
+
         # Exceptions like those connection related will be ignored
         except Exception as e:
             self.logger.error( traceback.print_exc() )
