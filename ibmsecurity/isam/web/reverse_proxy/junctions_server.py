@@ -30,7 +30,7 @@ def get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             break
     return ret_obj_new
 
-def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False,
+def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port, junction_type="tcp", check_mode=False, force=False, warnings=[],
         **optionargs):
     """
     Adding a back-end server to an existing standard or virtual junctions
