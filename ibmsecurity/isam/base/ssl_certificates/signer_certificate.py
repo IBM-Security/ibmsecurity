@@ -1,6 +1,6 @@
 import logging
 import os.path
-from ibmsecurity.utilities.tools import files_same, get_random_temp_dir
+from ibmsecurity.utilities.tools import files_same, get_random_temp_dir, version_compare
 import shutil
 
 logger = logging.getLogger(__name__)
@@ -148,7 +148,7 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
     return isamAppliance.create_return_object()
 
 
-def import_cert(isamAppliance, kdb_id, cert, label, check_mode=False, force=False):
+def import_cert(isamAppliance, kdb_id, cert, label, preserve_label='false', check_mode=False, force=False):
     """
     Importing a signer certificate into a certificate database
     """
@@ -156,17 +156,31 @@ def import_cert(isamAppliance, kdb_id, cert, label, check_mode=False, force=Fals
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post_files(
-                "Importing a signer certificate into a certificate database",
-                "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
-                [
-                    {
-                        'file_formfield': 'cert',
-                        'filename': cert,
-                        'mimetype': 'application/octet-stream'
-                    }
-                ],
-                {'label': label})
+            if version_compare(isamAppliance.facts["version"], "10.0.5.0") < 0:
+                return isamAppliance.invoke_post_files(
+                    "Importing a signer certificate into a certificate database",
+                    "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
+                    [
+                        {
+                            'file_formfield': 'cert',
+                            'filename': cert,
+                            'mimetype': 'application/octet-stream'
+                        }
+                    ],
+                    {'label': label})
+            else:
+                return isamAppliance.invoke_post_files(
+                    "Importing a signer certificate into a certificate database",
+                    "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
+                    [
+                        {
+                            'file_formfield': 'cert',
+                            'filename': cert,
+                            'mimetype': 'application/octet-stream'
+                        }
+                    ],
+                    {'label': label,
+                    'preserve_label': preserve_label})
 
     return isamAppliance.create_return_object()
 
