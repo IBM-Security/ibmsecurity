@@ -108,9 +108,11 @@ def update(isamAppliance, name, description, attributeURI, type, category, datat
     artifact_id, update_required, json_data = _check(isamAppliance, name, description, attributeURI,
                                                      type, category, datatype, predefined, issuer, matcher,
                                                      storageDomain, new_name)
-    if artifact_id is None:
-        from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown attribute: {0}".format(name))
+
+    if update_required is True:
+        if artifact_id is None:
+            from ibmsecurity.appliance.ibmappliance import IBMError
+            raise IBMError("999", "Cannot update data for unknown attribute: {0}".format(name))
 
     if force is True or update_required is True:
         if check_mode is True:
