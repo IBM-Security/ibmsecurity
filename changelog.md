@@ -1,6 +1,8 @@
 # Manual change log
 
 ## Unreleased
+- fix: uninitialized 'warnings' variable in junctions_server.py (#419)
+- fix: add preserve_label in signer_certificates (from kg)
 
 # 2024.4.5.0
 
