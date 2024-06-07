@@ -355,8 +355,8 @@ See the following URL for more details:
                 return_obj['rc'] = 0
                 return_obj['data'] = {'msg': 'Contents extracted to file: ' + filename}
 
-        except requests.exceptions.ConnectionError:
-            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+        except requests.exceptions.ConnectionError as e:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj, error_message=str(e))
 
         except IOError:
             if not ignore_error:
@@ -414,8 +414,8 @@ See the following URL for more details:
 
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
-            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+        except requests.exceptions.ConnectionError as e:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj, error_message=str(e))
 
         return return_obj
 
@@ -459,8 +459,8 @@ See the following URL for more details:
 
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
-            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+        except requests.exceptions.ConnectionError as e:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj, error_message=str(e))
 
         return return_obj
 
@@ -653,8 +653,8 @@ See the following URL for more details:
             if streaminargs == False:
                 self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
-            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj)
+        except requests.exceptions.ConnectionError as e:
+            self._process_connection_error(ignore_error=ignore_error, return_obj=return_obj, error_message=str(e))
 
         return return_obj
 
