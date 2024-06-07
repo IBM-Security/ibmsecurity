@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+# 2024.6.7.0
+
+- fix: add preserve_label in signer_certificates.py (from kg)
+- fix: added condition check in aac/attributes.py (#422)
+- feature: forward python requests connection error messages to ibmerror (#423)
+
 # 2024.4.5.0
 
 - fix: update stanza.py (#414)
