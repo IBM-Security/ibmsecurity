@@ -153,12 +153,12 @@ See the following URL for more details:
             else:
                 return_obj['data'] = http_response.content
 
-    def _process_connection_error(self, ignore_error, return_obj):
+    def _process_connection_error(self, ignore_error, return_obj, error_message=""):
         if not ignore_error:
-            self.logger.critical("Failed to connect to server.")
-            raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+            self.logger.critical(f"Failed to connect to server: {error_message}")
+            raise IBMError("HTTP Return code: 502", f"Failed to connect to server : {error_message}")
         else:
-            self.logger.debug("Failed to connect to server.")
+            self.logger.debug(f"Failed to connect to server: {error_message}")
             return_obj['rc'] = 502
 
     def _process_warnings(self, uri, requires_modules, requires_version, requires_model, warnings=[]):
@@ -256,12 +256,12 @@ See the following URL for more details:
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
             if not ignore_error:
-                self.logger.critical("Failed to connect to server.")
-                raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+                self.logger.critical(f"Failed to connect to server: {str(e)}")
+                raise IBMError("HTTP Return code: 502", f"Failed to connect to server: {str(e)}")
             else:
-                if self.debug: self.logger.debug("Failed to connect to server.")
+                if self.debug: self.logger.debug(f"Failed to connect to server : {str(e)}")
                 return_obj.rc = 502
 
         return return_obj
@@ -299,12 +299,12 @@ See the following URL for more details:
             return_obj['changed'] = True  # POST of file would be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
             if not ignore_error:
-                self.logger.critical("Failed to connect to server.")
-                raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+                self.logger.critical(f"Failed to connect to server. {str(e)}")
+                raise IBMError("HTTP Return code: 502", f"Failed to connect to server : {str(e)}")
             else:
-                if self.debug: self.logger.debug("Failed to connect to server.")
+                if self.debug: self.logger.debug(f"Failed to connect to server: {str(e)}")
                 return_obj.rc = 502
 
         return return_obj
@@ -521,12 +521,12 @@ See the following URL for more details:
             return_obj['changed'] = False  # POST of snapshot id would not be a change
             self._process_response(return_obj=return_obj, http_response=r, ignore_error=ignore_error)
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
             if not ignore_error:
-                self.logger.critical("Failed to connect to server.")
-                raise IBMError("HTTP Return code: 502", "Failed to connect to server")
+                self.logger.critical(f"Failed to connect to server: {str(e)}")
+                raise IBMError("HTTP Return code: 502", f"Failed to connect to server : {str(e)}")
             else:
-                self.logger.debug("Failed to connect to server.")
+                self.logger.debug(f"Failed to connect to server : {str(e)}")
                 return_obj.rc = 502
 
         return return_obj
