@@ -1,8 +1,13 @@
 # Manual change log
 
 ## Unreleased
+
+# 2024.6.7.0
+
 - fix: uninitialized 'warnings' variable in junctions_server.py (#419)
 - fix: add preserve_label in signer_certificates (from kg)
+- fix: added condition check in aac/attributes.py (#422)
+- feature: forward python requests connection error messages to ibmerror (#423)
 
 # 2024.4.5.0
 
