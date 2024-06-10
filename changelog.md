@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- fix: base/cluster/configuration.py - idempotency
+- feature: fed/federations.py - wsfed
+- fix: web/api_access_control/utilities - credential check update
+- fix: documentation
+- fix: web/reverse_proxy/junctions - add priority for 10.0.2 if not present
+
 # 2024.6.7.0
 
 - fix: uninitialized 'warnings' variable in junctions_server.py (#419)
