@@ -1,7 +1,9 @@
 import logging
 import copy
-import ibmsecurity.utilities.tools
-from ibmsecurity.utilities import tools
+import json
+from ibmsecurity.utilities.tools import version_compare
+from ibmsecurity.utilities.tools import json_compare
+from ibmsecurity.utilities.tools import jsonSortedListEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +101,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
         #Oracle only
         cluster_json["hvdb_driver_type"] = hvdb_driver_type
     if hvdb_solid_tc is not None:
-        if (isinstance(hvdb_solid_tc, basestring)):
+        if isinstance(hvdb_solid_tc, basestring):
             import ast
             hvdb_solid_tc = ast.literal_eval(hvdb_solid_tc)
         cluster_json["hvdb_solid_tc"] = hvdb_solid_tc
@@ -138,7 +140,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     if cfgdb_driver_type is not None and cfgdb_db_type == "oracle":
         cluster_json["cfgdb_driver_type"] = cfgdb_driver_type
     if cfgdb_solid_tc is not None:
-        if (isinstance(cfgdb_solid_tc, basestring)):
+        if isinstance(cfgdb_solid_tc, basestring):
             import ast
             cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
         cluster_json["cfgdb_solid_tc"] = cfgdb_solid_tc
@@ -183,44 +185,38 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
 
     ret_obj = get(isamAppliance)
     check_obj['warnings'] = ret_obj['warnings']
-    sorted_ret_obj = tools.json_sort(ret_obj['data'])
-    sorted_json_data = tools.json_sort(cluster_json)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
     if ignore_password_for_idempotency:
         temp = copy.deepcopy(
-            cluster_json)  # deep copy neccessary: otherwise password parameter would be removed from desired config dict 'cluster_json'. Comparison is done with temp<>ret_obj object
-        for idx, x in enumerate(cluster_json):
-            if "password" in x:
-                logger.debug("Ignoring JSON password entry: '{0}' to satisfy idempotency.".format(x))
-                del temp[x]
+            cluster_json)  # deep copy necessary: otherwise password parameter would be removed from desired config dict 'cluster_json'. Comparison is done
+        if 'hvdb_password' in temp:
+            del temp["hvdb_password"]
+        if 'cfgdb_password' in temp:
+            del temp["cfgdb_password"]
         logger.debug("Passwordless JSON to Apply: {0}".format(temp))
     else:
         temp = cluster_json
 
-    for key, value in temp.items():
-        try:
-            if isinstance(value, list):
-                if ibmsecurity.utilities.tools.json_sort(
-                        ret_obj['data'][key]) != ibmsecurity.utilities.tools.json_sort(value):
-                    logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    check_obj['value']=False
-                    return check_obj
-            else:
-                if ret_obj['data'][key] != value:
-                    logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
-                    check_obj['value']=False
-                    return check_obj
-        except:  # In case there is an error looking up the key in existing configuration (missing)
-            logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
-            check_obj['value']=False
-            return check_obj
+    #only compare the keys that are in cluster_json, ignore the rest
+    #  note that this may yield false comparison results if you remove parameters from your input
+    temp_retobj = {}
+    for key, value in ret_obj['data'].items():
+        if key in temp:
+            temp_retobj[key] = value
+        else:
+            logger.debug("Ignoring {0}".format(key))
 
-    logger.debug("JSON provided already is contained in current appliance configuration.")
-    check_obj['value']=True
+    sorted_ret_obj = json.dumps(temp_retobj, skipkeys=True, sort_keys=True)
+    sorted_json_data = json.dumps(temp, skipkeys=True, sort_keys=True)
+
+    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
+    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+
+    if sorted_ret_obj == sorted_json_data:
+        logger.debug("JSON provided already is contained in current appliance configuration.")
+        check_obj['value'] = True
+    else:
+        check_obj['value'] = False
     return check_obj
 
 

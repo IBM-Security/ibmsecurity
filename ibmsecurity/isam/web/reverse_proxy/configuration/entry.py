@@ -35,7 +35,7 @@ def get_all(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=F
 def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, force=False):
     """
     Retrieving a specific configuration entry - Reverse Proxy
-   """
+    """
     # URL being encoded primarily to handle request-log-format that has "%" values in them
     f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
                                                                      stanza_id, entry_id)
@@ -57,8 +57,8 @@ def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, f
 
 def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, force=False):
     """
-   Adding a configuration entry or entries by stanza - Reverse Proxy
-   """
+    Adding a configuration entry or entries by stanza - Reverse Proxy
+    """
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
@@ -101,10 +101,10 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     Note: entries has to be [['key', 'value1'], ['key', 'value2]], cannot provide [['key', ['value1', 'value2']]]
     get() returns the second format - thus lots of logic to handle this discrepancy.
 
-    This version will update all entries in the stanza if a single one changes.  But it is a lot faster because it's
+    This version will update all entries in the stanza if a single one changes.  But it should be a lot faster and
     idempotent.
 
-   """
+    """
     if isinstance(entries, basestring):
         import ast
         entries = ast.literal_eval(entries)
@@ -164,17 +164,17 @@ def _collapse_entries_obj(entries):
 
 def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', check_mode=False, force=False):
     """
-   Deleting a value from a configuration entry - Reverse Proxy
-   """
+    Deleting a value from a configuration entry - Reverse Proxy
+    """
 
     if value_id == '' or value_id is None:
         return delete_all(isamAppliance=isamAppliance, reverseproxy_id=reverseproxy_id, stanza_id=stanza_id,
                           entry_id=entry_id, check_mode=check_mode, force=force)
 
-    if force is False:
+    if not force:
         exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
-    if force is True or exists is True:
+    if force or exists:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -206,8 +206,8 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
 
 def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, force=False):
     """
-   Deleting all values from a configuration entry - Reverse Proxy
-   """
+    Deleting all values from a configuration entry - Reverse Proxy
+    """
     delete_required = False
     if force is False:
         try:
@@ -245,8 +245,8 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
 
 def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_mode=False, force=False):
     """
-   Updating a configuration entry or entries by stanza - Reverse Proxy
-   """
+    Updating a configuration entry or entries by stanza - Reverse Proxy
+    """
     if force is False:
         exists, update_required, cur_value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
@@ -320,8 +320,8 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
 
 def compare(isamAppliance1, isamAppliance2, reverseproxy_id, stanza_id, reverseproxy_id2=None):
     """
-   Compare stanza/entries in two appliances reverse proxy configuration
-   """
+    Compare stanza/entries in two appliances reverse proxy configuration
+    """
     if reverseproxy_id2 is None or reverseproxy_id2 == '':
         reverseproxy_id2 = reverseproxy_id
 

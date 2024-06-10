@@ -8,6 +8,8 @@ import json
 logger = logging.getLogger(__name__)
 
 uri = "/wga/reverseproxy"
+requires_modules = ["wga"]
+requires_version = None
 
 def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_port):
     ret_obj_new = isamAppliance.create_return_object()
@@ -37,7 +39,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
 
     :param isamAppliance:
     :param reverseproxy_id:
-    :param junctionname:
+    :param junction_point:
     :param server_hostname:
     :param junction_type:
     :param server_port:
