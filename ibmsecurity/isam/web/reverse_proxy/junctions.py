@@ -334,6 +334,14 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                             isamAppliance.facts["version"], priority))
                 else:
                     jct_json['priority'] = priority
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") >= 0:
+                    warnings.append(
+                        "Appliance at version: {0}, priority is required".format(
+                            isamAppliance.facts["version"]))
+                    jct_json['priority'] = "9"
+                else:
+                    priority = None
             if server_cn is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                     warnings.append(
