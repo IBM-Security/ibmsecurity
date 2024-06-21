@@ -7,6 +7,7 @@
 - fix: web/api_access_control/utilities - credential check update
 - fix: documentation
 - fix: web/reverse_proxy/junctions - add priority for 10.0.2 if not present
+- fix: isdsappliance.py missing cert variable initialization
 
 # 2024.6.7.0
 
