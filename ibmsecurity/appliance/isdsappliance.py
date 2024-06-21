@@ -16,7 +16,7 @@ except NameError:
 
 
 class ISDSAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443, verify=None):
+    def __init__(self, hostname, user, lmi_port=443, cert=None, verify=None):
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Creating an ISDSAppliance')
         if isinstance(lmi_port, basestring):
@@ -92,11 +92,19 @@ See the following URL for more details:
 
     def _process_response(self, return_obj, http_response, ignore_error):
 
-        return_obj['rsp'] = http_response
+        # return_obj['rsp'] = http_response # Do not add this - breaks the ISAM Collection's connection
         return_obj['rc'] = http_response.status_code
 
         # Examine the response.
-        if (http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
+        if (http_response.status_code == 403):
+            self.logger.error("  Request failed: ")
+            self.logger.error("     status code: {0}".format(http_response.status_code))
+            if http_response.text != "":
+                self.logger.error("     text: " + http_response.text)
+            # Unconditionally raise exception to abort execution
+            raise IBMFatal("HTTP Return code: {0}".format(http_response.status_code), http_response.text)
+        elif (
+                http_response.status_code != 200 and http_response.status_code != 204 and http_response.status_code != 201):
             self.logger.error("  Request failed: ")
             self.logger.error("     status code: {0}".format(http_response.status_code))
             if http_response.text != "":
@@ -108,9 +116,9 @@ See the following URL for more details:
             return_obj['rc'] = 0
 
         # Handle if there was json on input but response was not in json format
-        json_data = {}
         try:
             json_data = json.loads(http_response.text)
+            return_obj['data'] = json_data
         except ValueError:
             return_obj['data'] = http_response.content
             return
@@ -126,7 +134,9 @@ See the following URL for more details:
                     return_obj.data = http_response.content
                     return
 
-        if http_response.text != "":
+        if http_response.text == "":
+            json_data = {}
+        else:
             json_data = json.loads(http_response.text)
 
         return_obj['data'] = json_data
