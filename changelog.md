@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2024.6.24.0
+
 - fix: base/cluster/configuration.py - idempotency
 - feature: fed/federations.py - wsfed
 - fix: web/api_access_control/utilities - credential check update
@@ -9,14 +11,14 @@
 - fix: web/reverse_proxy/junctions - add priority for 10.0.2 if not present
 - fix: isdsappliance.py missing cert variable initialization
 
-# 2024.6.7.0
+## 2024.6.7.0
 
 - fix: uninitialized 'warnings' variable in junctions_server.py (#419)
 - fix: add preserve_label in signer_certificates (from kg)
 - fix: added condition check in aac/attributes.py (#422)
 - feature: forward python requests connection error messages to ibmerror (#423)
 
-# 2024.4.5.0
+## 2024.4.5.0
 
 - fix: update stanza.py (#414)
 - fix: remove curly braces from get_config_data function (#417)
