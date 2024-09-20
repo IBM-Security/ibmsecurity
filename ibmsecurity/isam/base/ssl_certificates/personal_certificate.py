@@ -22,12 +22,11 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
                                     "/isam/ssl_certificates/{0}/personal_cert/{1}".format(kdb_id, cert_id))
 
 
-def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='1024', signature_algorithm='',
+def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size='2048', signature_algorithm='',
              check_mode=False, force=False):
     """
     Generating a self-signed personal certificate in a certificate database
     """
-
     warnings = []
 
     if signature_algorithm is not None:
@@ -140,28 +139,29 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
     return isamAppliance.create_return_object()
 
 
-def import_cert(isamAppliance, kdb_id, label, cert, password=None, check_mode=False, force=False):
+def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mode=False, force=False):
     """
     Importing a personal certificate into a certificate database
+    Remark: you can add a label, but it's only used for a half-hearted check if the certificate already exists.
     """
-    if force is True or _check(isamAppliance, kdb_id, label) is False:
+    if force is True or not _check(isamAppliance, kdb_id, label):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
-                "Importing a personal certificate into a certificate database",
-                "/isam/ssl_certificates/{0}/personal_cert".format(kdb_id),
-                [
+                    "Importing a personal certificate into a certificate database",
+                    "/isam/ssl_certificates/{0}/personal_cert".format(kdb_id),
+                    [
+                        {
+                            'file_formfield': 'cert',
+                            'filename': cert,
+                            'mimetype': 'application/octet-stream'
+                        }
+                    ],
                     {
-                        'file_formfield': 'cert',
-                        'filename': cert,
-                        'mimetype': 'application/octet-stream'
-                    }
-                ],
-                {
-                    'password': password,
-                    'operation': 'import'
-                })
+                        'password': password,
+                        'operation': 'import'
+                    })
 
     return isamAppliance.create_return_object()
 
@@ -193,11 +193,14 @@ def _check(isamAppliance, kdb_id, cert_id):
     """
     Check if personal certificate already exists in certificate database
     """
-    ret_obj = get_all(isamAppliance, kdb_id)
-
-    for certdb in ret_obj['data']:
-        if certdb['id'] == cert_id:
-            return True
+    if cert_id is None:
+        logger.debug("No label passed, so return false")
+        return False
+    else:
+        ret_obj = get_all(isamAppliance, kdb_id)
+        for certdb in ret_obj['data']:
+            if certdb['id'] == cert_id:
+                return True
 
     return False
 
