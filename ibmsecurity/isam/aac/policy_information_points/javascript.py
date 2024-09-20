@@ -201,3 +201,23 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
             )
 
     return isamAppliance.create_return_object()
+
+
+def delete(isamAppliance, name, check_mode=False, force=False):
+    """
+    Delete a JavaScript PIP
+    """
+    ret_obj = get(isamAppliance, name)
+
+    if ret_obj['data'] == {}:
+        logger.info('Javascript PIP "{0}" not found, skipping delete.'.format(name))
+    else:
+        if check_mode is True:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            logger.info('Deleting Javascript PIP "{0}"'.format(name))
+            return isamAppliance.invoke_delete(
+                "Delete a Javascript policy information point",
+                "{0}/{1}".format(uri, ret_obj['data']['id']))
+
+    return isamAppliance.create_return_object()
