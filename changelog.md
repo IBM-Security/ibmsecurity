@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- features: enhancements on pip and personal certificates (#430)
+
 ## 2024.6.24.0
 
 - fix: isdsappliance.py missing cert variable initialization
