@@ -129,7 +129,7 @@ def config(isamAppliance, server, resourceUri, policies=[], policyType=None, pol
                     "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
                         isamAppliance.facts["version"], cache))
             else:
-                json_data["cache"] = cache
+                json_data["cache"] = int(cache)
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
@@ -159,7 +159,7 @@ def update(isamAppliance, server, resourceUri, policyCombiningAlgorithm, cache=N
                     "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
                         isamAppliance.facts["version"], cache))
             else:
-                json_data["cache"] = cache
+                json_data["cache"] = int(cache)
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
