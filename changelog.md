@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+## 2024.9.30.0
+
 - features: enhancements on pip and personal certificates (#430)
+- fix: cache in policy_attachments (#432)
 
 ## 2024.6.24.0
 
