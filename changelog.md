@@ -3,6 +3,7 @@
 ## Unreleased
 
 - features: enhancements on pip and personal certificates (#430)
+- fix: corrections in test script
 
 ## 2024.6.24.0
 
