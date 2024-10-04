@@ -56,6 +56,7 @@ def add(isamAppliance, extension, config_data=None, third_party_package=None, ch
         return isamAppliance.create_return_object(warnings=[warning_str])
     try:
         extId = inspect(isamAppliance, extension)
+        logger.debug(f"We got {extId}")
     except Exception as e:
         warning_str = "Exception occurred: {0}".format(e)
         return isamAppliance.create_return_object(warnings=[warning_str])
@@ -106,7 +107,7 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
     :return:
     """
 
-    if force is True or search(isamAppliance, extId=extId):
+    if force or search(isamAppliance, extId=extId):
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -185,16 +186,23 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
                                               'mimetype': 'application/octet-stream'
                                           }],
                                           {
+                                              #'third_party_package': "",
+                                              #'config_data': config_data
                                           },
-                                          json_response=False, requires_modules=requires_modules,
+                                          json_response=False,
+                                          data_as_files=False,
+                                          requires_modules=requires_modules,
                                           requires_version=requires_version)
 
-    m_obj = obj['data']
+    # logger.debug(str(obj))
+    m_obj = obj['data'].decode('UTF-8')
 
     m_obj = m_obj.replace('<textarea>', '')
     m_obj = m_obj.replace('</textarea>', '')
+    logger.debug("Returned data:\n"+m_obj)
 
     json_obj = json.loads(m_obj)
+
     return json_obj['id']
 
 
@@ -203,11 +211,12 @@ def _get_config_data(extId, config_data):
     Generate a JSON payload for activate/update
     """
     if config_data is None:
-        return json.dumps({extId: extId})
+        return json.dumps({'extId': extId})
     if isinstance(config_data, basestring):
         return '{extId:' + extId + ',' + config_data + '}'
-    config_data['extId'] = extId
-    return json.dumps(config_data)
+    else:
+        config_data['extId'] = extId
+        return json.dumps(config_data)
 
 def search(isamAppliance, extId, check_mode=False, force=False):
     """
