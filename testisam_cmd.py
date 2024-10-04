@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Usage:  testisam_generic.py
         testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD
@@ -8,7 +9,7 @@ Options:
   --username=admin      The LMI administration user.  Defaults to admin@local
   --password=password    The LMI administration user's password.  Defaults to admin
   --lmi_port=443        The lmi port, defaults to 443
-  --method=ibm.isam.method  The method to call
+  --method=ibmsecurity.isam.method  The method to call
   --method_options="name=name"  String of key-value pairs "name=test,key2=key2"
   --commit  Perform commit of the changes.  Not required if you do a GET
   -h --help     Show this screen.
