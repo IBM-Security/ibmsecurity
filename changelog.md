@@ -2,8 +2,13 @@
 
 ## Unreleased
 
-- features: enhancements on pip and personal certificates (#430)
 - fix: corrections in test script
+- fix: base/extensions.py
+
+## 2024.9.30
+
+- features: enhancements on pip and personal certificates (#430)
+- fix: policy_attachments - cast to Integer to meet the required JSON type for "cache"
 
 ## 2024.6.24.0
 
