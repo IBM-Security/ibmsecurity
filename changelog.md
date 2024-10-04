@@ -5,10 +5,10 @@
 - fix: corrections in test script
 - fix: base/extensions.py
 
-## 2024.9.30
+## 2024.9.30.0
 
 - features: enhancements on pip and personal certificates (#430)
-- fix: policy_attachments - cast to Integer to meet the required JSON type for "cache"
+- fix: cache in policy_attachments (#432)
 
 ## 2024.6.24.0
 
