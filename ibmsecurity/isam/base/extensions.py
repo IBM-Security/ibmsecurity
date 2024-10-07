@@ -144,6 +144,8 @@ def update(isamAppliance, extId, config_data=None, third_party_package=None, che
 
 def set(isamAppliance, extension=None, extId=None, config_data=None, third_party_package=None, check_mode=False,
         force=False):
+
+    # MUST have an extId to do an update.
     if extId and search(isamAppliance, extId):
         return update(isamAppliance=isamAppliance, extId=extId, config_data=config_data,
                           third_party_package=third_party_package, check_mode=check_mode, force=True)
@@ -179,7 +181,6 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
     """
     obj = isamAppliance.invoke_post_files("Inspect extension",
                                           "{0}/inspect".format(uri),
-
                                           [{
                                               'file_formfield': 'extension_support_package',
                                               'filename': extension,
@@ -191,17 +192,23 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
                                           },
                                           json_response=False,
                                           data_as_files=False,
+                                          ignore_error=True,
                                           requires_modules=requires_modules,
                                           requires_version=requires_version)
 
-    # logger.debug(str(obj))
-    m_obj = obj['data'].decode('UTF-8')
+    # Catch the errors here
+    logger.debug("INSPECT\n" + str(obj))
+    if obj.get('rc', 0) == 500:
+        logger.debug("Api does not allow to get the name from extension if it already exists")
+        return None
+    else:
+        m_obj = obj.get('data').decode('UTF-8')
 
-    m_obj = m_obj.replace('<textarea>', '')
-    m_obj = m_obj.replace('</textarea>', '')
-    logger.debug("Returned data:\n"+m_obj)
+        m_obj = m_obj.replace('<textarea>', '')
+        m_obj = m_obj.replace('</textarea>', '')
+        logger.debug("Returned data:\n"+m_obj)
 
-    json_obj = json.loads(m_obj)
+        json_obj = json.loads(m_obj)
 
     return json_obj['id']
 
@@ -213,7 +220,7 @@ def _get_config_data(extId, config_data):
     if config_data is None:
         return json.dumps({'extId': extId})
     if isinstance(config_data, basestring):
-        return '{extId:' + extId + ',' + config_data + '}'
+        return '{"extId": "' + extId + '",' + config_data + '}'
     else:
         config_data['extId'] = extId
         return json.dumps(config_data)
@@ -224,6 +231,8 @@ def search(isamAppliance, extId, check_mode=False, force=False):
     """
 
     ret_obj = get_all(isamAppliance)
+    if extId == None:
+        return False
 
     for obj in ret_obj['data']:
         if obj['id'] == extId:
