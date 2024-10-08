@@ -187,8 +187,6 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
                                               'mimetype': 'application/octet-stream'
                                           }],
                                           {
-                                              #'third_party_package': "",
-                                              #'config_data': config_data
                                           },
                                           json_response=False,
                                           data_as_files=False,
