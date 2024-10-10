@@ -34,6 +34,26 @@ def get(isamAppliance, volume_id, filename=None, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
+def search(isamAppliance, volume_name, check_mode=False, force=False):
+    """
+    Return the id of the volume
+
+    :param isamAppliance:
+    :param name:
+    :param check_mode:
+    :param force:
+    :return:
+    """
+    ret_obj = get_all(isamAppliance, check_mode, force)
+    id = None
+    for obj in ret_obj['data']:
+        if obj['name'] == volume_name:
+            id = obj['id']
+            break
+
+    return id
+
+
 def add(isamAppliance, name, check_mode=False, force=False, warnings=None):
     """
     Add a volume
