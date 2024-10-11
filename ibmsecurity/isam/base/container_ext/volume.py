@@ -20,8 +20,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     )
 
 
-def get(isamAppliance, volume_id, filename=None,
-        check_mode=False, force=False):
+def get(isamAppliance, volume_id, filename=None, check_mode=False, force=False):
     """
     Export volume
     """
@@ -63,15 +62,13 @@ def search(isamAppliance, volume_name, check_mode=False, force=False):
     return return_obj
 
 
-def add(isamAppliance, name,
-        check_mode=False, force=False, warnings=None):
+def add(isamAppliance, name, check_mode=False, force=False, warnings=None):
     """
     Add a volume
     """
     if force or not _check(isamAppliance, name):
         if check_mode:
-            return isamAppliance.create_return_object(changed=True,
-                                                      warnings=warnings)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             post_data = {"name": name}
 
