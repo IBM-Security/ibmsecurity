@@ -87,18 +87,19 @@ def set(isamAppliance, image, check_mode=False, force=False, warnings=None):
 def update(isamAppliance, image, check_mode=False, force=False, warnings=None):
     """
     Pull a new version of (existing) image
-    force doesn't do anything here.
+    Only do this if force = true
     """
-    if _check(isamAppliance, image):
-        image_id = search(isamAppliance, image)
-        image_id = image_id.get("data", None)
-        logger.debug(f"Updating {image_id}")
+    image_id = search(isamAppliance, image)
+    image_id = image_id.get("data", None)
+
+    if force and image_id is not None:
+        logger.debug(f"(Force) Updating {image_id}")
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             put_data = {"image": image}
             return isamAppliance.invoke_put(
-                "Pull image",
+                "Force pull image",
                 f"{uri}/{image_id}",
                 put_data,
                 requires_model=requires_model,
@@ -106,9 +107,9 @@ def update(isamAppliance, image, check_mode=False, force=False, warnings=None):
             )
     else:
         if warnings is None:
-            warnings = [f"Image {image} does not exist yet."]
+            warnings = [f"Image {image} does not exist yet, or not set to force=True"]
         else:
-            warnings.append(f"Image {image} does not exist yet.")
+            warnings.append(f"Image {image} does not exist yet, or not set to force=True")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
 

@@ -107,15 +107,15 @@ def update(
     warnings=None,
 ):
     """
-    Update a the pod state container deployment
+    Update the pod state container deployment
     """
-    if force or _check(isamAppliance, name):
+    container_id = search(isamAppliance, name, check_mode, force)
+    container_id = container_id.get('data', None)
+
+    if force or container_id is not None:
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-
-            container_id = search(isamAppliance, name, check_mode, force)
-            container_id = container_id.get('data', None)
             put_data = {}
             if operation:
                 put_data["operation"] = operation
