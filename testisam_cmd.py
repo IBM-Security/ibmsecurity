@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Usage:  testisam_generic.py
-        testisam_generic.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD
+Usage:  testisam_cmd.py
+        testisam_cmd.py [--hostname=ISAM_LMI --username=ISAM_ADMIN --password=ISAM_ADMIN_PASSWORD
            --lmi_port=443 --method=ibm.isam.appliance.get --method_options="name=test" --commit]
 
 Options:
