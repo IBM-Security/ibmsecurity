@@ -6,8 +6,19 @@ requires_modules = ["wga"]
 requires_version = "9.0.6.0"
 
 
-def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=None, password=None,
-           junction="/mga", reuse_certs=False, reuse_acls=False, check_mode=False, force=False):
+def config(
+    isamAppliance,
+    instance_id,
+    hostname="127.0.0.1",
+    port=443,
+    username=None,
+    password=None,
+    junction="/mga",
+    reuse_certs=False,
+    reuse_acls=False,
+    check_mode=False,
+    force=False,
+):
     """
     Authentication and Context based access configuration for a reverse proxy instance
 
@@ -26,13 +37,20 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     """
     if username is None:
         logger.info("Required parameter username missing. Skipping config.")
-        return isamAppliance.create_return_object(warning=["Required parameter username missing. Skipping config."])
+        return isamAppliance.create_return_object(
+            warning=["Required parameter username missing. Skipping config."]
+        )
 
     if password is None:
         logger.info("Required parameter password missing. Skipping config.")
-        return isamAppliance.create_return_object(warning=["Required parameter password missing. Skipping config."])
+        return isamAppliance.create_return_object(
+            warning=["Required parameter password missing. Skipping config."]
+        )
     warnings = [
-        "Idempotency logic will check for existence of {} junction. Use force=True to override.".format(junction)]
+        "Idempotency logic will check for existence of {} junction. Use force=True to override.".format(
+            junction
+        )
+    ]
     if force is True or _check_config(isamAppliance, instance_id, junction) is False:
         json_data = {
             "junction": junction,
@@ -41,15 +59,19 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
             "username": username,
             "password": password,
             "reuse_certs": reuse_certs,
-            "reuse_acls": reuse_acls
+            "reuse_acls": reuse_acls,
         }
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
                 " Authentication and Context based access configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{}/authsvc_config".format(instance_id), json_data, warnings=warnings,
-                requires_modules=requires_modules, requires_version=requires_version)
+                "/wga/reverseproxy/{}/authsvc_config".format(instance_id),
+                json_data,
+                warnings=warnings,
+                requires_modules=requires_modules,
+                requires_version=requires_version,
+            )
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -65,9 +87,13 @@ def _check_config(isamAppliance, instance_id, junction):
     """
     ret_obj = junctions.get_all(isamAppliance, instance_id)
 
-    for j in ret_obj['data']:
-        if j['id'] == junction:
-            logger.info("Junction {} was found - hence aac config must have already executed.".format(junction))
+    for j in ret_obj["data"]:
+        if j["id"] == junction:
+            logger.info(
+                "Junction {} was found - hence aac config must have already executed.".format(
+                    junction
+                )
+            )
             return True
 
     return False
