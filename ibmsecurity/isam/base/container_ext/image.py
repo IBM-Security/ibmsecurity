@@ -11,6 +11,7 @@ requires_model = "Appliance"
 def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving all known images
+
     """
     return isamAppliance.invoke_get(
         "Retrieving images",
@@ -44,6 +45,7 @@ def search(isamAppliance, image, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
     return_obj = isamAppliance.create_return_object()
+    return_obj["data"] = None
     for obj in ret_obj["data"]:
         if obj["image"] == image:
             return_obj["data"] = obj["id"]
@@ -123,3 +125,23 @@ def _check(isamAppliance, name):
             logger.debug(f"Volume {name} exists")
             return True
     return False
+
+
+def delete(isamAppliance, name, check_mode=False, force=False):
+    """
+    Delete an image by name
+    ./testisam_cmd.py --hostname=${ISAM_LMI} --method=ibmsecurity.isam.base.container_ext.image.delete --method_options="name=icr.io/isva/verify-access-oidc-provider:23.03"
+    """
+    ret_obj = search(isamAppliance, name)
+    image_id = ret_obj.get("data", None)
+
+    if force or image_id is not None:
+        if check_mode:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete(
+                "Delete an image",
+                f"{uri}/{image_id}"
+            )
+
+    return isamAppliance.create_return_object()

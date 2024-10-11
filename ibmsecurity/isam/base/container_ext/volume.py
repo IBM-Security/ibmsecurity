@@ -104,6 +104,7 @@ def search(isamAppliance, volume_name, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
     return_obj = isamAppliance.create_return_object()
+    return_obj["data"] = None
     for obj in ret_obj["data"]:
         if obj["name"] == volume_name:
             return_obj["data"] = obj["id"]

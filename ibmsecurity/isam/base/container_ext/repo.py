@@ -198,6 +198,7 @@ def search(isamAppliance, host, user, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
     return_obj = isamAppliance.create_return_object()
+    return_obj["data"] = None
     for obj in ret_obj["data"]:
         if obj.get("host", "") == host and obj.get("user", "") == user:
             return_obj["data"] = obj["id"]
@@ -220,3 +221,23 @@ def _check(isamAppliance, registry, user):
             return True
             break
     return False
+
+
+def delete(isamAppliance, registry, user, check_mode=False, force=False):
+    """
+    Delete a repo by host and
+    ./testisam_cmd.py --hostname=${ISAM_LMI} --method=ibmsecurity.isam.base.container_ext.repo.delete --method_options="name=icr.io/isva/verify-access-oidc-provider:23.03"
+    """
+    ret_obj = search(isamAppliance, registry, user)
+    registry_id = ret_obj.get("data", None)
+
+    if force or registry_id is not None:
+        if check_mode:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            return isamAppliance.invoke_delete(
+                "Delete a repository configuration",
+                f"{uri}/{registry_id}"
+            )
+
+    return isamAppliance.create_return_object()

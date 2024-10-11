@@ -205,7 +205,6 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     """
     ret_obj = search(isamAppliance, name)
     container_id = ret_obj.get("data", None)
-
     if force or container_id is not None:
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
@@ -242,6 +241,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance, check_mode, force)
     return_obj = isamAppliance.create_return_object()
+    return_obj["data"] = None
     for obj in ret_obj["data"]:
         if obj["name"] == name:
             return_obj["data"] = obj["id"]
