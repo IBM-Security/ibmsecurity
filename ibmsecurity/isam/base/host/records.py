@@ -11,17 +11,24 @@ def get_all(isamAppliance, check_mode=False, force=False):
     """
     Retrieving the list of host IP addresses
     """
-    return isamAppliance.invoke_get("Retrieving the list of host IP addresses", uri,
-                                    requires_modules=requires_modules, requires_version=requires_version)
+    return isamAppliance.invoke_get(
+        "Retrieving the list of host IP addresses",
+        uri,
+        requires_modules=requires_modules,
+        requires_version=requires_version,
+    )
 
 
 def get(isamAppliance, host_address, check_mode=False, force=False):
     """
     Retrieving the list of host names associated with a host IP address
     """
-    return isamAppliance.invoke_get("Retrieving the list of host names associated with a host IP address",
-                                    "{0}/{1}/hostnames".format(uri, host_address),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+    return isamAppliance.invoke_get(
+        "Retrieving the list of host names associated with a host IP address",
+        "{0}/{1}/hostnames".format(uri, host_address),
+        requires_modules=requires_modules,
+        requires_version=requires_version,
+    )
 
 
 def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
@@ -38,7 +45,7 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
         if _check(isamAppliance, addr) is True:
             ret_obj = get(isamAppliance, host_address=addr)
             # Check if hostnames match (case sensitive check)
-            if json_sort(ret_obj['data']) != json_sort(hostnames):
+            if json_sort(ret_obj["data"]) != json_sort(hostnames):
                 delete_required = True
                 add_required = True
         else:
@@ -50,7 +57,13 @@ def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
 
     if force is True or add_required is True:
         # No need to check for add - force add
-        return add(isamAppliance, addr=addr, hostnames=hostnames, check_mode=check_mode, force=True)
+        return add(
+            isamAppliance,
+            addr=addr,
+            hostnames=hostnames,
+            check_mode=check_mode,
+            force=True,
+        )
 
     return isamAppliance.create_return_object()
 
@@ -67,12 +80,12 @@ def add(isamAppliance, addr, hostnames, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post(
-                "Creating a host record (IP address and host name)", uri,
-                {
-                    "addr": addr,
-                    "hostnames": hostnames
-                },
-                requires_modules=requires_modules, requires_version=requires_version)
+                "Creating a host record (IP address and host name)",
+                uri,
+                {"addr": addr, "hostnames": hostnames},
+                requires_modules=requires_modules,
+                requires_version=requires_version,
+            )
 
     return isamAppliance.create_return_object()
 
@@ -88,7 +101,9 @@ def delete(isamAppliance, host_address, check_mode=False, force=False):
             return isamAppliance.invoke_delete(
                 "Removing a host record (IP address and associated host names)",
                 "{0}/{1}".format(uri, host_address),
-                requires_modules=requires_modules, requires_version=requires_version)
+                requires_modules=requires_modules,
+                requires_version=requires_version,
+            )
 
     return isamAppliance.create_return_object()
 
@@ -99,8 +114,8 @@ def _check(isamAppliance, addr, check_mode=False, force=False):
     """
     ret_obj = get_all(isamAppliance)
 
-    for hosts in ret_obj['data']:
-        if hosts['addr'] == addr:
+    for hosts in ret_obj["data"]:
+        if hosts["addr"] == addr:
             return True
 
     return False

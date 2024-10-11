@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fix: corrections in test script
+- fix: base/extensions.py
+
 ## 2024.9.30.0
 
 - features: enhancements on pip and personal certificates (#430)
