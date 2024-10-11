@@ -173,7 +173,7 @@ def set(
             registry,
             user,
             secret,
-            warnings=["No idempotency if a secret is set"],
+            warnings=["No idempotency because of secrets"],
             **kwargs)
     else:
         logger.debug(f"\nCreating {registry} with {user}")
