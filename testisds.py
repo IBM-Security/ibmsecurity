@@ -5,11 +5,12 @@ from ibmsecurity.user.isdsapplianceuser import ISDSApplianceUser
 import pkgutil
 import importlib
 import yaml
-import json
+# import json
+import ibmsecurity
 
 
 def import_submodules(package, recursive=True):
-    """ Import all submodules of a module, recursively, including subpackages
+    """Import all submodules of a module, recursively, including subpackages
 
     :param package: package (name or actual module)
     :type package: str | module
@@ -19,14 +20,12 @@ def import_submodules(package, recursive=True):
         package = importlib.import_module(package)
     results = {}
     for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
-        full_name = package.__name__ + '.' + name
+        full_name = package.__name__ + "." + name
         results[full_name] = importlib.import_module(full_name)
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
     return results
 
-
-import ibmsecurity
 
 # Import all packages within ibmsecurity!!!
 import_submodules(ibmsecurity)
@@ -34,34 +33,30 @@ import_submodules(ibmsecurity)
 # logging.getLogger(__name__).addHandler(logging.NullHandler())
 logging.basicConfig()
 # Setup logging to send to stdout, format and set log level
-logLevel = 'DEBUG'
+logLevel = "DEBUG"
 DEFAULT_LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '[%(asctime)s] [PID:%(process)d TID:%(thread)d] [%(levelname)s] [%(name)s] [%(funcName)s():%(lineno)s] %(message)s'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "[%(asctime)s] [PID:%(process)d TID:%(thread)d] [%(levelname)s] [%(name)s] [%(funcName)s():%(lineno)s] %(message)s"
         },
     },
-    'handlers': {
-        'default': {
-            'level': logLevel,
-            'formatter': 'standard',
-            'class': 'logging.StreamHandler',
+    "handlers": {
+        "default": {
+            "level": logLevel,
+            "formatter": "standard",
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
-        '': {
-            'level': logLevel,
-            'handlers': ['default'],
-            'propagate': True
+    "loggers": {
+        "": {"level": logLevel, "handlers": ["default"], "propagate": True},
+        "requests.packages.urllib3.connectionpool": {
+            "level": "ERROR",
+            "handlers": ["default"],
+            "propagate": True,
         },
-        'requests.packages.urllib3.connectionpool': {
-            'level': 'ERROR',
-            'handlers': ['default'],
-            'propagate': True
-        }
-    }
+    },
 }
 logging.config.dictConfig(DEFAULT_LOGGING)
 
@@ -69,7 +64,8 @@ logging.config.dictConfig(DEFAULT_LOGGING)
 def p(jdata):
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(jdata)
-    print(yaml.safe_dump(jdata, encoding='utf-8', allow_unicode=True))
+    print(yaml.safe_dump(jdata, encoding="utf-8", allow_unicode=True))
+
 
 if __name__ == "__main__":
     """
@@ -81,9 +77,13 @@ if __name__ == "__main__":
     isds_server = ISDSAppliance(hostname="isds81dz", user=u, lmi_port=443)
     isds_server2 = ISDSAppliance(hostname="isds8otech", user=u, lmi_port=443)
 
-    ################ ACTIVE TEST ################
-    p(ibmsecurity.isds.snapshots.apply(isdsAppliance=isds_server, id="24b4b8f1f71bd6b5a07e0e2cc43e93db"))
-    ################ ACTIVE TEST ################
+    # ACTIVE TEST ####
+    p(
+        ibmsecurity.isds.snapshots.apply(
+            isdsAppliance=isds_server, id="24b4b8f1f71bd6b5a07e0e2cc43e93db"
+        )
+    )
+    # ACTIVE TEST ####
 
     #
     # Successfully tested
