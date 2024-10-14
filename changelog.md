@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2024.10.11.0
+
 - fix: corrections in test script
 - fix: base/extensions.py
 - feature: base/container functions (image,volume,metadata,repo,container)
