@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+## 2024.10.11.0
+
 - fix: corrections in test script
 - fix: base/extensions.py
+- feature: base/container functions (image,volume,metadata,repo,container)
+- build: add pre-commit configuration
 
 ## 2024.9.30.0
 
@@ -92,7 +96,7 @@
 - new: Add domain parameter to delete method. (#374)
 - fix: indentation in add method. (#373)
 - new: Add get_all method to ibmsecurity/isam/web/authorization_server/cleanup.py (#375)
-- new: Add http transform from content (#319) 
+- new: Add http transform from content (#319)
 - fix: syntax in test_isam.py (no pull request)
 
 ## 2023.3.10.0

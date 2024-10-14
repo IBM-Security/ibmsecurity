@@ -4,6 +4,7 @@ from ibmsecurity.appliance.isamappliance import ISAMAppliance
 from ibmsecurity.user.applianceuser import ApplianceUser
 import pkgutil
 import importlib
+import ibmsecurity
 
 
 def import_submodules(package, recursive=True):
@@ -18,14 +19,12 @@ def import_submodules(package, recursive=True):
         package = importlib.import_module(package)
     results = {}
     for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
-        full_name = package.__name__ + '.' + name
+        full_name = package.__name__ + "." + name
         results[full_name] = importlib.import_module(full_name)
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
     return results
 
-
-import ibmsecurity
 
 # Import all packages within ibmsecurity - recursively
 # Note: Advisable to replace this code with specific imports for production code
@@ -35,34 +34,30 @@ import_submodules(ibmsecurity)
 # logging.getLogger(__name__).addHandler(logging.NullHandler())
 logging.basicConfig()
 # Valid values are 'DEBUG', 'INFO', 'ERROR', 'CRITICAL'
-logLevel = 'DEBUG'
+logLevel = "DEBUG"
 DEFAULT_LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '[%(asctime)s] [PID:%(process)d TID:%(thread)d] [%(levelname)s] [%(name)s] [%(funcName)s():%(lineno)s] %(message)s'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "[%(asctime)s] [PID:%(process)d TID:%(thread)d] [%(levelname)s] [%(name)s] [%(funcName)s():%(lineno)s] %(message)s"
         },
     },
-    'handlers': {
-        'default': {
-            'level': logLevel,
-            'formatter': 'standard',
-            'class': 'logging.StreamHandler',
+    "handlers": {
+        "default": {
+            "level": logLevel,
+            "formatter": "standard",
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
-        '': {
-            'level': logLevel,
-            'handlers': ['default'],
-            'propagate': True
+    "loggers": {
+        "": {"level": logLevel, "handlers": ["default"], "propagate": True},
+        "requests.packages.urllib3.connectionpool": {
+            "level": "ERROR",
+            "handlers": ["default"],
+            "propagate": True,
         },
-        'requests.packages.urllib3.connectionpool': {
-            'level': 'ERROR',
-            'handlers': ['default'],
-            'propagate': True
-        }
-    }
+    },
 }
 logging.config.dictConfig(DEFAULT_LOGGING)
 
@@ -71,6 +66,7 @@ logging.config.dictConfig(DEFAULT_LOGGING)
 def p(jdata):
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(jdata)
+
 
 if __name__ == "__main__":
     """
@@ -85,6 +81,10 @@ if __name__ == "__main__":
     # Get the current SNMP monitoring setup details
     p(ibmsecurity.isam.base.snmp_monitoring.get(isamAppliance=isam_server))
     # Set the V2 SNMP monitoring
-    p(ibmsecurity.isam.base.snmp_monitoring.set_v1v2(isamAppliance=isam_server, community="IBM"))
+    p(
+        ibmsecurity.isam.base.snmp_monitoring.set_v1v2(
+            isamAppliance=isam_server, community="IBM"
+        )
+    )
     # Commit or Deploy the changes
     p(ibmsecurity.isam.appliance.commit(isamAppliance=isam_server))
