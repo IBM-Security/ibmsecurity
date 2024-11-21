@@ -8,7 +8,7 @@ requires_modules = None
 requires_version = "9.0.3.0"
 
 
-def execute(isamAppliance, command, input=None, check_mode=False, force=False):
+def execute(isamAppliance, command, input=None, check_mode=False, force=False, cli_warning=True):
     """
     Run CLI Command
     """
@@ -18,8 +18,10 @@ def execute(isamAppliance, command, input=None, check_mode=False, force=False):
     if input is not None:
         post_data['input'] = input
 
-    warnings = ["Idempotency checks are not coded for CLI calls.",
-                "All CLI calls will be marked as changed whether a change happens or not."]
+    warnings = []
+    if cli_warning:
+        warnings = ["Idempotency checks are not coded for CLI calls.",
+                    "All CLI calls will be marked as changed whether a change happens or not."]
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True, warnings=warnings)
     else:
