@@ -82,7 +82,7 @@ def rename(isamAppliance, kdb_id, cert_id, new_id,
             f"Appliance is at version: {isamAppliance.facts['version']}. Renaming a certificate requires at least 10.0.7.0"
         )
     else:
-        if force:
+        if force or (_check(isamAppliance, kdb_id, cert_id) and not _check(isamAppliance, kdb_id, new_id)):
             if check_mode:
                 return isamAppliance.create_return_object(changed=True)
             else:
@@ -107,7 +107,7 @@ def set(isamAppliance, kdb_id, cert_id, default='no', check_mode=False, force=Fa
             f"Appliance is at version: {isamAppliance.facts['version']}. Setting certificates as default is no longer supported."
         )
     else:
-        if force is True or _check_default(isamAppliance, kdb_id, cert_id, default) is True:
+        if force is True or _check_default(isamAppliance, kdb_id, cert_id, default):
             if check_mode is True:
                 return isamAppliance.create_return_object(changed=True)
             else:
