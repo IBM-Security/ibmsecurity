@@ -70,6 +70,30 @@ def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size=
     return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
 
+def rename(isamAppliance, kdb_id, cert_id, new_id,
+           check_mode=False, force=False):
+    """
+    Rename a personal certificate.  New in 10.0.7
+    """
+    warnings = []
+
+    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.7.0") < 0:
+        warnings.append(
+            f"Appliance is at version: {isamAppliance.facts['version']}. Renaming a certificate requires at least 10.0.7.0"
+        )
+    else:
+        if force:
+            if check_mode:
+                return isamAppliance.create_return_object(changed=True)
+            else:
+                return isamAppliance.invoke_put(
+                    "Renaming a personal certificate as default in a certificate database",
+                    f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}",
+                    {
+                        'new_id': new_id
+                    })
+
+
 def set(isamAppliance, kdb_id, cert_id, default='no', check_mode=False, force=False):
     """
     Setting a personal certificate as default in a certificate database
