@@ -13,6 +13,7 @@ uri = "/iam/access/v8/audit"
 comp_uri = uri + "/components"
 requires_modules = ["mga", "federation"]
 requires_version = None
+warnings = ['This module (audit_configuration) is deprecated, use audit.configuration instead']
 
 
 def get(isamAppliance, check_mode=False, force=False):
@@ -20,14 +21,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve audit configuration
     """
     return isamAppliance.invoke_get("Retrieve audit configuration", uri, requires_modules=requires_modules,
-                                    requires_version=requires_version)
-
-def getComponents(isamAppliance, check_mode=False, force=False):
-    """
-    Retrieve audit configuration components
-    """
-    return isamAppliance.invoke_get("Retrieve audit configuration components", comp_uri, requires_modules=requires_modules,
-                                    requires_version=requires_version)
+                                    requires_version=requires_version, warnings=warnings)
 
 
 def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, components=None):
@@ -165,12 +159,12 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
 
     if force is True or update_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
                 "Update Audit Configuration",
                 "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules,
-                requires_version=requires_version)
+                requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object()
 
