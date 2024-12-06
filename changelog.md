@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 2024.12.6.0
+
+- deprecated: set personal certificate as default
+- deprecated: `base/audit_configuration.py`.  Use `base/audit/configuration.py` instead
+- feature: base/audit/configuration.py added
+- feature: base/audit/components.py added
+
 ## 2024.10.11.0
 
 - fix: corrections in test script
@@ -85,7 +92,7 @@
 ## 2023.4.25.0
 
 - fix: add id parameter to ibmsecurity/isam/aac/fido2/relying_parties.py (#377)
-- fix: add __init__.py in ibmsecurity/isvg sub folders (#380)
+- fix: add `__init__.py` in ibmsecurity/isvg sub folders (#380)
 
 ### Build & Deploy
 
