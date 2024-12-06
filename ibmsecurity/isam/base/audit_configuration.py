@@ -24,6 +24,14 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_version=requires_version, warnings=warnings)
 
 
+def getComponents(isamAppliance, check_mode=False, force=False):
+    """
+    Retrieve audit configuration components
+    """
+    return isamAppliance.invoke_get("Retrieve audit configuration components", comp_uri, requires_modules=requires_modules,
+                                    requires_version=requires_version)
+
+
 def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, components=None):
     """
     Update Audit Configuration
