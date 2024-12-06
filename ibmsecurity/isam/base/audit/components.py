@@ -76,6 +76,7 @@ def set(isamAppliance, component_id: str, enabled=True, check_mode=False, force=
     """
     Update Audit Configuration Component by id
     This simply enables or disables the group.
+    TODO: Add set by type and set_all
     """
     if isinstance(enabled, str):
         if enabled.upper() in ['TRUE', 'YES']:
