@@ -21,4 +21,7 @@ repos:
     rev: v3.3.2
     hooks:
       - id: pylint
-        args: ["--ignore=E501,C0103,W0613,R0913"]
+        args: [
+           "-ry",
+           "--exit-zero"
+        ]

@@ -14,14 +14,21 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the password vault configuration
     """
     return isamAppliance.invoke_get("Retrieving the password vault configuration",
-                                    "{0}".format(uri),
-                                    requires_modules=requires_modules, requires_version=requires_version)
+                                    f"{uri}",
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
 
 
-def update(isamAppliance, enabled, data_location, resources, admin_group, public_key='', check_mode=False,
+def update(isamAppliance,
+           enabled,
+           data_location,
+           resources,
+           admin_group,
+           public_key='',
+           check_mode=False,
            force=False):
     """
-    Update a specified Risk Profile
+    Update a password vault configuration
     """
 
     json_data = {
@@ -35,11 +42,16 @@ def update(isamAppliance, enabled, data_location, resources, admin_group, public
 
     if force is True or update_required is True:
         if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
+            return isamAppliance.create_return_object(changed=True,
+                                                      warnings=warnings)
         else:
             return isamAppliance.invoke_put(
-                "Update a specified Risk Profile",
-                "{0}".format(uri), json_data, requires_modules=requires_modules, requires_version=requires_version)
+                "Update a specified Password vault entry",
+                f"{uri}",
+                json_data,
+                warnings=warnings,
+                requires_modules=requires_modules,
+                requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
