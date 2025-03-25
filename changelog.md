@@ -1,6 +1,9 @@
 # Manual change log
 
-## Unreleased
+## 2025.3.14.0
+
+- build: add pylint configuration
+- fix: fed/federations.py set_file
 
 ## 2024.12.6.0
 

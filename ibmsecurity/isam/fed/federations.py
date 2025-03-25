@@ -10,6 +10,7 @@ uri = "/iam/access/v8/federations"
 requires_modules = ["federation"]
 requires_version = "9.0.1.0"
 
+
 def get_all(isamAppliance, count=None, start=None, filter=None, check_mode=False, force=False):
     """
     Retrieve a list of federations
@@ -65,6 +66,7 @@ def _get(isamAppliance, id):
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
+
 def set(isamAppliance, name, protocol, configuration, role=None, templateName=None, new_name=None, check_mode=False,
         force=False):
     """
@@ -91,6 +93,8 @@ def set_file(isamAppliance, name, protocol, filename, mapping_id, role=None, tem
         file_lines = json.load(infile)
 
     # update mapping_id
+    if file_lines.get('configuration', None) is not None:
+        file_lines = file_lines['configuration']
     file_lines['identityMapping']['properties']['identityMappingRuleReference'] = str(mapping_id)
 
     return set(isamAppliance=isamAppliance, name=name, protocol=protocol, configuration=file_lines, role=role,
@@ -222,24 +226,13 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
             # TODO: WHY ????
             new_map_rule_id, new_map_rule = None, None
             exist_map_rule_id, exist_map_rule = None, None
-            try:
-                new_map_rule_id = configuration['identityMapping']['properties']['identityMappingRuleReference']
-            except:
-                pass  # Ignore any lookup errors because of missing key/values
-            try:
-                new_map_rule = configuration['identityMapping']['properties']['identityMappingRule']
-            except:
-                pass  # Ignore any lookup errors because of missing key/values
-            try:
-                exist_map_rule_id = ret_obj['data']['configuration']['identityMapping']['properties'][
-                    'identityMappingRuleReference']
-            except:
-                pass  # Ignore any lookup errors because of missing key/values
-            try:
-                exist_map_rule = ret_obj['data']['configuration']['identityMapping']['properties'][
-                    'identityMappingRule']
-            except:
-                pass  # Ignore any lookup errors because of missing key/values
+
+            new_map_rule_id = configuration['identityMapping']['properties'].get('identityMappingRuleReference', None)
+            new_map_rule = configuration['identityMapping']['properties'].get('identityMappingRule', None)
+
+            exist_map_rule_id = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRuleReference', None)
+            exist_map_rule = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRule', None)
+
             logger.debug("New Mapping data: {0}/{1}".format(new_map_rule_id, new_map_rule))
             logger.debug("Existing Mapping data: {0}/{1}".format(exist_map_rule_id, exist_map_rule))
             if new_map_rule_id is not None:
@@ -259,22 +252,19 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
                     if new_map_rule is not None:
                         del json_data['configuration']['identityMapping']['properties']['identityMappingRule']
         else:
-            #del ret_obj['data']['configuration']
             json_data['configuration'] = {}
         # Potential for missing mapping rule - so add configuration back
         if configuration is not None:
             json_data['configuration'] = configuration
 
         ret_obj['data'].pop('id')
-        #del ret_obj['data']['protocol']
         if protocol is not None:
             json_data['protocol'] = protocol
-        #providerid
         _providerUri = None
         if not json_data['configuration'].get('providerId', None):
             if protocol is not None:
                 if protocol == "OIDC10":
-                    _providerUri = "/oidc/rp/"+ json_data['name']
+                    _providerUri = "/oidc/rp/" + json_data['name']
                     json_data['configuration']['providerId'] = json_data['configuration']['pointOfContactUrl'] + _providerUri
                 elif protocol == "SAML2_0":
                     _providerUri = "/" + json_data['name'] + "/saml20"
@@ -284,63 +274,62 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
                     logger.debug("Ignore wsfed for this")
 
         if protocol == "SAML2_0" and role == 'sp':
-          if not json_data['configuration'].get('manageNameIDService', None):
-            json_data['configuration']['manageNameIDService'] = []
-          if not json_data['configuration'].get('sessionStateHeaders', None):
-            json_data['configuration']['sessionStateHeaders'] = []
-          if not json_data['configuration'].get('attributeMapping', None):
-            json_data['configuration']['attributeMapping'] = {"map": []}
-          if not json_data['configuration'].get('wayfCookieLifetime', None):
-            json_data['configuration']['wayfCookieLifetime'] = 86400
-          if json_data['configuration'].get('authnReqMapping', None):
-              # remove javascript
-              if json_data['configuration']['authnReqMapping'].get('properties', None):
-                  if json_data['configuration']['authnReqMapping']['properties'].get('ruleType', None):
-                      del json_data['configuration']['authnReqMapping']['properties']['ruleType']
-          else:
-              #default
-              if tools.version_compare(isamAppliance.facts["version"], "10.0.3") >= 0:
-                  json_data['configuration']['authnReqMapping'] = {"activeDelegateId": "skip-authn-request-map"}
-          if json_data['configuration'].get('extensionMapping', None):
-              # remove javascript
-              if json_data['configuration']['extensionMapping'].get('properties', None):
-                  if json_data['configuration']['extensionMapping']['properties'].get('ruleType', None):
-                      del json_data['configuration']['extensionMapping']['properties']['ruleType']
-          else:
-              if tools.version_compare(isamAppliance.facts["version"], "10.0.1") >= 0:
-                  json_data['configuration']['extensionMapping'] = {"activeDelegateId": "skip-extension-map"}
-          # artifactResolutionService bindings url
-          if json_data['configuration'].get('artifactResolutionService', None):
-            for i in json_data['configuration']['artifactResolutionService']:
-              if not i.get('url', None):
-                  #put in a default value : point of contact + federation
-                  i['url'] = f"{json_data['configuration']['providerId']}/soap"
-          #isamAppliance.logger.debug('assertionConsumerService binding url')
+            if not json_data['configuration'].get('manageNameIDService', None):
+                json_data['configuration']['manageNameIDService'] = []
+            if not json_data['configuration'].get('sessionStateHeaders', None):
+                json_data['configuration']['sessionStateHeaders'] = []
+            if not json_data['configuration'].get('attributeMapping', None):
+                json_data['configuration']['attributeMapping'] = {"map": []}
+            if not json_data['configuration'].get('wayfCookieLifetime', None):
+                json_data['configuration']['wayfCookieLifetime'] = 86400
+            if json_data['configuration'].get('authnReqMapping', None):
+                # remove javascript
+                if json_data['configuration']['authnReqMapping'].get('properties', None):
+                    if json_data['configuration']['authnReqMapping']['properties'].get('ruleType', None):
+                        del json_data['configuration']['authnReqMapping']['properties']['ruleType']
+            else:
+                # default
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.3") >= 0:
+                    json_data['configuration']['authnReqMapping'] = {"activeDelegateId": "skip-authn-request-map"}
+            if json_data['configuration'].get('extensionMapping', None):
+                # remove javascript
+                if json_data['configuration']['extensionMapping'].get('properties', None):
+                    if json_data['configuration']['extensionMapping']['properties'].get('ruleType', None):
+                        del json_data['configuration']['extensionMapping']['properties']['ruleType']
+            else:
+                if tools.version_compare(isamAppliance.facts["version"], "10.0.1") >= 0:
+                    json_data['configuration']['extensionMapping'] = {"activeDelegateId": "skip-extension-map"}
+            # artifactResolutionService bindings url
+            if json_data['configuration'].get('artifactResolutionService', None):
+                for i in json_data['configuration']['artifactResolutionService']:
+                    if not i.get('url', None):
+                        # put in a default value : point of contact + federation
+                        i['url'] = f"{json_data['configuration']['providerId']}/soap"
 
-          #assertionConsumerService binding url
-          if json_data['configuration'].get('assertionConsumerService', None):
-            for i in json_data['configuration']['assertionConsumerService']:
-              if not i.get('url', None):
-                  # put in a default value : point of contact + federation
-                  i['url'] = f"{json_data['configuration']['providerId']}/login"
-          #isamAppliance.logger.debug('singlelogoutblabla')
-          if json_data['configuration'].get('singleLogoutService', None):
-            for i in json_data['configuration']['singleLogoutService']:
-              if not i.get('url', None):
-                  # put in a default value : point of contact + federation
-                  i['url'] = f"{json_data['configuration']['providerId']}/slo"
-          #nameid supported
-          if json_data['configuration'].get('nameIDFormat', None):
-              if not json_data['configuration']['nameIDFormat'].get('supported', None):
-                  if ret_obj['data']['configuration']['nameIDFormat'].get('supported', None):
-                      logger.debug("Ignoring supported nameIDFormat for comparison")
-                      ret_obj['data']['configuration']['nameIDFormat'].pop('supported')
+            # assertionConsumerService binding url
+            if json_data['configuration'].get('assertionConsumerService', None):
+                for i in json_data['configuration']['assertionConsumerService']:
+                    if not i.get('url', None):
+                        # put in a default value : point of contact + federation
+                        i['url'] = f"{json_data['configuration']['providerId']}/login"
+            # isamAppliance.logger.debug('singlelogoutblabla')
+            if json_data['configuration'].get('singleLogoutService', None):
+                for i in json_data['configuration']['singleLogoutService']:
+                    if not i.get('url', None):
+                        # put in a default value : point of contact + federation
+                        i['url'] = f"{json_data['configuration']['providerId']}/slo"
+            # nameid supported
+            if json_data['configuration'].get('nameIDFormat', None):
+                if not json_data['configuration']['nameIDFormat'].get('supported', None):
+                    if ret_obj['data']['configuration']['nameIDFormat'].get('supported', None):
+                        logger.debug("Ignoring supported nameIDFormat for comparison")
+                        ret_obj['data']['configuration']['nameIDFormat'].pop('supported')
 
         sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
-        #isamAppliance.logger.debug(f"\nSorted Desired:\n\n {sorted_json_data}\n")
+        # isamAppliance.logger.debug(f"\nSorted Desired:\n\n {sorted_json_data}\n")
         logger.debug(f"\nSorted Desired:\n\n {sorted_json_data}\n")
         sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
-        #isamAppliance.logger.debug(f"\nSorted Current:\n\n {sorted_ret_obj}\n")
+        # isamAppliance.logger.debug(f"\nSorted Current:\n\n {sorted_ret_obj}\n")
         logger.debug(f"\nSorted Desired:\n\n {sorted_json_data}\n")
         if sorted_ret_obj != sorted_json_data:
             # parameters that are necessary for compare, but not for update
