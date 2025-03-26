@@ -50,7 +50,7 @@ def import_submodules(package, recursive=True):
 try:
     import_submodules(ibmsecurity)
 except Exception as e:
-    print('Failed to import all submodules ' + e)
+    print('Failed to import some submodules: ' + str(e))
 
 # Setup logging to send to stdout, format and set log level
 # logging.getLogger(__name__).addHandler(logging.NullHandler())
