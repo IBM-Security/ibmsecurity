@@ -1,5 +1,13 @@
 # Manual change log
 
+## Latest
+
+- push notification registration
+- fix: base/extensions.py - improve idempotency #441
+- fix: base/container_ext/repo.py - user and secret are not required (although documentation states they are)
+- feature: base/admin.py - improve idempotency, support for new parameters in IVIA 11
+- feature: base/ssl_certificates/personal_certificate.py - support label parameter in IVIA 11
+
 ## 2025.3.14.0
 
 - build: add pylint configuration
