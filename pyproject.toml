@@ -14,9 +14,9 @@ authors = [
 description = "Idempotent functions for IBM Security Appliance REST APIs"
 readme = "README.md"
 requires-python = ">=3.7"
+license = "Apache-2.0"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
