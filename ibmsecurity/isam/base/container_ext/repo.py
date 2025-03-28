@@ -1,4 +1,5 @@
 import logging
+from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,8 @@ def get(isamAppliance, registry_id, check_mode=False, force=False):
 def add(
     isamAppliance,
     registry,
-    user,
-    secret,
+    user=None,
+    secret=None,
     **kwargs,
 ):
     """
@@ -46,8 +47,8 @@ def add(
 
     :param isamAppliance:
     :param registry: hostname of the registry, eg. icr.io
-    :param user: user
-    :param secret: the secret for the user
+    :param user: user (optional)
+    :param secret: the secret for the user (optional)
     :param proxy_host (optional)
     :param proxy_port (optional)
     :param proxy_user (optional)
@@ -99,12 +100,13 @@ def add(
 def update(
     isamAppliance,
     registry,
-    user,
-    secret,
+    user=None,
+    secret=None,
     **kwargs,
 ):
     """
     Update a credential for a user and container registry
+    (user and secret are NOT required values, although it is stated like that in the documentation)
 
     :param isamAppliance:
     :param registry: hostname of the registry, eg. icr.io
@@ -134,13 +136,26 @@ def update(
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            put_data = {
-                "host": registry,
-                "user": user,
-                "secret": secret,
-            }
+            if tools.version_compare(isamAppliance.facts["version"], "10.0.9.0") < 0:
+                warnings.append(
+                    "Appliance is at version: {0}. Using the previous format for container repo.".format(
+                        isamAppliance.facts["version"]
+                    )
+                )
+                put_data = {
+                    "host": registry,
+                    "user": user,
+                }
 
-            # put_data.update(input_args)
+            else:
+                put_data = {
+                    "host": registry,
+                    "user": user,
+                }
+                # append other fields from input parameters
+                put_data.update(input_args)
+            if secret is not None:
+                put_data['secret'] = secret
 
             return isamAppliance.invoke_put(
                 "Update registry",
@@ -157,17 +172,18 @@ def update(
 def set(
     isamAppliance,
     registry,
-    user,
-    secret,
+    user=None,
+    secret=None,
     **kwargs,
 ):
     """
     Set - we can't make this function idempotent if a secret is set.
+    (user and secret are NOT required values, although it is stated like that in the documentation)
     TODO: execute every time ?
     """
     if _check(isamAppliance, registry, user):
         logger.debug(f"\nUpdating {registry} with {user}")
-
+        # TODO: make this idempotent
         return update(
             isamAppliance,
             registry,
@@ -185,7 +201,7 @@ def set(
             **kwargs)
 
 
-def search(isamAppliance, host, user, check_mode=False, force=False):
+def search(isamAppliance, host, user=None, check_mode=False, force=False):
     """
     Return the id of the repository
 
@@ -200,10 +216,16 @@ def search(isamAppliance, host, user, check_mode=False, force=False):
     return_obj = isamAppliance.create_return_object()
     return_obj["data"] = None
     for obj in ret_obj["data"]:
-        if obj.get("host", "") == host and obj.get("user", "") == user:
-            return_obj["data"] = obj["id"]
-            return_obj["rc"] = 0
-            break
+        if user is None:
+            if obj.get("host", "") == host:
+                return_obj["data"] = obj["id"]
+                return_obj["rc"] = 0
+                break
+        else:
+            if obj.get("host", "") == host and obj.get("user", "") == user:
+                return_obj["data"] = obj["id"]
+                return_obj["rc"] = 0
+                break
 
     return return_obj
 
@@ -223,10 +245,9 @@ def _check(isamAppliance, registry, user):
     return False
 
 
-def delete(isamAppliance, registry, user, check_mode=False, force=False):
+def delete(isamAppliance, registry, user=None, check_mode=False, force=False):
     """
-    Delete a repo by host and
-    ./testisam_cmd.py --hostname=${ISAM_LMI} --method=ibmsecurity.isam.base.container_ext.repo.delete --method_options="name=icr.io/isva/verify-access-oidc-provider:23.03"
+    Delete a repo by host (and user)
     """
     ret_obj = search(isamAppliance, registry, user)
     registry_id = ret_obj.get("data", None)

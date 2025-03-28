@@ -28,17 +28,26 @@ def get_all(isamAppliance, check_mode=False, force=False):
     )
 
 
-def get(isamAppliance, extId, check_mode=False, force=False):
+def get(isamAppliance, extId, detailed=False, check_mode=False, force=False):
     """
     Retrieve installed extension by id
     """
-    ret_obj = isamAppliance.create_return_object()
-    extensions = get_all(isamAppliance)
-    for obj in extensions["data"]:
-        if obj["id"] == extId:
-            ret_obj["data"] = obj
-            break
-    return ret_obj
+    if detailed:
+        ret_obj = isamAppliance.invoke_get(
+            "Retrieve details about installed extension",
+            f"{uri}/{extId}",
+            requires_modules=requires_modules,
+            requires_version=requires_version,
+        )
+        return ret_obj
+    else:
+        ret_obj = isamAppliance.create_return_object()
+        extensions = get_all(isamAppliance)
+        for obj in extensions["data"]:
+            if obj["id"] == extId:
+                ret_obj["data"] = obj
+                break
+        return ret_obj
 
 
 def add(
@@ -137,6 +146,20 @@ def update(
             return isamAppliance.create_return_object(changed=True)
         else:
             config_str = _get_config_data(extId, config_data)
+            logger.debug("\nCONFIGDATA from input\n" + config_str)
+            if not force:
+                # Compare .  It's not possible to compare the extension (gui_json) itself, since we don't expect the extension here
+                currentConfigData = get(isamAppliance, extId=extId, detailed=True)
+                currentConfigData = currentConfigData.get('data', {'config_data': ''})
+                currentConfigData = currentConfigData.get('config_data', '')
+
+                currentConfigDataStr = json.dumps(currentConfigData, skipkeys=True, sort_keys=True)
+
+                logger.debug("\nCURRENT CONFIGDATA\n" + currentConfigDataStr)
+
+                if config_str == currentConfigDataStr:
+                    return isamAppliance.create_return_object(changed=False)
+
             files = {}
             files["config_data"] = (None, config_str)
 
@@ -183,6 +206,7 @@ def set(
 ):
 
     # MUST have an extId to do an update.
+    # Also, some extensions do not like updates, they require delete/add
     if extId and search(isamAppliance, extId):
         return update(
             isamAppliance=isamAppliance,
@@ -190,7 +214,7 @@ def set(
             config_data=config_data,
             third_party_package=third_party_package,
             check_mode=check_mode,
-            force=True,
+            force=force,
         )
     else:
         return add(
@@ -275,7 +299,7 @@ def _get_config_data(extId, config_data):
         return '{"extId": "' + extId + '",' + config_data + "}"
     else:
         config_data["extId"] = extId
-        return json.dumps(config_data)
+        return json.dumps(config_data, skipkeys=True, sort_keys=True)
 
 
 def search(isamAppliance, extId, check_mode=False, force=False):

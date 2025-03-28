@@ -107,8 +107,8 @@ def set(isamAppliance, kdb_id, cert_id, default='no', check_mode=False, force=Fa
             f"Appliance is at version: {isamAppliance.facts['version']}. Setting certificates as default is no longer supported."
         )
     else:
-        if force is True or _check_default(isamAppliance, kdb_id, cert_id, default):
-            if check_mode is True:
+        if force or _check_default(isamAppliance, kdb_id, cert_id, default):
+            if check_mode:
                 return isamAppliance.create_return_object(changed=True)
             else:
                 return isamAppliance.invoke_put(
@@ -151,13 +151,13 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     """
     Deleting a personal certificate from a certificate database
     """
-    if force is True or _check(isamAppliance, kdb_id, cert_id) is True:
-        if check_mode is True:
+    if force or _check(isamAppliance, kdb_id, cert_id):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a personal certificate from a certificate database",
-                "/isam/ssl_certificates/{0}/personal_cert/{1}".format(kdb_id, cert_id))
+                f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}")
 
     return isamAppliance.create_return_object()
 
@@ -179,26 +179,39 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
 def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mode=False, force=False):
     """
     Importing a personal certificate into a certificate database
-    Remark: you can add a label, but it's only used for a half-hearted check if the certificate already exists.
+    Remark: you can add a label, but it's only used for a half-hearted check if the certificate already exists for versions < 11
     """
-    if force is True or not _check(isamAppliance, kdb_id, label):
-        if check_mode is True:
+    warnings = []
+    if force or not _check(isamAppliance, kdb_id, label):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
+            iviaVersion = isamAppliance.facts["version"]
+            post_data = {
+                'file_formfield': 'cert',
+                'filename': cert,
+                'mimetype': 'application/octet-stream'
+            }
+            json_data = {
+                'operation': 'import'
+            }
+            if password is not None:
+                json_data['password'] = password
+            if label is not None:
+                if ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.9.0") < 0:
+                    warnings.append(f"Appliance at version: {iviaVersion}, label: {label} is not supported. Needs 10.0.9 or higher. Ignoring.")
+                else:
+                    logger.debug(f"Adding label: {label}")
+                    json_data['label'] = label
+            logger.debug(f"Posting json data: {json_data}")
             return isamAppliance.invoke_post_files(
                 "Importing a personal certificate into a certificate database",
-                "/isam/ssl_certificates/{0}/personal_cert".format(kdb_id),
+                f"/isam/ssl_certificates/{kdb_id}/personal_cert",
                 [
-                    {
-                        'file_formfield': 'cert',
-                        'filename': cert,
-                        'mimetype': 'application/octet-stream'
-                    }
+                    post_data
                 ],
-                {
-                    'password': password,
-                    'operation': 'import'
-                }
+                json_data,
+                warnings=warnings
             )
 
     return isamAppliance.create_return_object()
