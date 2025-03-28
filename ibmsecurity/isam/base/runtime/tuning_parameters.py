@@ -74,7 +74,7 @@ def reset(isamAppliance, option, check_mode=False, force=False):
     if force is False:
         matches, exists, warnings = _check(isamAppliance, option, None)
 
-    if force is True or exists is True:
+    if force is True or exists:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
