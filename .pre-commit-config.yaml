@@ -12,11 +12,11 @@ repos:
     hooks:
       - id: black
         stages: [pre-push]
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        args: ["--ignore=E501"]
+  #- repo: https://github.com/PyCQA/flake8
+  #  rev: 7.1.1
+  #  hooks:
+  #    - id: flake8
+  #      args: ["--ignore=E501"]
 #  - repo: https://github.com/PyCQA/pylint
 #    rev: v3.3.2
 #   hooks:
