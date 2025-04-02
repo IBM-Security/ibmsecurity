@@ -26,7 +26,7 @@ def search(isvgAppliance, serial, check_mode=False, force=False):
         return_obj['rc'] = 0
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, db, type, password, serial, check_mode=False, force=False):
     """
@@ -40,7 +40,7 @@ def upload(isvgAppliance, db, type, password, serial, check_mode=False, force=Fa
             return isvgAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             ret_obj = isvgAppliance.invoke_post_files(
-                "Import personal certificate", 
+                "Import personal certificate",
                 "/upload_object",
                 [
                     {

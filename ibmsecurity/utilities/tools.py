@@ -203,7 +203,7 @@ def files_same_zip_content(original_file, new_file):
     logger.debug("Comparing original_file[{}] vs new_file[{}]".format(original_file, new_file))
     z1 = zipfile.ZipFile(original_file)
     z2 = zipfile.ZipFile(new_file)
-    
+
     if len(z1.infolist()) != len(z2.infolist()):
         logger.debug("number of archive elements differ: {} in {} vs {} from server".format(len(z1.infolist()), z1.filename, len(z2.infolist())))
         identical = False

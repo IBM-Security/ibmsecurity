@@ -235,4 +235,3 @@ def _check_exists(isamAppliance, urn, name):
             return True
 
     return False
-

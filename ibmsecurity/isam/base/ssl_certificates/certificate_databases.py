@@ -94,7 +94,7 @@ def import_db(isamAppliance, kdb, stash, zip=None, check_mode=False, force=False
     """
     # Grab the filename to use as identifier (strip path and extension)
     import os.path
-    
+
     tmpdir=None
     if zip != None:
         with zipfile.ZipFile(zip,"r") as zip_ref:
@@ -102,13 +102,13 @@ def import_db(isamAppliance, kdb, stash, zip=None, check_mode=False, force=False
             zip_ref.extractall(tmpdir)
             kdb = tmpdir + '/' + kdb
             stash = tmpdir + '/' + stash
-    
+
     kdb_id = os.path.basename(kdb)
     kdb_id = os.path.splitext(kdb_id)[0]
 
     try:
         if force is True or _check(isamAppliance, kdb_id) is False:
-            if check_mode is True:            
+            if check_mode is True:
                 return isamAppliance.create_return_object(changed=True)
             else:
                 return isamAppliance.invoke_post_files(

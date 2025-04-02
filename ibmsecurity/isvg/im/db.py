@@ -52,7 +52,7 @@ def add(isvgAppliance, name, hostName, port, dbName, adminName, adminPwd, userNa
                       "hostName": hostName,
                       "port": port,
                       "dbName": dbName,
-                      "oracleLocationName": oracleLocationName, 
+                      "oracleLocationName": oracleLocationName,
                       "adminName": adminName,
                       "adminPwd": adminPwd,
                       "userName": userName,
@@ -108,7 +108,7 @@ def update(isvgAppliance, name, hostName, port, dbName, adminName, adminPwd, use
     # JSON payload of interest is at first (and only) position of array
     ret_obj['data'] = ret_obj['data'][0]
 
-    uuid = ret_obj['data']['uuid']    
+    uuid = ret_obj['data']['uuid']
 
     needs_update = False
 
@@ -117,14 +117,14 @@ def update(isvgAppliance, name, hostName, port, dbName, adminName, adminPwd, use
         "name": name,
         "uuid": uuid
     }
-   
+
     if 'action' in ret_obj['data']:
         del ret_obj['data']['action']
     if 'lastmodified' in ret_obj['data']:
         del ret_obj['data']['lastmodified']
     if 'certCheckSum' in ret_obj['data']:
         del ret_obj['data']['certCheckSum']
-    
+
     # mandatory attributes
     if hostName is not None:
         json_data['hostName'] = hostName
@@ -188,21 +188,21 @@ def update(isvgAppliance, name, hostName, port, dbName, adminName, adminPwd, use
         if ret_obj['data']['retryInterval'] is not None:
             json_data['retryInterval'] = ret_obj['data']['retryInterval']
         else:
-            del ret_obj['data']['retryInterval']    
+            del ret_obj['data']['retryInterval']
     if maximumRetries is not None:
         json_data['maximumRetries'] = maximumRetries
     elif 'maximumRetries' in ret_obj['data']:
         if ret_obj['data']['maximumRetries'] is not None:
             json_data['maximumRetries'] = ret_obj['data']['maximumRetries']
         else:
-            del ret_obj['data']['maximumRetries']    
+            del ret_obj['data']['maximumRetries']
     if oracleLocationName is not None:
         json_data['oracleLocationName'] = oracleLocationName
     elif 'oracleLocationName' in ret_obj['data']:
         if ret_obj['data']['oracleLocationName'] is not None:
             json_data['oracleLocationName'] = ret_obj['data']['oracleLocationName']
         else:
-            del ret_obj['data']['oracleLocationName']    
+            del ret_obj['data']['oracleLocationName']
     # optional attributes
     if dropTables is not None:
         json_data['dropTables'] = dropTables
@@ -210,21 +210,21 @@ def update(isvgAppliance, name, hostName, port, dbName, adminName, adminPwd, use
         if ret_obj['data']['dropTables'] is not None:
             json_data['dropTables'] = ret_obj['data']['dropTables']
         else:
-            del ret_obj['data']['dropTables']    
+            del ret_obj['data']['dropTables']
     if useSSL is not None:
         json_data['useSSL'] = useSSL
     elif 'useSSL' in ret_obj['data']:
         if ret_obj['data']['useSSL'] is not None:
             json_data['useSSL'] = ret_obj['data']['useSSL']
         else:
-            del ret_obj['data']['useSSL']    
+            del ret_obj['data']['useSSL']
     if altServerNames is not None:
         json_data['altServerNames'] = altServerNames
     elif 'altServerNames' in ret_obj['data']:
         if ret_obj['data']['altServerNames'] is not None:
             json_data['altServerNames'] = ret_obj['data']['altServerNames']
         else:
-            del ret_obj['data']['altServerNames']    
+            del ret_obj['data']['altServerNames']
     if altPortNumbers is not None:
         json_data['altPortNumbers'] = altPortNumbers
     elif 'altPortNumbers' in ret_obj['data']:

@@ -35,7 +35,7 @@ def search(isvgAppliance, keystore="itimKeystore.jceks", check_mode=False, force
                         break
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, keystore, check_mode=False, force=False):
     """

@@ -25,7 +25,7 @@ def set(isamAppliance, ntpServers="", timeZone="America/New_York", enableNtp=Fal
     """
     Update date/time settings (set NTP server and timezone)
     """
-    
+
     if dateTime is None:
         dateTime = "0000-00-00 00:00:00"
 

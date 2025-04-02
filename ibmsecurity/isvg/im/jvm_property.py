@@ -23,7 +23,7 @@ def get(isvgAppliance,  propertyName, check_mode=False, force=False):
 
 def search(isvgAppliance, propertyName, check_mode=False, force=False):
     """
-    Search for existing property/value pair for a given file. 
+    Search for existing property/value pair for a given file.
     Just care for presence of property, not its actual value.
     """
     ret_obj = get(isvgAppliance, propertyName)

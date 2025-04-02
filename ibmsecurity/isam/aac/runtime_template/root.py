@@ -58,11 +58,11 @@ def import_file(isamAppliance, filename, delete_missing=False, check_mode=False,
             for info in zClientFile.infolist():
                 files_on_client.append(info.filename)
             missing_client_files = [x for x in files_on_server if x not in files_on_client]
-            
+
             if missing_client_files != []:
               logger.info("list all missing files in {}, which will be deleted on the server: {}.".format(filename, missing_client_files))
 
-            for x in missing_client_files:                
+            for x in missing_client_files:
                 if x.endswith('/'):
                     search_dir= os.path.dirname(x[:-1]) + '/'
                     if search_dir not in missing_client_files:
@@ -108,10 +108,10 @@ def _check_import(isamAppliance, filename):
     tempfilename = "template_files.zip"
     tempfile =  os.path.join(tempdir, tempfilename)
     export_file(isamAppliance, tempfile)
-    
+
     if os.path.exists(tempfile):
       identical = files_same_zip_content(filename,tempfile)
-    
+
       shutil.rmtree(tempdir)
       if identical:
           logger.info("runtime template files {} are identical with the server content. No update necessary.".format(filename))

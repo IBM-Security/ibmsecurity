@@ -123,7 +123,7 @@ def install(isvgAppliance, type, version, release_date, name, check_mode=False, 
                     before_install_last_boot = firm['last_boot']
                     logger.info(
                         "Active partition last boot time {0} before firmware installation.".format(before_install_last_boot))
-            
+
             # proceed with firmware installation
             ret_obj = isvgAppliance.invoke_post("Install Available Update",
                                                 "/updates/available/install",
@@ -137,7 +137,7 @@ def install(isvgAppliance, type, version, release_date, name, check_mode=False, 
                                                 ]
                                                 })
             isvgAppliance.facts['version'] = version
-            
+
             # isvg appliance has so much work to do after installing the firmware, it can take up
             # to several minutes before it reboots by itself.
             # Loop until appliance returns an error, or reboot is detected, before returning control.
@@ -155,7 +155,7 @@ def install(isvgAppliance, type, version, release_date, name, check_mode=False, 
             except Exception as e:
                 logger.debug("Exception occured: {0}. Assuming appliance has now initiated reboot process".format(e))
                 pass
-            
+
             return ret_obj
 
     return isvgAppliance.create_return_object()

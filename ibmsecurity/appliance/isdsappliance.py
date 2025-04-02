@@ -50,19 +50,19 @@ class ISDSAppliance(IBMAppliance):
         if self.verify is None or self.verify is False:
             self.disable_urllib_warnings = True
             self.logger.warning("""
-Certificate verification has been disabled. Python is NOT verifying the SSL 
-certificate of the host appliance and InsecureRequestWarning messages are 
+Certificate verification has been disabled. Python is NOT verifying the SSL
+certificate of the host appliance and InsecureRequestWarning messages are
 being suppressed for the following host:
   https://{0}:{1}
 
 To use certificate verification:
   1. When the certificate is trusted by your Python environment:
-        Instantiate all instances of ISDSAppliance with verify=True or set 
+        Instantiate all instances of ISDSAppliance with verify=True or set
         the environment variable IBMSECLIB_VERIFY_CONNECTION=True.
   2. When the certificate is not already trusted in your Python environment:
         Instantiate all instances of ISAMAppliance with the verify parameter
         set to the fully qualified path to a CA bundle.
-        
+
 See the following URL for more details:
   https://requests.readthedocs.io/en/latest/user/advanced/#ssl-cert-verification
 """.format(self.hostname, self.lmi_port))

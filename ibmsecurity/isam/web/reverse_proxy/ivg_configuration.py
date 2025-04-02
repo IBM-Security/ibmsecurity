@@ -7,7 +7,7 @@ requires_modules = ["wga"]
 requires_version = "10.0.2.0"
 
 
-def config(isamAppliance, instance_id, junction="/ivg", mmfa=True, check_mode=False): 
+def config(isamAppliance, instance_id, junction="/ivg", mmfa=True, check_mode=False):
     """
     IVG configuration for a reverse proxy instance
 
@@ -32,4 +32,3 @@ def config(isamAppliance, instance_id, junction="/ivg", mmfa=True, check_mode=Fa
             requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
-

@@ -29,7 +29,7 @@ def search(isvgAppliance, label, check_mode=False, force=False):
             break
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, db, type, password, label="lmi", check_mode=False, force=False):
     """

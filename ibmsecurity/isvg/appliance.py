@@ -19,7 +19,7 @@ def reboot(isvgAppliance, check_mode=False, force=False):
                 before_reboot_last_boot = firm['last_boot']
                 logger.info(
                     "Active partition last boot time {0} before reboot process initiated.".format(before_reboot_last_boot))
-    
+
         ret_obj = isvgAppliance.invoke_post("Rebooting appliance",
                                          "/diagnostics/restart_shutdown/reboot",
                                          {})
@@ -41,7 +41,7 @@ def reboot(isvgAppliance, check_mode=False, force=False):
         except Exception as e:
             logger.debug("Exception occured: {0}. Assuming appliance has now initiated reboot process".format(e))
             pass
-        
+
         return ret_obj
 
 

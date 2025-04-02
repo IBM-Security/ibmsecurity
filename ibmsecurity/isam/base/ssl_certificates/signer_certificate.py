@@ -25,8 +25,8 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
 def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_mode=False, force=False):
     """
     Load a certificate from a server
-    
-    check_remote controls if ansible should check remote certificate by retrieving it or simply by 
+
+    check_remote controls if ansible should check remote certificate by retrieving it or simply by
     checking for existence of the label in the kdb
     """
     if check_remote:
@@ -35,7 +35,7 @@ def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_m
     else:
       logger.debug("Check for existence of the label in the kdb. Use check_remote=True to switch to advanced remote certificate with appliance certificate checking.")
       tmp_check = _check(isamAppliance, kdb_id, label)
-    
+
     if force is True or tmp_check is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)

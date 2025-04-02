@@ -39,11 +39,11 @@ def config(isamAppliance, instance_id, federation_id=None, federation_name=None,
         if federation_id == {}:
             logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
             return isamAppliance.create_return_object()
-    
+
     if federation_id is None:
         logger.info("Required parameter federation_id missing. Skipping config.")
         return isamAppliance.create_return_object()
-    
+
     if force is True or _check(isamAppliance, instance_id, federation_id) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -78,7 +78,7 @@ def unconfig(isamAppliance, instance_id, federation_id=None, federation_name=Non
     :param force:
     :return:
     """
-    
+
     if federation_name is not None:
         ret_obj = ibmsecurity.isam.fed.federations.search(isamAppliance, name=federation_name, check_mode=check_mode,
                                                       force=force)
@@ -87,11 +87,11 @@ def unconfig(isamAppliance, instance_id, federation_id=None, federation_name=Non
         if federation_id == {}:
             logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
             return isamAppliance.create_return_object()
-    
+
     if federation_id is None:
         logger.info("Required parameter federation_id missing. Skipping config.")
         return isamAppliance.create_return_object()
-    
+
     if force is True or _check(isamAppliance, instance_id, federation_id) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
