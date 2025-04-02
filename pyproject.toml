@@ -206,12 +206,12 @@ disable = [
   "R6201", # use-set-for-membership / ruff PLR6201
   "R6301", # no-self-use / ruff PLR6301
   "W0102", # dangerous-default-value / ruff B006
-  "W0104", # pointless-statement / ruff B018
+  # "W0104", # pointless-statement / ruff B018
   "W0106", # expression-not-assigned / ruff B018
   "W0107", # unnecessary-pass / ruff PIE790
   "W0108", # unnecessary-lambda / ruff PLW0108
-  "W0109", # duplicate-key / ruff F601
-  "W0120", # useless-else-on-loop / ruff PLW0120
+  # "W0109", # duplicate-key
+  # "W0120", # useless-else-on-loop / ruff PLW0120
   "W0122", # exec-used / ruff S102
   "W0123", # eval-used / ruff PGH001
   "W0127", # self-assigning-variable / ruff PLW0127
@@ -222,13 +222,13 @@ disable = [
   "W0150", # lost-exception / ruff B012
   "W0160", # consider-ternary-expression / ruff SIM108
   "W0177", # nan-comparison / ruff PLW0117
-  "W0199", # assert-on-tuple / ruff F631
+  # "W0199", # assert-on-tuple / ruff F631
   "W0211", # bad-staticmethod-argument / ruff PLW0211
   "W0212", # protected-access / ruff SLF001
   "W0245", # super-without-brackets / ruff PLW0245
   "W0301", # unnecessary-semicolon / ruff E703
   "W0401", # wildcard-import / ruff F403
-  "W0404", # reimported / ruff F811
+  # "W0404", # reimported / ruff F811
   "W0406", # import-self / ruff PLW0406
   "W0410", # misplaced-future / ruff F404
   "W0602", # global-variable-not-assigned / ruff PLW0602
