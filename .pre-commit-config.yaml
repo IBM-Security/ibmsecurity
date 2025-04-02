@@ -17,11 +17,11 @@ repos:
     hooks:
       - id: flake8
         args: ["--ignore=E501"]
-  - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.2
-    hooks:
-      - id: pylint
-        args: [
-           "-ry",
-           "--exit-zero"
-        ]
+#  - repo: https://github.com/PyCQA/pylint
+#    rev: v3.3.2
+#   hooks:
+#      - id: pylint
+#        args: [
+#           "-ry",
+#           "--exit-zero"
+#        ]
