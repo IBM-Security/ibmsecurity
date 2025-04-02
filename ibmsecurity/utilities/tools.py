@@ -198,6 +198,7 @@ def files_same(original_file, new_file):
     else:
         return False
 
+
 def files_same_zip_content(original_file, new_file):
     identical = True
     logger.debug("Comparing original_file[{}] vs new_file[{}]".format(original_file, new_file))
@@ -230,6 +231,7 @@ def files_same_zip_content(original_file, new_file):
         logger.info("content for zip files {} and {} are different.".format(original_file,new_file))
 
     return identical
+
 
 def get_random_temp_dir():
     """
