@@ -14,16 +14,14 @@ $ pip install -e '.[test]'       # Install testing dependencies
 $ tox run -e lint
 $ git checkout -b your-branch-name
 # DO SOME CODING HERE
-$ tox run -e lint
+# Add tests under `test/`
+$ tox run -e lint,py
 $ git add your new files
 $ git commit -v
 $ git push origin your-branch-name
 ```
 
 You will then be able to create a pull request from your commit.
-
-Feel free to raise issues in the repo if you feel unable to contribute a code
-fix.
 
 ## Setup
 
