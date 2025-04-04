@@ -1,0 +1,11 @@
+# alphabetically sorted:
+black>=24.3.0 # MIT (security)
+filelock>=3.8.2 # The Unlicense
+importlib-metadata # Apache
+jsonschema>=4.10.0 # MIT, version needed for improved errors
+packaging>=22.0 # Apache-2.0,BSD-2-Clause
+pathspec>=0.10.3 # Mozilla Public License 2.0 (MPL 2.0)
+pyyaml>=6.0.2 # MIT (compilation probles with older versions)
+requests
+jmespath>=1.0.0
+PyYAML
