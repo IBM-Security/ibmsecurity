@@ -1,0 +1,21 @@
+---
+site_name: ibmsecurity
+site_url: https://ibmsecurity.readthedocs.io/projects/
+repo_url: https://github.com/IBM-Security/ibmsecurity
+edit_uri: blob/main/docs/
+copyright: Copyright © IBM
+docs_dir: docs
+strict: true
+
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/IBM-Security/ibmsecurity
+      name: GitHub
+
+nav:
+  - Home:
+      - home: index.md
+  - Developer Guide:
+      - Contributing: contributing.md
