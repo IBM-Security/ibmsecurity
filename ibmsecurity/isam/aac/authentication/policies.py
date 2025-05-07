@@ -114,7 +114,7 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
             if enabled is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
                     warnings.append(
-                        "Appliance is at version: {0}. Enabled parameter not supported unless atleast 9.0.2.1. Ignoring value.".format(
+                        "Appliance is at version: {0}. Enabled parameter not supported unless at least 9.0.2.1. Ignoring value.".format(
                             isamAppliance.facts["version"]))
                 else:
                     json_data["enabled"] = enabled
