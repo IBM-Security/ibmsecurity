@@ -1,5 +1,6 @@
 import logging
 import ibmsecurity.utilities.tools
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,6 @@ def set(isamAppliance,
     json_data = {
         'type': type
     }
-
     for k, v in kwargs.items():
         if k  == 'ldap_debug' and v == '':
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
@@ -85,7 +85,7 @@ def set(isamAppliance,
                 warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, {k}: {v} is not supported. Needs 10.0.8.0 or higher. Ignoring {k} for this call.")
                 continue
         json_data[k] = v
-    # Set defaults for type remote
+    # Set defaults for type remote and cleanup
     if type == 'remote':
         if json_data.get('user_attribute', None) is None:
             json_data['user_attribute'] = 'uid'
@@ -93,7 +93,10 @@ def set(isamAppliance,
             json_data['group_member_attribute'] = 'member'
         if json_data.get('anon_bind', None) is None:
             json_data['anon_bind'] = True
-    # Defaults for type federation (new in 10.0.8)
+        if not json_data.get('enable_usermapping', False):
+           json_data["usermapping_script"] = ''
+
+    # Defaults for type federation (new in 10.0.8) and cleanup
     if type == 'federation':
         if json_data.get('oidc_group_claim', None) is None:
             json_data['oidc_group_claim'] = 'groups'
@@ -103,19 +106,24 @@ def set(isamAppliance,
             json_data['oidc_user_claim'] = "sub"
         if json_data.get('oidc_keystore', None) is None:
             json_data['oidc_keystore'] = "lmi_trust_store"
+        if not json_data.get('enable_tokenmapping', False):
+            json_data["tokenmapping_script"] = ''
+
     if not force:
         if not ignore_password_for_idempotency and json_data.get('bind_password', None) is not None:
             warnings.append("Unable to read existing bind password to check idempotency.  You can disable this behaviour by passing `ignore_password_for_idempotency=True`")
             update_required = True
         else:
             ret_obj = get(isamAppliance)
-            if "bind_dn" in ret_obj['data']:
-                if ret_obj["data"]["bind_dn"] is None:
-                    del ret_obj["data"]["bind_dn"]
-            sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
-            logger.debug(f"Sorted input: {sorted_json_data}")
+            json_data_compare = json_data.copy()
+            if json_data.get("bind_dn", None) is None:
+                ret_obj["data"].pop("bind_dn", None)
+            ret_obj["data"].pop("bind_password", None)
+            json_data_compare.pop("bind_password", None)
+            sorted_json_data = json.dumps(json_data_compare, skipkeys=True, sort_keys=True)
+            logger.debug(f"\n\nSorted input:         {sorted_json_data}")
             sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
-            logger.debug(f"Sorted existing data: {sorted_ret_obj}")
+            logger.debug(f"\n\nSorted existing data: {sorted_ret_obj}")
             if sorted_ret_obj != sorted_json_data:
                 logger.info("Changes detected, update needed.")
                 update_required = True
