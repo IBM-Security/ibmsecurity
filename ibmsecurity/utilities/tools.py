@@ -9,6 +9,8 @@ import re
 from io import open
 import zipfile
 import json
+import os
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -237,8 +239,6 @@ def get_random_temp_dir():
     """
     Create a temporary directory
     """
-    import os
-    import tempfile
     tmpdir = tempfile.gettempdir()
     random_str = random_password(10, allow_special=False)
     tmpdir += '/%s' % random_str
