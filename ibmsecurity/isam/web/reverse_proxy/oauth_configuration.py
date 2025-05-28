@@ -9,6 +9,7 @@ requires_version = "9.0.4.0"
 
 def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=None, password=None,
            junction="/mga", reuse_certs=False, reuse_acls=False, api=False, browser=False, auth_register=None, fapi_compliant=None,
+           load_certificate=None, enable_mtls=None, mutual_key_label=None,
            check_mode=False, force=False):
     """
     Oauth and Oidc configuration for a reverse proxy instance
@@ -28,6 +29,9 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
     :param check_mode:
     :param force:
     :param fapi_compliant:
+    :param load_certificate # new in ?
+    :param enable_mtls # new in 10.0.8
+    :param mutual_key_label # new in 10.0.8
     :return:
     """
     if username is None:
@@ -66,6 +70,27 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
                         isamAppliance.facts["version"], fapi_compliant))
             else:
                 json_data["fapi_compliant"] = fapi_compliant
+        if load_certificate is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(
+                        isamAppliance.facts["version"], load_certificate))
+            else:
+                json_data["load_certificate"] = load_certificate
+        if enable_mtls is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, enable_mtls: {1} is not supported. Needs 10.0.8.0 or higher. Ignoring enable_mtls for this call.".format(
+                        isamAppliance.facts["version"], enable_mtls))
+            else:
+                json_data["enable_mtls"] = enable_mtls
+        if mutual_key_label is not None:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
+                warnings.append(
+                    "Appliance at version: {0}, mutual_key_label: {1} is not supported. Needs 10.0.8.0 or higher. Ignoring mutual_key_label for this call.".format(
+                        isamAppliance.facts["version"], mutual_key_label))
+            else:
+                json_data["mutual_key_label"] = mutual_key_label
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
