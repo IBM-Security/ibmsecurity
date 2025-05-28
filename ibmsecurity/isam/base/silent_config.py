@@ -13,7 +13,7 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Getting the silent configuration flag
     """
-    return isamAppliance.invoke_get("Getting the silent configuration flag", "{}/flag".format(module_uri),
+    return isamAppliance.invoke_get("Getting the silent configuration flag", f"{module_uri}/flag",
                                     requires_version=requires_version, requires_modules=requires_modules,
                                     requires_model=requires_model)
 
@@ -37,7 +37,7 @@ def update(isamAppliance, flag, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             json_data = {"flag": flag}
-            return isamAppliance.invoke_put("Setting the silent configuration flag", "{}/flag".format(module_uri),
+            return isamAppliance.invoke_put("Setting the silent configuration flag", f"{module_uri}/flag",
                                             json_data, requires_version=requires_version,
                                             requires_modules=requires_modules,
                                             requires_model=requires_model)
@@ -70,7 +70,7 @@ def _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_add
     post_data = ""
     for k, value in json_data.items():
         if value is not None:
-            post_data = "{0}{1}={2}&".format(post_data, k, value)
+            post_data = f"{post_data}{k}={value}&"
 
     # strip the last & added
     post_data = post_data[:-1]
@@ -97,10 +97,10 @@ def export_iso(isamAppliance, network_hostname, filename=None, network_1_1_ipv4_
                network_1_1_ipv6_prefix=None, network_1_1_ipv6_gateway=None, include_policy="false", check_mode=False,
                force=False):
     logger.info("Generating an ISO file for silent configuration.")
-    uri = "{0}/create/iso".format(module_uri)
+    uri = f"{module_uri}/create/iso"
     if filename is None:
-        filename = "{}.iso".format(network_hostname)
-        logger.debug("Using filename as: {}".format(filename))
+        filename = f"{network_hostname}.iso"
+        logger.debug(f"Using filename as: {filename}")
 
     return _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_address, network_1_1_ipv4_netmask,
                    network_1_1_ipv4_gateway, network_1_1_ipv6_address, network_1_1_ipv6_prefix,
@@ -113,10 +113,10 @@ def export_img(isamAppliance, network_hostname, filename=None, network_1_1_ipv4_
                force=False):
     logger.info("Generating an IMG file for silent configuration.")
 
-    uri = "{0}/create/usb".format(module_uri)
+    uri = f"{module_uri}/create/usb"
     if filename is None:
-        filename = "{}.img".format(network_hostname)
-        logger.debug("Using filename as: {}".format(filename))
+        filename = f"{network_hostname}.img"
+        logger.debug(f"Using filename as: {filename}")
 
     return _export(isamAppliance, uri, network_hostname, filename, network_1_1_ipv4_address, network_1_1_ipv4_netmask,
                    network_1_1_ipv4_gateway, network_1_1_ipv6_address, network_1_1_ipv6_prefix,

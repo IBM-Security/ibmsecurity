@@ -70,8 +70,7 @@ def restart_and_wait(isamAppliance, wait_time=300, check_freq=5, check_mode=Fals
 
     if isamAppliance.facts['model'] != "Appliance":
         return isamAppliance.create_return_object(
-            warnings="API invoked requires model: {0}, appliance is of deployment model: {1}.".format(
-                requires_model, isamAppliance.facts['model']))
+            warnings=f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance.facts['model']}.")
 
     warnings = []
     if check_mode is True:
@@ -101,12 +100,11 @@ def restart_and_wait(isamAppliance, wait_time=300, check_freq=5, check_mode=Fals
                     time.sleep(check_freq)
                     sec += check_freq
                     logger.debug(
-                        "Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec,
-                                                                                                            check_freq))
+                        f"Server is not responding yet. Waited for {sec} secs, next check in {check_freq} secs.")
 
                 if sec >= wait_time:
                     warnings.append(
-                        "The FIPS restart not detected or completed, exiting... after {0} seconds".format(sec))
+                        f"The FIPS restart not detected or completed, exiting... after {sec} seconds")
                     break
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -119,17 +117,17 @@ def _check(isamAppliance, fipsEnabled, tlsv10Enabled, tlsv11Enabled):
     obj['warnings'] = ret_obj['warnings']
 
     if ret_obj['data']['fipsEnabled'] != fipsEnabled:
-        logger.info("fipsEnabled change to {0}".format(fipsEnabled))
+        logger.info(f"fipsEnabled change to {fipsEnabled}")
         obj['value'] = False
         return obj
 
     if ret_obj['data']['tlsv10Enabled'] != tlsv10Enabled:
-        logger.info("TLS v1.0 change to {0}".format(tlsv10Enabled))
+        logger.info(f"TLS v1.0 change to {tlsv10Enabled}")
         obj['value'] = False
         return obj
 
     if ret_obj['data']['tlsv11Enabled'] != tlsv11Enabled:
-        logger.info("TLS v1.1 change to {0}".format(tlsv11Enabled))
+        logger.info(f"TLS v1.1 change to {tlsv11Enabled}")
         obj['value'] = False
         return obj
 

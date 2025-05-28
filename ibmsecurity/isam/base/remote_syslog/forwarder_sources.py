@@ -105,7 +105,7 @@ def set(isamAppliance, server, port, protocol, name, tag, facility, severity, ch
     warnings = []
     update_required = False
     if existing_forwarder is None:
-        warnings.append("Unable to find forwarder for {} {} {}".format(server, port, protocol))
+        warnings.append(f"Unable to find forwarder for {server} {port} {protocol}")
     else:
         if existing_forwarder_source is None:
             json_to_post = ret_obj['data']
@@ -113,9 +113,9 @@ def set(isamAppliance, server, port, protocol, name, tag, facility, severity, ch
             update_required = True
         else:
             sorted_json_data = tools.json_sort(json_data)
-            logger.debug("Sorted input: {0}".format(sorted_json_data))
+            logger.debug(f"Sorted input: {sorted_json_data}")
             sorted_ret_obj = tools.json_sort(existing_forwarder_source)
-            logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+            logger.debug(f"Sorted existing data: {sorted_ret_obj}")
             if sorted_ret_obj != sorted_json_data:
                 logger.info("Changes detected, update needed.")
                 ret_obj['data'][i]['sources'][j] = json_data

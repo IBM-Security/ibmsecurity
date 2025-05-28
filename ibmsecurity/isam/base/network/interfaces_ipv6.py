@@ -24,7 +24,7 @@ def add(isamAppliance, label, address, prefixLength, vlanId=None, allowManagemen
                     add_needed = False
                     break
         else:
-            warnings.append("Interface {0} not found, Add is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Add is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     # Cannot add an address and keep dhcp enabled
@@ -68,7 +68,7 @@ def delete(isamAppliance, label, address, vlanId=None, check_mode=False, force=F
                     ret_obj['ipv6']['addresses'].remove(addr)
                     break
         else:
-            warnings.append("Interface {0} not found, Delete is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Delete is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or delete_needed is True:
@@ -109,7 +109,7 @@ def update(isamAppliance, label, address, new_address, prefixLength, vlanId=None
                         ret_obj['ipv6']['addresses'].append(upd_addr)
                     break
         else:
-            warnings.append("Interface {0} not found, Update is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Update is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
@@ -145,7 +145,7 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
                 if enabled is True:
                     ret_obj['ipv6']['addresses'] = []
         else:
-            warnings.append("Interface {0} not found, Set dhcp is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Set dhcp is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:

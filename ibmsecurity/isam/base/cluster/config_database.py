@@ -15,7 +15,7 @@ def export(isamAppliance, filename, type="db2", check_mode=False, force=False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export the configuration database",
-                "/isam/cluster/configdb/v1?type={0}".format(type),
+                f"/isam/cluster/configdb/v1?type={type}",
                 filename,
                 requires_model=requires_model,
             )

@@ -145,10 +145,9 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
             cfgdb_solid_tc = ast.literal_eval(cfgdb_solid_tc)
         cluster_json["cfgdb_solid_tc"] = cfgdb_solid_tc
     if cfgdb_fs is not None:
-        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.2.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, cfgdb_fs: {1} is not supported. Needs 9.0.2.0 or higher. Ignoring cfgdb_fs for this call.".format(
-                    isamAppliance.facts["version"], cfgdb_fs))
+                f"Appliance at version: {isamAppliance.facts['version']}, cfgdb_fs: {cfgdb_fs} is not supported. Needs 9.0.2.0 or higher. Ignoring cfgdb_fs for this call.")
         else:
             cluster_json["cfgdb_fs"] = cfgdb_fs
     if cfgdb_db_truststore is not None and cfgdb_db_truststore != "":
@@ -193,7 +192,7 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
             del temp["hvdb_password"]
         if 'cfgdb_password' in temp:
             del temp["cfgdb_password"]
-        logger.debug("Passwordless JSON to Apply: {0}".format(temp))
+        logger.debug(f"Passwordless JSON to Apply: {temp}")
     else:
         temp = cluster_json
 
@@ -204,13 +203,13 @@ def _check(isamAppliance, cluster_json, ignore_password_for_idempotency):
         if key in temp:
             temp_retobj[key] = value
         else:
-            logger.debug("Ignoring {0}".format(key))
+            logger.debug(f"Ignoring {key}")
 
     sorted_ret_obj = json.dumps(temp_retobj, skipkeys=True, sort_keys=True)
     sorted_json_data = json.dumps(temp, skipkeys=True, sort_keys=True)
 
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
     if sorted_ret_obj == sorted_json_data:
         logger.debug("JSON provided already is contained in current appliance configuration.")

@@ -35,7 +35,7 @@ def search(isamAppliance, comment, check_mode=False, force=False):
 
     for obj in ret_obj_all['data']:
         if comment in obj['comment']:
-            logger.debug("Snapshot comment \"{0}\" has this string \"{1}\" in it.".format(obj['comment'], comment))
+            logger.debug(f"Snapshot comment \"{obj['comment']}\" has this string \"{comment}\" in it.")
             if ret_obj['data'] == {}:
                 ret_obj['data'] = [obj['id']]
             else:
@@ -73,12 +73,12 @@ def _check(isamAppliance, comment='', id=None):
     if id != None:
         for snaps in ret_obj['data']:
             if snaps['id'] == id:
-                logger.debug("Found id: {}".format(id))
+                logger.debug(f"Found id: {id}")
                 return True
     else:
         for snaps in ret_obj['data']:
             if snaps['comment'] == comment:
-                logger.debug("Found comment: {}".format(comment))
+                logger.debug(f"Found comment: {comment}")
                 return True
 
     return False
@@ -103,7 +103,7 @@ def delete(isamAppliance, id=None, comment=None, check_mode=False, force=False):
         if ret_obj != {} and ret_obj['data'] != {}:
             delete_flag = True
             ids = ret_obj['data']
-    logger.info("Deleting the following list of IDs: {}".format(ids))
+    logger.info(f"Deleting the following list of IDs: {ids}")
     if force is True or delete_flag is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -201,7 +201,7 @@ def download(isamAppliance, filename, id=None, comment=None, check_mode=False, f
         if ret_obj != {} and ret_obj['data'] != {}:
             download_flag = True
             ids = ret_obj['data']
-    logger.info("Downloading the following list of IDs: {}".format(ids))
+    logger.info(f"Downloading the following list of IDs: {ids}")
 
     if force is True or (
             os.path.exists(filename) is False and download_flag is True):  # Don't overwrite if not forced to

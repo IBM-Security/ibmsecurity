@@ -21,7 +21,7 @@ def get_categories(isamAppliance, check_mode=False, force=False):
     Retrieving information about all the support categories
     """
     return isamAppliance.invoke_get("Retrieving information about all the support categories",
-                                    "{0}/categories".format(uri))
+                                    f"{uri}/categories")
 
 
 def get_instances(isamAppliance, name, check_mode=False, force=False):
@@ -29,7 +29,7 @@ def get_instances(isamAppliance, name, check_mode=False, force=False):
     Retrieving information about all the instances for a specific support category
     """
     return isamAppliance.invoke_get("Retrieving information about all the instances for a specific support category",
-                                    "{0}/categories/{1}/instances".format(uri, name))
+                                    f"{uri}/categories/{name}/instances")
 
 
 def create(isamAppliance, comment='', wrp=None, isam_runtime=None, lmi=None, cluster=None, felb=None,
@@ -72,7 +72,7 @@ def create(isamAppliance, comment='', wrp=None, isam_runtime=None, lmi=None, clu
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post("Creating a new support file",
-                                             "{0}/".format(uri),
+                                             f"{uri}/",
                                              json_data,
                                              requires_modules=requires_modules,
                                              requires_version=requires_version)
@@ -117,9 +117,9 @@ def delete(isamAppliance, id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             if isinstance(id, list):
-                del_uri = "{0}/multi_destroy{1}".format(uri, tools.create_query_string(record_ids=','.join(id)))
+                del_uri = f"{uri}/multi_destroy{tools.create_query_string(record_ids=','.join(id))}"
             else:
-                del_uri = "{0}/{1}".format(uri, id)
+                del_uri = f"{uri}/{id}"
             return isamAppliance.invoke_delete("Deleting a support file", del_uri)
 
     return isamAppliance.create_return_object()
@@ -133,7 +133,7 @@ def modify(isamAppliance, id, filename, comment, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_put("Modifying snapshot", "{0}/{1}".format(uri, id),
+            return isamAppliance.invoke_put("Modifying snapshot", f"{uri}/{id}",
                                             {
                                                 'id': id,
                                                 'filename': filename,
@@ -152,7 +152,7 @@ def download(isamAppliance, filename, id, check_mode=False, force=False):
         if check_mode is False:  # No point downloading a file if in check_mode
             if isinstance(id, list):
                 id = ','.join(id)
-            uri_download = "{0}/download{1}".format(uri, tools.create_query_string(record_ids=id))
+            uri_download = f"{uri}/download{tools.create_query_string(record_ids=id)}"
             return isamAppliance.invoke_get_file("Downloading snapshots", uri_download, filename)
 
     return isamAppliance.create_return_object()

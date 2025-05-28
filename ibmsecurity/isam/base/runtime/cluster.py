@@ -12,7 +12,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the status of the clustered runtime profiles
     """
     return isamAppliance.invoke_get("Retrieving the status of the clustered runtime profiles",
-                                    "{0}".format(uri),
+                                    f"{uri}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -29,7 +29,7 @@ def execute(isamAppliance, operation, check_mode=False, force=False):
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_put("Stopping, starting, restarting, or reloading the clustered runtime profiles",
-                                        "{0}".format(uri),
+                                        f"{uri}",
                                         {
                                             'operation': operation
                                         },

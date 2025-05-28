@@ -22,7 +22,7 @@ def add(isamAppliance, label, address, maskOrPrefix, overrideSubnetChecking=Fals
                 if addr['address'] == address:
                     add_needed = False
         else:
-            warnings.append("Interface {0} not found, Add is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Add is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if add_needed is True:
@@ -64,7 +64,7 @@ def delete(isamAppliance, label, address, vlanId=None, overrideSubnetChecking=Fa
                     ret_obj['ipv4']['overrideSubnetChecking'] = overrideSubnetChecking
                     break
         else:
-            warnings.append("Interface {0} not found, Delete is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Delete is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or delete_needed is True:
@@ -105,7 +105,7 @@ def update(isamAppliance, label, address, new_address, maskOrPrefix, vlanId=None
                         ret_obj['ipv4']['overrideSubnetChecking'] = overrideSubnetChecking
                     break
         else:
-            warnings.append("Interface {0} not found, Update is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Update is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:
@@ -141,7 +141,7 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
             if (update_needed is True):
                 ret_obj['ipv4']['dhcp'] = upd_dhcp
         else:
-            warnings.append("Interface {0} not found, Set dhcp is not supported.".format(label))
+            warnings.append(f"Interface {label} not found, Set dhcp is not supported.")
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_needed is True:

@@ -55,7 +55,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_delete("Deleting an attribute", "{0}/{1}".format(module_uri, name),
+            return isamAppliance.invoke_delete("Deleting an attribute", f"{module_uri}/{name}",
                                                requires_modules=requires_modules, requires_version=requires_version,
                                                requires_model=requires_model)
     else:
@@ -66,7 +66,7 @@ def get(isamAppliance, attribute_name):
     """
     Retrieving an attribute
     """
-    return isamAppliance.invoke_get("Retrieving an attribute", "{0}/{1}".format(module_uri, attribute_name),
+    return isamAppliance.invoke_get("Retrieving an attribute", f"{module_uri}/{attribute_name}",
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     requires_model=requires_model)
 
@@ -76,7 +76,7 @@ def get_all(isamAppliance):
     Retrieving attribute names
     """
 
-    return isamAppliance.invoke_get("Retrieving attribute names", "{0}/".format(module_uri),
+    return isamAppliance.invoke_get("Retrieving attribute names", f"{module_uri}/",
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     requires_model=requires_model)
 
@@ -92,7 +92,7 @@ def update(isamAppliance, attribute_name, value, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_put("Updating an attribute", "{0}/{1}".format(module_uri, attribute_name),
+            return isamAppliance.invoke_put("Updating an attribute", f"{module_uri}/{attribute_name}",
                                             {
                                                 "value": value
                                             }, requires_version=requires_version, requires_modules=requires_modules,

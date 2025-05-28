@@ -20,7 +20,7 @@ def add(isamAppliance, service_name, name, value, check_mode=False, force=False)
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post("Creating a service attribute",
-                                             "{0}{1}/attributes".format(module_uri, service_name),
+                                             f"{module_uri}{service_name}/attributes",
                                              {
                                                  "name": name,
                                                  "value": value
@@ -41,8 +41,7 @@ def delete(isamAppliance, service_name, attribute_name, check_mode=False, force=
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_delete("Deleting a service attribute",
-                                               "{0}{1}/attributes/{2}".format(module_uri, service_name,
-                                                                              attribute_name),
+                                               f"{module_uri}{service_name}/attributes/{attribute_name}",
                                                requires_version=requires_versions,
                                                requires_modules=requires_modules, requires_model=requires_model)
     else:
@@ -55,7 +54,7 @@ def get(isamAppliance, service_name, attribute_name):
     """
 
     return isamAppliance.invoke_get("Retrieving a service attribute",
-                                    "{0}{1}/attributes/{2}".format(module_uri, service_name, attribute_name),
+                                    f"{module_uri}{service_name}/attributes/{attribute_name}",
                                     requires_version=requires_versions,
                                     requires_modules=requires_modules,
                                     requires_model=requires_model)
@@ -66,7 +65,7 @@ def get_all(isamAppliance, service_name):
     Retrieving service attribute names
     """
     return isamAppliance.invoke_get("Retrieving service attribute names",
-                                    "{0}{1}/attributes?includeAllValues=true".format(module_uri, service_name),
+                                    f"{module_uri}{service_name}/attributes?includeAllValues=true",
                                     requires_version=requires_versions,
                                     requires_modules=requires_modules,
                                     requires_model=requires_model)
@@ -84,7 +83,7 @@ def update(isamAppliance, service_name, attribute_name, attribute_value, check_m
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put("Updating a service attribute",
-                                            "{0}{1}/attributes/{2}".format(module_uri, service_name, attribute_name),
+                                            f"{module_uri}{service_name}/attributes/{attribute_name}",
                                             {
                                                 "value": attribute_value
                                             },

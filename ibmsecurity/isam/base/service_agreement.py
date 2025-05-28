@@ -35,14 +35,14 @@ def get_non_ibm(isamAppliance, offering, check_mode=False, force=False):
     Reading non-IBM the software license agreement terms
     """
     return isamAppliance.invoke_get("Reading non-IBM the software license agreement terms",
-                                    "{0}/non_ibm_text/{1}".format(uri, offering))
+                                    f"{uri}/non_ibm_text/{offering}")
 
 
 def get_terms(isamAppliance, check_mode=False, force=False):
     """
     Reading the software license agreement terms
     """
-    return isamAppliance.invoke_get("Reading the software license agreement terms", "{0}/".format(uri))
+    return isamAppliance.invoke_get("Reading the software license agreement terms", f"{uri}/")
 
 
 def _check(isamAppliance):

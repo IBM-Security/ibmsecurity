@@ -29,13 +29,13 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
             "sessionTimeout": sessionTimeout
         }
         if httpsPort is not None:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, httpsPort not supported. Needs 9.0.1.0 or higher. Ignoring httpsPort for this call.")
             else:
                 json_data['httpsPort'] = httpsPort
         else:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.1.0") < 0:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
                 pass  # Can safely ignore httpsPort
             else:
                 warnings.append("Default httpsPort of 443 will be set on the appliance.")
@@ -151,7 +151,7 @@ def _check(isamAppliance,
 
     json_data = {}
     for k, v in kwargs.items():
-        iviaVersion = isamAppliance.facts["version"]
+        iviaVersion = isamAppliance.facts['version']
         if v is None:
             # Skip None inputs
             continue
@@ -226,7 +226,7 @@ def _check(isamAppliance,
     if sorted_ret_obj != sorted_json_data:
         logger.debug("Admin Settings are found to be different. See above JSON for difference.")
         # Ensure users know how REST API handles httpsPort default value - I think everybody should know this by now
-        # if json_data.get("httpsPort", "") == "" and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"],
+        # if json_data.get("httpsPort", "") == "" and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'],
         #                                                                     "9.0.1.0") >= 0:
         #    warnings.append("Default httpsPort of 443 will be set on the appliance.")
         return True, warnings, json_data

@@ -10,7 +10,7 @@ def get_all(isamAppliance, kdb_id, check_mode=False, force=False):
     Retrieving certificate request names and details in a certificate database
     """
     return isamAppliance.invoke_get("Retrieving certificate request names and details in a certificate database",
-                                    "/isam/ssl_certificates/{0}/cert_request".format(kdb_id))
+                                    f"/isam/ssl_certificates/{kdb_id}/cert_request")
 
 
 def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
@@ -18,7 +18,7 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     Retrieving a certificate request from a certificate database
     """
     return isamAppliance.invoke_get("Retrieving a certificate request from a certificate database",
-                                    "/isam/ssl_certificates/{0}/cert_request/{1}".format(kdb_id, cert_id))
+                                    f"/isam/ssl_certificates/{kdb_id}/cert_request/{cert_id}")
 
 
 def add(isamAppliance, kdb_id, label, dn, size='1024', signature_algorithm='', check_mode=False, force=False):
@@ -29,9 +29,8 @@ def add(isamAppliance, kdb_id, label, dn, size='1024', signature_algorithm='', c
     warnings = []
 
     if signature_algorithm is not None:
-        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.2.0") < 0:
-            warnings.append("Appliance at version: {0}, signature_algorithm is not supported. Needs 9.0.2.0 or higher. "
-                            "Ignoring signature_algorithm for this call".format(isamAppliance.facts["version"]))
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.2.0") < 0:
+            warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, signature_algorithm is not supported. Needs 9.0.2.0 or higher. Ignoring signature_algorithm for this call")
             json_obj = {
                     "label": label,
                     "dn": dn,
@@ -52,7 +51,7 @@ def add(isamAppliance, kdb_id, label, dn, size='1024', signature_algorithm='', c
 
             return isamAppliance.invoke_post(
                 "Creating a certificate request in a certificate database",
-                "/isam/ssl_certificates/{0}/cert_request".format(kdb_id),
+                f"/isam/ssl_certificates/{kdb_id}/cert_request",
                 json_obj,
                 warnings=warnings)
 
@@ -69,7 +68,7 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a certificate request from a certificate database",
-                "/isam/ssl_certificates/{0}/cert_request/{1}".format(kdb_id, cert_id))
+                f"/isam/ssl_certificates/{kdb_id}/cert_request/{cert_id}")
 
     return isamAppliance.create_return_object()
 
@@ -82,7 +81,7 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Exporting a certificate request from a certificate database",
-                "/isam/ssl_certificates/{0}/cert_request/{1}?export".format(kdb_id, cert_id),
+                f"/isam/ssl_certificates/{kdb_id}/cert_request/{cert_id}?export",
                 filename)
 
     return isamAppliance.create_return_object()

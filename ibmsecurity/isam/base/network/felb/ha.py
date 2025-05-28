@@ -136,8 +136,8 @@ def _check_update(isamAppliance, json_data):
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
     if sorted_ret_obj != sorted_json_data:
         return True, warnings
     else:

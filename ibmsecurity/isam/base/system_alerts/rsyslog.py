@@ -17,7 +17,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Get a specific rsyslog object
     """
     return isamAppliance.invoke_get("Get a specific rsyslog object",
-                                    "/core/rsp_rsyslog_objs/{0}".format(uuid))
+                                    f"/core/rsp_rsyslog_objs/{uuid}")
 
 
 def add(isamAppliance, name, collector, collectorPort=514, collectorLeef=False, objType='rsyslog', comment='',
@@ -58,7 +58,7 @@ def update(isamAppliance, uuid, name, collector, collectorPort=514, collectorLee
         else:
             return isamAppliance.invoke_put(
                 "Update a specific rsyslog object",
-                "/core/rsp_rsyslog_objs/{0}".format(uuid),
+                f"/core/rsp_rsyslog_objs/{uuid}",
                 {
                     'name': name,
                     'uuid': uuid,
@@ -82,7 +82,7 @@ def delete(isamAppliance, uuid, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a rsyslog object",
-                "/core/rsp_rsyslog_objs/{0}".format(uuid))
+                f"/core/rsp_rsyslog_objs/{uuid}")
 
     return isamAppliance.create_return_object()
 

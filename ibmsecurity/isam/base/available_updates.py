@@ -55,12 +55,12 @@ def _check_file(isamAppliance, file):
 
     # If there is an exception then simply return False
     # Sample filename - isam_9.0.2.0_20161102-2353.pkg
-    logger.debug("Checking provided file is ready to upload: {0}".format(file))
+    logger.debug(f"Checking provided file is ready to upload: {file}")
     try:
         # Extract file name from path
         f = os.path.basename(file)
         fn = os.path.splitext(f)
-        logger.debug("File name without path: {0}".format(fn[0]))
+        logger.debug(f"File name without path: {fn[0]}")
 
         # Split of file by '-' hyphen and '_' under score
         import re
@@ -68,7 +68,7 @@ def _check_file(isamAppliance, file):
         firm_file_version = fp[1]
         firm_file_product = fp[0]
         firm_file_date = fp[2]
-        logger.debug("PKG file details: {0}: version: {1} date: {2}".format(firm_file_product, firm_file_version, firm_file_date))
+        logger.debug(f"PKG file details: {firm_file_product}: version: {firm_file_version} date: {firm_file_date}")
 
         # Check if firmware level already contains the update to be uploaded or greater, check Active partition
         # firmware "name" of format - isam_9.0.2.0_20161102-2353
@@ -80,18 +80,16 @@ def _check_file(isamAppliance, file):
             firm_appl_version = fp[1]
             firm_appl_product = fp[0]
             firm_appl_date = fp[2]
-            logger.debug("Partition details ({0}): {1}: version: {2} date: {3}".format(firm['partition'], firm_appl_product, firm_appl_version, firm_appl_date))
+            logger.debug(f"Partition details ({firm['partition']}): {firm_appl_product}: version: {firm_appl_version} date: {firm_appl_date}")
             if firm['active'] is True:
                 from ibmsecurity.utilities import tools
                 if tools.version_compare(firm_appl_version, firm_file_version) >= 0:
                     logger.info(
-                        "Active partition has version {0} which is greater or equals than install package at version {1}.".format(
-                            firm_appl_version, firm_file_version))
+                        f"Active partition has version {firm_appl_version} which is greater or equals than install package at version {firm_file_version}.")
                     return True
                 else:
                     logger.info(
-                        "Active partition has version {0} which is smaller than install package at version {1}.".format(
-                            firm_appl_version, firm_file_version))
+                        f"Active partition has version {firm_appl_version} which is smaller than install package at version {firm_file_version}.")
 
         # Check if update uploaded - will not show up if installed though
         ret_obj = get(isamAppliance)
@@ -101,7 +99,7 @@ def _check_file(isamAppliance, file):
             if upd['version'] == fp[1] and rd == fp[2]:  # Version of format 9.0.2.0
                 return True
     except Exception as e:
-        logger.debug("Exception occured: {0}".format(e))
+        logger.debug(f"Exception occured: {e}")
         pass
 
     return False
@@ -138,13 +136,12 @@ def _check(isamAppliance, type, version, release_date, name):
         # If there is an installation in progress then abort
         # API changed in v10.0.5.0 , state, schedule_date,
         #   iso_scheduled_date and expired_install are no longer available.
-        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.5.0") >= 0:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.5.0") >= 0:
             if 'state' in upd and upd['state'] == 'Installing':
                 logger.debug("Detecting a state of installing...")
                 return False
         else:
-            warnings.append("Appliance at version: {0}, state can no longer be checked in 10.0.5.0 or higher. Ignoring for this call.".format(
-                    isamAppliance.facts["version"]))
+            warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, state can no longer be checked in 10.0.5.0 or higher. Ignoring for this call.")
 
         logger.info(upd)
 

@@ -16,7 +16,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     """
     Get information on particular user by id
     """
-    return isamAppliance.invoke_get("Retrieving user", "/sysaccount/users/{0}/v1".format(id))
+    return isamAppliance.invoke_get("Retrieving user", f"/sysaccount/users/{id}/v1")
 
 
 def create(isamAppliance, id, password, groups=[], check_mode=False, force=False):
@@ -63,7 +63,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete("Deleting user", "/sysaccount/users/{0}/v1".format(id))
+            return isamAppliance.invoke_delete("Deleting user", f"/sysaccount/users/{id}/v1")
 
     return isamAppliance.create_return_object()
 
@@ -79,7 +79,7 @@ def modify(isamAppliance, id, password, old_password=None, check_mode=False, for
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_put("Change password", "/sysaccount/users/{0}/v1".format(id),
+            return isamAppliance.invoke_put("Change password", f"/sysaccount/users/{id}/v1",
                                             {
                                                 'password': password
                                             }, warnings=warnings)

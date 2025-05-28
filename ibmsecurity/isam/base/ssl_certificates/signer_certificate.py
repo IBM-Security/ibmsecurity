@@ -11,7 +11,7 @@ def get_all(isamAppliance, kdb_id, check_mode=False, force=False):
     Retrieving signer certificate names and details in a certificate database
     """
     return isamAppliance.invoke_get("Retrieving signer certificate names and details in a certificate database",
-                                    "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id))
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert")
 
 
 def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
@@ -19,7 +19,7 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     Retrieving a signer certificate from a certificate database
     """
     return isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
-                                    "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id))
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}")
 
 
 def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_mode=False, force=False):
@@ -42,7 +42,7 @@ def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_m
         else:
             return isamAppliance.invoke_post(
                 "Load a certificate from a server",
-                "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
+                f"/isam/ssl_certificates/{kdb_id}/signer_cert",
                 {
                     "operation": 'load',
                     "label": label,
@@ -85,7 +85,7 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
         cert_id = cert_data['id']
         cert_pem = get(isamAppliance, kdb_id, cert_id)['data']['contents']
         if cert_id == label:  # label exists on appliance already
-            logger.debug("Comparing certificates: appliance[{0}] remote[{1}].".format(cert_pem,remote_cert_pem))
+            logger.debug(f"Comparing certificates: appliance[{cert_pem}] remote[{remote_cert_pem}].")
             if cert_pem == remote_cert_pem:  # certificate data is the same
                 logger.debug("The certificate already exits on the appliance with the same label name and same content.")
                 return True  # both the labels and certificates match
@@ -101,9 +101,7 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
         else:
             if cert_pem == remote_cert_pem:  # cert on the appliance, but with a different name
                 logger.info(
-                    "The certifcate is already on the appliance, but it has a different label name. "
-                    "The existing label name is {label} and requested label name is {cert_id}".format(
-                        label=label, cert_id=cert_id))
+                    f"The certifcate is already on the appliance, but it has a different label name. The existing label name is {label} and requested label name is {cert_id}")
                 return True
     return False
 
@@ -124,7 +122,7 @@ def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
                 from urllib import quote
 
             # URL being encoded primarily to handle spaces and other special characers in them
-            f_uri = "/isam/ssl_certificates/{0}/signer_cert/{1}".format(kdb_id, cert_id)
+            f_uri = f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}"
             full_uri = quote(f_uri)
             return isamAppliance.invoke_delete(
                 "Deleting a signer certificate from a certificate database", full_uri)
@@ -142,7 +140,7 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a certificate database",
-                "/isam/ssl_certificates/{0}/signer_cert/{1}?export".format(kdb_id, cert_id),
+                f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}?export",
                 filename)
 
     return isamAppliance.create_return_object()
@@ -156,10 +154,10 @@ def import_cert(isamAppliance, kdb_id, cert, label, preserve_label='false', chec
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            if version_compare(isamAppliance.facts["version"], "10.0.5.0") < 0:
+            if version_compare(isamAppliance.facts['version'], "10.0.5.0") < 0:
                 return isamAppliance.invoke_post_files(
                     "Importing a signer certificate into a certificate database",
-                    "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
+                    f"/isam/ssl_certificates/{kdb_id}/signer_cert",
                     [
                         {
                             'file_formfield': 'cert',
@@ -171,7 +169,7 @@ def import_cert(isamAppliance, kdb_id, cert, label, preserve_label='false', chec
             else:
                 return isamAppliance.invoke_post_files(
                     "Importing a signer certificate into a certificate database",
-                    "/isam/ssl_certificates/{0}/signer_cert".format(kdb_id),
+                    f"/isam/ssl_certificates/{kdb_id}/signer_cert",
                     [
                         {
                             'file_formfield': 'cert',
@@ -204,7 +202,7 @@ def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
     the one stored in filename
     """
     tmpdir = get_random_temp_dir()
-    orig_filename = '%s.cer' % cert_id
+    orig_filename = f'{cert_id}.cer'
     tmp_original_file = os.path.join(tmpdir, os.path.basename(orig_filename))
     if _check(isamAppliance, kdb_id, cert_id):
         export_cert(isamAppliance, kdb_id, cert_id, tmp_original_file, check_mode=False, force=True)

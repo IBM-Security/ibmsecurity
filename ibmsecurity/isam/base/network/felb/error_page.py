@@ -13,7 +13,7 @@ def get(isamAppliance, error_page, check_mode=False, force=False):
     """
     Retrieving an error page
     """
-    return isamAppliance.invoke_get("Retrieving an error page", "{0}{1}".format(module_uri, error_page),
+    return isamAppliance.invoke_get("Retrieving an error page", f"{module_uri}{error_page}",
                                     requires_modules=requires_modules, requires_version=requires_version,
                                     requires_model=requires_model)
 
@@ -44,7 +44,7 @@ def set(isamAppliance, error_page, contents, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_put("Updating an error page", "{0}{1}".format(module_uri, error_page),
+            return isamAppliance.invoke_put("Updating an error page", f"{module_uri}{error_page}",
                                             {
                                                 "contents": contents
                                             }, requires_version=requires_version, requires_modules=requires_modules,
@@ -65,7 +65,7 @@ def import_file(isamAppliance, error_page, filename, check_mode=False, force=Fal
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(description="Uploading an error page",
-                                                   uri="{0}{1}".format(module_uri, error_page),
+                                                   uri=f"{module_uri}{error_page}",
                                                    fileinfo=[{
                                                        'file_formfield': 'file',
                                                        'filename': filename,
@@ -88,7 +88,7 @@ def export_file(isamAppliance, error_page, filename, check_mode=False, force=Fal
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Downloading an error page",
-                "{0}{1}?export=true".format(module_uri, error_page),
+                f"{module_uri}{error_page}?export=true",
                 filename=filename, requires_model=requires_model
             )
 

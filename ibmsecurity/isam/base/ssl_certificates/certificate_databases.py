@@ -50,7 +50,7 @@ def get(isamAppliance, cert_dbase_id, check_mode=False, force=False):
     Retrieving the SSL certificate database details
     """
     return isamAppliance.invoke_get("Retrieving the SSL certificate database details",
-                                    "/isam/ssl_certificates/{0}/details".format(cert_dbase_id),
+                                    f"/isam/ssl_certificates/{cert_dbase_id}/details",
                                     requires_model=requires_model)
 
 
@@ -87,14 +87,14 @@ def create(isamAppliance, kdb_name, type='kdb',
                     json_data[k] = v
                # new in 10.0.5
                if k in certificate_database_new_10_05:
-                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
-                       warnings.append(                         "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(                               isamAppliance.facts["version"], load_certificate))
+                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
+                       warnings.append(                         f"Appliance at version: {isamAppliance.facts['version']}, load_certificate: {load_certificate} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.")
                    else:
                        json_data[k] = v
                # new in 10.0.8
                if k in certificate_database_new_10_08:
-                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
-                       warnings.append(                         "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(                               isamAppliance.facts["version"], load_certificate))
+                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
+                       warnings.append(                         f"Appliance at version: {isamAppliance.facts['version']}, load_certificate: {load_certificate} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.")
                    else:
                        json_data[k] = v
                # Logic
@@ -138,7 +138,7 @@ def delete(isamAppliance, cert_dbase_id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a certificate database",
-                "/isam/ssl_certificates/{0}".format(cert_dbase_id))
+                f"/isam/ssl_certificates/{cert_dbase_id}")
 
     return isamAppliance.create_return_object()
 
@@ -153,7 +153,7 @@ def export_db(isamAppliance, cert_id, filename, check_mode=False, force=False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a certificate database",
-                "/isam/ssl_certificates/{0}?export".format(cert_id),
+                f"/isam/ssl_certificates/{cert_id}?export",
                 filename)
 
     return isamAppliance.create_return_object()
@@ -214,7 +214,7 @@ def rename(isamAppliance, cert_id, new_name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Renaming a certificate database",
-                "/isam/ssl_certificates/{0}".format(cert_id),
+                f"/isam/ssl_certificates/{cert_id}",
                 {
                     "new_name": new_name
                 })
@@ -241,7 +241,7 @@ def set(isamAppliance, cert_id, description, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Set description for a certificate database",
-                "/isam/ssl_certificates/{0}".format(cert_id),
+                f"/isam/ssl_certificates/{cert_id}",
                 {
                     "description": description
                 })

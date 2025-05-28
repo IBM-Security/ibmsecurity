@@ -17,7 +17,7 @@ def get_user(isamAppliance, user):
     NOTE: Getting an unexplained error for this function, URL maybe wrong
     """
     return isamAppliance.invoke_get("Get permitted features for user",
-                                    "/authorization/features/users/{0}/v1".format(user))
+                                    f"/authorization/features/users/{user}/v1")
 
 
 def get_current(isamAppliance):

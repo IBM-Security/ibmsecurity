@@ -24,7 +24,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Retrieving a single static route
     """
     return isamAppliance.invoke_get("Retrieving a single static route",
-                                    "/net/routes/{0}".format(uuid), requires_model=requires_model)
+                                    f"/net/routes/{uuid}", requires_model=requires_model)
 
 
 def add(isamAppliance, address, enabled=True, comment=None, table='main', maskOrPrefix=None, gateway=None, label=None,
@@ -34,7 +34,7 @@ def add(isamAppliance, address, enabled=True, comment=None, table='main', maskOr
     """
 
     if isamAppliance.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance.facts['model']}."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if table.lower() != 'main':
@@ -51,12 +51,12 @@ def add(isamAppliance, address, enabled=True, comment=None, table='main', maskOr
                     if item['uuid'] == table:
                         found_table = True
             if found_table is False:
-                logger.debug("Route table {0} is not found, Add static route is not supported.".format(table))
+                logger.debug(f"Route table {table} is not found, Add static route is not supported.")
                 return isamAppliance.create_return_object(changed=False)
 
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
     if interfaceUUID is None and label is not None:
-        logger.debug("Interface {0} not found, Add static route is not supported.".format(label))
+        logger.debug(f"Interface {label} not found, Add static route is not supported.")
         return isamAppliance.create_return_object(changed=False)
 
     if maskOrPrefix is not None:
@@ -102,13 +102,13 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
     Updating a static route
     """
     if isamAppliance.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance.facts['model']}."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
     if interfaceUUID is None and label is not None:
-        warnings.append("Interface {0} not found, Update static route is not supported.".format(label))
+        warnings.append(f"Interface {label} not found, Update static route is not supported.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if table.lower() != 'main':
@@ -125,13 +125,13 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
                     if item['uuid'] == table:
                         found_table = True
             if found_table is False:
-                logger.debug("Route table {0} is not found, Add static route is not supported.".format(table))
+                logger.debug(f"Route table {table} is not found, Add static route is not supported.")
                 return isamAppliance.create_return_object(changed=False)
 
     uuid = _get_uuid(isamAppliance, address, table, interfaceUUID)
 
     if uuid is None:
-        logger.info("Unable to find Static Route to modify: {0} / {1}".format(address, table))
+        logger.info(f"Unable to find Static Route to modify: {address} / {table}")
         return isamAppliance.create_return_object()
 
     if new_label is not None:
@@ -175,7 +175,7 @@ def update(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=
         else:
             return isamAppliance.invoke_put(
                 "Updating a static route",
-                "/net/routes/{0}".format(uuid), json_data)
+                f"/net/routes/{uuid}", json_data)
 
     return isamAppliance.create_return_object()
 
@@ -185,7 +185,7 @@ def set(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=Non
         force=False):
 
     if isamAppliance.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance.facts['model']}."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if table != 'main':
@@ -197,7 +197,7 @@ def set(isamAppliance, address, new_address=None, enabled=True, maskOrPrefix=Non
     warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
     if interfaceUUID is None and label is not None:
-        warnings.append("Interface {0} not found, Update static route is not supported.".format(label))
+        warnings.append(f"Interface {label} not found, Update static route is not supported.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if _check(isamAppliance, address, table_uuid, interfaceUUID) is True:
@@ -227,7 +227,7 @@ def _get_interfaceUUID(isamAppliance, label, vlanId=None):
 def _get_uuid(isamAppliance, address, table, interfaceUUID):
     ret_obj = get_all(isamAppliance)
     for sr in ret_obj['data']['staticRoutes']:
-        logger.debug("Scanning {0}/{1}/{2} in Static Routes: {3}".format(address, table, interfaceUUID, sr))
+        logger.debug(f"Scanning {address}/{table}/{interfaceUUID} in Static Routes: {sr}")
         if sr['address'] == address and (
                 sr['interfaceUUID'] == interfaceUUID or (sr['interfaceUUID'] == '' and interfaceUUID is None)) and sr[
             'table'] == table:
@@ -241,14 +241,14 @@ def delete(isamAppliance, address, table='main', label=None, vlanId=None, check_
     Delete a static route
     """
     if isamAppliance.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance.facts['model']}."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     warnings = []
     interfaceUUID = _get_interfaceUUID(isamAppliance, label, vlanId)
 
     if interfaceUUID is None and label is not None:
-        warnings.append("Interface {0} not found, Delete static route is not supported.".format(label))
+        warnings.append(f"Interface {label} not found, Delete static route is not supported.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if table != 'main':
@@ -265,7 +265,7 @@ def delete(isamAppliance, address, table='main', label=None, vlanId=None, check_
                     if item['uuid'] == table:
                         found_table = True
             if found_table is False:
-                logger.debug("Route table {0} is not found, Add static route is not supported.".format(label))
+                logger.debug(f"Route table {label} is not found, Add static route is not supported.")
                 return isamAppliance.create_return_object(changed=False)
 
     uuid = _get_uuid(isamAppliance=isamAppliance, address=address, table=table, interfaceUUID=interfaceUUID)
@@ -276,7 +276,7 @@ def delete(isamAppliance, address, table='main', label=None, vlanId=None, check_
         else:
             return isamAppliance.invoke_delete(
                 "Delete a static route",
-                "/net/routes/{0}".format(uuid))
+                f"/net/routes/{uuid}")
 
     return isamAppliance.create_return_object()
 
@@ -315,11 +315,11 @@ def compare(isamAppliance1, isamAppliance2):
     Compare static routes between 2 appliances
     """
     if isamAppliance1.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance1.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance1.facts['model']}."]
         return isamAppliance1.create_return_object(warnings=warnings)
 
     if isamAppliance2.facts['model'] != requires_model:
-        warnings = ["API invoked requires model: {0}, appliance is of deployment model: {1}.".format(requires_model, isamAppliance2.facts['model'])]
+        warnings = [f"API invoked requires model: {requires_model}, appliance is of deployment model: {isamAppliance2.facts['model']}."]
         return isamAppliance2.create_return_object(warnings=warnings)
 
     ret_obj1 = get_all(isamAppliance1)

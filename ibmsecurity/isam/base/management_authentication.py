@@ -61,15 +61,14 @@ def set(isamAppliance,
     }
     for k, v in kwargs.items():
         if k  == 'ldap_debug' and v == '':
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.4.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, ldap_debug: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring ldap_debug for this call.".format(
-                        isamAppliance.facts["version"], ldap_debug))
+                    f"Appliance at version: {isamAppliance.facts['version']}, ldap_debug: {ldap_debug} is not supported. Needs 9.0.4.0 or higher. Ignoring ldap_debug for this call.")
                 continue
         if k == 'enable_usermapping':
             # only valid if type == remote
             if type == 'remote':
-                if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
+                if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.2.0") < 0:
                     warnings.append(
                         f"Appliance at version: {isamAppliance.facts['version']}, {k}: {v} is not supported. Needs 10.0.2.0 or higher. Ignoring {k} for this call.")
                     continue

@@ -18,7 +18,7 @@ def get(isamAppliance, id=None, check_mode=False, force=False):
     """
     if force is True or check(isamAppliance, id) is True:
         return isamAppliance.invoke_get("Retrieve a specified activation offering",
-                                        "/isam/capabilities/{0}/v1".format(id))
+                                        f"/isam/capabilities/{id}/v1")
 
     return isamAppliance.create_return_object()
 
@@ -39,7 +39,7 @@ def update(isamAppliance, enabled, id=None, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put("Update an activation offering",
-                                            "/isam/capabilities/{0}/v1".format(id),
+                                            f"/isam/capabilities/{id}/v1",
                                             {'enabled': enabled.capitalize()}
                                            )
 
@@ -79,7 +79,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             ret_obj = isamAppliance.invoke_delete(
                 "Deleting activation of Module",
-                "/isam/capabilities/{0}/v1".format(id))
+                f"/isam/capabilities/{id}/v1")
             # Update 'facts', remove module
             isamAppliance.facts['activations'].remove(id)
             return ret_obj

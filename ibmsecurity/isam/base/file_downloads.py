@@ -8,7 +8,7 @@ def get(isamAppliance, file_path='/', recursive=True, check_mode=False, force=Fa
     Retrieving the contents of a directory from the file downloads area
     """
     return isamAppliance.invoke_get("Retrieving the contents of a directory from the file downloads area",
-                                    "/isam/downloads/{0}/?recursive={1}".format(file_path, recursive))
+                                    f"/isam/downloads/{file_path}/?recursive={recursive}")
 
 
 def export_file(isamAppliance, file_path, filename, check_mode=False, force=False):
@@ -22,7 +22,7 @@ def export_file(isamAppliance, file_path, filename, check_mode=False, force=Fals
             # NOTE: this call requires no headers
             return isamAppliance.invoke_get_file(
                 "Downloading a file from the file downloads area",
-                "/isam/downloads/{0}?type=File&browser=&".format(file_path),
+                f"/isam/downloads/{file_path}?type=File&browser=&",
                 filename, True)
 
     return isamAppliance.create_return_object()

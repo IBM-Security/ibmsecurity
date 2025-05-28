@@ -15,7 +15,7 @@ def get(isamAppliance, service_name, check_mode=False, force=False):
     """
     Retrieving Layer Configuration
     """
-    return isamAppliance.invoke_get("Retrieving Layer Configuration", "{0}/{1}/layer".format(module_uri, service_name),
+    return isamAppliance.invoke_get("Retrieving Layer Configuration", f"{module_uri}/{service_name}/layer",
                                     requires_version=requires_version, requires_modules=requires_modules,
                                     requires_model=requires_model)
 
@@ -38,7 +38,7 @@ def update(isamAppliance, service_name, type, layer7_secure, layer7_ssl_label, l
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_put("Updating Service Layer", "{0}/{1}/layer".format(module_uri, service_name),
+            return isamAppliance.invoke_put("Updating Service Layer", f"{module_uri}/{service_name}/layer",
                                             json_data, requires_version=requires_version,
                                             requires_modules=requires_modules, requires_model=requires_model)
     else:
@@ -58,8 +58,8 @@ def _check(isamAppliance, service_name, json_data):
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
     if sorted_ret_obj != sorted_json_data:
         return True, warnings

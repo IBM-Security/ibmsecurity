@@ -59,10 +59,10 @@ def await_startup(isamAppliance, wait_time=300, check_freq=5, start_time=None, c
             time.sleep(check_freq)
             sec += check_freq
             logger.debug(
-                "Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec, check_freq))
+                f"Server is not responding yet. Waited for {sec} secs, next check in {check_freq} secs.")
 
         if sec >= wait_time:
-            warnings.append("The LMI restart not detected or completed, exiting... after {0} seconds".format(sec))
+            warnings.append(f"The LMI restart not detected or completed, exiting... after {sec} seconds")
             break
 
     return isamAppliance.create_return_object(warnings=warnings)

@@ -8,7 +8,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     Retrieve the value of a property in the cluster configuration
     """
     return isamAppliance.invoke_get("Retrieve the value of a property in the cluster configuration",
-                                    "/isam/cluster/property/{0}/v2".format(id))
+                                    f"/isam/cluster/property/{id}/v2")
 
 
 def add(isamAppliance, id, value, check_mode=False, force=False):
@@ -40,7 +40,7 @@ def update(isamAppliance, id, value, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Update the value of a property in the cluster configuration",
-                "/isam/cluster/property/{0}/v2".format(id),
+                f"/isam/cluster/property/{id}/v2",
                 {
                     "value": value
                 })
@@ -74,6 +74,6 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a property from the cluster configuration",
-                "/isam/cluster/property/{0}/v2".format(id))
+                f"/isam/cluster/property/{id}/v2")
 
     return isamAppliance.create_return_object()

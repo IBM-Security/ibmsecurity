@@ -33,7 +33,7 @@ def _find_forwarder(ret_obj, server, port, protocol):
     for obj in ret_obj['data']:
         if obj['server'] == server and obj['port'] == port and obj['protocol'] == protocol:
             existing_forwarder = obj
-            logger.debug("Found Forwarder: {0}".format(obj))
+            logger.debug(f"Found Forwarder: {obj}")
             break
         i += 1
 
@@ -53,7 +53,7 @@ def get(isamAppliance, server, port, protocol, check_mode=False, force=False):
     return_obj['data'], i = _find_forwarder(ret_obj, server, port, protocol)
     warnings = []
     if return_obj['data'] == None:
-        warnings.append("No entry found for server {} port {} and protocol {}.".format(server, port, protocol))
+        warnings.append(f"No entry found for server {server} port {port} and protocol {protocol}.")
         return_obj['warnings'] = warnings
 
     return return_obj
@@ -113,10 +113,8 @@ def set(isamAppliance, server, port, protocol='udp', debug=False, keyfile=None, 
     # Check of the given server/port/protocol exist - if not then we add it
     if existing_forwarder is None or force is True:
         if format is not None:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, format is not supported. Needs 10.0.2.0 or higher. Ignoring format for this call.".format(
-                        isamAppliance.facts["version"]))
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.2.0") < 0:
+                warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, format requires 10.0.2.0")
             else:
                 json_data["format"] = format
         json_to_post = ret_obj['data']
@@ -125,18 +123,16 @@ def set(isamAppliance, server, port, protocol='udp', debug=False, keyfile=None, 
         warnings.append("existing_forwarder is None")
     else:
         if format is not None:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
-                warnings.append(
-                    "Appliance at version: {0}, format is not supported. Needs 10.0.2.0 or higher. Ignoring format for this call.".format(
-                        isamAppliance.facts["version"]))
+            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.2.0") < 0:
+                warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, format requires 10.0.2.0")
             else:
                 json_data["format"] = format
         elif 'format' in ret_obj['data'][i]:
             del ret_obj['data'][i]['format']
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = tools.json_sort(existing_forwarder)
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             ret_obj['data'][i] = json_data

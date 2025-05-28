@@ -11,7 +11,7 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Get the status of the geolocation database load
     """
-    return isamAppliance.invoke_get("Get the status of the geolocation database load", "{}/status".format(uri),
+    return isamAppliance.invoke_get("Get the status of the geolocation database load", f"{uri}/status",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -24,7 +24,7 @@ def cancel(isamAppliance, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_get("Cancel the most recent geolocation database load", "{}/cancel".format(uri),
+            return isamAppliance.invoke_get("Cancel the most recent geolocation database load", f"{uri}/cancel",
                                             requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()

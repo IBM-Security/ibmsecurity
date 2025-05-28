@@ -17,7 +17,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Get a specific logdb object
     """
     return isamAppliance.invoke_get("Get a specific logdb object",
-                                    "/core/rsp_logdb_objs/{0}".format(uuid))
+                                    f"/core/rsp_logdb_objs/{uuid}")
 
 
 def add(isamAppliance, name, aclEventsAllocation, ipsEventsAllocation, sysEventsAllocation, objType='logdb',
@@ -60,7 +60,7 @@ def update(isamAppliance, name, uuid, aclEventsAllocation, ipsEventsAllocation, 
         else:
             return isamAppliance.invoke_put(
                 "Update a specific logdb object",
-                "/core/rsp_logdb_objs/{0}".format(uuid),
+                f"/core/rsp_logdb_objs/{uuid}",
                 {
                     'name': name,
                     'uuid': uuid,
@@ -86,7 +86,7 @@ def delete(isamAppliance, uuid, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a logdb object",
-                "/core/rsp_logdb_objs/{0}".format(uuid))
+                f"/core/rsp_logdb_objs/{uuid}")
 
     return isamAppliance.create_return_object()
 

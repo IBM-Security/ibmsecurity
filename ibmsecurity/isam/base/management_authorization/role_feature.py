@@ -31,7 +31,7 @@ def set(isamAppliance, name, feature_name, access=None, check_mode=False, force=
     else:
         return isamAppliance.invoke_put(
             "Add group to management authorization role",
-            "/authorization/roles/{0}/v1".format(name), ret_obj['data'])
+            f"/authorization/roles/{name}/v1", ret_obj['data'])
 
 
 def delete(isamAppliance, name, feature_name, check_mode=False, force=False):
@@ -56,4 +56,4 @@ def delete(isamAppliance, name, feature_name, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_put(
             "Delete feature from management authorization role",
-            "/authorization/roles/{0}/v1".format(name), ret_obj['data'])
+            f"/authorization/roles/{name}/v1", ret_obj['data'])

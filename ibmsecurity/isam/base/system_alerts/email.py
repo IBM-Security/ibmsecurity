@@ -17,7 +17,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Get a specific email object
     """
     return isamAppliance.invoke_get("Get a specific email object",
-                                    "/core/rsp_email_objs/{0}".format(uuid))
+                                    f"/core/rsp_email_objs/{uuid}")
 
 
 def add(isamAppliance, name, smtpServer, from_email, to_email, smtpPort=25, objType='email',
@@ -59,7 +59,7 @@ def update(isamAppliance, uuid, name, smtpServer, from_email, to_email, smtpPort
         else:
             return isamAppliance.invoke_put(
                 "Update a specific email object",
-                "/core/rsp_email_objs/{0}".format(uuid),
+                f"/core/rsp_email_objs/{uuid}",
                 {
                     'name': name,
                     'uuid': uuid,
@@ -84,7 +84,7 @@ def delete(isamAppliance, uuid, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete an email object",
-                "/core/rsp_email_objs/{0}".format(uuid))
+                f"/core/rsp_email_objs/{uuid}")
 
     return isamAppliance.create_return_object()
 

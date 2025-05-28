@@ -136,12 +136,8 @@ def update(
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            if tools.version_compare(isamAppliance.facts["version"], "10.0.9.0") < 0:
-                warnings.append(
-                    "Appliance is at version: {0}. Using the previous format for container repo.".format(
-                        isamAppliance.facts["version"]
-                    )
-                )
+            if tools.version_compare(isamAppliance.facts['version'], "10.0.9.0") < 0:
+                warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. Using the previous format")
                 put_data = {
                     "host": registry,
                     "user": user,
