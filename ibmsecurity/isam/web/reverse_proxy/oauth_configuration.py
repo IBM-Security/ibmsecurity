@@ -43,7 +43,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
         return isamAppliance.create_return_object(warning=["Required parameter password missing. Skipping config."])
 
     warnings = [
-        "Idempotency logic will check for existence of {} junction. Use force=True to override.".format(junction)]
+        f"Idempotency logic will check for existence of {junction} junction. Use force=True to override."]
     if force is True or _check_config(isamAppliance, instance_id, junction) is False:
         json_data = {
             "junction": junction,
@@ -59,36 +59,31 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
         if auth_register is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, auth_register: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring auth_register for this call.".format(
-                        isamAppliance.facts["version"], auth_register))
+                    f"Appliance at version: {isamAppliance.facts['version']}, auth_register: {auth_register} is not supported. Needs 9.0.5.0 or higher. Ignoring auth_register for this call.")
             else:
                 json_data["auth_register"] = auth_register
         if fapi_compliant is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, fapi_compliant: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring fapi_compliant for this call.".format(
-                        isamAppliance.facts["version"], fapi_compliant))
+                    f"Appliance at version: {isamAppliance.facts['version']}, fapi_compliant: {fapi_compliant} is not supported. Needs 10.0.0.0 or higher. Ignoring fapi_compliant for this call.")
             else:
                 json_data["fapi_compliant"] = fapi_compliant
         if load_certificate is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.0.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(
-                        isamAppliance.facts["version"], load_certificate))
+                    f"Appliance at version: {isamAppliance.facts['version']}, load_certificate: {load_certificate} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.")
             else:
                 json_data["load_certificate"] = load_certificate
         if enable_mtls is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, enable_mtls: {1} is not supported. Needs 10.0.8.0 or higher. Ignoring enable_mtls for this call.".format(
-                        isamAppliance.facts["version"], enable_mtls))
+                    f"Appliance at version: {isamAppliance.facts['version']}, enable_mtls: {enable_mtls} is not supported. Needs 10.0.8.0 or higher. Ignoring enable_mtls for this call.")
             else:
                 json_data["enable_mtls"] = enable_mtls
         if mutual_key_label is not None:
             if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, mutual_key_label: {1} is not supported. Needs 10.0.8.0 or higher. Ignoring mutual_key_label for this call.".format(
-                        isamAppliance.facts["version"], mutual_key_label))
+                    f"Appliance at version: {isamAppliance.facts['version']}, mutual_key_label: {mutual_key_label} is not supported. Needs 10.0.8.0 or higher. Ignoring mutual_key_label for this call.")
             else:
                 json_data["mutual_key_label"] = mutual_key_label
         if check_mode is True:
@@ -96,7 +91,9 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
         else:
             return isamAppliance.invoke_post(
                 "OAuth configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/oauth_config".format(instance_id), json_data, warnings=warnings,
+                f"/wga/reverseproxy/{instance_id}/oauth_config",
+                json_data,
+                warnings=warnings,
                 requires_modules=requires_modules, requires_version=requires_version)
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -113,7 +110,7 @@ def _check_config(isamAppliance, instance_id, junction):
 
     for j in ret_obj['data']:
         if j['id'] == junction:
-            logger.info("Junction {} was found - hence oauth config must have already executed.".format(junction))
+            logger.info(f"Junction {junction} was found - hence oauth config must have already executed.")
             return True
 
     return False
