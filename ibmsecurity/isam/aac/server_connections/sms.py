@@ -1,5 +1,5 @@
 import logging
-from ibmsecurity.utilities import tools
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -106,24 +106,20 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
     json_data = _create_json(name=name, description=description, locked=locked, connection=connection, connectionManager=connectionManager)
     if new_name is not None:  # Rename condition
         json_data['name'] = new_name
-
-    if force is not True:
+    if not force:
         ret_obj['data'].pop('uuid', None)
         if ignore_password_for_idempotency:
             if 'password' in connection:
                 warnings.append("Request made to ignore password for idempotency check.")
                 connection.pop('password', None)
-
-        sorted_ret_obj = tools.json_sort(ret_obj['data'])
-        sorted_json_data = tools.json_sort(json_data)
-        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
-        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
-
+        sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
+        logger.debug(f"\n\nSorted input:         {sorted_json_data}")
+        sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
+        logger.debug(f"\n\nSorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
-            needs_update = True
-
-    if force is True or needs_update is True:
-        if check_mode is True:
+           needs_update = True
+    if force or needs_update:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
