@@ -8,6 +8,8 @@ except NameError:
 
 logger = logging.getLogger(__name__)
 
+# TODO: DEPRECATED
+
 # URI for this module
 uri = "/core/dca_updates_cfg"
 requires_modules = None
