@@ -453,7 +453,7 @@ disable=all
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
 #enable=R1705
-enable=
+enable=C0209
 
 [METHOD_ARGS]
 
