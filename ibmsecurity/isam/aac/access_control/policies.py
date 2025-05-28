@@ -34,17 +34,13 @@ def get_all(
     if formatting == "json":
         return isamAppliance.invoke_get(
             "Retrieve a list of policies (JSON)",
-            "{0}/{1}".format(
-                uri_json,
-                tools.create_query_string(filter=filter, sortBy=sortBy, count=count)),
+            f"{uri_json}/{tools.create_query_string(filter=filter, sortBy=sortBy, count=count)}",
             warnings=warnings,
         )
     else:
         return isamAppliance.invoke_get(
             "Retrieve a list of policies",
-            "{0}/{1}".format(
-                uri,
-                tools.create_query_string(filter=filter, sortBy=sortBy)),
+            f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
             warnings=warnings,
         )
 
@@ -63,7 +59,7 @@ def get(isamAppliance, name, formatting="xml", check_mode=False, force=False):
     pol_id = ret_obj["data"]
 
     if pol_id == {}:
-        logger.info("Policy {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Policy {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return _get(isamAppliance, pol_id, formatting=formatting)
@@ -77,21 +73,20 @@ def _get(isamAppliance, pol_id, formatting="xml"):
     if formatting == "json":
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
             warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                    isamAppliance.facts["version"]
+                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(                    isamAppliance.facts["version"]
                 )
             )
             formatting = "xml"
     if formatting == "json":
         return isamAppliance.invoke_get(
             "Retrieve a specific policy (JSON)",
-            "{0}/{1}".format(uri_json, pol_id),
+            f"{uri_json}/{pol_id}",
             warnings=warnings,
         )
     else:
         return isamAppliance.invoke_get(
             "Retrieve a specific policy",
-            "{0}/{1}".format(uri, pol_id),
+            f"{uri}/{pol_id}",
             warnings=warnings,
         )
 
@@ -114,9 +109,7 @@ def export_xacml(
     if formatting == "json":
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
             warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at 10.0.6.0 or higher. Setting to xml.".format(
-                    isamAppliance.facts["version"]
-                )
+                f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at 10.0.6.0 or higher. Setting to xml."
             )
             formatting = "xml"
     if not force:
@@ -167,7 +160,7 @@ def search(isamAppliance, name, formatting="xml", force=False, check_mode=False)
 
     for obj in ret_obj["data"]:
         if obj["name"] == name:
-            logger.info("Found Policy {0} id: {1}".format(name, obj["id"]))
+            logger.info(f"Found Policy {name} id: {obj['id']}")
             return_obj["data"] = obj["id"]
             return_obj["rc"] = 0
 
@@ -241,7 +234,7 @@ def set(
     """
     if (search(isamAppliance, name=name, formatting=formatting))["data"] == {}:
         # Force the add - we already know policy does not exist
-        logger.info("Policy {0} had no match, requesting to add new one.".format(name))
+        logger.info(f"Policy {name} had no match, requesting to add new one.")
         return add(
             isamAppliance,
             name,
@@ -256,7 +249,7 @@ def set(
         )
     else:
         # Update request
-        logger.info("Policy {0} exists, requesting to update.".format(name))
+        logger.info(f"Policy {name} exists, requesting to update.")
         return update(
             isamAppliance,
             name,
@@ -302,9 +295,7 @@ def add(
                     tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0
                 ):
                     warnings.append(
-                        "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                            isamAppliance.facts["version"]
-                        )
+                        f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml."
                     )
                     formatting = "xml"
             if formatting == "json":
@@ -330,7 +321,7 @@ def add(
                 # For it to be valid XML, it has to start with <?xml (this is not true, but it is what the output of ISVA looks like)
                 if policy.startswith("<?xml"):
                     # this is xml
-                    logger.info("Policy {0} only contains policy data".format(name))
+                    logger.info(f"Policy {name} only contains policy data")
                     json_data = {
                         "name": name,
                         "attributesrequired": attributesrequired,
@@ -344,7 +335,7 @@ def add(
                     json_data = policy[1:-1]
                     logger.debug(f"\njson_data: {json_data}")
                     json_data = json.loads(json_data)
-                    logger.info("Policy {0} contains full policy export".format(name))
+                    logger.info(f"Policy {name} contains full policy export")
 
                 return isamAppliance.invoke_post(
                     "Create a new Policy", uri, json_data, warnings=warnings
@@ -361,13 +352,13 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     mech_id = ret_obj["data"]
 
     if mech_id == {}:
-        logger.info("Policy {0} not found, skipping delete.".format(name))
+        logger.info(f"Policy {name} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete a Policy", "{0}/{1}".format(uri, mech_id)
+                "Delete a Policy", f"{uri}/{mech_id}"
             )
 
     return isamAppliance.create_return_object()
@@ -393,9 +384,7 @@ def update(
     if formatting == "json":
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
             warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                    isamAppliance.facts["version"]
-                )
+                f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml."
             )
             formatting = "xml"
 
@@ -415,7 +404,7 @@ def update(
     if pol_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
 
-        raise IBMError("999", "Cannot update data for unknown policy: {0}".format(name))
+        raise IBMError("999", f"Cannot update data for unknown policy: {name}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -424,13 +413,13 @@ def update(
             if formatting == "json":
                 return isamAppliance.invoke_put(
                     "Update a specified policy (JSON)",
-                    "{0}/{1}".format(uri_json, pol_id),
+                    f"{uri_json}/{pol_id}",
                     json_data,
                 )
             else:
                 return isamAppliance.invoke_put(
                     "Update a specified policy",
-                    "{0}/{1}".format(uri, pol_id),
+                    f"{uri}/{pol_id}",
                     json_data,
                 )
 
@@ -456,14 +445,12 @@ def _check(
     if formatting == "json":
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
             warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                    isamAppliance.facts["version"]
-                )
+                f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml."
             )
             formatting = "xml"
 
     if formatting == "json":
-        logger.info("Loading JSON formatted Policy with name {0}".format(name))
+        logger.info(f"Loading JSON formatted Policy with name {name}")
         json_data = {
             "attributesRequired": attributesrequired,
             "policy": policy,
@@ -473,7 +460,7 @@ def _check(
     else:
         try:
             json_data = json.loads(policy)[0]
-            logger.info("Policy {0} contains full policy export".format(name))
+            logger.info(f"Policy {name} contains full policy export")
             logger.info(json_data)
             json_data.pop("id", None)
             json_data.pop("datecreated", None)
@@ -484,7 +471,7 @@ def _check(
             json_data.pop("userLastModified", None)
             json_data.pop("predefined", None)
         except json.decoder.JSONDecodeError:
-            logger.info("Policy {0} only contains policy data".format(name))
+            logger.info(f"Policy {name} only contains policy data")
             json_data = {
                 "attributesrequired": attributesrequired,
                 "policy": policy,
@@ -515,9 +502,9 @@ def _check(
         ret_obj["data"].pop("userLastModified", None)
 
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("\n\nSorted input: {0}".format(sorted_json_data))
+        logger.debug(f"\n\nSorted input: {sorted_json_data}")
         sorted_ret_obj = tools.json_sort(ret_obj["data"])
-        logger.debug("\n\nSorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"\n\nSorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("\n\nChanges detected, update needed.\n\n")
             update_required = True

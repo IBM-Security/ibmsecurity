@@ -13,7 +13,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     """
     return isamAppliance.invoke_get(
         "Retrieve a list of configured resources",
-        "{0}{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+        f"{uri}{tools.create_query_string(filter=filter, sortBy=sortBy)}",
     )
 
 
@@ -32,15 +32,13 @@ def get(isamAppliance, server, resourceUri, check_mode=False, force=False):
 
     if resource_id == {}:
         logger.info(
-            "Resource {0}/{1} had no match, skipping retrieval.".format(
-                server, resourceUri
-            )
+            f"Resource {server}/{resourceUri} had no match, skipping retrieval."
         )
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get(
             "Retrieve a specific configured resource",
-            "{0}/{1}".format(uri, resource_id),
+            f"{uri}/{resource_id}",
         )
 
 
@@ -59,15 +57,13 @@ def get_attachments(isamAppliance, server, resourceUri, check_mode=False, force=
 
     if resource_id == {}:
         logger.info(
-            "Resource {0}/{1} had no match, skipping retrieval.".format(
-                server, resourceUri
-            )
+            f"Resource {server}/{resourceUri} had no match, skipping retrieval."
         )
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get(
             "Retrieve a list of attachments for a resource",
-            "{0}/{1}/policies".format(uri, resource_id),
+            f"{uri}/{resource_id}/policies",
         )
 
 
@@ -81,9 +77,7 @@ def search(isamAppliance, server, resourceUri, force=False, check_mode=False):
     for obj in ret_obj["data"]:
         if obj["resourceUri"] == resourceUri and obj["server"] == server:
             logger.info(
-                "Found server/resourceUri {0}/{1} id: {2}".format(
-                    server, resourceUri, obj["id"]
-                )
+                f"Found server/resourceUri {server}/{resourceUri} id: {obj['id']}"
             )
             return_obj["data"] = obj["id"]
             return_obj["rc"] = 0
@@ -99,7 +93,7 @@ def authenticate(
     """
     ret_obj = isamAppliance.invoke_post(
         "Authenticate with Security Access Manager",
-        "{0}/pdadmin".format(uri),
+        f"{uri}/pdadmin",
         {
             "command": "setCredential",
             "username": username,
@@ -121,7 +115,7 @@ def get_resources(isamAppliance, object="/WebSEAL", check_mode=False, force=Fals
     """
     ret_obj = isamAppliance.invoke_post(
         "Retrieve a list of resources in a protected object space",
-        "{0}/pdadmin".format(uri),
+        f"{uri}/pdadmin",
         {"command": "object list", "object": object},
     )
 
@@ -158,8 +152,7 @@ def config(
         if policyType is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, policyType: {1} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call.".format(
-                        isamAppliance.facts["version"], cache
+                    "Appliance at version: {0}, policyType: {1} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call.".format(isamAppliance.facts["version"], cache
                     )
                 )
             else:
@@ -171,8 +164,7 @@ def config(
         if cache is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
-                        isamAppliance.facts["version"], cache
+                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(isamAppliance.facts["version"], cache
                     )
                 )
             else:
@@ -211,8 +203,7 @@ def update(
         if cache is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(
-                        isamAppliance.facts["version"], cache
+                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(isamAppliance.facts["version"], cache
                     )
                 )
             else:
@@ -222,7 +213,7 @@ def update(
         else:
             return isamAppliance.invoke_put(
                 "Update the policy attachment combining algorithm and cache",
-                "{0}/{1}/properties".format(uri, ret_obj["data"]["id"]),
+                f"{uri}/{ret_obj['data']['id']}/properties",
                 json_data,
                 warnings=warnings,
             )
@@ -289,15 +280,13 @@ def _check(policies, attachments, action):
     # Add will be rejected if there is even one match
     if action == "add":
         logger.info(
-            "Check if there is at least one match returned: {0}".format(partial_match)
+            f"Check if there is at least one match returned: {partial_match}"
         )
         return not partial_match
     # Delete will be rejected if there is a partial match (has to be full match)
     elif action == "remove":
         logger.info(
-            "Check if there is a full match of provided policies: {0}".format(
-                full_match
-            )
+            f"Check if there is a full match of provided policies: {full_match}"
         )
         return full_match
     # Set requires that there be a full match and the number of elements match
@@ -309,13 +298,13 @@ def _check(policies, attachments, action):
     # Force delete will be rejected if there is no match
     elif action == "force_remove":
         logger.info(
-            "Check if there is at least one match returned: {0}".format(partial_match)
+            f"Check if there is at least one match returned: {partial_match}"
         )
         return partial_match
     else:
         from ibmsecurity.appliance.ibmappliance import IBMError
 
-        raise IBMError("999", "Unknown action provided: {0}".format(action))
+        raise IBMError("999", f"Unknown action provided: {action}")
 
 
 def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
@@ -334,7 +323,7 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Publish the policy attachments for a resource",
-                "{0}/deployment/{1}".format(uri, ret_obj["data"]["id"]),
+                f"{uri}/deployment/{ret_obj['data']['id']}",
                 {},
             )
 
@@ -353,7 +342,7 @@ def publish_list(isamAppliance, attachments, check_mode=False, force=False):
         ret_obj = get(isamAppliance, attach["server"], attach["resourceUri"])
         if force is True or ret_obj["data"]["deployrequired"] is True:
             id_list.append(ret_obj["data"]["id"])
-    logger.debug("Attachments: {0}".format(id_list))
+    logger.debug(f"Attachments: {id_list}")
 
     if len(id_list) > 0:
         if check_mode is True:
@@ -361,7 +350,7 @@ def publish_list(isamAppliance, attachments, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Publish a list of policy attachments",
-                "{0}/deployment".format(uri),
+                f"{uri}/deployment",
                 {"policyAttachmentIds": ",".join(id_list)},
             )
 
@@ -391,9 +380,9 @@ def _convert_policy_name_to_id(isamAppliance, policies):
             )
             pol_id = ret_obj["data"]
             if pol_id != {}:
-                logger.debug("Converting policy {0} to ID: {1}".format(name, pol_id))
+                logger.debug(f"Converting policy {name} to ID: {pol_id}")
             else:
-                logger.warning("Unable to find policy {0}, skipping.".format(name))
+                logger.warning(f"Unable to find policy {name}, skipping.")
         elif type == "policyset":
             ret_obj = ibmsecurity.isam.aac.access_control.policy_sets.search(
                 isamAppliance, name
@@ -401,10 +390,10 @@ def _convert_policy_name_to_id(isamAppliance, policies):
             pol_id = ret_obj["data"]
             if pol_id != {}:
                 logger.debug(
-                    "Converting policy set {0} to ID: {1}".format(name, pol_id)
+                    f"Converting policy set {name} to ID: {pol_id}"
                 )
             else:
-                logger.warning("Unable to find policy set {0}, skipping.".format(name))
+                logger.warning(f"Unable to find policy set {name}, skipping.")
         elif type == "definition":
             ret_obj = ibmsecurity.isam.aac.api_protection.definitions.search(
                 isamAppliance, name
@@ -412,17 +401,17 @@ def _convert_policy_name_to_id(isamAppliance, policies):
             pol_id = ret_obj["data"]
             if pol_id != {}:
                 logger.debug(
-                    "Converting api definition {0} to ID: {1}".format(name, pol_id)
+                    f"Converting api definition {name} to ID: {pol_id}"
                 )
             else:
                 logger.warning(
-                    "Unable to find api definition {0}, skipping.".format(name)
+                    f"Unable to find api definition {name}, skipping."
                 )
         else:
             from ibmsecurity.appliance.ibmappliance import IBMError
 
             raise IBMError(
-                "999", "Policy specified with unknown type: {0}/{1}".format(type, name)
+                "999", f"Policy specified with unknown type: {type}/{name}"
             )
 
         pol_ids.append({"id": pol_id, "type": type})
@@ -454,10 +443,10 @@ def _convert_policy_id_to_name(isamAppliance, policies):
             pol_name = ret_obj["data"]["name"]
             if pol_name != {}:
                 logger.debug(
-                    "Converting policy {0} to Name: {1}".format(pol_id, pol_name)
+                    f"Converting policy {pol_id} to Name: {pol_name}"
                 )
             else:
-                logger.warning("Unable to find policy {0}, skipping.".format(pol_id))
+                logger.warning(f"Unable to find policy {pol_id}, skipping.")
         elif type == "policyset":
             ret_obj = ibmsecurity.isam.aac.access_control.policy_sets._get(
                 isamAppliance, pol_id
@@ -465,11 +454,11 @@ def _convert_policy_id_to_name(isamAppliance, policies):
             pol_name = ret_obj["data"]["name"]
             if pol_name != {}:
                 logger.debug(
-                    "Converting policy set {0} to Name: {1}".format(pol_id, pol_name)
+                    f"Converting policy set {pol_id} to Name: {pol_name}"
                 )
             else:
                 logger.warning(
-                    "Unable to find policy set {0}, skipping.".format(pol_id)
+                    f"Unable to find policy set {pol_id}, skipping."
                 )
         elif type == "definition":
             ret_obj = ibmsecurity.isam.aac.api_protection.definitions._get(
@@ -478,20 +467,18 @@ def _convert_policy_id_to_name(isamAppliance, policies):
             pol_name = ret_obj["data"]["name"]
             if pol_name != {}:
                 logger.debug(
-                    "Converting api definition {0} to Name: {1}".format(
-                        pol_id, pol_name
-                    )
+                    f"Converting api definition {pol_id} to Name: {pol_name}"
                 )
             else:
                 logger.warning(
-                    "Unable to find api definition {0}, skipping.".format(pol_id)
+                    f"Unable to find api definition {pol_id}, skipping."
                 )
         else:
             from ibmsecurity.appliance.ibmappliance import IBMError
 
             raise IBMError(
                 "999",
-                "Policy specified with unknown type: {0}/{1}".format(type, pol_id),
+                f"Policy specified with unknown type: {type}/{pol_id}",
             )
 
         pol_ids.append({"name": pol_name, "type": type})
@@ -510,16 +497,14 @@ def delete(isamAppliance, server, resourceUri, check_mode=False, force=False):
 
     if resourceID == {}:
         logger.info(
-            "ResourceURI {0}/{1} not found, skipping delete.".format(
-                server, resourceUri
-            )
+            f"ResourceURI {server}/{resourceUri} not found, skipping delete."
         )
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete a configured resource", "{0}/{1}".format(uri, resourceID)
+                "Delete a configured resource", f"{uri}/{resourceID}"
             )
 
     return isamAppliance.create_return_object()
