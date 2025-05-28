@@ -14,7 +14,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving a list of all Web Service connections
     """
     return isamAppliance.invoke_get("Retrieving a list of all Web Service connections",
-                                    "{0}/v1".format(uri), requires_modules=requires_modules,
+                                    f"{uri}/v1", requires_modules=requires_modules,
                                     requires_version=requires_version)
 
 
@@ -26,11 +26,11 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
     id = ret_obj["data"]
 
     if id == {}:
-        logger.info("Web Service connection {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Web Service connection {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving a Web Service connection",
-                                        "{0}/{1}/v1".format(uri, id),
+                                        f"{uri}/{id}/v1",
                                         requires_modules=requires_modules,
                                         requires_version=requires_version)
 
@@ -45,7 +45,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Web Service connection {0} id: {1}".format(name, obj['uuid']))
+            logger.info(f"Found Web Service connection {name} id: {obj['uuid']}")
             return_obj['data'] = obj['uuid']
             return_obj['rc'] = 0
 
@@ -62,7 +62,7 @@ def add(isamAppliance, name, connection, description='', locked=False, check_mod
         else:
             return isamAppliance.invoke_post(
                 "Creating a Web Service connection",
-                "{0}/v1".format(uri),
+                f"{uri}/v1",
                 _create_json(name=name, description=description, locked=locked, connection=connection),
                 requires_modules=requires_modules, requires_version=requires_version)
 
@@ -82,7 +82,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a Web Service connection",
-                "{0}/{1}/v1".format(uri, id), requires_modules=requires_modules,
+                f"{uri}/{id}/v1", requires_modules=requires_modules,
                 requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -99,7 +99,7 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("Web Service connection {0} not found, skipping update.".format(name))
+        warnings.append(f"Web Service connection {name} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["uuid"]
@@ -120,8 +120,8 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
 
@@ -135,7 +135,7 @@ def update(isamAppliance, name, connection, description='', locked=False, new_na
         else:
             return isamAppliance.invoke_put(
                 "Modifying a Web Service connection",
-                "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
+                f"{uri}/{id}/v1", json_data, requires_modules=requires_modules,
                 requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)

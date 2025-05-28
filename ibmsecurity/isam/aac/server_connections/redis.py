@@ -16,7 +16,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
    Retrieving a list of all Redis connections
    """
    return isamAppliance.invoke_get("Retrieving a list of all Redis connections",
-                                   "{0}/v1".format(uri), requires_modules=requires_modules,
+                                   f"{uri}/v1", requires_modules=requires_modules,
                                    requires_version=requires_version)
 
 
@@ -28,11 +28,11 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
    id = ret_obj["data"]
 
    if id == {}:
-       logger.info("Redis Service connection {0} had no match, skipping retrieval.".format(name))
+       logger.info(f"Redis Service connection {name} had no match, skipping retrieval.")
        return isamAppliance.create_return_object()
    else:
        return isamAppliance.invoke_get("Retrieving a Redis Service connection",
-                                       "{0}/{1}/v1".format(uri, id),
+                                       f"{uri}/{id}/v1",
                                        requires_modules=requires_modules,
                                        requires_version=requires_version)
 
@@ -47,7 +47,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
 
    for obj in ret_obj['data']:
        if obj['name'] == name:
-           logger.info("Found Redis Service connection {0} id: {1}".format(name, obj['uuid']))
+           logger.info(f"Found Redis Service connection {name} id: {obj['uuid']}")
            return_obj['data'] = obj['uuid']
            return_obj['rc'] = 0
 
@@ -64,7 +64,7 @@ def add(isamAppliance, name, connection, description='', connectionManager=None,
        else:
            return isamAppliance.invoke_post(
                "Creating a Redis Service connection",
-               "{0}/v1".format(uri),
+               f"{uri}/v1",
                _create_json(name=name,
                             description=description,
                             locked=locked,
@@ -89,7 +89,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
        else:
            return isamAppliance.invoke_delete(
                "Deleting a Redis connection",
-               "{0}/{1}/v1".format(uri, id), requires_modules=requires_modules,
+               f"{uri}/{id}/v1", requires_modules=requires_modules,
                requires_version=requires_version)
 
    return isamAppliance.create_return_object()
@@ -106,7 +106,7 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
    warnings = ret_obj["warnings"]
 
    if ret_obj["data"] == {}:
-       warnings.append("Redis connection {0} not found, skipping update.".format(name))
+       warnings.append(f"Redis connection {name} not found, skipping update.")
        return isamAppliance.create_return_object(warnings=warnings)
    else:
        id = ret_obj["data"]["uuid"]
@@ -134,14 +134,14 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
        if 'servers' in ret_obj['data']:
          for x in ret_obj['data']['servers']:
              if 'uuid' in x:
-                 logger.debug("Deleting uuid from returned object:\n{0}".format(x['uuid']))
+                 logger.debug(f"Deleting uuid from returned object:\n{x['uuid']}")
                  del x['uuid']
 
        sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
        sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
 
-       logger.debug("Sorted Existing Data:\n{0}".format(sorted_ret_obj))
-       logger.debug("Sorted Desired  Data:\n{0}".format(sorted_json_data))
+       logger.debug(f"Sorted Existing Data:\n{sorted_ret_obj}")
+       logger.debug(f"Sorted Desired  Data:\n{sorted_json_data}")
 
        if sorted_ret_obj != sorted_json_data:
            needs_update = True
@@ -156,7 +156,7 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
        else:
            return isamAppliance.invoke_put(
                "Modifying a Redis connection",
-               "{0}/{1}/v1".format(uri, id), json_data, requires_modules=requires_modules,
+               f"{uri}/{id}/v1", json_data, requires_modules=requires_modules,
                requires_version=requires_version, warnings=warnings)
 
    return isamAppliance.create_return_object(warnings=warnings)

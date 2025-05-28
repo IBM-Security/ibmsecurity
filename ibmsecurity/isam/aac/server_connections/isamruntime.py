@@ -12,7 +12,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving a list of all ISAM Runtime server connections
     """
     return isamAppliance.invoke_get("Retrieving a list of all ISAM Runtime server connections",
-                                    "{0}/v1".format(uri),
+                                    f"{uri}/v1",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -28,7 +28,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving an ISAM Runtime server connection",
-                                        "{0}/{1}/v1".format(uri, id),
+                                        f"{uri}/{id}/v1",
                                         requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -43,7 +43,7 @@ def add(isamAppliance, name, connection, description="", locked=False, check_mod
         else:
             return isamAppliance.invoke_post(
                 "Creating an ISAM Runtime server connection",
-                "{0}/v1".format(uri),
+                f"{uri}/v1",
                 {
                     "locked": locked,
                     "description": description,
@@ -68,7 +68,7 @@ def update(isamAppliance, name, connection, locked=False, description='', new_na
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("ISAM Runtime server connection {0} not found, skipping update.".format(name))
+        warnings.append(f"ISAM Runtime server connection {name} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["uuid"]
@@ -89,8 +89,8 @@ def update(isamAppliance, name, connection, locked=False, description='', new_na
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
@@ -101,7 +101,7 @@ def update(isamAppliance, name, connection, locked=False, description='', new_na
         else:
             return isamAppliance.invoke_put(
                 "Modifying an ISAM Runtime server connection",
-                "{0}/{1}/v1".format(uri, id),
+                f"{uri}/{id}/v1",
                 json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
@@ -141,7 +141,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Deleting an ISAM Runtime server connection",
-                "{0}/{1}/v1".format(uri, id),
+                f"{uri}/{id}/v1",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
@@ -173,7 +173,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found isamruntime '{0}' uuid: '{1}'".format(name, obj['uuid']))
+            logger.info(f"Found isamruntime '{name}' uuid: '{obj['uuid']}'")
             ret_obj_new['data'] = obj['uuid']
 
     return ret_obj_new
