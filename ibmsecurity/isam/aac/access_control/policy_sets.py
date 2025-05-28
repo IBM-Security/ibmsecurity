@@ -367,17 +367,13 @@ def _check_policies(isamAppliance, name, policies, action):
                     else:
                         pol_ids.append(new_pol_ids)
                         logger.info(
-                            "Policy ID {0} does not exist, appending to list for additon.".format(
-                                new_pol_id
-                            )
+                            f"Policy ID {new_pol_id} does not exist, appending to list for additon."
                         )
                 elif action == "delete":
                     if exists:
                         pol_ids.append(new_pol_ids)
                         logger.info(
-                            "Policy ID {0} exists, appending to list for deletion.".format(
-                                new_pol_id
-                            )
+                            f"Policy ID {new_pol_id} exists, appending to list for deletion."
                         )
                     else:
                         logger.info("Policy ID {0} does not exist skipping.")

@@ -2,6 +2,11 @@
 
 ## Latest
 
+- feature: base/management_authentication.py - type federation
+- build: test setup
+- feature: web/reverse_proxy/oauth_configuration.py - add new parameters in 10.0.8
+- feature: web/reverse_proxy/oauth2_configuration.py - OAuth2 IBM Security Verify OIDC Provider configuration (new in 10.0.4)
+- feature: aac/server_connections/sms.py - SMS Server Connection (new in 10.0.8)
 
 ## 2025.3.28.0
 

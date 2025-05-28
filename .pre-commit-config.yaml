@@ -18,11 +18,12 @@ repos:
   #    - id: flake8
   #      args: ["--ignore=E501"]
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.2
+    rev: v3.3.7
     hooks:
       - id: pylint
         args: [
            "--recursive=y",
            "--exit-zero",
-           "--output-format=text:report.txt"
+           "--rcfile=pylintrc",
+           "--output-format=github:report.txt"
         ]

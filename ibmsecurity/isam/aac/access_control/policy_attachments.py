@@ -152,8 +152,7 @@ def config(
         if policyType is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, policyType: {1} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call.".format(isamAppliance.facts["version"], cache
-                    )
+                    f"Appliance at version: {isamAppliance.facts['version']}, policyType: {cache} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call."
                 )
             else:
                 json_data["type"] = policyType
@@ -164,8 +163,7 @@ def config(
         if cache is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(isamAppliance.facts["version"], cache
-                    )
+                    f"Appliance at version: {isamAppliance.facts['version']}, cache: {cache} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call."
                 )
             else:
                 json_data["cache"] = int(cache)
@@ -203,8 +201,7 @@ def update(
         if cache is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
                 warnings.append(
-                    "Appliance at version: {0}, cache: {1} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call.".format(isamAppliance.facts["version"], cache
-                    )
+                    f"Appliance at version: {isamAppliance.facts['version']}, cache: {cache} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call."
                 )
             else:
                 json_data["cache"] = int(cache)
@@ -247,9 +244,7 @@ def update_attachments(
             new_policies = _convert_policy_name_to_id(isamAppliance, attachments)
             return isamAppliance.invoke_put(
                 "Update the attachments for a resource",
-                "{0}/{1}/policies{2}".format(
-                    uri, ret_obj["data"]["id"], tools.create_query_string(action=action)
-                ),
+                f"{uri}/{ret_obj['data']['id']}/policies{tools.create_query_string(action=action)}",
                 new_policies,
             )
     return isamAppliance.create_return_object()
@@ -266,9 +261,7 @@ def _check(policies, attachments, action):
                 new_pol["name"] == cur_pol["name"] and new_pol["type"] == cur_pol["type"]
             ):
                 logger.info(
-                    "At least one policy already exists {0}/{1}".format(
-                        new_pol["type"], new_pol["name"]
-                    )
+                    f"At least one policy already exists {new_pol['type']}/{new_pol['name']}"
                 )
                 match = True
                 break
