@@ -22,7 +22,7 @@ def bulk_migration(isamAppliance, definitionName, definitionId, check_mode=False
 
     return isamAppliance.invoke_post(
         "Dynamic client bulk migration",
-        "{0}".format(uri),
+        f"{uri}",
         {
             'definitionName': definitionName,
             'definitionId': definitionId
@@ -43,7 +43,7 @@ def client_migration(isamAppliance, definitionName, client_id, check_mode=False,
 
     return isamAppliance.invoke_post(
         "Dynamic client bulk migration",
-        "{0}/{1}".format(uri, client_id),
+        f"{uri}/{client_id}",
         {
             'definitionName': definitionName
         },

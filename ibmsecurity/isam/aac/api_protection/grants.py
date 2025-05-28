@@ -14,7 +14,7 @@ def get(isamAppliance, state_id, check_mode=False, force=False):
     Get a grant
     """
     return isamAppliance.invoke_get("Get a grant",
-                                    "/iam/access/v8/grants/{0}".format(state_id))
+                                    f"/iam/access/v8/grants/{state_id}")
 
 
 def get_all(isamAppliance, check_mode=False, force=False):
@@ -30,8 +30,7 @@ def get_users(isamAppliance, sortBy=None, filter=None, check_mode=False, force=F
     Get all users that have grants
     """
     return isamAppliance.invoke_get("Get all users that have grants",
-                                    "/iam/access/v8/grants/userIds{0}".format(
-                                        tools.create_query_string(sortBy=sortBy, filter=filter)))
+                                    f"/iam/access/v8/grants/userIds{tools.create_query_string(sortBy=sortBy, filter=filter)}")
 
 
 def set(isamAppliance, state_id, attributes=[], isEnabled=True, check_mode=False,
@@ -54,7 +53,7 @@ def set(isamAppliance, state_id, attributes=[], isEnabled=True, check_mode=False
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put("Update a specified grant",
-                                            "/iam/access/v8/grants/{0}".format(state_id),
+                                            f"/iam/access/v8/grants/{state_id}",
                                             {
                                                 'isEnabled': isEnabled,
                                                 'attributes': attributes
@@ -72,7 +71,7 @@ def delete(isamAppliance, state_id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete a grant",
-                                               "/iam/access/v8/grants/{0}".format(state_id))
+                                               f"/iam/access/v8/grants/{state_id}")
 
     return isamAppliance.create_return_object()
 
