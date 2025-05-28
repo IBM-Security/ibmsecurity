@@ -99,7 +99,7 @@ def config(isamAppliance, instance_id, hostname='127.0.0.1', port=443, username=
 
 def _check_config(isamAppliance, instance_id, junction):
     """
-    Check if the junction for oauth already created
+    Check if the junction for oauth already created.  This is overly simplistic.
 
     :param isamAppliance:
     :param instance_id:
