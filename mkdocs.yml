@@ -19,3 +19,5 @@ nav:
       - home: index.md
   - Developer Guide:
       - Contributing: contributing.md
+  - Changelog:
+      - Changelog: changelog.md
