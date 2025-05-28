@@ -23,5 +23,6 @@ repos:
       - id: pylint
         args: [
            "--recursive=y",
-           "--exit-zero"
+           "--exit-zero",
+           "--output-format=text:report.txt"
         ]
