@@ -22,6 +22,6 @@ repos:
     hooks:
       - id: pylint
         args: [
-           "-ry",
+           "--recursive=y",
            "--exit-zero"
         ]
