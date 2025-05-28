@@ -7,6 +7,35 @@ from ibmsecurity.utilities.tools import get_random_temp_dir
 logger = logging.getLogger(__name__)
 requires_model = "Appliance"
 
+certificate_database_optional_args = (
+    "token_label",
+    "serial_number",
+    "passcode",
+    "hsm_type",
+    "ip",
+    "port",
+    "kneti_hash",
+    "esn",
+    "use_rfs",
+    "rfs",
+    "rfs_port",
+    "rfs_auth",
+    "safenet_pw",
+    "secondary_ip",
+    "secondary_port",
+    "secondary_kneti_hash",
+    "secondary_esn",
+    "update_zip"
+)
+certificate_database_new_10_05 = (
+    "safenet_keystore_list",
+    "safenet_primary_keystore",
+    "safenet_user"
+)
+certificate_database_new_10_08 = (
+    "serial_number"
+)
+
 
 def get_all(isamAppliance, check_mode=False, force=False):
     """
@@ -25,34 +54,76 @@ def get(isamAppliance, cert_dbase_id, check_mode=False, force=False):
                                     requires_model=requires_model)
 
 
-def create(isamAppliance, kdb_name, type='kdb', token_label=None, passcode=None, hsm_type=None, ip=None, port=None,
-           kneti_hash=None, esn=None, rfs=None, rfs_port=None, rfs_auth=None, safenet_pw=None, check_mode=False,
-           force=False):
+def create(isamAppliance, kdb_name, type='kdb',
+           check_mode=False, force=False
+           **kwargs,
+          ):
     """
     Create a certificate database
+               token_label=None,
+           serial_number=None,
+           passcode=None,
+           hsm_type=None,
+           ip=None, port=None, kneti_hash=None, esn=None,
+           secondary_ip=None, secondary_port=None, secondary_kneti_hash=None, secondary_esn=None,
+           use_rfs=None,
+           rfs=None, rfs_port=None, rfs_auth=None, safenet_user=None, safenet_pw=None,
+           update_zip=None,
+           safenet_keystore_list=None, safenet_primary_keystore=None,
+    TODO: Update zip does not work atm.
     """
-    if force is True or _check(isamAppliance, kdb_name) is False:
-        if check_mode is True:
+    warnings = []
+    if force or not _check(isamAppliance, kdb_name):
+        if check_modee:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_post(
-                "Creating certificate database '{0}'".format(kdb_name),
-                "/isam/ssl_certificates",
-                {
+
+            json_data = {
                     "kdb_name": kdb_name,
                     "type": type,
-                    "token_label": token_label,
-                    "passcode": passcode,
-                    "hsm_type": hsm_type,
-                    "ip": ip,
-                    "port": port,
-                    "kneti_hash": kneti_hash,
-                    "esn": esn,
-                    "rfs": rfs,
-                    "rfs_port": rfs_port,
-                    "rfs_auth": rfs_auth,
-                    "safenet_pw": safenet_pw
-                })
+                }
+            for k, v in kwargs.items():
+               if k in certificate_database_optional_args:
+                    json_data[k] = v
+               # new in 10.0.5
+               if k in certificate_database_new_10_05:
+                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
+                       warnings.append(                         "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(                               isamAppliance.facts["version"], load_certificate))
+                   else:
+                       json_data[k] = v
+               # new in 10.0.8
+               if k in certificate_database_new_10_08:
+                   if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
+                       warnings.append(                         "Appliance at version: {0}, load_certificate: {1} is not supported. Needs 10.0.0.0 or higher. Ignoring load_certificate for this call.".format(                               isamAppliance.facts["version"], load_certificate))
+                   else:
+                       json_data[k] = v
+               # Logic
+               if type != 'p11' or json_data.get("hsm_type", None) not in ("safenet","safenet-ha"):
+                   warnings.append("Serial number, safenet_* are only valid for safenet hsm, removed from input")
+                   json_data.pop("serial_number", None)
+                   json_data.pop("safenet_user", None)
+                   json_data.pop("safenet_pw", None)
+                   json_data.pop("safenet_keystore_list", None)
+                   json_data.pop("safenet_primary_keystore", None)
+               if type != 'p11' or json_data.get("hsm_type", None) != "ncipher":
+                   warnings.append("kneti_hash, port, secondary_*, rfs are only valid for ncipher hsm, removed from input")
+                   json_data.pop("port", None)
+                   json_data.pop("kneti_hash", None)
+                   json_data.pop("secondary_ip", None)
+                   json_data.pop("secondary_port", None)
+                   json_data.pop("secondary_kneti_hash", None)
+                   json_data.pop("secondary_esn", None)
+                   json_data.pop("use_rfs", None)
+                   json_data.pop("rfs", None)
+                   json_data.pop("rfs_port", None)
+                   json_data.pop("rfs_auth", None)
+
+            return isamAppliance.invoke_post(
+                f"Creating certificate database '{kdb_name}'",
+                "/isam/ssl_certificates",
+                json_data,
+                warnings=warnings
+            )
 
     return isamAppliance.create_return_object()
 
