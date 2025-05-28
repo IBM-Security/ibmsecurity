@@ -43,13 +43,3 @@ def test_set_riskprofiles(iviaServer, caplog, items) -> None:
     logging.log(logging.INFO, returnValue)
 
     assert not returnValue.failed()
-
-
-def test_commit(iviaServer, caplog) -> None:
-    """Not actually a test, but save the changes."""
-    caplog.set_level(logging.INFO)
-
-    returnValue = ibmsecurity.isam.appliance.commit(isamAppliance=iviaServer)
-    logging.log(logging.DEBUG, returnValue)
-
-    assert not returnValue.failed()

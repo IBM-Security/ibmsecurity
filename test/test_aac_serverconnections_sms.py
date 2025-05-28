@@ -70,13 +70,3 @@ def test_set_serverconnection_sms(iviaServer, caplog, items) -> None:
 
     if returnValue is not None:
         assert not returnValue.failed()
-
-
-def test_commit(iviaServer, caplog) -> None:
-    """Not actually a test, but save the changes."""
-    caplog.set_level(logging.INFO)
-
-    returnValue = ibmsecurity.isam.appliance.commit(isamAppliance=iviaServer)
-    logging.log(logging.DEBUG, returnValue)
-
-    assert not returnValue.failed()
