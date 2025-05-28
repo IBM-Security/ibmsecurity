@@ -13,13 +13,6 @@ def get_all(isamAppliance, check_mode=False, force=False):
     return isamAppliance.invoke_get("Retrieving keys", "/admin_cfg/ssh-keys/v1")
 
 
-def get(isamAppliance, uuid, check_mode=False, force=False):
-    """
-    Get specific ssh public key for the default admin user
-    """
-    return isamAppliance.invoke_get("Retrieving key", f"/admin_cfg/ssh-keys/{uuid}/v1")
-
-
 def get(isamAppliance, name=None, uuid=None, check_mode=False, force=False):
     """
     Get specific ssh key for admin user
@@ -43,26 +36,35 @@ def get(isamAppliance, name=None, uuid=None, check_mode=False, force=False):
         raise IBMError("999", "Cannot get the ssh keys for the administrator. Provide exactly 1 of the parameters uuid or name")
 
 
-def add(isamAppliance, key, name, check_mode=False, force=False):
+def add(isamAppliance, key=None, name=None, check_mode=False, force=False):
     """
     Import ssh public key for the default admin user
     """
+    warnings = []
     if force or not _check(isamAppliance, name):
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_post(
+            retObj = isamAppliance.invoke_post(
                 "Import ssh key",
                 "/admin_cfg/ssh-keys/v1",
                     {
                         'key': key,
                         'name': name
-                    })
+                    },
+                ignore_error=True),
 
-    return isamAppliance.create_return_object()
+            # On error 400, this message: A SSH Key with this fingerprint already exists.
+
+            logger.debug(retObj)
+
+            if retObj[0].get('rc', -1) == 400:
+               warnings.append(f"{retObj[0].get('data', {}).get('message', 'unknown error')}")
+
+    return isamAppliance.create_return_object(warnings=warnings)
 
 create = add
-def update(isamAppliance, key, name, check_mode=False, force=False):
+def update(isamAppliance, key=None, name=None, check_mode=False, force=False):
     """
     Update an existing key
     """
@@ -88,7 +90,7 @@ def update(isamAppliance, key, name, check_mode=False, force=False):
 
     return isamAppliance.create_return_object()
 
-def set(isamAppliance, key, name, fingerprint=None, check_mode=False, force=False):
+def set(isamAppliance, key=None, name=None, fingerprint=None, check_mode=False, force=False):
     """
     Create key if it does not exist yet, update if it does.
 
