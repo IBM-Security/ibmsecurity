@@ -12,6 +12,8 @@
 - feature: base/tracing.py - Get tracing configuration (new in 10.0.8)
 - fix: add ignore_errors to cli.py - incoming change
 - feature: add publish parameter (for use in containers) (new in 10.0.8)
+- feature: new function in tools `json_equals`
+- feature: tuning_parameters.py - set multiple runtime parameters in 1 call
 
 ## 2025.3.28.0
 
