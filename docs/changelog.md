@@ -17,6 +17,7 @@
 - fix: new parameter includeIssInAuthResp for oidc definitions (new in 10.0.8)
 - feature: export a kerberos keytab file (new in 10.0.8)
 - feature: get all audit configurations (new in 10.0.8)
+- feature: update network certificate database (WIP)
 
 ## 2025.3.28.0
 
