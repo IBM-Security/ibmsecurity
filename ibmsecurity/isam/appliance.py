@@ -56,15 +56,22 @@ def _changes_available(isamAppliance):
         return False
 
 
-def commit(isamAppliance, check_mode=False, force=False):
+def commit(isamAppliance, publish=False, check_mode=False, force=False):
     """
     Commit the current pending changes.
     """
-    if force is True or _changes_available(isamAppliance) is True:
-        if check_mode is True:
+    if force or _changes_available(isamAppliance):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_put("Committing the changes",
+            iviaVersion = isamAppliance.facts['version']
+            if publish and ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.8.0") >= 0:
+                logger.debug("Publishing")
+                return isamAppliance.invoke_put("Committing the changes (containers)",
+                                            f"/isam/pending_changes?publish={publish}",
+                                            {})
+            else:
+                return isamAppliance.invoke_put("Committing the changes",
                                             "/isam/pending_changes",
                                             {})
 
