@@ -11,7 +11,7 @@ def reboot(isamAppliance, check_mode=False, force=False):
     """
     Restart the appliance
     """
-    if check_mode is True:
+    if check_mode:
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_post("Restart the appliance",
@@ -23,7 +23,7 @@ def shutdown(isamAppliance, check_mode=False, force=False):
     """
     Shutdown the appliance
     """
-    if check_mode is True:
+    if check_mode:
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_post("Shutting down appliance",
@@ -66,11 +66,12 @@ def commit(isamAppliance, publish=False, check_mode=False, force=False):
         else:
             iviaVersion = isamAppliance.facts['version']
             if publish and ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.8.0") >= 0:
-                logger.debug("Committing and publishing")
+                logger.debug("Commit: commit and publish")
                 return isamAppliance.invoke_put("Committing the changes (containers)",
                                             f"/isam/pending_changes?publish={publish}",
                                             {})
             else:
+                logger.debug("Commit: simple commit")
                 return isamAppliance.invoke_put("Committing the changes",
                                             "/isam/pending_changes",
                                             {})
@@ -86,8 +87,8 @@ def commit_and_restart(isamAppliance, check_mode=False, force=False):
     :param force:
     :return:
     """
-    if force is True or _changes_available(isamAppliance) is True:
-        if check_mode is True:
+    if force or _changes_available(isamAppliance):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post("Commit and Restart",
@@ -134,11 +135,10 @@ def reboot_and_wait(isamAppliance, wait_time=300, check_freq=5, check_mode=False
                     time.sleep(check_freq)
                     sec += check_freq
                     logger.debug(
-                        "Server is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec,
-                                                                                                            check_freq))
+                        f"Server is not responding yet. Waited for {sec} secs, next check in {check_freq} secs.")
 
                 if sec >= wait_time:
-                    warnings.append("Server reboot not detected or completed, exiting... after {0} seconds".format(sec))
+                    warnings.append(f"Server reboot not detected or completed, exiting... after {sec} seconds")
                     break
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -155,7 +155,7 @@ def commit_and_restart_and_wait(isamAppliance, wait_time=300, check_freq=5, chec
     :return:
     """
     warnings = []
-    if check_mode is True:
+    if check_mode:
         return isamAppliance.create_return_object(changed=True)
     else:
         lmi = ibmsecurity.isam.base.lmi.get(isamAppliance, check_mode=check_mode, force=force)
@@ -178,12 +178,11 @@ def commit_and_restart_and_wait(isamAppliance, wait_time=300, check_freq=5, chec
                 else:
                     time.sleep(check_freq)
                     sec += check_freq
-                    logger.debug("LMI is not responding yet. Waited for {0} secs, next check in {1} secs.".format(sec,
-                                                                                                                  check_freq))
+                    logger.debug(f"LMI is not responding yet. Waited for {sec} secs, next check in {check_freq} secs.")
 
                 if sec >= wait_time:
                     warnings.append(
-                        "The LMI restart not detected or completed, exiting... after {0} seconds".format(sec))
+                        f"The LMI restart not detected or completed, exiting... after {sec} seconds")
                     break
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -193,7 +192,7 @@ def rollback(isamAppliance, check_mode=False, force=False):
     """
     Rollback the current pending changes.
     """
-    if force is True or _changes_available(isamAppliance) is True:
+    if force or _changes_available(isamAppliance):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
