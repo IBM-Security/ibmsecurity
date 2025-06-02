@@ -40,8 +40,8 @@ def import_keytab(isamAppliance, id, file, check_mode=False, force=False):
     """
     Import a keytab file, id is the name of the keytab file (they should be the same)
     """
-    if force is True or _check(isamAppliance, id) is False:
-        if check_mode is True:
+    if force or not _check(isamAppliance, id):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(description="Import a keytab file",
@@ -88,8 +88,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     """
     Delete a keytab file, id is the name of the keytab file
     """
-    if force is True or _check(isamAppliance, id) is True:
-        if check_mode is True:
+    if force or _check(isamAppliance, id):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(description="Delete a keytab file",
@@ -108,11 +108,11 @@ def combine(isamAppliance, newname, keytab_files, check_mode=False, force=False)
     """
     warnings = []
     for keytab in keytab_files:
-        if _check(isamAppliance, keytab) is False:
+        if not _check(isamAppliance, keytab):
             warnings.append(f"keytab file to be combined: {keytab}, not found")
 
-    if force is True or _check(isamAppliance, newname) is False:
-        if check_mode is True:
+    if force or not _check(isamAppliance, newname):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(description="Combine keytab files", uri=uri,
