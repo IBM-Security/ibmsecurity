@@ -8,7 +8,7 @@ requires_modules = None
 requires_version = "9.0.3.0"
 
 
-def execute(isamAppliance, command, input=None, check_mode=False, force=False):
+def execute(isamAppliance, command, input=None, check_mode=False, force=False, ignore_error=False):
     """
     Run CLI Command
     """
@@ -23,5 +23,6 @@ def execute(isamAppliance, command, input=None, check_mode=False, force=False):
     if check_mode is True:
         return isamAppliance.create_return_object(changed=True, warnings=warnings)
     else:
-        return isamAppliance.invoke_post("Run CLI Command", uri, post_data, requires_modules=requires_modules,
-                                         requires_version=requires_version, warnings=warnings)
+        return isamAppliance.invoke_post("Run CLI Command", uri, post_data, ignore_error=ignore_error,
+                                         requires_modules=requires_modules, requires_version=requires_version,
+                                         warnings=warnings)
