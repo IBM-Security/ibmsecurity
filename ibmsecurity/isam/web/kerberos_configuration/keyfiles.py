@@ -58,6 +58,32 @@ def import_keytab(isamAppliance, id, file, check_mode=False, force=False):
     return isamAppliance.create_return_object()
 
 
+def export_keytab(isamAppliance, id, file, check_mode=False, force=False):
+    """
+    Export a keytab file, id is the name of the keytab file (they should be the same)
+    """
+    warnings=[]
+    if force or _check(isamAppliance, id):
+        if check_mode:
+            return isamAppliance.create_return_object(changed=True)
+        else:
+            retObj = isamAppliance.invoke_get_file(description="Export keytab file",
+                                                 uri=f"{uri}/{id}",
+                                                 filename=file,
+                                                 requires_modules=requires_modules,
+                                                 requires_version=requires_version,
+                                                 ignore_error=True
+                                                 )
+            if retObj.get("rc", 0) == 404:
+                logger.info(f"No keytab found matching your arguments {id}")
+                warnings.append(f"No keytab found matching your arguments {id}")
+                return isamAppliance.create_return_object(warnings=warnings)
+            else:
+                return retObj
+    warnings.append(f"No keytab found matching your arguments {id}")
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
 def delete(isamAppliance, id, check_mode=False, force=False):
     """
     Delete a keytab file, id is the name of the keytab file
