@@ -26,11 +26,11 @@ def _check(isamAppliance, id):
     """
     ret_obj = get(isamAppliance)
 
-    logger.debug("Looking for {0} existing keytab files in: {1}".format(id, ret_obj['data']))
+    logger.debug(f"Looking for {id} existing keytab files in: {ret_obj['data']}")
     if ret_obj['data']:
         for keytab in ret_obj['data']:
             if keytab['id'] == id:
-                logger.debug("Found keytab: {0}".format(id))
+                logger.debug(f"Found keytab: {id}")
                 return True
 
     return False
@@ -45,7 +45,7 @@ def import_keytab(isamAppliance, id, file, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(description="Import a keytab file",
-                                                   uri="{0}".format(uri),
+                                                   uri=uri,
                                                    fileinfo=[{
                                                        'file_formfield': 'keytab_file',
                                                        'filename': file,
@@ -92,7 +92,8 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete(description="Delete a keytab file", uri="{0}/{1}".format(uri, id),
+            return isamAppliance.invoke_delete(description="Delete a keytab file",
+                                               uri=f"{uri}/{id}",
                                                requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -108,7 +109,7 @@ def combine(isamAppliance, newname, keytab_files, check_mode=False, force=False)
     warnings = []
     for keytab in keytab_files:
         if _check(isamAppliance, keytab) is False:
-            warnings.append("keytab file to be combined: {0}, not found".format(keytab))
+            warnings.append(f"keytab file to be combined: {keytab}, not found")
 
     if force is True or _check(isamAppliance, newname) is False:
         if check_mode is True:
