@@ -315,10 +315,15 @@ def version_compare(version1, version2):
 
 def json_equals(curObj, newObj, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
     """
+    Function to compare input and output (for idempotency)
+
+
     :param curObj: The current object as output from an ISAMAppliance function
     :param newObj: The input json data
     :param ignore_keys_not_in_new: Filter current values for keys that are in the new object.  This is not fully idempotent (because it will keep values that are not defined in the input)
     :return: boolean: True if the 2 objects are the same
+
+    TODO: include the custom class
     """
     # Verify format
     if curObj.get("data", None) is None:
