@@ -113,15 +113,10 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
                 warnings.append("Request made to ignore password for idempotency check.")
                 connection.pop('password', None)
 
-        sorted_ret_obj = tools.json_sort(ret_obj['data'])
-        sorted_json_data = tools.json_sort(json_data)
-        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
-        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
-
-        if sorted_ret_obj != sorted_json_data:
+        if not tools.json_equals(ret_obj, json_data):
             needs_update = True
 
-    if force is True or needs_update is True:
+    if force or needs_update:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
