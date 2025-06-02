@@ -66,7 +66,7 @@ def commit(isamAppliance, publish=False, check_mode=False, force=False):
         else:
             iviaVersion = isamAppliance.facts['version']
             if publish and ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.8.0") >= 0:
-                logger.debug("Publishing")
+                logger.debug("Committing and publishing")
                 return isamAppliance.invoke_put("Committing the changes (containers)",
                                             f"/isam/pending_changes?publish={publish}",
                                             {})
