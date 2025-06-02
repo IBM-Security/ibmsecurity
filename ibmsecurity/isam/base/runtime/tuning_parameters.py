@@ -1,4 +1,5 @@
 import logging
+import ibmsecurity.utilities.tools as _tools
 
 logger = logging.getLogger(__name__)
 requires_modules = ["mga", "federation"]
@@ -15,16 +16,22 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_model=requires_model)
 
 
-def set(isamAppliance, option, value, check_mode=False, force=False):
+def set(isamAppliance, option=None, value=None, values=None, ignore_endpoints=True, check_mode=False, force=False):
     """
     Set a runtime tuning parameter
+    option and value are mutually exclusive with values
+    Set multiple runtime tuning parameters at once (if values is not none)
     """
     warnings = []
     matches, exists = False, False
-    if force is False:
+    if values is not None:
+        # Use the multi option.  Ignore option/value in this case
+        return _setMultipleValues(isamAppliance, values, ignore_endpoints, check_mode, force)
+
+    if not force:
         matches, exists, warnings = _check(isamAppliance, option, value)
 
-    if exists is False:
+    if not exists:
         warnings.append(f"Tuning Parameter {option} was not found. set() request will attempt anyway.")
 
     if force is True or matches is False:
@@ -37,6 +44,27 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
                 {
                     'value': value
                 }, requires_modules=requires_modules, requires_model=requires_model)
+
+    return isamAppliance.create_return_object(warnings=warnings)
+
+
+def _setMultipleValues(isamAppliance, values=None,  ignore_endpoints=True, check_mode=False, force=False):
+    """
+    Ignore_endpoints does not take the endpoint configuration into account.
+    This is typically set using the specific endpoint configurations.
+    """
+    currentRuntimeParameters = get(isamAppliance)
+    warnings = currentRuntimeParameters['warnings']
+    logger.debug("Setting multiple values for runtime tuning parameters")
+    if force or not _tools.json_equals(currentRuntimeParameters, values):
+        if check_mode:
+            return isamAppliance.create_return_object(changed=True, warnings=warnings)
+        else:
+            return isamAppliance.invoke_put(
+                "Setting multiple runtime tuning parameters",
+                "/mga/runtime_tuning/v1",
+                values,
+                requires_modules=requires_modules, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
