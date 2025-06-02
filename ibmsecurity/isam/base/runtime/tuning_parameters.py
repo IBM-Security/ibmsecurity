@@ -54,8 +54,13 @@ def _setMultipleValues(isamAppliance, values=None,  ignore_endpoints=True, check
     This is typically set using the specific endpoint configurations.
     """
     currentRuntimeParameters = get(isamAppliance)
-    warnings = currentRuntimeParameters['warnings']
+    warnings = []
     logger.debug("Setting multiple values for runtime tuning parameters")
+    if ignore_endpoints:
+        logger.info("Ignoring endpoint configuration in comparison")
+        warnings.append("Ignoring endpoint configuration in comparison")
+        currentRuntimeParameters.pop("endpoints", None)
+        values.pop("endpoints", None)
     if force or not _tools.json_equals(currentRuntimeParameters, values):
         if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)

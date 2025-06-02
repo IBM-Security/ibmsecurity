@@ -160,7 +160,7 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
         logger.warning("Risk Profile not found, returning no update required.")
         return None, update_required, json_data
     else:
-        if ret_obj['data']['predefined'] is True:
+        if ret_obj['data']['predefined']:
             logger.warning("Predefined Risk Profiles can NOT be updated, returning no update required.")
             return ret_obj['data']['id'], update_required, {}
         else:
@@ -181,11 +181,7 @@ def _check(isamAppliance, name, active, description, attributes, predefined):
             id = ret_obj['data']['id']
             del ret_obj['data']['id']
 
-            sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
-            logger.debug("Sorted input: {0}".format(sorted_json_data))
-            sorted_ret_obj = json.dumps(ret_obj['data'], skipkeys=True, sort_keys=True)
-            logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
-            if sorted_ret_obj != sorted_json_data:
+            if not tools.json_equals(ret_obj, json_data):
                 logger.info("Changes detected, update needed.")
                 update_required = True
 
