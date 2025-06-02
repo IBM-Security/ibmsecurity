@@ -1041,4 +1041,3 @@ def junction_exists(isamAppliance, exist_jct, new_j):
             logger.debug("Junctions are found to be different. See JSON for difference.")
             __result = False
     return __result
-

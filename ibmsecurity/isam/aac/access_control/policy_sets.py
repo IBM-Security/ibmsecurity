@@ -13,7 +13,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     """
     return isamAppliance.invoke_get(
         "Retrieve a list of policy sets",
-        "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+        f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
     )
 
 
@@ -25,11 +25,11 @@ def get(isamAppliance, name, check_mode=False, force=False):
     pol_id = ret_obj["data"]
 
     if pol_id == {}:
-        logger.info("Policy {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Policy {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get(
-            "Retrieve a specific policy set", "{0}/{1}".format(uri, pol_id)
+            "Retrieve a specific policy set", f"{uri}/{pol_id}"
         )
 
 
@@ -41,12 +41,12 @@ def get_policies(isamAppliance, name, check_mode=False, force=False):
     pol_id = ret_obj["data"]
 
     if pol_id == {}:
-        logger.info("Policy {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Policy {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get(
             "Retrieve policies in a specific policy set",
-            "{0}/{1}/policies".format(uri, pol_id),
+            f"{uri}/{pol_id}/policies",
         )
 
 
@@ -59,7 +59,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj["data"]:
         if obj["name"] == name:
-            logger.info("Found Policy Set {0} id: {1}".format(name, obj["id"]))
+            logger.info(f"Found Policy Set {name} id: {obj['id']}")
             return_obj["data"] = obj["id"]
             return_obj["rc"] = 0
 
@@ -85,7 +85,7 @@ def set(
     if (search(isamAppliance, name=name))["data"] == {}:
         # Force the add - we already know policy set does not exist
         logger.info(
-            "Policy Set {0} had no match, requesting to add new one.".format(name)
+            f"Policy Set {name} had no match, requesting to add new one."
         )
         return add(
             isamAppliance,
@@ -99,7 +99,7 @@ def set(
         )
     else:
         # Update request
-        logger.info("Policy Set {0} exists, requesting to update.".format(name))
+        logger.info(f"Policy Set {name} exists, requesting to update.")
         return update(
             isamAppliance,
             name,
@@ -162,9 +162,9 @@ def _convert_policy_name_to_id(isamAppliance, policies):
         pol_id = ret_obj["data"]
         if pol_id != {}:
             pol_ids.append(pol_id)
-            logger.debug("Converting policy {0} to ID: {1}".format(pol_name, pol_id))
+            logger.debug(f"Converting policy {pol_name} to ID: {pol_id}")
         else:
-            logger.warning("Unable to find policy {0}, skipping.".format(pol_name))
+            logger.warning(f"Unable to find policy {pol_name}, skipping.")
 
     return pol_ids
 
@@ -180,9 +180,9 @@ def _convert_policy_id_to_name(isamAppliance, policies):
         if ret_obj["data"] != {}:
             pol_name = ret_obj["data"]["name"]
             pol_names.append(pol_name)
-            logger.debug("Converting policy {0} to Name: {1}".format(pol_id, pol_name))
+            logger.debug(f"Converting policy {pol_id} to Name: {pol_name}")
         else:
-            logger.warning("Unable to find policy {0}, skipping.".format(pol_id))
+            logger.warning(f"Unable to find policy {pol_id}, skipping.")
 
     return pol_names
 
@@ -195,13 +195,13 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     pol_id = ret_obj["data"]
 
     if pol_id == {}:
-        logger.info("Policy Set {0} not found, skipping delete.".format(name))
+        logger.info(f"Policy Set {name} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete a Policy Set", "{0}/{1}".format(uri, pol_id)
+                "Delete a Policy Set", f"{uri}/{pol_id}"
             )
 
     return isamAppliance.create_return_object()
@@ -236,7 +236,7 @@ def update(
         from ibmsecurity.appliance.ibmappliance import IBMError
 
         raise IBMError(
-            "999", "Cannot update data for unknown policy set: {0}".format(name)
+            "999", f"Cannot update data for unknown policy set: {name}"
         )
 
     if force is True or update_required is True:
@@ -245,7 +245,7 @@ def update(
         else:
             return isamAppliance.invoke_put(
                 "Update a specified policy set",
-                "{0}/{1}".format(uri, pol_id),
+                f"{uri}/{pol_id}",
                 json_data,
             )
 
@@ -298,9 +298,9 @@ def _check(
         import ibmsecurity.utilities.tools
 
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj["data"])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True
@@ -324,7 +324,7 @@ def update_policies(
         from ibmsecurity.appliance.ibmappliance import IBMError
 
         raise IBMError(
-            "999", "Cannot update data for unknown policy set: {0}".format(name)
+            "999", f"Cannot update data for unknown policy set: {name}"
         )
 
     if force is True or update_required is True:
@@ -333,9 +333,7 @@ def update_policies(
         else:
             return isamAppliance.invoke_put(
                 "Update a specified policy set",
-                "{0}/{1}/policies{2}".format(
-                    uri, pol_id, tools.create_query_string(action=action)
-                ),
+                f"{uri}/{pol_id}/policies{tools.create_query_string(action=action)}",
                 json_data,
             )
 
@@ -364,29 +362,25 @@ def _check_policies(isamAppliance, name, policies, action):
                 if action == "add":
                     if exists:
                         logger.info(
-                            "Policy ID {0} already exists skipping.".format(new_pol_id)
+                            f"Policy ID {new_pol_id} already exists skipping."
                         )
                     else:
                         pol_ids.append(new_pol_ids)
                         logger.info(
-                            "Policy ID {0} does not exist, appending to list for additon.".format(
-                                new_pol_id
-                            )
+                            f"Policy ID {new_pol_id} does not exist, appending to list for additon."
                         )
                 elif action == "delete":
                     if exists:
                         pol_ids.append(new_pol_ids)
                         logger.info(
-                            "Policy ID {0} exists, appending to list for deletion.".format(
-                                new_pol_id
-                            )
+                            f"Policy ID {new_pol_id} exists, appending to list for deletion."
                         )
                     else:
                         logger.info("Policy ID {0} does not exist skipping.")
                 else:
                     from ibmsecurity.appliance.ibmappliance import IBMError
 
-                    raise IBMError("999", "Unknown action: {0}.".format(action))
+                    raise IBMError("999", f"Unknown action: {action}.")
 
         json_data["policies"] = pol_ids
         return pol_id, update_required, json_data

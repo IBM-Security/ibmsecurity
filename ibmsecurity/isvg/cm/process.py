@@ -38,7 +38,7 @@ def _check(isvgAppliance, operation):
     """
     ret_obj = notifications.get(isvgAppliance)
     warnings = ret_obj['warnings']
-    
+
     if ret_obj['rc'] == 0 and len(ret_obj['data']) > 0 and 'items' in ret_obj['data']:
         for item in ret_obj['data']['items']:
             # code not tested yet with the right message id
@@ -51,4 +51,4 @@ def _check(isvgAppliance, operation):
                 operation))
         return False,warnings
 
-    return False,warnings    
+    return False,warnings

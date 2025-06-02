@@ -35,7 +35,7 @@ def set(isvgAppliance, certificate, password, check_mode=False, force=False):
         else:
 #
 #	Create a new method isvgAppliance.invoke_post_file() in isvgAppliance to
-#	support the type of upload method required by /custfile_mgmt end-point that differs from 
+#	support the type of upload method required by /custfile_mgmt end-point that differs from
 #	other techniques used by other end-point /snapshort, available_updates, ...
 #
 #	Ajust list of post data parameter as required

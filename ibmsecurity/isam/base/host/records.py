@@ -25,7 +25,7 @@ def get(isamAppliance, host_address, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get(
         "Retrieving the list of host names associated with a host IP address",
-        "{0}/{1}/hostnames".format(uri, host_address),
+        f"{uri}/{host_address}/hostnames",
         requires_modules=requires_modules,
         requires_version=requires_version,
     )
@@ -100,7 +100,7 @@ def delete(isamAppliance, host_address, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Removing a host record (IP address and associated host names)",
-                "{0}/{1}".format(uri, host_address),
+                f"{uri}/{host_address}",
                 requires_modules=requires_modules,
                 requires_version=requires_version,
             )

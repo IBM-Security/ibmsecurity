@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibmsecurity"
-version = "2025.3.28.0"
+version = "2025.4.4.0"
 authors = [
   { name="IBM", email="secorch@wwpdl.vnet.ibm.com" },
 ]
@@ -23,12 +23,263 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "Topic :: Software Development :: Build Tools"
 ]
-dependencies = [
-    "requests",
-    "jmespath>=1.0.0",
-    "PyYAML"
-]
+dynamic = ["dependencies", "optional-dependencies"]
 
 [project.urls]
 "Homepage" = "https://github.com/IBM-Security/ibmsecurity"
 "Bug Tracker" = "https://github.com/IBM-Security/ibmsecurity/issues"
+
+[tool.setuptools.dynamic]
+dependencies = {file = [".config/requirements.in"]}
+optional-dependencies.docs = {file = [".config/requirements-docs.in"]}
+optional-dependencies.test = {file = [".config/requirements-test.in"]}
+
+[tool.pytest]
+env_files = ".env"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.pylint.MASTER]
+bad-names = [
+  # spell-checker:ignore linenumber
+  "linenumber", # use lineno instead
+  "line_number" # use lineno instead
+]
+# pylint defaults + f,fh,v,id
+good-names = ["i", "j", "k", "Run", "_", "f", "fh", "v", "id", "T"]
+# Ignore as being generated:
+ignore-paths = "^(examples|build|test/schemas/node_modules|.eggs|.cache|.direnv|.tox|.config/).*$"
+
+[tool.pylint.REPORTING]
+output-format = "colorized"
+
+[tool.pylint.SUMMARY]
+# We don't need the score spamming console, as we either pass or fail
+score = "n"
+
+[tool.pylint.messages_control]
+disable = [
+  "unknown-option-value",
+  "C0103", # invalid-name
+  "C0105", # typevar-name-incorrect-variance
+  "C0112", # empty-docstring
+  "C0113", # unneeded-not
+  "C0114", # missing-module-docstring
+  "C0115", # missing-class-docstring
+  "C0116", # missing-function-docstring
+  "C0121", # singleton-comparison
+  "C0123", # unidiomatic-typecheck
+  "C0131", # typevar-double-variance
+  "C0132", # typevar-name-mismatch
+  "C0198", # bad-docstring-quotes
+  "C0199", # docstring-first-line-empty
+  "C0201", # consider-iterating-dictionary
+  "C0202", # bad-classmethod-argument
+  "C0205", # single-string-used-for-slots
+  "C0208", # use-sequence-for-iteration
+  "C0301", # line-too-long
+  "C0303", # trailing-whitespace
+  "C0321", # multiple-statements
+  "C0410", # multiple-imports
+  "C0411", # wrong-import-order
+  "C0412", # ungrouped-imports
+  "C0413", # wrong-import-position
+  "C0414", # useless-import-alias
+  "C0415", # import-outside-toplevel
+  "C0501", # consider-using-any-or-all
+  "C1901", # compare-to-empty-string
+  "C2201", # misplaced-comparison-constant
+  "C2401", # non-ascii-name
+  "C2403", # non-ascii-module-import
+  "C2701", # import-private-name
+  "C2801", # unnecessary-dunder-call
+  "C3001", # unnecessary-lambda-assignment
+  "C3002", # unnecessary-direct-lambda-call
+  "E0001", # syntax-error
+  "E0100", # init-is-generator
+  "E0101", # return-in-init
+  "E0102", # function-redefined
+  "E0103", # not-in-loop
+  "E0104", # return-outside-function
+  "E0105", # yield-outside-function
+  "E0107", # nonexistent-operator
+  "E0112", # too-many-star-expressions
+  "E0115", # nonlocal-and-global
+  "E0116", # continue-in-finally
+  "E0117", # nonlocal-without-binding
+  "E0118", # used-prior-global-declaration
+  "E0211", # no-method-argument
+  "E0213", # no-self-argument
+  "E0237", # assigning-non-slot
+  "E0241", # duplicate-bases
+  "E0302", # unexpected-special-method-signature
+  "E0303", # invalid-length-returned
+  "E0304", # invalid-bool-returned
+  "E0305", # invalid-index-returned
+  "E0308", # invalid-bytes-returned
+  "E0309", # invalid-hash-returned
+  "E0402", # relative-beyond-top-level
+  "E0602", # undefined-variable
+  "E0603", # undefined-all-variable
+  "E0604", # invalid-all-object
+  "E0605", # invalid-all-format
+  "E0643", # potential-index-error
+  "E0704", # misplaced-bare-raise
+  "E0711", # notimplemented-raised
+  "E1132", # repeated-keyword
+  "E1142", # await-outside-async
+  "E1205", # logging-too-many-args
+  "E1206", # logging-too-few-args
+  "E1300", # bad-format-character
+  "E1301", # truncated-format-string
+  "E1302", # mixed-format-string
+  "E1303", # format-needs-mapping
+  "E1304", # missing-format-string-key
+  "E1305", # too-many-format-args
+  "E1306", # too-few-format-args
+  "E1307", # bad-string-format-type
+  "E1310", # bad-str-strip-call
+  "E1519", # singledispatch-method
+  "E1520", # singledispatchmethod-function
+  "E1700", # yield-inside-async-function
+  "E2502", # bidirectional-unicode
+  "E2510", # invalid-character-backspace
+  "E2512", # invalid-character-sub
+  "E2513", # invalid-character-esc
+  "E2514", # invalid-character-nul
+  "E2515", # invalid-character-zero-width-space
+  "E4703", # modified-iterating-set
+  "R0123", # literal-comparison
+  "R0124", # comparison-with-itself
+  "R0133", # comparison-of-constants
+  "R0202", # no-classmethod-decorator
+  "R0203", # no-staticmethod-decorator
+  "R0205", # useless-object-inheritance
+  "R0206", # property-with-parameters
+  "R0904", # too-many-public-methods
+  "R0911", # too-many-return-statements
+  "R0912", # too-many-branches
+  "R0913", # too-many-arguments
+  "R0914", # too-many-locals
+  "R0915", # too-many-statements
+  "R0916", # too-many-boolean-expressions
+  "R0917", # too-many-positional-arguments
+  "R1260", # too-complex
+  "R1701", # consider-merging-isinstance
+  "R1702", # too-many-nested-blocks
+  "R1703", # simplifiable-if-statement
+  "R1704", # redefined-argument-from-local
+  "R1705", # no-else-return
+  "R1706", # consider-using-ternary
+  "R1707", # trailing-comma-tuple
+  "R1710", # inconsistent-return-statements
+  "R1711", # useless-return
+  "R1714", # consider-using-in
+  "R1715", # consider-using-get
+  "R1717", # consider-using-dict-comprehension
+  "R1718", # consider-using-set-comprehension
+  "R1719", # simplifiable-if-expression
+  "R1720", # no-else-raise
+  "R1721", # unnecessary-comprehension
+  "R1722", # consider-using-sys-exit
+  "R1723", # no-else-break
+  "R1724", # no-else-continue
+  "R1725", # super-with-arguments
+  "R1728", # consider-using-generator
+  "R1729", # use-a-generator
+  "R1730", # consider-using-min-builtin
+  "R1731", # consider-using-max-builtin
+  "R1732", # consider-using-with
+  "R1733", # unnecessary-dict-index-lookup
+  "R1734", # use-list-literal
+  "R1735", # use-dict-literal
+  "R1736", # unnecessary-list-index-lookup
+  "R2004", # magic-value-comparison
+  "R2044", # empty-comment
+  "R5501", # else-if-used
+  "R6002", # consider-using-alias
+  "R6003", # consider-alternative-union-syntax
+  "R6104", # consider-using-augmented-assign
+  "R6201", # use-set-for-membership
+  "R6301", # no-self-use
+  "W0102", # dangerous-default-value
+  "W0104", # pointless-statement
+  "W0106", # expression-not-assigned
+  "W0107", # unnecessary-pass
+  "W0108", # unnecessary-lambda
+  "W0109", # duplicate-key
+  "W0120", # useless-else-on-loop
+  "W0122", # exec-used
+  "W0123", # eval-used
+  "W0127", # self-assigning-variable
+  "W0129", # assert-on-string-literal
+  "W0130", # duplicate-value
+  "W0131", # named-expr-without-context
+  "W0133", # pointless-exception-statement
+  "W0150", # lost-exception
+  "W0160", # consider-ternary-expression
+  "W0177", # nan-comparison
+  "W0199", # assert-on-tuple
+  "W0211", # bad-staticmethod-argument
+  "W0212", # protected-access
+  "W0245", # super-without-brackets
+  "W0301", # unnecessary-semicolon
+  "W0401", # wildcard-import
+  "W0404", # reimported
+  "W0406", # import-self
+  "W0410", # misplaced-future
+  "W0602", # global-variable-not-assigned
+  "W0603", # global-statement
+  "W0604", # global-at-module-level
+  "W0611", # unused-import
+  "W0612", # unused-variable
+  "W0613", # unused-argument
+  "W0622", # redefined-builtin
+  "W0640", # cell-var-from-loop
+  "W0702", # bare-except
+  "W0705", # duplicate-except
+  "W0706", # try-except-raise
+  "W0707", # raise-missing-from
+  "W0711", # binary-op-exception
+  "W0718", # broad-exception-caught
+  "W0719", # broad-exception-raised
+  "W1113", # keyword-arg-before-vararg
+  "W1201", # logging-not-lazy
+  "W1202", # logging-format-interpolation
+  "W1203", # logging-fstring-interpolation
+  "W1300", # bad-format-string-key
+  "W1301", # unused-format-string-key
+  "W1302", # bad-format-string
+  "W1303", # missing-format-argument-key
+  "W1304", # unused-format-string-argument
+  "W1305", # format-combined-specification
+  "W1308", # duplicate-string-formatting-argument
+  "W1309", # f-string-without-interpolation
+  "W1310", # format-string-without-interpolation
+  "W1401", # anomalous-backslash-in-string
+  "W1404", # implicit-str-concat
+  "W1405", # inconsistent-quotes
+  "W1406", # redundant-u-string-prefix
+  "W1501", # bad-open-mode
+  "W1508", # invalid-envvar-default
+  "W1509", # subprocess-popen-preexec-fn
+  "W1510", # subprocess-run-check
+  "W1514", # unspecified-encoding
+  "W1515", # forgotten-debug-statement
+  "W1518", # method-cache-max-size-none
+  "W1641", # eq-without-hash
+  "W2101", # useless-with-lock
+  "W2402", # non-ascii-file-name
+  "W2901", # redefined-loop-name
+  "W3201", # bad-dunder-name
+  "W3301", # nested-min-max
+  "duplicate-code",
+  "fixme",
+  "too-few-public-methods",
+  "too-many-instance-attributes"
+]
+# increase from default is 50 which is too aggressive
+max-statements = 60

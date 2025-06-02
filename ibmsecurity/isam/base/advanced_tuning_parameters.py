@@ -63,7 +63,7 @@ def _check(isamAppliance, key, value=None):
         if param['key'] == key:
             exist_value_list.append(str(param['value']))
             uuid.append(param['uuid'])
-            logger.info("Advanced tuning parameter key: {0} and value: {1} exists".format(key, value))
+            logger.info(f"Advanced tuning parameter key: {key} and value: {value} exists")
 
     # value being none - means called from delete function
     if value is not None:
@@ -73,8 +73,7 @@ def _check(isamAppliance, key, value=None):
         rc = ibmsecurity.utilities.tools.json_sort(exist_value_list) == ibmsecurity.utilities.tools.json_sort(
             given_value_list)
         logger.info(
-            "Advanced tuning parameter: {0} has existing values: {1}, and given values: {2} - match status: {3}".format(
-                key, exist_value_list, given_value_list, rc))
+            f"Advanced tuning parameter: {key} has existing values: {exist_value_list}, and given values: {given_value_list} - match status: {rc}")
 
     return rc, uuid
 
@@ -109,7 +108,7 @@ def _del(isamAppliance, uuid):
     for u in uuid:
         r = isamAppliance.invoke_delete(
             "Deleting existing advanced tuning parameter",
-            "/core/adv_params/{0}".format(u))
+            f"/core/adv_params/{u}")
         ret_obj['changed'] = ret_obj['changed'] or r['changed']
         ret_obj['data'].append(r['data'])
         ret_obj['warnings'].extend(r['warnings'])

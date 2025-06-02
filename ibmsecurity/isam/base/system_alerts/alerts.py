@@ -41,7 +41,7 @@ def disable(isamAppliance, uuid, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a system alert",
-                "/core/system_alerts/{0}".format(uuid))
+                f"/core/system_alerts/{uuid}")
 
     return isamAppliance.create_return_object()
 

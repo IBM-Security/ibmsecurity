@@ -16,7 +16,7 @@ def get(isvgAppliance, check_mode=False, force=False):
 
 def search(isvgAppliance, name="LMI Authentication Registry", check_mode=False, force=False):
     """
-    Search for existing LMI authentication configuration. 
+    Search for existing LMI authentication configuration.
     """
     ret_obj = get(isvgAppliance)
     return_obj = isvgAppliance.create_return_object()
@@ -86,7 +86,7 @@ def update(isvgAppliance, hostName, port, dnLocation, userFilter, groupFilter, b
     # JSON payload of interest is at first (and only) position of array
     ret_obj['data'] = ret_obj['data'][0]
 
-    uuid = ret_obj['data']['uuid']    
+    uuid = ret_obj['data']['uuid']
 
     needs_update = False
 
@@ -95,10 +95,10 @@ def update(isvgAppliance, hostName, port, dnLocation, userFilter, groupFilter, b
         "name": "LMI Authentication Registry",
         "uuid": uuid
     }
-   
+
     if 'lastModified' in ret_obj['data']:
         del ret_obj['data']['lastModified']
-    
+
     # mandatory attributes
     if hostName is not None:
         json_data['hostName'] = hostName

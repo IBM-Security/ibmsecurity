@@ -24,8 +24,8 @@ def get(isamAppliance, addr, check_mode=False, force=False):
     """
     Retrieving the list of host names associated with a host IP address
     """
-    return isamAppliance.invoke_get("Retrieving the list of host names associated with a host IP address {0}".format(addr),
-                                    "/isam/host_records/{0}/hostnames".format(addr), requires_model=requires_model)
+    return isamAppliance.invoke_get(f"Retrieving the list of host names associated with a host IP address {addr}",
+                                    f"/isam/host_records/{addr}/hostnames", requires_model=requires_model)
 
 
 def set(isamAppliance, addr, hostnames, check_mode=False, force=False):
@@ -141,7 +141,7 @@ def update(isamAppliance, addr, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post(
                 "Adding a host name to a host IP address",
-                "/isam/host_records/{0}/hostnames".format(addr),
+                f"/isam/host_records/{addr}/hostnames",
                 {'name': hostnames_remaining[0]},
                 requires_model=requires_model
             )
@@ -176,14 +176,14 @@ def delete(isamAppliance, addr, name=None, check_mode=False, force=False):
                 # Delete specific entry
                 return isamAppliance.invoke_delete(
                     "Removing a host name from a host IP address",
-                    "/isam/host_records/{0}/hostnames/{1}".format(addr, name),
+                    f"/isam/host_records/{addr}/hostnames/{name}",
                     requires_model=requires_model
                 )
             elif exists is False and name is None:
                 # Delete all entries for address if no name given
                 return isamAppliance.invoke_delete(
                     "Removing a host record (IP address and associated host names)",
-                    "/isam/host_records/{0}".format(addr),
+                    f"/isam/host_records/{addr}",
                     requires_model=requires_model
                 )
 

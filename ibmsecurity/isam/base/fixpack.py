@@ -118,7 +118,7 @@ def _extract_fixpack_name(fixpack):
     for s in ibmsecurity.utilities.tools.strings(fixpack):
         match_obj = re.search(r"FIXPACK_NAME=\"(?P<fp_name>\w+)\"", s)
         if match_obj:
-            logger.info("Fixpack name extracted from file using strings method: {0}".format(match_obj.group('fp_name')))
+            logger.info(f"Fixpack name extracted from file using strings method: {match_obj.group('fp_name')}")
             return match_obj.group('fp_name')
 
     # Unable to extract fixpack name from binary
@@ -129,7 +129,7 @@ def _extract_fixpack_name(fixpack):
     else:
         fixpack_name, ext_name = file_name.split('.')
     logger.info(
-        "Fixpack name could not be extracted from binary, use name derived from the filename: {0}".format(fixpack_name))
+        f"Fixpack name could not be extracted from binary, use name derived from the filename: {fixpack_name}")
     return fixpack_name
 
 

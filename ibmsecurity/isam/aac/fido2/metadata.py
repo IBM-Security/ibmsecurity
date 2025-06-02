@@ -163,7 +163,7 @@ def _check(isamAppliance, fido2_metadata):
     logger.debug("Comparing server FIDO2 metadata configuration with desired configuration.")
     # Converting python ret_obj['data'] dict to valid JSON (RFC 8259)
     # e.g. converts python boolean 'True' -> to JSON literal lowercase value 'true'
-    cur_json_string = json.dumps(ret_obj['data']) 
+    cur_json_string = json.dumps(ret_obj['data'])
     cur_sorted_json = tools.json_sort(cur_json_string)
     logger.debug("Server JSON : {0}".format(cur_sorted_json))
     given_json_string = json.dumps(fido2_metadata)

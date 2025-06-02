@@ -16,7 +16,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     """
     Get information on particular group by id
     """
-    return isamAppliance.invoke_get("Retrieving group", "/sysaccount/groups/{0}/v1".format(id))
+    return isamAppliance.invoke_get("Retrieving group", f"/sysaccount/groups/{id}/v1")
 
 
 def create(isamAppliance, id, check_mode=False, force=False):
@@ -61,7 +61,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete("Deleting group", "/sysaccount/groups/{0}/v1".format(id))
+            return isamAppliance.invoke_delete("Deleting group", f"/sysaccount/groups/{id}/v1")
 
     return isamAppliance.create_return_object()
 

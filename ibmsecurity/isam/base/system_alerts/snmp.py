@@ -17,7 +17,7 @@ def get(isamAppliance, uuid, check_mode=False, force=False):
     Get a specific snmp object
     """
     return isamAppliance.invoke_get("Get a specific snmp object",
-                                    "/core/rsp_snmp_objs/{0}".format(uuid))
+                                    f"/core/rsp_snmp_objs/{uuid}")
 
 
 def add(isamAppliance, name, trapAddress, trapCommunity, trapNotificationType=None, trapVersion='V1', trapPort=162,
@@ -78,7 +78,7 @@ def update(isamAppliance, uuid, name, trapAddress, trapCommunity, trapNotificati
         else:
             return isamAppliance.invoke_put(
                 "Update a specific snmp object",
-                "/core/rsp_snmp_objs/{0}".format(uuid),
+                f"/core/rsp_snmp_objs/{uuid}",
                 {
                     'name': name,
                     'uuid': uuid,
@@ -113,7 +113,7 @@ def delete(isamAppliance, uuid, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a snmp object",
-                "/core/rsp_snmp_objs/{0}".format(uuid))
+                f"/core/rsp_snmp_objs/{uuid}")
 
     return isamAppliance.create_return_object()
 

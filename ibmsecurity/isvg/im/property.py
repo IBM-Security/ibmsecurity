@@ -21,7 +21,7 @@ def get_all(isvgAppliance, propertyFile, check_mode=False, force=False):
         return isvgAppliance.invoke_get("Retrieve all property/value pair for a given file", "{0}?PropertyFile={1}".format(uri, propertyFile))
 
 
-def get(isvgAppliance, propertyFile, propertyName, check_mode=False, force=False): 
+def get(isvgAppliance, propertyFile, propertyName, check_mode=False, force=False):
     """
     Retrieve specific property/value pair for a given property file
     """
@@ -37,7 +37,7 @@ def get(isvgAppliance, propertyFile, propertyName, check_mode=False, force=False
 
 def search(isvgAppliance, propertyFile, propertyName, check_mode=False, force=False):
     """
-    Search for existing property/value pair for a given file. 
+    Search for existing property/value pair for a given file.
     Just care for presence of property, not its actual value.
     """
     ret_obj = get(isvgAppliance, propertyFile=propertyFile, propertyName=propertyName)

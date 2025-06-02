@@ -142,7 +142,7 @@ def search(isamAppliance, label=None, vlanId=None, address=None, check_mode=Fals
 
 
 def _update_interface(isamAppliance, json_data):
-    return isamAppliance.invoke_put("Updating a (VLAN) interface", "/net/ifaces/{0}".format(json_data['uuid']),
+    return isamAppliance.invoke_put("Updating a (VLAN) interface", f"/net/ifaces/{json_data['uuid']}",
                                     json_data, requires_model=requires_model)
 
 

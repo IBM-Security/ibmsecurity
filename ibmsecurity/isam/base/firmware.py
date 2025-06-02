@@ -56,7 +56,7 @@ def set(isamAppliance, id, comment, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put("Updating a comment for a partition",
-                                            "/firmware_settings/{0}".format(id),
+                                            f"/firmware_settings/{id}",
                                             {'comment': comment}, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)

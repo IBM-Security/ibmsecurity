@@ -8,7 +8,7 @@ def get(isamAppliance, userid, check_mode=False, force=False):
     Get grants by userid
     """
     return isamAppliance.invoke_get("Get grants by userid",
-                                    "/iam/access/v8/grants/userIds/{0}".format(userid))
+                                    f"/iam/access/v8/grants/userIds/{userid}")
 
 
 def get_recent(isamAppliance, userid, timestamp, token_type='refresh_token', check_mode=False, force=False):
@@ -46,7 +46,7 @@ def delete(isamAppliance, userid, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete grants by userid",
-                                               "/iam/access/v8/grants/userIds/{0}".format(userid))
+                                               f"/iam/access/v8/grants/userIds/{userid}")
 
     return isamAppliance.create_return_object()
 

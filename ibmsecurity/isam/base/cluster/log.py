@@ -19,7 +19,7 @@ def get(isamAppliance, file_id, size=100, start=None, options=None, check_mode=F
     Retrieve a log file snippet
     """
     return isamAppliance.invoke_get("Retrieve a log file snippet",
-                                    "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model)
+                                    f"/isam/cluster/logging/{file_id}/v1", requires_model=requires_model)
 
 
 def _check(isamAppliance, file_id):
@@ -46,7 +46,7 @@ def delete(isamAppliance, file_id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Clear a log file",
-                "/isam/cluster/logging/{0}/v1".format(file_id), requires_model=requires_model)
+                f"/isam/cluster/logging/{file_id}/v1", requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -61,7 +61,7 @@ def export_file(isamAppliance, file_id, filename, check_mode=False, force=False)
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a cluster manager log file",
-                "/isam/cluster/logging/{0}/v1?export".format(file_id),
+                f"/isam/cluster/logging/{file_id}/v1?export",
                 filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object()

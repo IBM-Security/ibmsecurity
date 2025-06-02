@@ -52,7 +52,7 @@ def delete(isamAppliance, service_name, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_delete("Deleting a service", "{0}/{1}".format(module_uri, service_name),
+            return isamAppliance.invoke_delete("Deleting a service", f"{module_uri}/{service_name}",
                                                requires_version=requires_version, requires_modules=requires_modules, requires_model=requires_model)
     else:
         return isamAppliance.create_return_object(warnings=warnings)
@@ -63,7 +63,7 @@ def get(isamAppliance, service_name, check_mode=False, force=False):
     Receives a single service
     """
     return isamAppliance.invoke_get(
-        "Retrieving a service", "{0}/{1}".format(module_uri, service_name), requires_version=requires_version,
+        "Retrieving a service", f"{module_uri}/{service_name}", requires_version=requires_version,
         requires_modules=requires_modules, requires_model=requires_model)
 
 
@@ -87,7 +87,7 @@ def update(isamAppliance, service_name, enabled, name, address, port, netmask, i
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
-            return isamAppliance.invoke_put("Updating a service", "{0}/{1}".format(module_uri, service_name),
+            return isamAppliance.invoke_put("Updating a service", f"{module_uri}/{service_name}",
                                             {
                                                 "address": address,
                                                 "enabled": enabled,

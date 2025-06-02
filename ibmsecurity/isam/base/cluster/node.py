@@ -46,7 +46,7 @@ def get_state(isamAppliance, cluster_id, check_mode=False, force=False):
     if not cluster_id:
         return isamAppliance.create_return_object()
     return isamAppliance.invoke_get("Validate a cluster identifier",
-                                    "/isam/cluster/id/address/{0}/state/v2".format(cluster_id),
+                                    f"/isam/cluster/id/address/{cluster_id}/state/v2",
                                     requires_model=requires_model)
 
 
@@ -159,7 +159,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Remove a node from the cluster",
-                "/isam/cluster/nodes/{0}/v1".format(id), requires_model=requires_model)
+                f"/isam/cluster/nodes/{id}/v1", requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=check_obj['warnings'])
 

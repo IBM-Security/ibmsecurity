@@ -29,7 +29,7 @@ def search(isvgAppliance, subject, check_mode=False, force=False):
             break
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, certificate, subject, label, check_mode=False, force=False):
     """

@@ -14,8 +14,7 @@ def get_all(isamAppliance, sortBy=None, count=None, start=None, filter=None, che
     Retrieve a list of API protection clients
     """
     return isamAppliance.invoke_get("Retrieve several dynamically registered clients",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy,
-                                                                                    count=count, start=start)),
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy, count=count, start=start)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -23,7 +22,7 @@ def get(isamAppliance, client_id, check_mode=False, force=False):
     """
     Retrieve a dynamically registered client
     """
-    return isamAppliance.invoke_get("Retrieve a dynamically registered client", "{0}/{1}".format(uri, client_id),
+    return isamAppliance.invoke_get("Retrieve a dynamically registered client", f"{uri}/{client_id}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -35,7 +34,7 @@ def search(isamAppliance, client_id, check_mode=False, force=False):
 
     for obj in ret_obj['data']:
         if obj['clientId'] == client_id:
-            logger.info("Found API Protection Dynamic Client id: {0}".format(client_id))
+            logger.info(f"Found API Protection Dynamic Client id: {client_id}")
             return True
 
     return False
@@ -51,7 +50,7 @@ def delete(isamAppliance, client_id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete a dynamically registered client", "{0}/{1}".format(uri, client_id),
+                "Delete a dynamically registered client", f"{uri}/{client_id}",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()

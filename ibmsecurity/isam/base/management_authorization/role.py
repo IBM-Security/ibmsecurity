@@ -18,7 +18,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     Get management authorization role
     """
     return isamAppliance.invoke_get("Get management authorization role",
-                                    "/authorization/roles/{0}/v1".format(name))
+                                    f"/authorization/roles/{name}/v1")
 
 
 def _check(isamAppliance, name):
@@ -107,7 +107,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete management authorization role",
-                "/authorization/roles/{0}/v1".format(name))
+                f"/authorization/roles/{name}/v1")
 
     return isamAppliance.create_return_object()
 

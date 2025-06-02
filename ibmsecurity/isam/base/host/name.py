@@ -16,7 +16,7 @@ def add(isamAppliance, host_address, hostname, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post(
                 "Adding a host name to a host IP address",
-                "{0}/{1}/hostnames".format(uri, host_address),
+                f"{uri}/{host_address}/hostnames",
                 {"name": hostname},
                 requires_modules=requires_modules,
                 requires_version=requires_version,
@@ -35,7 +35,7 @@ def delete(isamAppliance, host_address, hostname, check_mode=False, force=False)
         else:
             return isamAppliance.invoke_delete(
                 "Removing a host name from a host IP address",
-                "{0}/{1}/hostnames/{2}".format(uri, host_address, hostname),
+                f"{uri}/{host_address}/hostnames/{hostname}",
                 requires_modules=requires_modules,
                 requires_version=requires_version,
             )
@@ -57,7 +57,7 @@ def _check(isamAppliance, host_address, hostname):
         from ibmsecurity.appliance.ibmappliance import IBMError
 
         raise IBMError(
-            "999", "Unable to find host record with adress: {0}".format(host_address)
+            "999", f"Unable to find host record with adress: {host_address}"
         )
 
     for hosts in ret_obj["data"]:

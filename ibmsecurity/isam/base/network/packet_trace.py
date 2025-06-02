@@ -35,11 +35,9 @@ def execute(isamAppliance, enabled, filter=None, interface=None, max_size=None, 
         json_data['max_size'] = interface
 
     if snaplen is not None:
-        if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
+        if tools.version_compare(isamAppliance.facts['version'], "9.0.6.0") < 0:
             warnings.append(
-                "Appliance at version: {}, snaplen: {1} is not supported. Needs 9.0.6.0 or higher.  Ignoring snaplen for this call.".format(
-                    isamAppliance.facts["version"], snaplen
-                )
+                f"Appliance at version: {isamAppliance.facts['version']}, snaplen: {snaplen} is not supported. Needs 9.0.6.0 or higher.  Ignoring snaplen for this call."
             )
         else:
             json_data["snaplen"] = snaplen
@@ -82,7 +80,7 @@ def export_file(isamAppliance, filepath, filename, check_mode=False, force=False
         else:
             return isamAppliance.invoke_get_file(
                 "Exporting the packet tracing PCAP file",
-                "/isam/packet_tracing/pcap/{0}?export".format(filename), filepath, requires_model=requires_model
+                f"/isam/packet_tracing/pcap/{filename}?export", filepath, requires_model=requires_model
             )
 
     return isamAppliance.create_return_object()

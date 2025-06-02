@@ -29,7 +29,7 @@ def search(isvgAppliance, library, check_mode=False, force=False):
             break
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, library, check_mode=False, force=False):
     """
@@ -88,7 +88,7 @@ def delete(isvgAppliance, library, check_mode=False, force=False):
     Delete an existing external library
     """
     warnings = []
-    
+
     ret_obj = search(isvgAppliance, library, check_mode=check_mode, force=force)
 
     if force is True or ret_obj['data'] != {}:

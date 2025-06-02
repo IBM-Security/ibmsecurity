@@ -30,3 +30,6 @@ def update(isamAppliance, id, check_mode=False, force=False):
             )
 
     return isamAppliance.create_return_object()
+
+
+set = update

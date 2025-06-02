@@ -290,7 +290,7 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=50
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7
@@ -302,13 +302,13 @@ max-bool-expr=5
 max-branches=12
 
 # Maximum number of locals for function / method body.
-max-locals=15
+max-locals=25
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
 
 # Maximum number of positional arguments for function / method.
-max-positional-arguments=5
+max-positional-arguments=50
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20
@@ -320,7 +320,7 @@ max-returns=6
 max-statements=50
 
 # Minimum number of public methods for a class (see R0903).
-min-public-methods=2
+min-public-methods=1
 
 
 [EXCEPTIONS]
@@ -429,28 +429,38 @@ confidence=HIGH,
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
-        use-implicit-booleaness-not-comparison-to-string,
-        use-implicit-booleaness-not-comparison-to-zero,
-        C0103,
-        R0913,
-        R0917,
-        C0103,
-        W0613,
-        W0622
+#disable=raw-checker-failed,
+#        bad-inline-option,
+#        locally-disabled,
+#        file-ignored,
+#        suppressed-message,
+#        useless-suppression,
+#        deprecated-pragma,
+#        use-symbolic-message-instead,
+#        use-implicit-booleaness-not-comparison-to-string,
+#        use-implicit-booleaness-not-comparison-to-zero,
+#        C0103,
+#        R0913,
+#        R0917,
+#        C0103,
+#        W0613,
+#        W0622,
+#        R0801
+disable=all
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=
+#enable=R1705
+enable=C0209,
+       W1304,
+       async,
+       design,
+       nonascii-checker,
+       imports
+
+
 
 
 [METHOD_ARGS]

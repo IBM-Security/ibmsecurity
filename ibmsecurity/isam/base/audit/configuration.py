@@ -153,7 +153,7 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
     pol_id, update_required, json_data = _check(isamAppliance, id, config, enabled, type, verbose, use_json, components)
     if pol_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown Audit Configuration ID: {0}".format(id))
+        raise IBMError("999", f"Cannot update data for unknown Audit Configuration ID: {id}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -161,7 +161,7 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
         else:
             return isamAppliance.invoke_put(
                 "Update Audit Configuration",
-                "{0}/{1}".format(uri, id), json_data, requires_modules=requires_modules,
+                f"{uri}/{id}", json_data, requires_modules=requires_modules,
                 requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -217,9 +217,9 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
     else:
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(aud_cfg)
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True

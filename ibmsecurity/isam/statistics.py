@@ -43,7 +43,7 @@ def get_rp_throughput_summary(isamAppliance, date, duration, aspect, summary=Non
                                                      tools.create_query_string(summary=summary,
                                                                                date=date,
                                                                                duration=duration,
-                                                                               aspect=aspect)), 
+                                                                               aspect=aspect)),
                                                                                requires_model=requires_model,
                                                                                headers=headers)
 

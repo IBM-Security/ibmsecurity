@@ -88,9 +88,9 @@ def _check_all(isamAppliance, snmpv1v2c, snmpv3, port, enabled):
 
     import ibmsecurity.utilities.tools
     sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-    logger.debug("Sorted input: {0}".format(sorted_json_data))
+    logger.debug(f"Sorted input: {sorted_json_data}")
     sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-    logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+    logger.debug(f"Sorted existing data: {sorted_ret_obj}")
     if sorted_ret_obj != sorted_json_data:
         logger.info("Changes detected, update needed.")
         update_required = True

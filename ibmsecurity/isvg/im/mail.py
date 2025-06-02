@@ -85,7 +85,7 @@ def update(isvgAppliance, mailFrom, mailServer, mailUser, mailPwd, mailBaseUrl, 
     # JSON payload of interest is at first (and only) position of array
     ret_obj['data'] = ret_obj['data'][0]
 
-    uuid = ret_obj['data']['uuid']    
+    uuid = ret_obj['data']['uuid']
 
     needs_update = False
 
@@ -94,12 +94,12 @@ def update(isvgAppliance, mailFrom, mailServer, mailUser, mailPwd, mailBaseUrl, 
         "name": "Mail Configuration",
         "uuid": uuid
     }
-   
+
     if 'lastModified' in ret_obj['data']:
         del ret_obj['data']['lastModified']
     if 'certCheckSum' in ret_obj['data']:
         del ret_obj['data']['certCheckSum']
-    
+
     # mandatory attributes
     if mailFrom is not None:
         json_data['mailFrom'] = mailFrom

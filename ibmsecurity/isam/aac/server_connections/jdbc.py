@@ -24,7 +24,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving a JDBC server connection",
-                                        "/mga/server_connections/jdbc/{0}/v1".format(id))
+                                        f"/mga/server_connections/jdbc/{id}/v1")
 
 
 def set(isamAppliance, name, connection, type, jndiId, description='', locked=False, connectionManager=None,
@@ -74,7 +74,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a JDBC server connection",
-                "/mga/server_connections/jdbc/{0}/v1".format(id))
+                f"/mga/server_connections/jdbc/{id}/v1")
 
     return isamAppliance.create_return_object()
 
@@ -89,7 +89,7 @@ def update(isamAppliance, name, connection, type, jndiId, description='', locked
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("JDBC server connection {0} not found, skipping update.".format(name))
+        warnings.append(f"JDBC server connection {name} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["uuid"]
@@ -111,8 +111,8 @@ def update(isamAppliance, name, connection, type, jndiId, description='', locked
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
@@ -123,7 +123,7 @@ def update(isamAppliance, name, connection, type, jndiId, description='', locked
         else:
             return isamAppliance.invoke_put(
                 "Modifying a JDBC server connection",
-                "/mga/server_connections/jdbc/{0}/v1".format(id), json_data, requires_modules=requires_modules,
+                f"/mga/server_connections/jdbc/{id}/v1", json_data, requires_modules=requires_modules,
                 requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)

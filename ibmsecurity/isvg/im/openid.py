@@ -16,7 +16,7 @@ def get_all(isvgAppliance, check_mode=False, force=False):
 
 def search(isvgAppliance, name, check_mode=False, force=False):
     """
-    Search for existing openid. 
+    Search for existing openid.
     Just care for presence of openid, not its actual value.
     """
     ret_obj = get_all(isvgAppliance)
@@ -92,7 +92,7 @@ def update(isvgAppliance, name, clientID, secret, certAlias, domains, issuerIden
     ret_obj = search(isvgAppliance, name, check_mode=check_mode, force=force)
     warnings = ret_obj['warnings']
 
-    uuid = ret_obj['data']['uuid']    
+    uuid = ret_obj['data']['uuid']
 
     needs_update = False
 
@@ -227,7 +227,7 @@ def update(isvgAppliance, name, clientID, secret, certAlias, domains, issuerIden
             return isvgAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isvgAppliance.invoke_put(
-                "Update an existing openid entry", "{0}/{1}".format(uri, uuid), 
+                "Update an existing openid entry", "{0}/{1}".format(uri, uuid),
                 json_data, warnings=warnings)
 
     return isvgAppliance.create_return_object(warnings=warnings)

@@ -25,7 +25,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     us_id = ret_obj['data']
 
     if us_id == {}:
-        logger.info("Update Server {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Update Server {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return _get(isamAppliance, us_id)
@@ -33,7 +33,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 def _get(isamAppliance, us_id):
     return isamAppliance.invoke_get("Retrieve a specific update server",
-                                    "{0}/{1}".format(uri, us_id))
+                                    f"{uri}/{us_id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -45,7 +45,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']['luServers']:
         if obj['name'] == name:
-            logger.info("Found Update Server {0} id: {1}".format(name, obj['uuid']))
+            logger.info(f"Found Update Server {name} id: {obj['uuid']}")
             return_obj['data'] = obj['uuid']
             return_obj['rc'] = 0
 
@@ -60,12 +60,12 @@ def set(isamAppliance, priority, name, enabled, hostName, port, trustLevel, useP
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know update server does not exist
-        logger.info("Update Server {0} had no match, requesting to add new one.".format(name))
+        logger.info(f"Update Server {name} had no match, requesting to add new one.")
         return add(isamAppliance, priority, name, enabled, hostName, port, trustLevel, useProxy,
                    useProxyAuth, cert, proxyHost, proxyPort, proxyUser, proxyPwd, check_mode, True)
     else:
         # Update request
-        logger.info("Update Server {0} exists, requesting to update.".format(name))
+        logger.info(f"Update Server {name} exists, requesting to update.")
         return update(isamAppliance, priority, name, enabled, hostName, port, trustLevel, useProxy, useProxyAuth, cert,
                       proxyHost, proxyPort, proxyUser, proxyPwd, new_name, check_mode, force)
 
@@ -114,7 +114,7 @@ def update(isamAppliance, priority, name, enabled, hostName, port, trustLevel, u
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_put("Update an update server", "{0}/{1}".format(uri, us_id), json_data,
+            return isamAppliance.invoke_put("Update an update server", f"{uri}/{us_id}", json_data,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version)
 
@@ -149,9 +149,9 @@ def _check(isamAppliance, priority, name, enabled, hostName, port, trustLevel, u
             json_data['name'] = name
         del ret_obj['data']['uuid']
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True
@@ -167,7 +167,7 @@ def enable(isamAppliance, name, enabled, check_mode=False, force=False):
     ret_obj = get(isamAppliance=isamAppliance, name=name)
 
     if ret_obj['data'] == {}:
-        warnings.append("Update Server {0} not found.".format(name))
+        warnings.append(f"Update Server {name} not found.")
     elif force is True or enabled != ret_obj['data']['enabled']:
         logger.debug("Enable flag needs to be updated!")
         return update(isamAppliance, priority=ret_obj['data']['priority'], name=name, enabled=enabled,
@@ -192,9 +192,9 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            return isamAppliance.invoke_delete("Delete an Update Server", "{0}/{1}".format(uri, ret_obj['data']))
+            return isamAppliance.invoke_delete("Delete an Update Server", f"{uri}/{ret_obj['data']}")
     else:
-        logger.info("Update Server: {0} not found, delete skipped.".format(name))
+        logger.info(f"Update Server: {name} not found, delete skipped.")
 
     return isamAppliance.create_return_object()
 

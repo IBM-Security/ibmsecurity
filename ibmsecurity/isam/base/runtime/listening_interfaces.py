@@ -64,11 +64,11 @@ def set_by_address(isamAppliance, address, port, secure, check_mode=False, force
     for intfc in ret_obj['data']['interfaces']:
         for intfc_adr in intfc['ipv4']['addresses']:
             if intfc_adr['address'] == address:
-                uuid = "{0}.{1}".format(intfc['uuid'], intfc_adr['uuid'])
+                uuid = f"{intfc['uuid']}.{intfc_adr['uuid']}"
                 break
         for intfc_adr in intfc['ipv6']['addresses']:
             if intfc_adr['address'] == address:
-                uuid = "{0}.{1}".format(intfc['uuid'], intfc_adr['uuid'])
+                uuid = f"{intfc['uuid']}.{intfc_adr['uuid']}"
                 break
 
     return set(isamAppliance, uuid, port, secure, check_mode, force)
@@ -114,7 +114,7 @@ def delete(isamAppliance, interface, port, check_mode=False, force=False):
     if force is False:
         exists, secure, id, warnings = _check(isamAppliance, interface, port)
     else:
-        id = '{0}:{1}'.format(interface, port)
+        id = f'{interface}:{port}'
 
     if force is True or exists is True:
         if check_mode is True:
@@ -122,7 +122,7 @@ def delete(isamAppliance, interface, port, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a runtime listening interface",
-                "/mga/runtime_tuning/endpoints/{0}/v1".format(id),
+                f"/mga/runtime_tuning/endpoints/{id}/v1",
                 requires_modules=requires_modules,requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)

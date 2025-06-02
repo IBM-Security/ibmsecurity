@@ -9,7 +9,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     Retrieving the list of users for an authorization roles
     """
     return isamAppliance.invoke_get("Retrieving the list of users for an authorization roles",
-                                    "/authorization/roles/{0}/users/v1".format(name))
+                                    f"/authorization/roles/{name}/users/v1")
 
 
 def set(isamAppliance, name, user_name, type='embedded_ldap', check_mode=False, force=False):
@@ -40,7 +40,7 @@ def set(isamAppliance, name, user_name, type='embedded_ldap', check_mode=False, 
     else:
         return isamAppliance.invoke_put(
             "Add user to management authorization role",
-            "/authorization/roles/{0}/v1".format(name), ret_obj['data'])
+            f"/authorization/roles/{name}/v1", ret_obj['data'])
 
 
 def delete(isamAppliance, name, user_name, check_mode=False, force=False):
@@ -65,4 +65,4 @@ def delete(isamAppliance, name, user_name, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_put(
             "Delete user from management authorization role",
-            "/authorization/roles/{0}/v1".format(name), ret_obj['data'])
+            f"/authorization/roles/{name}/v1", ret_obj['data'])

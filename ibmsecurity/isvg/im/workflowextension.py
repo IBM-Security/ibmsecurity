@@ -16,7 +16,7 @@ def get_all(isvgAppliance, check_mode=False, force=False):
 
 def search(isvgAppliance, name, check_mode=False, force=False):
     """
-    Search for existing extension. 
+    Search for existing extension.
     Just care for presence of extension, not its actual content.
     """
     ret_obj = get_all(isvgAppliance)
@@ -93,7 +93,7 @@ def update(isvgAppliance, name, extension, check_mode=False, force=False):
 
     # extension content must be on a single line
     content = open(extension).read().replace('\n', '')
-    
+
     needs_update = True
     if ret_obj['data'] != {}:
         if ret_obj['data']['extension'] == content:

@@ -21,7 +21,7 @@ def get_config(isamAppliance, check_mode=False, force=False):
     """
     Retrieving FELB configuration
     """
-    return isamAppliance.invoke_get("Retrieving FELB configuration", "{0}/configuration".format(module_uri),
+    return isamAppliance.invoke_get("Retrieving FELB configuration", f"{module_uri}/configuration",
                                     requires_modules=requires_modules, requires_version=requires_version, requires_model=requires_model)
 
 
@@ -60,9 +60,9 @@ def _check(isamAppliance, enabled, debug, ha, logging, ssl, services, attributes
         "attributes": attributes
     }
     sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-    logger.debug("Sorted input: {0}".format(sorted_json_data))
+    logger.debug(f"Sorted input: {sorted_json_data}")
     sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-    logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+    logger.debug(f"Sorted existing data: {sorted_ret_obj}")
     if sorted_ret_obj != sorted_json_data:
         logger.info("Changes detected, update needed.")
         update_required = True
@@ -77,7 +77,7 @@ def export_file(isamAppliance, filename, check_mode=False, force=False):
     import os.path
     if force is True or os.path.exists(filename) is False:
         if check_mode is False:  # No point downloading a file if in check_mode
-            return isamAppliance.invoke_get_file("Exporting FELB configuration", "{}?export=true".format(module_uri),
+            return isamAppliance.invoke_get_file("Exporting FELB configuration", f"{module_uri}?export=true",
                                             filename=filename, requires_modules=requires_modules,
                                             requires_version=requires_version, requires_model=requires_model)
 

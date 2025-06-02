@@ -22,7 +22,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     """
     return isamAppliance.invoke_get(
         "Retrieve installed extensions list",
-        "{0}/".format(uri),
+        f"{uri}/",
         requires_modules=requires_modules,
         requires_version=requires_version,
     )
@@ -78,7 +78,7 @@ def add(
         extId = inspect(isamAppliance, extension)
         logger.debug(f"We got {extId}")
     except Exception as e:
-        warning_str = "Exception occurred: {0}".format(e)
+        warning_str = f"Exception occurred: {e}"
         return isamAppliance.create_return_object(warnings=[warning_str])
 
     config_str = _get_config_data(extId, config_data)
@@ -102,7 +102,7 @@ def add(
         else:
             counter = 0
             for file in third_party_package:
-                third_party = "third_party_package{0}".format(counter)
+                third_party = f"third_party_package{counter}"
                 files[third_party] = (tools.path_leaf(file), open(file, "rb"))
                 counter = counter + 1
 
@@ -111,7 +111,7 @@ def add(
 
     return isamAppliance.invoke_post_files(
         "Installing an Extension",
-        "{0}/activate".format(uri),
+        f"{uri}/activate",
         [],
         files,
         requires_modules=requires_modules,
@@ -177,13 +177,13 @@ def update(
                 else:
                     counter = 0
                     for file in third_party_package:
-                        third_party = "third_party_package{0}".format(counter)
+                        third_party = f"third_party_package{counter}"
                         files[third_party] = (tools.path_leaf(file), open(file, "rb"))
                         counter = counter + 1
 
             return isamAppliance.invoke_post_files(
                 "Update an Extension",
-                "{0}/{1}".format(uri, extId),
+                f"{uri}/{extId}",
                 [],
                 files,
                 requires_modules=requires_modules,
@@ -236,7 +236,7 @@ def delete(isamAppliance, extId, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
-                "Delete an installed extension", "{0}/{1}".format(uri, extId)
+                "Delete an installed extension", f"{uri}/{extId}"
             )
 
     return isamAppliance.create_return_object(changed=False)
@@ -254,7 +254,7 @@ def inspect(isamAppliance, extension, check_mode=False, force=False):
     """
     obj = isamAppliance.invoke_post_files(
         "Inspect extension",
-        "{0}/inspect".format(uri),
+        f"{uri}/inspect",
         [
             {
                 "file_formfield": "extension_support_package",

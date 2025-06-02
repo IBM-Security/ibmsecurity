@@ -308,7 +308,7 @@ def _check(isamAppliance, settings):
     logger.debug("Comparing server scim configuration with desired configuration.")
     # Converting python ret_obj['data'] and settings from type dict to valid JSON (RFC 8259)
     # e.g. converts python boolean 'True' -> to JSON literal lowercase value 'true'
-    cur_json_string = json.dumps(ret_obj['data']) 
+    cur_json_string = json.dumps(ret_obj['data'])
     cur_sorted_json = json_sort(cur_json_string)
     logger.debug("Server JSON : {0}".format(cur_sorted_json))
     given_json_string = json.dumps(settings)

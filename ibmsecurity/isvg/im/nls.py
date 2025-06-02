@@ -37,7 +37,7 @@ def search(isvgAppliance, filename, check_mode=False, force=False):
     logger.debug("Found nls entry: {0}".format(return_obj))
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, filename, check_mode=False, force=False):
     """

@@ -52,7 +52,7 @@ def add(isvgAppliance, hostName, port, bindDN, bindPwd, orgName, shortOrgName, d
                       "hostName": hostName,
                       "port": port,
                       "bindDN": bindDN,
-                      "bindPwd": bindPwd, 
+                      "bindPwd": bindPwd,
                       "orgName": orgName,
                       "shortOrgName": shortOrgName,
                       "dnLocation": dnLocation,
@@ -93,7 +93,7 @@ def update(isvgAppliance, hostName, port, bindDN, bindPwd, orgName, shortOrgName
     # JSON payload of interest is at first (and only) position of array
     ret_obj['data'] = ret_obj['data'][0]
 
-    uuid = ret_obj['data']['uuid']    
+    uuid = ret_obj['data']['uuid']
 
     needs_update = False
 
@@ -102,14 +102,14 @@ def update(isvgAppliance, hostName, port, bindDN, bindPwd, orgName, shortOrgName
         "name": "Identity User Registry",
         "uuid": uuid
     }
-   
+
     if 'action' in ret_obj['data']:
         del ret_obj['data']['action']
     if 'lastmodified' in ret_obj['data']:
         del ret_obj['data']['lastmodified']
     if 'certCheckSum' in ret_obj['data']:
         del ret_obj['data']['certCheckSum']
-    
+
     # mandatory attributes
     if hostName is not None:
         json_data['hostName'] = hostName
@@ -166,7 +166,7 @@ def update(isvgAppliance, hostName, port, bindDN, bindPwd, orgName, shortOrgName
         if ret_obj['data']['useSSL'] is not None:
             json_data['useSSL'] = ret_obj['data']['useSSL']
         else:
-            del ret_obj['data']['useSSL']    
+            del ret_obj['data']['useSSL']
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)

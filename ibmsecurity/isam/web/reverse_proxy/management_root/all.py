@@ -38,7 +38,7 @@ def import_zip(isamAppliance, instance_id, filename, delete_missing=False, check
     Feature delete_missing will compare import zip with server content and delete missing files in the import zip from server
     """
     warnings = []
-    
+
     if force is True or _check_import(isamAppliance, instance_id, filename):
         if delete_missing is True:
             tempdir = get_random_temp_dir()
@@ -60,7 +60,7 @@ def import_zip(isamAppliance, instance_id, filename, delete_missing=False, check
             if missing_client_files != []:
                 logger.info("list all missing files in {}, which will be deleted on the server: {}.".format(filename, missing_client_files))
 
-            for x in missing_client_files:                
+            for x in missing_client_files:
                 if x.endswith('/'):
                     search_dir= os.path.dirname(x[:-1]) + '/'
                     if search_dir not in missing_client_files:

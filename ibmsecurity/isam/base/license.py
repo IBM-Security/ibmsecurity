@@ -43,7 +43,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieve all licenses installed in the appliance
     """
     return isamAppliance.invoke_get("Retrieve all licenses installed in the appliance",
-                                    "{0}".format(uri), requires_modules=requires_modules,
+                                    f"{uri}", requires_modules=requires_modules,
                                     requires_version=requires_version)
 
 

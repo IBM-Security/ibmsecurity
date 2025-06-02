@@ -1,9 +1,12 @@
+"""
+Test script for ibmsecurity modules
+"""
 import logging.config
 import pprint
-from ibmsecurity.appliance.isamappliance import ISAMAppliance
-from ibmsecurity.user.applianceuser import ApplianceUser
 import pkgutil
 import importlib
+from ibmsecurity.appliance.isamappliance import ISAMAppliance
+from ibmsecurity.user.applianceuser import ApplianceUser
 import ibmsecurity
 
 
@@ -18,7 +21,7 @@ def import_submodules(package, recursive=True):
     if isinstance(package, str):
         package = importlib.import_module(package)
     results = {}
-    for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
+    for name, is_pkg in pkgutil.walk_packages(package.__path__):
         full_name = package.__name__ + "." + name
         results[full_name] = importlib.import_module(full_name)
         if recursive and is_pkg:

@@ -67,7 +67,7 @@ def get_object_list(isamAppliance, isamUser, object=None, acl_name=None, acl_att
     return ret_obj
 
 
-def compare(isamAppliance1, isamAppliance2, isamUser1, isamUser2, acl_attribute_name=None, acl_attribute_value=None, 
+def compare(isamAppliance1, isamAppliance2, isamUser1, isamUser2, acl_attribute_name=None, acl_attribute_value=None,
             admin_domain='Default'):
     """
     Compare the list of ACLs between two appliances
@@ -76,4 +76,3 @@ def compare(isamAppliance1, isamAppliance2, isamUser1, isamUser2, acl_attribute_
     ret_obj2 = get_list(isamAppliance2, isamUser2, acl_attribute_name, acl_attribute_value, admin_domain=admin_domain)
 
     return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2)
-    

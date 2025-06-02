@@ -27,15 +27,15 @@ def get(isamAppliance, name, check_mode=False, force=False):
     warnings = ret_obj["warnings"]
 
     if client_id == {}:
-        logger.info("Client {0} had no match, skipping retrieval.".format(name))
-        warnings.append("Client Name {0} had no match.".format(name))
+        logger.info(f"Client {name} had no match, skipping retrieval.")
+        warnings.append(f"Client Name {name} had no match.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, client_id)
 
 
 def _get(isamAppliance, client_id):
-    return isamAppliance.invoke_get("Retrieve a specific API protection client", "{0}/{1}".format(uri, client_id),
+    return isamAppliance.invoke_get("Retrieve a specific API protection client", f"{uri}/{client_id}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -49,7 +49,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found API Protection Client {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found API Protection Client {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -65,7 +65,7 @@ def search_id(isamAppliance, clientId, check_mode=False, force=False):
 
     for obj in ret_obj['data']:
         if obj['clientId'] == clientId:
-            logger.info("Found API Protection Client {0} id: {1}".format(clientId, obj['id']))
+            logger.info(f"Found API Protection Client {clientId} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -81,7 +81,7 @@ def _get_id(isamAppliance, clientId, check_mode=False, force=False):
 
     for obj in ret_obj['data']:
         if obj['clientId'] == clientId:
-            logger.info("Found API Protection Client {0} id: {1}".format(clientId, obj['id']))
+            logger.info(f"Found API Protection Client {clientId} id: {obj['id']}")
             return_obj['data'] = obj
             return_obj['rc'] = 0
 
@@ -92,7 +92,7 @@ def generate_client_id(isamAppliance, check_mode=False, force=False):
     """
     Generate a client ID
     """
-    return isamAppliance.invoke_get("Generate a client ID", "{0}/clientid".format(uri),
+    return isamAppliance.invoke_get("Generate a client ID", f"{uri}/clientid",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -101,7 +101,7 @@ def generate_client_secret(isamAppliance, check_mode=False, force=False):
     """
     Generate a client secret
     """
-    return isamAppliance.invoke_get("Generate a client secret", "{0}/clientsecret".format(uri),
+    return isamAppliance.invoke_get("Generate a client secret", f"{uri}/clientsecret",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -117,7 +117,7 @@ def add(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
     if ret_obj['data'] == {}:
         warnings = ret_obj["warnings"]
         warnings.append(
-            "API Protection Definition {0} is not found. Cannot process client request.".format(definitionName))
+            f"API Protection Definition {definitionName} is not found. Cannot process client request.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         definition = ret_obj['data']
@@ -157,43 +157,37 @@ def add(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
             if requirePkce is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
-                            isamAppliance.facts["version"], requirePkce))
+                        f"Appliance at version: {isamAppliance.facts['version']}, requirePkce: {requirePkce} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.")
                 else:
                     client_json["requirePkce"] = requirePkce
             if encryptionDb is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
-                            isamAppliance.facts["version"], encryptionDb))
+                        f"Appliance at version: {isamAppliance.facts['version']}, encryptionDb: {encryptionDb} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.")
                 else:
                     client_json["encryptionDb"] = encryptionDb
             if encryptionCert is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
-                            isamAppliance.facts["version"], encryptionCert))
+                        f"Appliance at version: {isamAppliance.facts['version']}, encryptionCert: {encryptionCert} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.")
                 else:
                     client_json["encryptionCert"] = encryptionCert
             if jwksUri is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
-                            isamAppliance.facts["version"], jwksUri))
+                        f"Appliance at version: {isamAppliance.facts['version']}, jwksUri: {jwksUri} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.")
                 else:
                     client_json["jwksUri"] = jwksUri
             if extProperties is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
-                            isamAppliance.facts["version"], extProperties))
+                        f"Appliance at version: {isamAppliance.facts['version']}, extProperties: {extProperties} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.")
                 else:
                     client_json["extProperties"] = extProperties
             if introspectWithSecret is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
-                            isamAppliance.facts["version"], introspectWithSecret))
+                        f"Appliance at version: {isamAppliance.facts['version']}, introspectWithSecret: {introspectWithSecret} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.")
                 else:
                     client_json["introspectWithSecret"] = introspectWithSecret
 
@@ -213,13 +207,13 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     warnings = ret_obj["warnings"]
 
     if client_id == {}:
-        logger.info("Client {0} not found, skipping delete.".format(name))
+        logger.info(f"Client {name} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_delete(
-                "Delete an API protection client registration", "{0}/{1}".format(uri, client_id),
+                "Delete an API protection client registration", f"{uri}/{client_id}",
                 requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -236,7 +230,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if ret_obj['data'] == {}:
         warnings = ret_obj["warnings"]
         warnings.append(
-            "API Protection Definition {0} is not found. Cannot process client request.".format(definitionName))
+            f"API Protection Definition {definitionName} is not found. Cannot process client request.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         definition = ret_obj['data']
@@ -245,7 +239,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("Client {0} not found, skipping update.".format(name))
+        warnings.append(f"Client {name} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["id"]
@@ -329,8 +323,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if requirePkce is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
-                    isamAppliance.facts["version"], requirePkce))
+                f"Appliance at version: {isamAppliance.facts['version']}, requirePkce: {requirePkce} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.")
         else:
             json_data['requirePkce'] = requirePkce
     elif 'requirePkce' in ret_obj['data']:
@@ -341,8 +334,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if encryptionDb is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
-                    isamAppliance.facts["version"], encryptionDb))
+                f"Appliance at version: {isamAppliance.facts['version']}, encryptionDb: {encryptionDb} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.")
         else:
             json_data['encryptionDb'] = encryptionDb
     elif 'encryptionDb' in ret_obj['data']:
@@ -353,8 +345,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if encryptionCert is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
-                    isamAppliance.facts["version"], encryptionCert))
+                f"Appliance at version: {isamAppliance.facts['version']}, encryptionCert: {encryptionCert} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.")
         else:
             json_data['encryptionCert'] = encryptionCert
     elif 'encryptionCert' in ret_obj['data']:
@@ -365,8 +356,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if jwksUri is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
-                    isamAppliance.facts["version"], jwksUri))
+                f"Appliance at version: {isamAppliance.facts['version']}, jwksUri: {jwksUri} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.")
         else:
             json_data['jwksUri'] = jwksUri
     elif 'jwksUri' in ret_obj['data']:
@@ -377,8 +367,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if extProperties is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
-                    isamAppliance.facts["version"], extProperties))
+                f"Appliance at version: {isamAppliance.facts['version']}, extProperties: {extProperties} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.")
         else:
             json_data['extProperties'] = extProperties
     elif 'extProperties' in ret_obj['data']:
@@ -389,8 +378,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
     if introspectWithSecret is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
-                    isamAppliance.facts["version"], introspectWithSecret))
+                f"Appliance at version: {isamAppliance.facts['version']}, introspectWithSecret: {introspectWithSecret} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.")
         else:
             json_data["introspectWithSecret"] = introspectWithSecret
     elif 'introspectWithSecret' in ret_obj['data']:
@@ -401,8 +389,8 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
     if sorted_ret_obj != sorted_json_data:
         needs_update = True
 
@@ -411,7 +399,7 @@ def update(isamAppliance, name, definitionName, companyName, redirectUri=None, c
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
-                "Update a specified mapping rule", "{0}/{1}".format(uri, id), json_data,
+                "Update a specified mapping rule", f"{uri}/{id}", json_data,
                 requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -426,7 +414,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know policy does not exist
-        logger.info("Definition {0} had no match, requesting to add new one.".format(name))
+        logger.info(f"Definition {name} had no match, requesting to add new one.")
         return add(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                    contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
                    clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
@@ -434,7 +422,7 @@ def set(isamAppliance, name, definitionName, companyName, redirectUri=None, comp
                    check_mode=check_mode, force=True)
     else:
         # Update request
-        logger.info("Definition {0} exists, requesting to update.".format(name))
+        logger.info(f"Definition {name} exists, requesting to update.")
         return update(isamAppliance, name, definitionName, companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                       contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
                       otherInfo=otherInfo, clientId=clientId, clientSecret=clientSecret, new_name=new_name,
@@ -453,7 +441,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if ret_obj['data'] == {}:
         warnings = ret_obj["warnings"]
         warnings.append(
-            "API Protection Definition {0} is not found. Cannot process client request.".format(definitionName))
+            f"API Protection Definition {definitionName} is not found. Cannot process client request.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         definition = ret_obj['data']
@@ -462,7 +450,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("Client {0} not found, skipping update.".format(clientId))
+        warnings.append(f"Client {clientId} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["id"]
@@ -541,8 +529,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if requirePkce is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, requirePkce: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.".format(
-                    isamAppliance.facts["version"], requirePkce))
+                f"Appliance at version: {isamAppliance.facts['version']}, requirePkce: {requirePkce} is not supported. Needs 9.0.4.0 or higher. Ignoring requirePkce for this call.")
         else:
             json_data["requirePkce"] = requirePkce
     elif 'requirePkce' in ret_obj['data']:
@@ -553,8 +540,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if encryptionDb is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, encryptionDb: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.".format(
-                    isamAppliance.facts["version"], encryptionDb))
+                f"Appliance at version: {isamAppliance.facts['version']}, encryptionDb: {encryptionDb} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionDb for this call.")
         else:
             json_data["encryptionDb"] = encryptionDb
     elif 'encryptionDb' in ret_obj['data']:
@@ -565,8 +551,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if encryptionCert is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, encryptionCert: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.".format(
-                    isamAppliance.facts["version"], encryptionCert))
+                f"Appliance at version: {isamAppliance.facts['version']}, encryptionCert: {encryptionCert} is not supported. Needs 9.0.4.0 or higher. Ignoring encryptionCert for this call.")
         else:
             json_data["encryptionCert"] = encryptionCert
     elif 'encryptionCert' in ret_obj['data']:
@@ -577,8 +562,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if jwksUri is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, jwksUri: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.".format(
-                    isamAppliance.facts["version"], jwksUri))
+                f"Appliance at version: {isamAppliance.facts['version']}, jwksUri: {jwksUri} is not supported. Needs 9.0.4.0 or higher. Ignoring jwksUri for this call.")
         else:
             json_data["jwksUri"] = jwksUri
     elif 'jwksUri' in ret_obj['data']:
@@ -589,8 +573,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if extProperties is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, extProperties: {1} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.".format(
-                    isamAppliance.facts["version"], extProperties))
+                f"Appliance at version: {isamAppliance.facts['version']}, extProperties: {extProperties} is not supported. Needs 9.0.5.0 or higher. Ignoring extProperties for this call.")
         else:
             json_data["extProperties"] = extProperties
     elif 'extProperties' in ret_obj['data']:
@@ -601,8 +584,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
     if introspectWithSecret is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
             warnings.append(
-                "Appliance at version: {0}, introspectWithSecret: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.".format(
-                    isamAppliance.facts["version"], introspectWithSecret))
+                f"Appliance at version: {isamAppliance.facts['version']}, introspectWithSecret: {introspectWithSecret} is not supported. Needs 9.0.7.0 or higher. Ignoring introspectWithSecret for this call.")
         else:
             json_data["introspectWithSecret"] = introspectWithSecret
     elif 'introspectWithSecret' in ret_obj['data']:
@@ -613,8 +595,8 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(json_data)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
     if sorted_ret_obj != sorted_json_data:
         needs_update = True
 
@@ -623,7 +605,7 @@ def update_id(isamAppliance, clientId, name, definitionName, companyName, redire
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_put(
-                "Update a specified mapping rule", "{0}/{1}".format(uri, id), json_data,
+                "Update a specified mapping rule", f"{uri}/{id}", json_data,
                 requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -638,7 +620,7 @@ def set_id(isamAppliance, clientId, name, definitionName, companyName, redirectU
     """
     if (search_id(isamAppliance, clientId))['data'] == {}:
         # Force the add - we already know policy does not exist
-        logger.info("Definition {0} had no match, requesting to add new one.".format(clientId))
+        logger.info(f"Definition {clientId} had no match, requesting to add new one.")
         return add(isamAppliance, name=name, definitionName=definitionName, companyName=companyName, redirectUri=redirectUri, companyUrl=companyUrl,
                    contactPerson=contactPerson, contactType=contactType, email=email, phone=phone, otherInfo=otherInfo,
                    clientId=clientId, clientSecret=clientSecret, requirePkce=requirePkce, encryptionDb=encryptionDb,
@@ -646,7 +628,7 @@ def set_id(isamAppliance, clientId, name, definitionName, companyName, redirectU
                    check_mode=check_mode, force=True)
     else:
         # Update request
-        logger.info("Definition {0} exists, requesting to update.".format(clientId))
+        logger.info(f"Definition {clientId} exists, requesting to update.")
         return update_id(isamAppliance, clientId=clientId, definitionName=definitionName, companyName=companyName, name=name, redirectUri=redirectUri, companyUrl=companyUrl,
                       contactPerson=contactPerson, contactType=contactType, email=email, phone=phone,
                       otherInfo=otherInfo, clientSecret=clientSecret, new_clientId=new_clientId,

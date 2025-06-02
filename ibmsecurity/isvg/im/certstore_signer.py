@@ -30,7 +30,7 @@ def search(isvgAppliance, label, check_mode=False, force=False):
             break
 
     return return_obj
-    
+
 
 def upload(isvgAppliance, certificate, label, check_mode=False, force=False):
     """
@@ -89,7 +89,7 @@ def delete(isvgAppliance, certificate, check_mode=False, force=False):
     Delete signer certificate
     """
     warnings = []
-    
+
     ret_obj = search(isvgAppliance, label, check_mode=check_mode, force=force)
 
     if force is True or ret_obj['data'] != {}:

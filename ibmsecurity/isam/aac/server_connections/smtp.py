@@ -26,7 +26,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieving a SMTP server connection",
-                                        "/mga/server_connections/smtp/{0}/v1".format(id),
+                                        f"/mga/server_connections/smtp/{id}/v1",
                                         requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -77,7 +77,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_delete(
                 "Deleting a SMTP server connection",
-                "/mga/server_connections/smtp/{0}/v1".format(id),
+                f"/mga/server_connections/smtp/{id}/v1",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -94,7 +94,7 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("LDAP server connection {0} not found, skipping update.".format(name))
+        warnings.append(f"LDAP server connection {name} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["uuid"]
@@ -115,8 +115,8 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
 
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
@@ -127,7 +127,7 @@ def update(isamAppliance, name, connection, description='', locked=False, connec
         else:
             return isamAppliance.invoke_put(
                 "Modifying a SMTP server connection",
-                "/mga/server_connections/smtp/{0}/v1".format(id), json_data,
+                f"/mga/server_connections/smtp/{id}/v1", json_data,
                 requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
 def _create_json(name, description, locked, connection, connectionManager):

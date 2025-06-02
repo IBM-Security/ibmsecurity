@@ -23,7 +23,7 @@ def add(isamAppliance, service_name, address, active, port, weight, secure, ssll
         else:
 
             return isamAppliance.invoke_post("Creating a server",
-                                             "{0}/{1}/servers".format(module_uri, service_name),
+                                             f"{module_uri}/{service_name}/servers",
                                              {
                                                  "active": active,
                                                  "address": address,
@@ -50,7 +50,7 @@ def delete(isamAppliance, service_name, address, port, check_mode=False, force=F
         else:
             id = address + ":" + str(port)
             return isamAppliance.invoke_delete("Deleting a server",
-                                               "{0}/{1}/servers/{2}".format(module_uri, service_name, id),
+                                               f"{module_uri}/{service_name}/servers/{id}",
                                                requires_version=requires_version, requires_modules=requires_modules, requires_model=requires_model)
 
     else:
@@ -63,7 +63,7 @@ def get(isamAppliance, service_name, address, port, check_mode=False, force=Fals
     """
 
     id = address + ":" + str(port)
-    return (isamAppliance.invoke_get("Retrieving a server", "{0}/{1}/servers/{2}".format(module_uri, service_name, id),
+    return (isamAppliance.invoke_get("Retrieving a server", f"{module_uri}/{service_name}/servers/{id}",
                                  requires_version=requires_version, requires_modules=requires_modules, requires_model=requires_model))
 
 
@@ -72,7 +72,7 @@ def get_all(isamAppliance, service_name, check_mode=False, force=False):
     Retrieves a list of servers under a specified service
     """
     return isamAppliance.invoke_get("Retrieving servers for a service",
-                                    "{0}/{1}/servers".format(module_uri, service_name),
+                                    f"{module_uri}/{service_name}/servers",
                                     requires_version=requires_version, requires_modules=requires_modules, requires_model=requires_model)
 
 
@@ -99,7 +99,7 @@ def update(isamAppliance, service_name, address, active, port, weight, secure=Fa
         else:
 
             return isamAppliance.invoke_put("Updating a server",
-                                            "{0}/{1}/servers/{2}".format(module_uri, service_name, id),
+                                            f"{module_uri}/{service_name}/servers/{id}",
                                             json_data,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version,
@@ -125,8 +125,8 @@ def _check_update(isamAppliance, service_name, address, port, json_data):
 
     sorted_ret_data = tools.json_sort(ret_data)
     sorted_json_data = tools.json_sort(json_data)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_data))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_data}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
     if sorted_ret_data != sorted_json_data:
         return True, warnings

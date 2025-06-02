@@ -71,4 +71,3 @@ def validate(isamAppliance, instance, junctions, features, check_mode=False, for
     else:
         logger.debug(f"Instance: {instance} does not exist, cannot export")
         return isamAppliance.create_return_object(warnings=f"Instance: {instance} does not exist, cannot export", rc=1)
-

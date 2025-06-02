@@ -9,6 +9,8 @@ import re
 from io import open
 import zipfile
 import json
+import os
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -174,9 +176,9 @@ def create_query_string(**kwargs):
                 query_str = '?'
             else:
                 query_str += '&'
-            query_str += "{0}={1}".format(key, kwargs[key])
+            query_str += f"{key}={kwargs[key]}"
 
-    logger.debug("Query Parameter to be used: {0}".format(query_str))
+    logger.debug(f"Query Parameter to be used: {query_str}")
 
     return query_str
 
@@ -198,20 +200,21 @@ def files_same(original_file, new_file):
     else:
         return False
 
+
 def files_same_zip_content(original_file, new_file):
     identical = True
-    logger.debug("Comparing original_file[{}] vs new_file[{}]".format(original_file, new_file))
+    logger.debug(f"Comparing original_file[{original_file}] vs new_file[{new_file}]")
     z1 = zipfile.ZipFile(original_file)
     z2 = zipfile.ZipFile(new_file)
-    
+
     if len(z1.infolist()) != len(z2.infolist()):
-        logger.debug("number of archive elements differ: {} in {} vs {} from server".format(len(z1.infolist()), z1.filename, len(z2.infolist())))
+        logger.debug(f"number of archive elements differ: {len(z1.infolist())} in {z1.filename} vs {len(z2.infolist())} from server")
         identical = False
         # Can stop comparison of zip files for perfomance
         return identical
     for zipentry in z1.infolist():
         if zipentry.filename not in z2.namelist():
-            logger.debug("no file named {} found in {}".format(zipentry.filename, z2.filename))
+            logger.debug(f"no file named {zipentry.filename} found in {z2.filename}")
             identical = False
         else:
             with z1.open(zipentry.filename) as f:
@@ -222,24 +225,23 @@ def files_same_zip_content(original_file, new_file):
             hash_new_file = hashlib.sha224(new_file_contents).hexdigest()
             if hash_original_file != hash_new_file:
                 identical = False
-                logger.debug("content for zip file {} differs.".format(zipentry.filename))
+                logger.debug(f"content for zip file {zipentry.filename} differs.")
 
     if identical:
-        logger.info("content for zip files {} and {} are the same.".format(original_file,new_file))
+        logger.info(f"content for zip files {original_file} and {new_file} are the same.")
     else:
-        logger.info("content for zip files {} and {} are different.".format(original_file,new_file))
+        logger.info(f"content for zip files {original_file} and {new_file} are different.")
 
     return identical
+
 
 def get_random_temp_dir():
     """
     Create a temporary directory
     """
-    import os
-    import tempfile
     tmpdir = tempfile.gettempdir()
     random_str = random_password(10, allow_special=False)
-    tmpdir += '/%s' % random_str
+    tmpdir += f'/{random_str}'
     os.mkdir(tmpdir)
     return tmpdir
 

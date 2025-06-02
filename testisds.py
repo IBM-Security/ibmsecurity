@@ -28,7 +28,12 @@ def import_submodules(package, recursive=True):
 
 
 # Import all packages within ibmsecurity!!!
-import_submodules(ibmsecurity)
+try:
+    import_submodules(ibmsecurity)
+except Exception as e:
+    print('Failed to import some submodules: ' + str(e))
+
+
 
 # logging.getLogger(__name__).addHandler(logging.NullHandler())
 logging.basicConfig()

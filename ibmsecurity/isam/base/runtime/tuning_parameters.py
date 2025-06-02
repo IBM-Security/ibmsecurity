@@ -25,7 +25,7 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
         matches, exists, warnings = _check(isamAppliance, option, value)
 
     if exists is False:
-        warnings.append("Tuning Parameter {0} was not found. set() request will attempt anyway.".format(option))
+        warnings.append(f"Tuning Parameter {option} was not found. set() request will attempt anyway.")
 
     if force is True or matches is False:
         if check_mode is True:
@@ -33,7 +33,7 @@ def set(isamAppliance, option, value, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Setting a runtime tuning parameter",
-                "/mga/runtime_tuning/{0}/v1".format(option),
+                f"/mga/runtime_tuning/{option}/v1",
                 {
                     'value': value
                 }, requires_modules=requires_modules, requires_model=requires_model)
@@ -52,11 +52,11 @@ def _check(isamAppliance, option, value):
     exists = False
     try:
         if str(ret_obj['data'][option]) == str(value):
-            logger.info("Tuning parameter {0}/{1} already set.".format(option, value))
+            logger.info(f"Tuning parameter {option}/{value} already set.")
             matches = True
         else:
             logger.info(
-                "Tuning parameter {0} value does not match {1} != {2}.".format(option, ret_obj['data'][option], value))
+                f"Tuning parameter {option} value does not match {ret_obj['data'][option]} != {value}.")
         exists = True
     except Exception:
         logger.info("Runtime tuning parameter does not exist")
@@ -80,10 +80,10 @@ def reset(isamAppliance, option, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Reset a runtime tuning parameter to default value",
-                "/mga/runtime_tuning/{0}/v1".format(option),
+                f"/mga/runtime_tuning/{option}/v1",
                 requires_modules=requires_modules, requires_model=requires_model)
     elif exists is False and warnings == []:
-        warnings.append("Tuning Parameter {0} was not found. Skipping reset() request.".format(option))
+        warnings.append(f"Tuning Parameter {option} was not found. Skipping reset() request.")
 
     return isamAppliance.create_return_object(warnings=warnings)
 
