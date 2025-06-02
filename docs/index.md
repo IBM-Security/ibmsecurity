@@ -1,7 +1,5 @@
 # IBMSecurity Documentation
 
-## THIS IS WORK IN PROGRESS
-
 ## About ibmsecurity
 
 This repository contains Python code to manage IBM Security Appliances using their respective REST APIs.
