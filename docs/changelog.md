@@ -10,6 +10,7 @@
 - fix: base/admin_ssh_keys.py - Ignore error when same ssh key exists under different name
 - pylint: change format() to f-strings
 - feature: base/tracing.py - Get tracing configuration (new in 10.0.8)
+- fix: add ignore_errors to cli.py - incoming change
 
 ## 2025.3.28.0
 
