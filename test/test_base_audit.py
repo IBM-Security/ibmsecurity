@@ -27,8 +27,6 @@ def test_current_audit_configuration(iviaServer, caplog) -> None:
     assert not returnValue.failed()
 
 
-
-
 @pytest.mark.parametrize("items", getTestData())
 def test_get_specific_audit_configuration(iviaServer, caplog, items) -> None:
     """Set admin ssh keys"""
