@@ -2,6 +2,8 @@
 
 ## Latest
 
+## 2025.6.3.0
+
 - feature: base/management_authentication.py - type federation
 - build: test setup
 - feature: web/reverse_proxy/oauth_configuration.py - add new parameters in 10.0.8
