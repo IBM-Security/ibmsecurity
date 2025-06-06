@@ -311,3 +311,35 @@ def version_compare(version1, version2):
         return 1
     elif normalize(version1) < normalize(version2):
         return -1
+
+
+def json_equals(curObj, newObj, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
+    """
+    Function to compare input and output (for idempotency)
+
+
+    :param curObj: The current object as output from an ISAMAppliance function
+    :param newObj: The input json data
+    :param ignore_keys_not_in_new: Filter current values for keys that are in the new object.  This is not fully idempotent (because it will keep values that are not defined in the input)
+    :return: boolean: True if the 2 objects are the same
+
+    TODO: include the custom class
+    """
+    # Verify format
+    if curObj.get("data", None) is None:
+        fCurrentEntries = curObj
+    else:
+        fCurrentEntries = curObj["data"]
+    # Remove keys from ret_obj that are not in json_data
+    if ignore_keys_not_in_new:
+        fCurrentEntries = {k: v for k, v in fCurrentEntries.items() if k in newObj.keys()}
+    #
+    sorted_ret_obj = json.dumps(fCurrentEntries, skipkeys=skipkeys, sort_keys=sort_keys)
+    sorted_json_data = json.dumps(newObj, skipkeys=skipkeys, sort_keys=sort_keys)
+    logger.debug(f"Sorted Existing Data:\n\n{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:\n\n{sorted_json_data}")
+    if sorted_ret_obj == sorted_json_data:
+        logger.debug("\n\njson_equals: No changes detected\n\n")
+        return True
+
+    return False

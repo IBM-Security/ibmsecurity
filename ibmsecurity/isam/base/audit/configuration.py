@@ -14,12 +14,18 @@ requires_modules = ["mga", "federation"]
 requires_version = None
 
 
-def get(isamAppliance, check_mode=False, force=False):
+def get(isamAppliance, id=None, check_mode=False, force=False):
     """
     Retrieve audit configuration
+    id is optional
     """
-    return isamAppliance.invoke_get("Retrieve audit configuration", uri, requires_modules=requires_modules,
+    if id is None:
+        return isamAppliance.invoke_get("Retrieve current audit configuration", uri, requires_modules=requires_modules,
                                     requires_version=requires_version)
+    else:
+        return isamAppliance.invoke_get("Retrieve {id} audit configuration",
+                                        f"{uri}/{id}", requires_modules=requires_modules,
+                                        requires_version=requires_version)
 
 
 def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, components=None):

@@ -2,6 +2,8 @@
 
 ## Latest
 
+## 2025.6.3.0
+
 - feature: base/management_authentication.py - type federation
 - build: test setup
 - feature: web/reverse_proxy/oauth_configuration.py - add new parameters in 10.0.8
@@ -10,6 +12,14 @@
 - fix: base/admin_ssh_keys.py - Ignore error when same ssh key exists under different name
 - pylint: change format() to f-strings
 - feature: base/tracing.py - Get tracing configuration (new in 10.0.8)
+- fix: add ignore_errors to cli.py - incoming change
+- feature: add publish parameter (for use in containers) (new in 10.0.8)
+- feature: new function in tools `json_equals`
+- feature: tuning_parameters.py - set multiple runtime parameters in 1 call
+- fix: new parameter includeIssInAuthResp for oidc definitions (new in 10.0.8)
+- feature: export a kerberos keytab file (new in 10.0.8)
+- feature: get all audit configurations (new in 10.0.8)
+- feature: update network certificate database (WIP)
 
 ## 2025.3.28.0
 

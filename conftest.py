@@ -22,8 +22,8 @@ def iviaServer():
     # Create an ISAM appliance with above credential
     isam_server = ISAMAppliance(hostname=_host, user=u, lmi_port=_port)
     yield isam_server
-    returnValue = ibmsecurity.isam.appliance.commit(isamAppliance=isam_server)
-    print('\nCommit result')
+    returnValue = ibmsecurity.isam.appliance.commit(isamAppliance=isam_server, publish=True)
+    print('\nCommit result and publish')
     print( returnValue )
     print('\n')
     return returnValue

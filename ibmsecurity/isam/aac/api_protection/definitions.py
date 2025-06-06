@@ -138,7 +138,12 @@ def add(isamAppliance, name, description="", accessPolicyName=None, grantTypes=[
                     if tools.version_compare(isamAppliance.facts["version"], "9.0.5.0") < 0:
                         warnings.append(
                             f"Appliance at version: {isamAppliance.facts['version']}, issueSecret: {json_data['oidc']['issueSecret']} is not supported. Needs 9.0.5.0 or higher. Ignoring issueSecret for this call.")
-                        del json_data['oidc']['issueSecret']
+                        json_data['oidc'].pop('issueSecret', None)
+                if 'includeIssInAuthResp' in json_data['oidc']:
+                    if tools.version_compare(isamAppliance.facts["version"], "10.0.8.0") < 0:
+                        warnings.append(
+                            f"Appliance at version: {isamAppliance.facts['version']}, issueSecret: {json_data['oidc']['includeIssInAuthResp']} is not supported. Needs 10.0.8.0 or higher. Ignoring includeIssInAuthResp for this call.")
+                        json_data['oidc'].pop('includeIssInAuthResp', None)
 
             return isamAppliance.invoke_post(
                 "Create an API protection definition", uri,
@@ -234,16 +239,12 @@ def update(isamAppliance, name, description="", accessPolicyName=None, grantType
                 oidc['attributeSources'] = _map_oidc_attributeSources(isamAppliance, oidc['attributeSources'], check_mode, force)
             json_data["oidc"] = oidc
 
-    if force is not True:
+    if not force:
 
-        if 'datecreated' in ret_obj['data']:
-            del ret_obj['data']['datecreated']
-        if 'id' in ret_obj['data']:
-            del ret_obj['data']['id']
-        if 'lastmodified' in ret_obj['data']:
-            del ret_obj['data']['lastmodified']
-        if 'mappingRules' in ret_obj['data']:
-            del ret_obj['data']['mappingRules']
+        ret_obj['data'].pop('datecreated', None)
+        ret_obj['data'].pop('id', None)
+        ret_obj['data'].pop('lastmodified', None)
+        ret_obj['data'].pop('mappingRules', None)
 
         # Inspecting oidcConfig and remove missing or None attributes in returned object
         if oidc is not None and 'oidc' in ret_obj['data']:

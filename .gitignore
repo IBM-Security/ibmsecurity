@@ -98,3 +98,6 @@ ENV/
 
 # Test Script
 test.py
+
+# Read the docs
+_readthedocs/

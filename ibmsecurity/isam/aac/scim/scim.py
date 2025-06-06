@@ -282,15 +282,15 @@ def set_all(isamAppliance, settings, check_mode=False, force=False):
     """
     if settings is None or settings == '':
         return isamAppliance.create_return_object(
-            warnings="Need to pass content for scim configuration")
+            warnings=["Need to pass content for scim configuration"])
     else:
         # Feature: Converting python string to dict (if required)
         # Attention: JSON strings must use " quotes according to RFC 8259
         # Example: '{"a":1, "b": 2, "c": 3}'
         if isinstance(settings, str):
             settings = json.loads(settings)
-        if force is True or _check(isamAppliance, settings) is False:
-            if check_mode is True:
+        if force or not _check(isamAppliance, settings):
+            if check_mode:
                 return isamAppliance.create_return_object(changed=True)
             else:
                 return isamAppliance.invoke_put(

@@ -1,5 +1,5 @@
 import logging
-import ibmsecurity.utilities.tools
+import ibmsecurity.utilities.tools as _tools
 import json
 
 logger = logging.getLogger(__name__)
@@ -29,13 +29,13 @@ def set_pw(isamAppliance, oldPassword, newPassword, sessionTimeout="30", httpsPo
             "sessionTimeout": sessionTimeout
         }
         if httpsPort is not None:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
+            if _tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
                 warnings.append(
                     "Appliance at version: {0}, httpsPort not supported. Needs 9.0.1.0 or higher. Ignoring httpsPort for this call.")
             else:
                 json_data['httpsPort'] = httpsPort
         else:
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
+            if _tools.version_compare(isamAppliance.facts['version'], "9.0.1.0") < 0:
                 pass  # Can safely ignore httpsPort
             else:
                 warnings.append("Default httpsPort of 443 will be set on the appliance.")
@@ -168,67 +168,56 @@ def _check(isamAppliance,
             json_data["confirmPassword"] = v
         if k in ["minHeapSize", "maxHeapSize", "httpPort", "httpsPort", "minThreads", "maxThreads", "maxPoolSize", "maxFiles", "maxFileSize", "sshdPort", "sessionCachePurge", "sessionInactivityTimeout", "sshdClientAliveInterval", "baSessionTimeout"]:
             # int values
-            if k == "sshdPort" and ibmsecurity.utilities.tools.version_compare(iviaVersion, "9.0.3.0") < 0:
+            if k == "sshdPort" and _tools.version_compare(iviaVersion, "9.0.3.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, sshdPort: {v} is not supported. Needs 9.0.3.0 or higher. Ignoring sshdPort for this call.")
                 continue
-            if k in ["sessionCachePurge", "sessionInactivityTimeout", "sshdClientAliveInterval"] and ibmsecurity.utilities.tools.version_compare(iviaVersion, "9.0.5.0") < 0:
+            if k in ["sessionCachePurge", "sessionInactivityTimeout", "sshdClientAliveInterval"] and _tools.version_compare(iviaVersion, "9.0.5.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 9.0.5.0 or higher. Ignoring.")
                 continue
-            if k in ["baSessionTimeout"] and ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.2.0") < 0:
+            if k in ["baSessionTimeout"] and _tools.version_compare(iviaVersion, "10.0.2.0") < 0:
                 warnings.append(
                     f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 10.0.2.0 or higher. Ignoring.")
                 continue
             json_data[k] = int(v)
             continue
         if k == "enableSSLv3":
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.3.0") >= 0:
+            if _tools.version_compare(iviaVersion, "10.0.3.0") >= 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, enableSSLv3: {v} is not supported. Needs max. 10.0.2.0. Ignoring for this call.")
                 continue
         if k == "consoleLogLevel":
             if 'consoleLogLevel' in ret_obj['data'] and ret_obj['data']['consoleLogLevel'] == 'OFF':
                 ret_obj['data']['consoleLogLevel'] = 'OFF'
         if k == "enabledTLS":
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "9.0.4.0") < 0:
+            if _tools.version_compare(iviaVersion, "9.0.4.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, enabledTLS: {v} is not supported. Needs 9.0.4.0 or higher. Ignoring enabledTLS for this call.")
                 continue
         if k in ["swapFileSize", "httpProxy"]:
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "9.0.5.0") < 0:
+            if _tools.version_compare(iviaVersion, "9.0.5.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 9.0.5.0 or higher. Ignoring.")
                 continue
         if k in ["enabledServerProtocols", "loginHeader", "loginMessage", "pendingChangesLifetime", "httpsProxy"]:
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "9.0.7.0") < 0:
+            if _tools.version_compare(iviaVersion, "9.0.7.0") < 0:
                 warnings.append(
                     f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 9.0.7.0 or higher. Ignoring.")
                 continue
         if k in ["accessLogFormat"]:
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.0.0") < 0:
+            if _tools.version_compare(iviaVersion, "10.0.0.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 10.0.0.0 or higher. Ignoring.")
                 continue
         if k in ["lmiMessageTimeout", "validVerifyDomains"]:
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.2.0") < 0:
+            if _tools.version_compare(iviaVersion, "10.0.2.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 10.0.0.0 or higher. Ignoring.")
                 continue
         if k == "jsVersion":
-            if ibmsecurity.utilities.tools.version_compare(iviaVersion, "10.0.9.0") < 0:
+            if _tools.version_compare(iviaVersion, "10.0.9.0") < 0:
                 warnings.append(f"Appliance at version: {iviaVersion}, {k}: {v} is not supported. Needs 10.0.9.0 or higher. Ignoring.")
                 continue
 
         # Add to the json_data dict
         json_data[k] = v
 
-    # Remove keys from ret_obj that are not in json_data
-    fCurrentEntries = {k: v for k, v in ret_obj["data"].items() if k in json_data.keys()}
-    #
-    sorted_ret_obj = json.dumps(fCurrentEntries, skipkeys=True, sort_keys=True)
-    sorted_json_data = json.dumps(json_data, skipkeys=True, sort_keys=True)
-    logger.debug(f"Sorted Existing Data:\n\n{sorted_ret_obj}")
-    logger.debug(f"Sorted Desired  Data:\n\n{sorted_json_data}")
-    if sorted_ret_obj != sorted_json_data:
+    if not _tools.json_equals(ret_obj, json_data):
         logger.debug("Admin Settings are found to be different. See above JSON for difference.")
-        # Ensure users know how REST API handles httpsPort default value - I think everybody should know this by now
-        # if json_data.get("httpsPort", "") == "" and ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'],
-        #                                                                     "9.0.1.0") >= 0:
-        #    warnings.append("Default httpsPort of 443 will be set on the appliance.")
         return True, warnings, json_data
     else:  # No changes required
         return False, warnings, json_data
@@ -241,4 +230,4 @@ def compare(isamAppliance1, isamAppliance2):
     ret_obj1 = get(isamAppliance1)
     ret_obj2 = get(isamAppliance2)
 
-    return ibmsecurity.utilities.tools.json_compare(ret_obj1, ret_obj2)
+    return _tools.json_compare(ret_obj1, ret_obj2)
