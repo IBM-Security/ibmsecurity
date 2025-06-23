@@ -39,6 +39,8 @@ IVIA_ADMIN=admin@local
 IVIA_PW=admin
 IVIA_HOST=<ip address of lmi>
 # IVIA_PORT = 80
+IVIA_SECMASTER=sec_master
+IVIA_SECMASTER_PW=<password for sec_master>
 ````
 
 ## Standards
