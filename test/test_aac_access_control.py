@@ -68,6 +68,64 @@ def getTestData():
                     "Description": "Permit access"
                 }
             }
+        },
+        {
+            "dialect": "urn:oasis:names:tc:xacml:2.0:policy:schema:os",
+            "attributesRequired": False,
+            "name": "Test Access Control Policy 2",
+            "description": "Permit access",
+            "predefined": False,
+            "formatting": "json",
+            "policy": {
+                "PolicyTag": "urn:ibm:security:isam:8.0:xacml:2.0:config-policy",
+                "PolicyName": "Test Access Control Policy 2",
+                "PolicySet": {
+                    "Policy": [
+                        {
+                            "RuleCombiningAlgId": "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable",
+                            "Rule": {
+                                "Condition": {
+                                    "Apply": [
+                                        {
+                                            "FunctionId": "urn:oasis:names:tc:xacml:1.0:function:and",
+                                            "Apply": [
+                                                {
+                                                    "FunctionId": "urn:oasis:names:tc:xacml:1.0:function:any-of-any",
+                                                    "Function": {
+                                                        "FunctionId": "urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal"
+                                                    },
+                                                    "Apply": [
+                                                        {
+                                                            "FunctionId": "urn:oasis:names:tc:xacml:1.0:function:integer-bag",
+                                                            "AttributeValue": {
+                                                                "DataType": "http://www.w3.org/2001/XMLSchema#integer",
+                                                                "content": 50
+                                                            }
+                                                        }
+                                                    ],
+                                                    "SubjectAttributeDesignator": [
+                                                        {
+                                                            "Issuer": "urn:ibm:security:issuer:RiskCalculator",
+                                                            "AttributeId": "urn:ibm:security:subject:riskScore",
+                                                            "MustBePresent": True,
+                                                            "DataType": "http://www.w3.org/2001/XMLSchema#integer"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "RuleId": "urn:ibm:security:rule:0",
+                                "Effect": "Deny"
+                            },
+                            "PolicyId": "urn:ibm:security:rule-container:0"
+                        }
+                    ],
+                    "PolicyCombiningAlgId": "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
+                    "Description": "Deny access"
+                }
+            }
         }
     ]
     return testdata
@@ -75,8 +133,8 @@ def getTestData():
 
 def getPolicyAttachmentData():
     testdata = [
-        {"server": "default",
-         "resourceUri": "/register_mobile.html",
+        {"server": "isva11kvm-default",
+         "resourceUri": "/molecule.html",
          "policyCombiningAlgorithm": "denyOverrides",
          "policies": [
              {"name": "Test Access Control Policy",
@@ -86,8 +144,30 @@ def getPolicyAttachmentData():
          "type": "reverse_proxy",
          "cache": 0
          },
+        {"server": "isva11kvm-default",
+         "resourceUri": "/index.html",
+         "policyCombiningAlgorithm": "denyOverrides",
+         "policies": [
+             {"name": "Test Access Control Policy 2",
+              "type": "policy"
+              }
+         ],
+         "type": "reverse_proxy",
+         "cache": 0
+         },
         {"server": "mobileApp",
-         "resourceUri": "registerApp",
+         "resourceUri": "/registerApp",
+         "policyCombiningAlgorithm": "denyOverrides",
+         "policies": [
+             {"name": "Test Access Control Policy",
+              "type": "policy"
+              }
+         ],
+         "type": "application",
+         "cache": 0
+         },
+        {"server": "mobileApp",
+         "resourceUri": "/somethingelseApp",
          "policyCombiningAlgorithm": "denyOverrides",
          "policies": [
              {"name": "Test Access Control Policy",
