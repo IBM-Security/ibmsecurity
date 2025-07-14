@@ -1,6 +1,7 @@
 # Manual change log
 
 ## Latest
+- fix: certificate_databases : python syntax (indentation)
 
 ## 2025.6.3.0
 

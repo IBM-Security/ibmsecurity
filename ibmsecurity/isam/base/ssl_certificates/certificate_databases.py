@@ -83,6 +83,7 @@ def create(isamAppliance, kdb_name, type='kdb',
     """
     warnings = []
     if force or not _check(isamAppliance, kdb_name):
+        logger.debug("Creating new keystore")
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -126,16 +127,22 @@ def create(isamAppliance, kdb_name, type='kdb',
                    json_data.pop("rfs_port", None)
                    json_data.pop("rfs_auth", None)
 
-               retObj = isamAppliance.invoke_post( f"Creating certificate database {kdb_name}",
+            retObj = isamAppliance.invoke_post( f"Creating certificate database {kdb_name}",
                   "/isam/ssl_certificates",
                   json_data,
                   warnings=warnings,
                   ignore_error=True
                )
-               if retObj.get("rc", 0) == 400:
+            if retObj.get("rc", 0) == 400:
                    warnings.append(f"Invalid type (you need to install an extension to support network hsm {type})")
                    return isamAppliance.create_return_object(warnings=warnings)
-               else:
+            elif retObj.get("rc", 0) > 400 and retObj.get("rc", 0) < 500:
+                   warnings.append(f"HTTP error !")
+                   return isamAppliance.create_return_object(warnings=warnings)
+            elif retObj.get("rc", 0) >= 500 and retObj.get("rc", 0) < 600:
+                   warnings.append(f"Server error !")
+                   return isamAppliance.create_return_object(warnings=warnings)
+            else:
                    return retObj
 
     return isamAppliance.create_return_object()
@@ -243,7 +250,7 @@ def set(isamAppliance, cert_id, description=None, type="kdb", check_mode=False, 
     warnings = []
     desc_match = True  # This will remain True even when cert db is not found!
 
-    if type == "kdb":
+    if type in ("p12", "kdb"):
         if not force:
             if description is None:
                 desc_match = True
@@ -302,11 +309,12 @@ def _check(isamAppliance, id):
     Check if certificate database already exists
     """
     ret_obj = get_all(isamAppliance)
-
+    logger.debug(f"\nCHECKING IF {id} EXISTS")
     for certdb in ret_obj['data']:
+        logger.info("Cert databases id " + certdb['id'])
         if certdb['id'] == id:
             return True
-
+    logger.debug(f"\n{id} DOES NOT EXIST\n")
     return False
 
 
