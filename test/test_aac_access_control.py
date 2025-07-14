@@ -87,7 +87,7 @@ def getPolicyAttachmentData():
          "cache": 0
          },
         {"server": "mobileApp",
-         "resourceUri": "/registerApp",
+         "resourceUri": "registerApp",
          "policyCombiningAlgorithm": "denyOverrides",
          "policies": [
              {"name": "Test Access Control Policy",
@@ -131,7 +131,7 @@ def test_set_accesscontrol_policies(iviaServer, caplog, items) -> None:
 
 
 def test_authenticate(iviaServer, caplog) -> None:
-    """Set api protection"""
+    """Authenticate"""
     caplog.set_level(logging.DEBUG)
     # items is a key-value pair
     _secmaster = os.getenv('IVIA_SECMASTER') or 'sec_master'
@@ -168,6 +168,29 @@ def test_set_accesscontrol_policyattachments(iviaServer, caplog, items) -> None:
         arg[k] = v
 
     returnValue = ibmsecurity.isam.aac.access_control.policy_attachments.config(iviaServer,
+                                                                      server,
+                                                                      resourceuri,
+                                                                      **arg
+                                                                      )
+    logging.log(logging.INFO, returnValue)
+    assert not returnValue.failed()
+
+@pytest.mark.parametrize("items", getPolicyAttachmentData())
+def test_publish_policyattachment(iviaServer, caplog, items) -> None:
+    """Publish"""
+    caplog.set_level(logging.DEBUG)
+    # items is a key-value pair
+    logging.log(logging.INFO, items)
+    arg = {}
+    for k, v in items.items():
+        if k == 'server':
+            server = v
+            continue
+        if k in ('resourceUri', 'resourceuri'):
+            resourceuri = v
+            continue
+
+    returnValue = ibmsecurity.isam.aac.access_control.policy_attachments.publish(iviaServer,
                                                                       server,
                                                                       resourceuri,
                                                                       **arg

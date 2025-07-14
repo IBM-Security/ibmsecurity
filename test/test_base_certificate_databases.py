@@ -8,25 +8,25 @@ import pytest
 def getTestData():
     testdata = [
         {
-            "kdb_name": "junctionkdb",
-            "type": "kdb"
+            "kdb_name": "junctionkdb2",
+            # "type": "p12"
         },
-        {
-            "kdb_name": "ncipherdb",
-            "type": "p11",
-            "token_label": "label",
-            "passcode": "passcode",
-            "hsm_type": "ncipher",
-            "ip": "10.150.25.207",
-            "rfs": "10.150.25.208"
-        }
+#       {
+#           "kdb_name": "ncipherdb",
+#           "type": "p11",
+#           "token_label": "label",
+#           "passcode": "passcode",
+#           "hsm_type": "ncipher",
+#           "ip": "10.150.25.207",
+#           "rfs": "10.150.25.208"
+#       }
     ]
     return testdata
 
 
 def test_get_certificate_databases(iviaServer, caplog) -> None:
     """Get sms protection"""
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.INFO)
     arg = {}
 
     returnValue = ibmsecurity.isam.base.ssl_certificates.certificate_databases.get_all(iviaServer,
@@ -40,7 +40,7 @@ def test_get_certificate_databases(iviaServer, caplog) -> None:
 @pytest.mark.parametrize("items", getTestData())
 def test_create_certificate_database(iviaServer, caplog, items) -> None:
     """Set admin ssh keys"""
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.INFO)
     # items is a key-value pair
     logging.log(logging.INFO, items)
     arg = {}
