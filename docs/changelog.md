@@ -2,9 +2,10 @@
 
 ## Latest
 
+## 2025.7.14.0
+
 - fix: certificate_databases : python syntax (indentation)
 - fix: policy_attachments.py : idempotency and handle applications correctly
--
 
 ## 2025.6.3.0
 
