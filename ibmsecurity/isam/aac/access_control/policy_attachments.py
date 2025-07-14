@@ -152,7 +152,7 @@ def config(
         if policyType is not None:
             if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
                 warnings.append(
-                    f"Appliance at version: {isamAppliance.facts['version']}, policyType: {cache} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call."
+                    f"Appliance at version: {isamAppliance.facts['version']}, policyType: {policyType} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call."
                 )
             else:
                 json_data["type"] = policyType
@@ -333,7 +333,7 @@ def publish_list(isamAppliance, attachments, check_mode=False, force=False):
     id_list = []
     for attach in attachments:
         ret_obj = get(isamAppliance, attach["server"], attach["resourceUri"])
-        if force is True or ret_obj["data"]["deployrequired"] is True:
+        if force or ret_obj["data"]["deployrequired"]:
             id_list.append(ret_obj["data"]["id"])
     logger.debug(f"Attachments: {id_list}")
 
