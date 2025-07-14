@@ -2,6 +2,12 @@
 
 ## Latest
 
+## 2025.7.14.0
+
+- fix: certificate_databases : python syntax (indentation)
+- fix: policy_attachments.py : idempotency and handle applications correctly
+- build: update python version support (drop 3.7; add 3.11, 3.13)
+
 ## 2025.6.3.0
 
 - feature: base/management_authentication.py - type federation
