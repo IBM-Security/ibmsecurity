@@ -18,9 +18,13 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     """
     Retrieving a signer certificate from a certificate database
     """
-    return isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
-                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}")
-
+    retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}",
+                                    ignore_error=True)
+    if retObj.get('rc', 0) == 404:
+        return isamAppliance.create_return_object(rc=404, warnings=[f"{cert_id} does not exist in {kdb_id}"])
+    else:
+        return retObj
 
 def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_mode=False, force=False):
     """
@@ -215,13 +219,16 @@ def _check(isamAppliance, kdb_id, cert_id):
 
 
 def _check_import_string(isamAppliance, kdb_id, label, certstring, check_mode=False):
-    # TODO: DO SOMETHING
-    cert_pem = get(isamAppliance, kdb_id, label)['data']['contents']
-    if cert_pem.replace("\n", "") == certstring.replace("\n", ""):
+    cert_pem = get(isamAppliance, kdb_id, label)
+    cert_pem = cert_pem.get("data", {})
+    cert_pem = cert_pem.get("contents", "")
+    if cert_pem == "":
+        # No certificate found.  Fine.
+        return True
+    if cert_pem.replace(" ", "").replace("\n", "").replace("\r", "") == certstring.replace(" ", "").replace("\n", "").replace("\r", ""):
         logger.debug(f"Certificate already exists with same label {label}")
         return False
-    else:
-        return True
+    return True
 
 
 def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
@@ -229,25 +236,37 @@ def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
     Checks if certificate on the Appliance  exists and if so, whether it is different from
     the one stored in filename
     """
-    tmpdir = get_random_temp_dir()
-    orig_filename = f'{cert_id}.cer'
-    tmp_original_file = os.path.join(tmpdir, os.path.basename(orig_filename))
-    if _check(isamAppliance, kdb_id, cert_id):
-        export_cert(isamAppliance, kdb_id, cert_id, tmp_original_file, check_mode=False, force=True)
-        logger.debug("file already exists on appliance")
-        if files_same(tmp_original_file, filename):
-            logger.debug("files are the same, so we don't want to do anything")
-            shutil.rmtree(tmpdir)
-            return False
-        else:
-            logger.debug("files are different, so we delete existing file in preparation for import")
-            delete(isamAppliance, kdb_id, cert_id, check_mode=check_mode, force=True)
-            shutil.rmtree(tmpdir)
-            return True
-    else:
-        logger.debug("file does not exist on appliance, so we'll want to import")
-        shutil.rmtree(tmpdir)
+    #tmpdir = get_random_temp_dir()
+    #orig_filename = f'{cert_id}.cer'
+    #tmp_original_file = os.path.join(tmpdir, os.path.basename(orig_filename))
+    #if _check(isamAppliance, kdb_id, cert_id):
+    #    export_cert(isamAppliance, kdb_id, cert_id, tmp_original_file, check_mode=False, force=True)
+    #    logger.debug("file already exists on appliance")
+    #    if files_same(tmp_original_file, filename):
+    #        logger.debug("files are the same, so we don't want to do anything")
+    #        shutil.rmtree(tmpdir)
+    #        return False
+    #    else:
+    #        logger.debug("files are different, so we delete existing file in preparation for import")
+    #        delete(isamAppliance, kdb_id, cert_id, check_mode=check_mode, force=True)
+    #        shutil.rmtree(tmpdir)
+    #        return True
+    #else:
+    #    logger.debug("file does not exist on appliance, so we'll want to import")
+    #    shutil.rmtree(tmpdir)
+    #    return True
+    with open(filename) as file:
+        newcert = file.read()
+    cert_pem = get(isamAppliance, kdb_id, cert_id)
+    cert_pem = cert_pem.get("data", {})
+    cert_pem = cert_pem.get("contents", "")
+    if cert_pem == "":
+        # No certificate found.  Fine.
         return True
+    if cert_pem.replace(" ", "").replace("\n", "").replace("\r", "") == newcert.replace(" ", "").replace("\n", "").replace("\r", ""):
+        logger.debug(f"Certificate already exists with same label {cert_id}")
+        return False
+    return True
 
 
 def compare(isamAppliance1, isamAppliance2, kdb_id):

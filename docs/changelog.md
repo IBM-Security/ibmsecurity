@@ -3,6 +3,7 @@
 ## Latest
 
 - feature: proxy support (http_proxy and https_proxy only)
+- fix: base/ssl_certificates/signer_certificates.py - don't error if get signer certificate returns nothing
 
 ## 2025.9.26.0
 
