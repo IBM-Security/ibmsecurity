@@ -107,7 +107,7 @@ See the following URL for more details:
         _proxies = {}
         for k,v in kwproxies.items():
             _proxies[k] = v
-            self.logger.warning(f"Added proxy {k} {v}")
+            self.logger.debug(f"Added proxy {k} : {v}")
         self.session.proxies.update(_proxies)
         self.session.trust_env = False
 
