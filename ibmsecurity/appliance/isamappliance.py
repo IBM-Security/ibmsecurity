@@ -17,7 +17,7 @@ except NameError:
 
 
 class ISAMAppliance(IBMAppliance):
-    def __init__(self, hostname, user, lmi_port=443, cert=None, verify=None, debug=True):
+    def __init__(self, hostname, user, lmi_port=443, cert=None, verify=None, http_proxy=None, https_proxy=None, debug=True):
         self.logger = logging.getLogger(__name__)
         self.debug = debug
         if self.debug: self.logger.debug('Creating an ISAMAppliance')
@@ -43,6 +43,13 @@ class ISAMAppliance(IBMAppliance):
             self.session.cert = self.cert
 
         self._set_ssl_verification(requests_verify_param=verify)
+
+        if http_proxy is not None and https_proxy is not None:
+            self._set_proxies(http=http_proxy, https=https_proxy)
+        elif http_proxy is not None:
+            self._set_proxies(http=http_proxy)
+        elif https_proxy is not None:
+            self._set_proxies(https=https_proxy)
 
         IBMAppliance.__init__(self, hostname, user)
 
@@ -91,6 +98,18 @@ See the following URL for more details:
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         except AttributeError:
             self.logger.warning("load requests.packages.urllib3.disable_warnings() failed")
+
+    def _set_proxies(self, **kwproxies):
+        """
+        Set the proxies object
+        There's way more options than are implemented here.
+        """
+        _proxies = {}
+        for k,v in kwproxies.items():
+            _proxies[k] = v
+            self.logger.debug(f"Added proxy {k} : {v}")
+        self.session.proxies.update(_proxies)
+        self.session.trust_env = False
 
     def _process_response(self, return_obj, http_response, ignore_error):
 

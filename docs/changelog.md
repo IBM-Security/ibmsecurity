@@ -2,6 +2,8 @@
 
 ## Latest
 
+- feature: proxy support (http_proxy and https_proxy only)
+
 ## 2025.9.26.0
 
 - fix: policy attachments application can take 2 formats, /uri or urn:x:y
