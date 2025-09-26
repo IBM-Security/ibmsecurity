@@ -95,34 +95,32 @@ def test_import_signer_cert(iviaServer, caplog, items) -> None:
     assert not returnValue.failed()
 
 
-#def getTestDataSigners():
-#    testdata = [
-#        {"kdb_id": "pdsrv", "cert_id": "github.io"},
-#    ]
-#    return testdata
-#
-#
-#@pytest.mark.parametrize("items", getTestDataSigners())
-#def test_get_signer_cert(iviaServer, caplog,items) -> None:
-#    """Get all admincfg options."""
-#    caplog.set_level(logging.DEBUG)
-#    arg = {}
-#    kdb_id = None
-#    cert = None
-#    label = None
-#    preserve_label = 'false'
-#    for k, v in items.items():
-#        if k == 'kdb_id':
-#            kdb_id = v
-#            continue
-#        if k == 'cert_id':
-#            cert = v
-#            continue
-#        arg[k] = v
-#    returnValue = ibmsecurity.isam.base.ssl_certificates.signer_certificate.get(iviaServer,
-#                                                  kdb_id,
-#                                                  cert,
-#                                                  **arg)
-#    logging.log(logging.INFO, returnValue)
-#
-#    assert not returnValue.failed()
+def getTestDataSigners():
+    testdata = [
+        {"kdb_id": "pdsrv", "cert_id": "new_cert"},
+    ]
+    return testdata
+
+
+@pytest.mark.parametrize("items", getTestDataSigners())
+def test_get_signer_cert_not_existing(iviaServer, caplog,items) -> None:
+    """Get single signer."""
+    caplog.set_level(logging.DEBUG)
+    arg = {}
+    kdb_id = None
+    cert = None
+    for k, v in items.items():
+        if k == 'kdb_id':
+            kdb_id = v
+            continue
+        if k == 'cert_id':
+            cert = v
+            continue
+        arg[k] = v
+    returnValue = ibmsecurity.isam.base.ssl_certificates.signer_certificate.get(iviaServer,
+                                                  kdb_id,
+                                                  cert,
+                                                  **arg)
+    logging.log(logging.INFO, returnValue)
+    # Expect this to fail
+    assert returnValue.failed()
