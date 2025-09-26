@@ -43,6 +43,12 @@ IVIA_SECMASTER=sec_master
 IVIA_SECMASTER_PW=<password for sec_master>
 ````
 
+Optionally, you can configure a proxy (http_proxy or https_proxy)
+````properties
+IVIA_HTTPS_PROXY=http://localhost:3128
+IVIA_HTTP_PROXY=http://127.0.0.1:3128
+````
+
 ## Standards
 
 Automated tests will be run against all PRs, to run checks locally before
