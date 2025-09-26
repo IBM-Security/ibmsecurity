@@ -2,6 +2,10 @@
 
 ## Latest
 
+- fix: policy attachments application can take 2 formats, /uri or urn:x:y
+- fix: Update scim test
+- TODO feature: signer cert support for string (in addition to file)
+
 ## 2025.7.14.0
 
 - fix: certificate_databases : python syntax (indentation)
