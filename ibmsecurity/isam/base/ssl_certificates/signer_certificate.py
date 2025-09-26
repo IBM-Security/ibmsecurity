@@ -18,9 +18,13 @@ def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
     """
     Retrieving a signer certificate from a certificate database
     """
-    return isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
-                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}")
-
+    retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}",
+                                    ignore_error=True)
+    if retObj.get('rc', 0) == 404:
+        return isamAppliance.create_return_object(rc=404, warnings=[f"{cert_id} does not exist in {kdb_id}"])
+    else:
+        return retObj
 
 def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_mode=False, force=False):
     """
@@ -215,13 +219,16 @@ def _check(isamAppliance, kdb_id, cert_id):
 
 
 def _check_import_string(isamAppliance, kdb_id, label, certstring, check_mode=False):
-    # TODO: DO SOMETHING
-    cert_pem = get(isamAppliance, kdb_id, label)['data']['contents']
-    if cert_pem.replace("\n", "") == certstring.replace("\n", ""):
+    cert_pem = get(isamAppliance, kdb_id, label)
+    cert_pem = cert_pem.get("data", {})
+    cert_pem = cert_pem.get("contents", "")
+    if cert_pem == "":
+        # No certificate found.  Fine.
+        return True
+    if cert_pem.replace("\n", "").replace("\r", "") == certstring.replace("\n", "").replace("\r", ""):
         logger.debug(f"Certificate already exists with same label {label}")
         return False
-    else:
-        return True
+    return True
 
 
 def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
