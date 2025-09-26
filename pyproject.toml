@@ -34,6 +34,11 @@ dependencies = {file = [".config/requirements.in"]}
 optional-dependencies.docs = {file = [".config/requirements-docs.in"]}
 optional-dependencies.test = {file = [".config/requirements-test.in"]}
 
+[tool.setuptools.packages.find]
+exclude = [
+    "test"
+]
+
 [tool.pytest]
 env_files = ".env"
 
