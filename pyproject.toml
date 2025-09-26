@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibmsecurity"
-version = "2025.7.14.0"
+version = "2025.9.26.0"
 authors = [
   { name="IBM", email="secorch@wwpdl.vnet.ibm.com" },
 ]
@@ -33,6 +33,13 @@ dynamic = ["dependencies", "optional-dependencies"]
 dependencies = {file = [".config/requirements.in"]}
 optional-dependencies.docs = {file = [".config/requirements-docs.in"]}
 optional-dependencies.test = {file = [".config/requirements-test.in"]}
+
+[tool.setuptools.packages.find]
+exclude = [
+    "test",
+    "test.*"
+]
+namespaces = false
 
 [tool.pytest]
 env_files = ".env"

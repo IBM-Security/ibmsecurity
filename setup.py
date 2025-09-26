@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="ibmsecurity",
-    packages=find_packages(),
+    packages=find_packages(exclude=["test.*","test"]),
     # Date of release used for version - please be sure to use YYYY.MM.DD.seq#, MM and DD should be two digits e.g. 2017.02.05.0
     # seq# will be zero unless there are multiple release on a given day - then increment by one for additional release for that date
-    version="2025.7.14.0",
+    version="2025.9.26.0",
     description="Idempotent functions for IBM Security Appliance REST APIs",
     author="IBM",
     author_email="secorch@wwpdl.vnet.ibm.com",

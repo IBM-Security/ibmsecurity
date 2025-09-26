@@ -2,6 +2,14 @@
 
 ## Latest
 
+## 2025.9.26.0
+
+- fix: policy attachments application can take 2 formats, /uri or urn:x:y
+- fix: Update scim test
+- fix: fed/federations.py - handle exception when retrieving existing mapping rules (#448)
+- build: exclude test folder from build
+- feature: signer cert support for string (in addition to file)
+
 ## 2025.7.14.0
 
 - fix: certificate_databases : python syntax (indentation)

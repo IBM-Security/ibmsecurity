@@ -167,13 +167,8 @@ def getPolicyAttachmentData():
          "cache": 0
          },
         {"server": "mobileApp",
-         "resourceUri": "/somethingelseApp",
-         "policyCombiningAlgorithm": "denyOverrides",
-         "policies": [
-             {"name": "Test Access Control Policy",
-              "type": "policy"
-              }
-         ],
+         "resourceUri": "urn:isbn:0-486-27557-4",
+         "policies": [],
          "type": "application",
          "cache": 0
          },

@@ -158,7 +158,12 @@ def config(
 
     json_data["policies"] = _convert_policy_name_to_id(isamAppliance, policies)
     if policyCombiningAlgorithm is not None:
-        json_data["policyCombiningAlgorithm"] = policyCombiningAlgorithm
+        if policyType is not None and policyType == "application":
+            warnings.append(
+                "Do not set policy combining algorithm for application type"
+            )
+        else:
+            json_data["policyCombiningAlgorithm"] = policyCombiningAlgorithm
     if cache is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
             warnings.append(
@@ -325,7 +330,8 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     ret_obj = get(isamAppliance, server, resourceUri)
 
     deploy_required = False
-    if ret_obj.get("data", {}).get("deployrequired", False) or not ret_obj.get("data", {}).get("deployed", False):
+    # skip application type for deployment.
+    if (ret_obj.get("data", {}).get("type", "reverse_proxy") == "reverse_proxy") and (ret_obj.get("data", {}).get("deployrequired", False) or not ret_obj.get("data", {}).get("deployed", False)):
         deploy_required = True
 
     logger.debug(f"\n\nDeploy required: {deploy_required}\n\n")
