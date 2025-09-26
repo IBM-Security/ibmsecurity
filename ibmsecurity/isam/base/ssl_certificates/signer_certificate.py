@@ -85,8 +85,7 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
         cert_id = cert_data['id']
         cert_pem = get(isamAppliance, kdb_id, cert_id)['data']['contents']
         if cert_id == label:  # label exists on appliance already
-            logger.debug(f"Comparing certificates: appliance[{cert_pem}] remote[{remote_cert_pem}].")
-            if cert_pem == remote_cert_pem:  # certificate data is the same
+            if cert_pem == remote_cert_pem:
                 logger.debug("The certificate already exits on the appliance with the same label name and same content.")
                 return True  # both the labels and certificates match
             else:
@@ -217,7 +216,13 @@ def _check(isamAppliance, kdb_id, cert_id):
 
 def _check_import_string(isamAppliance, kdb_id, label, certstring, check_mode=False):
     # TODO: DO SOMETHING
-    return True
+    cert_pem = get(isamAppliance, kdb_id, label)['data']['contents']
+    if cert_pem.replace("\n", "") == certstring.replace("\n", ""):
+        logger.debug(f"Certificate already exists with same label {label}")
+        return False
+    else:
+        return True
+
 
 def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
     """
