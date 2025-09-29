@@ -67,6 +67,12 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     """
     Deleting a HTTP Transformation
     """
+    #check if transformation exists before deleting
+    # use get_all and search result because get errors with 404 if transform doesn't exist
+    ret_obj_content = get_all(isamAppliance)
+    if not next((item for item in ret_obj_content['data'] if item["id"] == id), None):
+        return isamAppliance.create_return_object(changed=False)
+
     if force is True or _check(isamAppliance, id) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
