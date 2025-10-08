@@ -4,6 +4,8 @@
 
 - feature: proxy support (http_proxy and https_proxy only)
 - fix: base/ssl_certificates/signer_certificates.py - don't error if get signer certificate returns nothing
+- feature: update docker db_configuration with new parameters v10.0.8.0 and v11
+- removed: soliddb docker db_configuration
 
 ## 2025.9.26.0
 
