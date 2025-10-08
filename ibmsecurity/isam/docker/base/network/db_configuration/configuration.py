@@ -193,8 +193,8 @@ def _check(isamAppliance, db_json, ignore_password_for_idempotency=False):
 
     sorted_ret_obj = tools.json_sort(ret_obj['data'])
     sorted_json_data = tools.json_sort(db_json)
-    logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-    logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+    logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+    logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
     if del_password:
         db_json['hvdb_password'] = password

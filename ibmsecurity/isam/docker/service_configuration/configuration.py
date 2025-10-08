@@ -78,8 +78,8 @@ def _check(isamAppliance, service_json):
     :return:
     """
     ret_obj = get(isamAppliance)
-    logger.debug("Appliance current configuration: {0}".format(ret_obj['data']))
-    logger.debug("JSON to Apply: {0}".format(service_json))
+    logger.debug(f"Appliance current configuration: {ret_obj['data']}")
+    logger.debug(f"JSON to Apply: {service_json}")
 
     for key, value in service_json.items():
         try:
@@ -87,15 +87,15 @@ def _check(isamAppliance, service_json):
                 if ibmsecurity.utilities.tools.json_sort(
                         ret_obj['data'][key] != ibmsecurity.utilities.tools.json_sort(value)):
                     logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
+                        f"For key: {key}, values: {value} and {ret_obj['data'][key]} do not match.")
                     return False
             else:
                 if ret_obj['data'][key] != value:
                     logger.debug(
-                        "For key: {0}, values: {1} and {2} do not match.".format(key, value, ret_obj['data'][key]))
+                        f"For key: {key}, values: {value} and {ret_obj['data'][key]} do not match.")
                     return False
         except:  # In case there is an error looking up the key in existing configuration (missing)
-            logger.debug("Exception processing Key: {0} Value: {1} - missing key in current config?".format(key, value))
+            logger.debug(f"Exception processing Key: {key} Value: {value} - missing key in current config?")
             return False
 
     logger.debug("JSON provided already is contained in current appliance configuration.")
