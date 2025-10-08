@@ -86,18 +86,20 @@ def set(isamAppliance,
 
 
     """
+    warnings = []
     if hvdb_db_name is None:
-            return isamAppliance.create_return_object(
-                warnings="hvdb_db_type {0} requires hvdb_db_name".format(hvdb_db_type))
+        warnings.append(f"hvdb_db_type {hvdb_db_type} requires hvdb_db_name")
+        return isamAppliance.create_return_object(warnings=warnings)
     if hvdb_db_secure is None:
-            return isamAppliance.create_return_object(
-                warnings="hvdb_db_type {0} requires hvdb_db_secure".format(hvdb_db_type))
-
+        warnings.append(f"hvdb_db_type {hvdb_db_type} requires hvdb_db_secure")
+        return isamAppliance.create_return_object(warnings=warnings)
     if hvdb_db_type == "oracle":
         if hvdb_driver_type is None:
-            return isamAppliance.create_return_object(
-                warnings="hvdb_db_type {0} requires hvdb_driver_type".format(hvdb_db_type))
-
+            warnings.append(f"hvdb_db_type {hvdb_db_type} requires hvdb_driver_type")
+            return isamAppliance.create_return_object(warnings=warnings)
+        if hvdb_db_secure and hvdb_db_truststore is None:
+            warnings.append(f"hvdb_db_type {hvdb_db_type} with hvdb_db_secure requires hvdb_db_truststore")
+            return isamAppliance.create_return_object(warnings=warnings)
     if isinstance(hvdb_port, basestring):
         hvdb_port = int(hvdb_port)
 
@@ -194,7 +196,7 @@ def _check(isamAppliance, db_json, ignore_password_for_idempotency=False):
     logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
     logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
 
-    if del_password is True:
+    if del_password:
         db_json['hvdb_password'] = password
 
     if sorted_ret_obj != sorted_json_data:
