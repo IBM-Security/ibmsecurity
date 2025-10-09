@@ -36,7 +36,7 @@ def getTestData():
     ]
     return testdata
 
-@pytest.mark.skipIf(iviaServer['facts']['model'] != "Docker")
+# @pytest.mark.skipIf(iviaServer['facts']['model'] != "Docker")
 @pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
 def test_get_docker_dbconfig(iviaServer, caplog) -> None:
     """Get current config."""
