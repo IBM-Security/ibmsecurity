@@ -19,7 +19,7 @@ def getTestData():
     ]
     return testdata
 
-@pytest.mark.skipif()
+
 def test_get_admin_sshkeys(iviaServer, caplog) -> None:
     """Get sms protection"""
     caplog.set_level(logging.DEBUG)
