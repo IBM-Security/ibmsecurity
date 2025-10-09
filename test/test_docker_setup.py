@@ -1,12 +1,27 @@
+# build stuff
+import pytest
+
 import logging
 
 import ibmsecurity.isam.docker.base.network.db_configuration.configuration
 import ibmsecurity.isam.appliance
-# build stuff
-import pytest
+
 
 def getTestData():
     testdata = [
+        {
+            "hvdb_db_type": "oracle",
+            "hvdb_address": "oracledb",
+            "hvdb_port": "1521",
+            "hvdb_user": "dbadmin",
+            "hvdb_password": "Passw0rd",
+            "hvdb_db_name": "hvdb",
+            "hvdb_driver_type": "thin",
+            "hvdb_db_secure": True,
+            "hvdb_db_truststore": "embedded_ldap_keys",
+            "ignore_password_for_idempotency": True,
+            "cfgdb_embedded": True
+        },
         {
             "hvdb_db_type": "postgresql",
             "hvdb_address": "postgresql",
@@ -17,11 +32,12 @@ def getTestData():
             "hvdb_db_secure": False,
             "ignore_password_for_idempotency": True,
             "cfgdb_embedded": True
-        }
+        },
     ]
     return testdata
 
-
+@pytest.mark.skipIf(iviaServer['facts']['model'] != "Docker")
+@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
 def test_get_docker_dbconfig(iviaServer, caplog) -> None:
     """Get current config."""
     caplog.set_level(logging.DEBUG)
@@ -31,8 +47,9 @@ def test_get_docker_dbconfig(iviaServer, caplog) -> None:
 
     assert not returnValue.failed()
 
+@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
 @pytest.mark.parametrize("items", getTestData())
-def test_set_base_admin(iviaServer, caplog, items) -> None:
+def test_set_docker_dbconfig(iviaServer, caplog, items) -> None:
     """Configure"""
     caplog.set_level(logging.DEBUG)
     arg = {}
