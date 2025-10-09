@@ -83,8 +83,6 @@ def set(isamAppliance,
     cfgdb_mssql_instance_name	String	Yes	The database instance name to connect to. When it isn't specified, a connection is made to the default instance. (Can be specified for MSSQL only)
     cfgdb_mssql_trust_server_cert	Boolean	No	Set to "true" to specify that the driver doesn't validate the server TLS/SSL certificate. (Can be specified for MSSQL only)
     cfgdb_mssql_failover_partner	String	Yes	The name of the failover server used in a database mirroring configuration. This property is used for an initial connection failure to the principal server. After you make the initial connection, this property is ignored. (Can be specified for MSSQL only)
-
-
     """
     warnings = []
     if hvdb_db_name is None:
@@ -97,7 +95,7 @@ def set(isamAppliance,
         if hvdb_driver_type is None:
             warnings.append(f"hvdb_db_type {hvdb_db_type} requires hvdb_driver_type")
             return isamAppliance.create_return_object(warnings=warnings)
-        if hvdb_db_secure and hvdb_db_truststore is None:
+        if hvdb_db_secure and kwargs.get("hvdb_db_truststore", None) is None:
             warnings.append(f"hvdb_db_type {hvdb_db_type} with hvdb_db_secure requires hvdb_db_truststore")
             return isamAppliance.create_return_object(warnings=warnings)
     if isinstance(hvdb_port, basestring):
