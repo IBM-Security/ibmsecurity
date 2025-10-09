@@ -7,6 +7,9 @@
 - feature: update docker db_configuration with new parameters v10.0.8.0 and v11
 - removed: soliddb docker db_configuration
 
+### Build & deploy
+- wip: ordering of pytests
+
 ## 2025.9.26.0
 
 - fix: policy attachments application can take 2 formats, /uri or urn:x:y
