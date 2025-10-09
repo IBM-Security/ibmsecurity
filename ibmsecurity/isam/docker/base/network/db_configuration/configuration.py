@@ -1,6 +1,5 @@
 import logging
 import copy
-import ibmsecurity.utilities.tools
 from ibmsecurity.utilities import tools
 
 logger = logging.getLogger(__name__)
@@ -121,7 +120,7 @@ def set(isamAppliance,
     if hvdb_driver_type is not None:
         db_json["hvdb_driver_type"] = hvdb_driver_type
 
-    if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
+    if tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
         warnings.append(
                 f"Appliance at version: {isamAppliance.facts['version']}, cfgdb_embedded is not supported. Needs 10.0.8.0 or higher. Ignoring for this call.")
     else:
@@ -129,21 +128,21 @@ def set(isamAppliance,
 
     for k, v in kwargs.items():
         if k.startswith("cfgdb_mssql_"):
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.9.0") < 0:
+            if tools.version_compare(isamAppliance.facts['version'], "10.0.9.0") < 0:
                 warnings.append(
                     f"Appliance at version: {isamAppliance.facts['version']}, MSSQL parameters are not supported ({k}). Needs 10.0.8.0 or higher. Ignoring for this call.")
             else:
                 db_json[k] = v
             continue
         if k.startswith("hvdb_mssql_"):
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.9.0") < 0:
+            if tools.version_compare(isamAppliance.facts['version'], "10.0.9.0") < 0:
                 warnings.append(
                     f"Appliance at version: {isamAppliance.facts['version']}, MSSQL parameters are not supported ({k}). Needs 10.0.8.0 or higher. Ignoring for this call.")
             else:
                 db_json[k] = v
             continue
         if k.startswith("cfgdb_"):
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
+            if tools.version_compare(isamAppliance.facts['version'], "10.0.8.0") < 0:
                 warnings.append(
                     f"Appliance at version: {isamAppliance.facts['version']}, cfgdb_* parameters are not supported ({k}). Needs 10.0.8.0 or higher. Ignoring for this call.")
             else:
