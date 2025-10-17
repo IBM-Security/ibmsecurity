@@ -141,7 +141,7 @@ def _collapse_entries_obj(entries):
    Also converts all values to str for easy compare
    """
     if entries is None or len(entries) < 1:
-        return []
+        return {}
     else:
         prev_key = ""
         new_entry = {}
