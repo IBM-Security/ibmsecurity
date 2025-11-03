@@ -100,7 +100,7 @@ def add(isamAppliance, url, retryInterval=3600, truststore="", jwsTruststore="",
                 "Create a new FIDO2 metadata service", uri,
                 {
                     "url": url,
-                    "retryInterval": retryInterval,
+                    "retryInterval": int(retryInterval),
                     "truststore": truststore,
                     "jwsTruststore": jwsTruststore,
                     "username": username,
@@ -108,7 +108,7 @@ def add(isamAppliance, url, retryInterval=3600, truststore="", jwsTruststore="",
                     "keystore": keystore,
                     "certificate": certificate,
                     "protocol": protocol,
-                    "timeout": timeout,
+                    "timeout": int(timeout),
                     "proxy": proxy,
                     "headers": headers
                 }, requires_modules=requires_modules, requires_version=requires_version)
@@ -121,12 +121,14 @@ def update(isamAppliance, url="", retryInterval=3600, truststore="", jwsTruststo
     """
     Update a specific FIDO2 Metadata Service
     """
+    retryInterval = int(retryInterval)
+    timeout = int(timeout)
     mds_id, update_required, json_data = _check(isamAppliance, url, retryInterval, truststore, jwsTruststore,
                                                 username, password, keystore, certificate, protocol,
                                                 timeout, proxy, headers)
     if mds_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown FIDO2 relying party: {0}".format(name))
+        raise IBMError("999", "Cannot update data for unknown FIDO2 relying party: {0}".format(url))
 
     if force is True or update_required is True:
         if check_mode is True:
