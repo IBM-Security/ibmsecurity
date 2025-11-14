@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibmsecurity"
-version = "2025.9.30.0"
+version = "2025.11.14.0"
 authors = [
   { name="IBM", email="secorch@wwpdl.vnet.ibm.com" },
 ]
@@ -53,7 +53,7 @@ bad-names = [
 # pylint defaults + f,fh,v,id
 good-names = ["i", "j", "k", "Run", "_", "f", "fh", "v", "id", "T"]
 # Ignore as being generated:
-ignore-paths = "^(examples|build|test/schemas/node_modules|.eggs|.cache|.direnv|.tox|.config/).*$"
+ignore-paths = "^(examples|build|test/schemas/node_modules|.eggs|.cache|.direnv|.tox|.config).*$"
 
 [tool.pylint.REPORTING]
 output-format = "colorized"
