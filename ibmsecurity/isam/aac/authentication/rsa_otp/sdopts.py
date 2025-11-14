@@ -20,7 +20,7 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
 
         return isamAppliance.invoke_post_files(
             "Import sdopts.rec",
-            "{0}/sdopts.rec".format(uri),
+            f"{uri}/sdopts.rec",
             [
                 {
                     'file_formfield': 'file',
@@ -56,7 +56,7 @@ def delete(isamAppliance, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete sdopts.rec",
-                "{0}/sdopts.rec".format(uri),
+                f"{uri}/sdopts.rec",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
@@ -84,7 +84,7 @@ def delete_sdconf(isamAppliance, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete sdconf.rec",
-                "{0}/sdconf.rec".format(uri),
+                f"{uri}/sdconf.rec",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
