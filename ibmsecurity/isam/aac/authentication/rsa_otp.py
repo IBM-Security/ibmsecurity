@@ -12,7 +12,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve a list of configuration files for RSA
     """
     return isamAppliance.invoke_get("Retrieve a list of configuration files for RSA",
-                                    "{0}".format(uri),
+                                    uri,
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -28,7 +28,7 @@ def import_sdconf(isamAppliance, filepath, check_mode=False, force=False):
 
         return isamAppliance.invoke_post_files(
             "Import sdconf.rec",
-            "{0}/sdconf.rec".format(uri),
+            f"{uri}/sdconf.rec",
             [
                 {
                     'file_formfield': 'file',
@@ -55,7 +55,7 @@ def import_sdopts(isamAppliance, filepath, check_mode=False, force=False):
 
         return isamAppliance.invoke_post_files(
             "Import sdopts.rec",
-            "{0}/sdopts.rec".format(uri),
+            f"{uri}/sdopts.rec",
             [
                 {
                     'file_formfield': 'file',
@@ -82,7 +82,7 @@ def import_securid(isamAppliance, node, filepath, check_mode=False, force=False)
 
         return isamAppliance.invoke_post_files(
             "Import securid file for a node",
-            "{0}/securid/{1}".format(uri, node),
+            f"{uri}/securid/{node}",
             [
                 {
                     'file_formfield': 'file',
@@ -118,7 +118,7 @@ def delete_securid(isamAppliance, node, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete the securid file from a node",
-                "{0}/securid/{1}".format(uri, node),
+                f"{uri}/securid/{node}",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
@@ -146,7 +146,7 @@ def delete_sdopts(isamAppliance, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete sdopts.rec",
-                "{0}/sdopts.rec".format(uri),
+                f"{uri}/sdopts.rec",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
@@ -174,7 +174,7 @@ def delete_sdconf(isamAppliance, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete sdconf.rec",
-                "{0}/sdconf.rec".format(uri),
+                f"{uri}/sdconf.rec",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
