@@ -103,3 +103,6 @@ test.py
 
 # Read the docs
 _readthedocs/
+
+# Ansible
+.ansible
