@@ -5,7 +5,7 @@ importlib-metadata # Apache
 jsonschema>=4.10.0 # MIT, version needed for improved errors
 packaging>=22.0 # Apache-2.0,BSD-2-Clause
 pathspec>=0.10.3 # Mozilla Public License 2.0 (MPL 2.0)
-pyyaml>=6.0.2 # MIT (compilation probles with older versions)
+pyyaml>=6.0.2 # MIT (compilation problems with older versions)
 requests
 jmespath>=1.0.0
 PyYAML
