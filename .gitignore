@@ -106,3 +106,7 @@ _readthedocs/
 
 # Ansible
 .ansible
+
+# Certificates, private keys etc
+*.key
+*.csr
