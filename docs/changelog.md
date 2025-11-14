@@ -2,6 +2,8 @@
 
 ## Latest
 
+- refactor: remove reference to test scripts, since these are not in the pypi build
+
 ## 2025.11.14.0
 
 - feature: base/ssl_certificates/personal_certificate.py - idempotency

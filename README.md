@@ -129,14 +129,6 @@ changes is required before making the actual change.
 7. A force option is provided to override idempotency.
 8. Compare functions are provided - takes JSON output and provide a meaningful comparison.
 
-## Example Code
-
-A sample `testisam.py` and `testisds.py` is provided. Provide details of your appliance and a user/password to authenticate.
-Then call the functions needed. Run the code like you would any other Python script.
-
-e.g.: `python testisam.py`
-
-Note: the code requires PyYAML (for printing output in YAML) and importlib (dynamically load all packages) packages to work.
 
 ### Function Data Return Format
 ~~~~
