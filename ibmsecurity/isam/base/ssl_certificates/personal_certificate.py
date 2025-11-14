@@ -1,5 +1,6 @@
 import logging
 import os.path
+
 import ibmsecurity.utilities.tools
 from ibmsecurity.utilities.tools import json_equals
 from io import open
@@ -67,8 +68,8 @@ def generate(isamAppliance, kdb_id, label, dn, expire='365', default='no', size=
                 'size': size,
                 'signature_algorithm': signature_algorithm
             }
-
-    if force is True or _check(isamAppliance, kdb_id, label) is False:
+    certexists, certsubject = _check(isamAppliance, kdb_id, label=label)
+    if force or not certexists:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -94,12 +95,14 @@ def rename(isamAppliance, kdb_id, cert_id, new_id,
             f"Appliance is at version: {isamAppliance.facts['version']}. Renaming a certificate requires at least 10.0.7.0"
         )
     else:
-        if force or (_check(isamAppliance, kdb_id, cert_id) and not _check(isamAppliance, kdb_id, new_id)):
+        certexists, certsubject = _check(isamAppliance, kdb_id, label=cert_id)
+        newcertexists, nse = _check(isamAppliance, kdb_id, label=new_id)
+        if force or (certexists and not newcertexists):
             if check_mode:
                 return isamAppliance.create_return_object(changed=True)
             else:
                 return isamAppliance.invoke_put(
-                    "Renaming a personal certificate as default in a certificate database",
+                    "Renaming a personal certificate in a certificate database",
                     f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}",
                     {
                         'new_id': new_id
@@ -137,8 +140,9 @@ def receive(isamAppliance, kdb_id, label, cert, default='no', check_mode=False, 
     """
     Receiving a personal certificate into a certificate database
     """
-    if force is True or _check(isamAppliance, kdb_id, label) is False:
-        if check_mode is True:
+    certexists, certsubject = _check(isamAppliance, kdb_id, label=label)
+    if force or not certexists:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(
@@ -159,17 +163,20 @@ def receive(isamAppliance, kdb_id, label, cert, default='no', check_mode=False, 
     return isamAppliance.create_return_object()
 
 
-def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
+def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False, ignore_error=False):
     """
     Deleting a personal certificate from a certificate database
     """
-    if force or _check(isamAppliance, kdb_id, cert_id):
+    certexists, certsubject = _check(isamAppliance, kdb_id, label=cert_id)
+    if force or certexists:
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a personal certificate from a certificate database",
-                f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}")
+                f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}",
+                ignore_error=ignore_error
+            )
 
     return isamAppliance.create_return_object()
 
@@ -178,8 +185,9 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
     """
     Exporting a personal certificate from a certificate database
     """
-    if force is True or (_check(isamAppliance, kdb_id, cert_id) is True and os.path.exists(filename) is False):
-        if check_mode is False:  # No point downloading a file if in check_mode
+    certexists, certsubject = _check(isamAppliance, kdb_id, label=cert_id)
+    if force or (not certexists and not os.path.exists(filename)):
+        if not check_mode:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Exporting a personal certificate from a certificate database",
                 f"/isam/ssl_certificates/{kdb_id}/personal_cert/{cert_id}?export",
@@ -195,7 +203,11 @@ def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mo
             so it's NOT used to actually create the certificate !
     """
     warnings = []
-    if force or not _check(isamAppliance, kdb_id, label=label, certificate=cert, password=password):
+    # certexists means that the SAME certificate exists
+    certexists, certsubject = _check(isamAppliance, kdb_id, label=label, certificate=cert, password=password, simple_check=False)
+    if certsubject is not None:
+        logger.debug(f"Subject from new certificate {certsubject}")
+    if force or not certexists:
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -217,15 +229,39 @@ def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mo
                     logger.debug(f"Adding label: {label}")
                     json_data['label'] = label
             logger.debug(f"Posting json data: {json_data}")
-            return isamAppliance.invoke_post_files(
-                "Importing a personal certificate into a certificate database",
-                f"/isam/ssl_certificates/{kdb_id}/personal_cert",
-                [
-                    post_data
-                ],
-                json_data,
-                warnings=warnings
-            )
+            # This is a very normal error if you want to update an existing certificate
+            # text: {"message":"CTGSK2021W A duplicate certificate already exists in the database."}
+            #
+            try:
+                retObj = isamAppliance.invoke_post_files(
+                             "Importing a personal certificate into a certificate database",
+                             f"/isam/ssl_certificates/{kdb_id}/personal_cert",
+                             [
+                                 post_data
+                             ],
+                             json_data,
+                             warnings=warnings
+                         )
+            except:
+                # Delete the previous certificate and add the new.
+                # The certificate exists with these values; so we want to overwrite it
+                retObjDel = delete(isamAppliance, kdb_id, label, force=True, ignore_error=True)
+                logger.debug(f"First try deleting {label}\n\n{retObjDel.get("rc", 200)}\n")
+                if retObjDel.get("rc", 200) > 400:
+                    # Delete using the subject as label
+                    retObjDel = delete(isamAppliance, kdb_id, certsubject, force=True, ignore_error=True)
+                    logger.debug(f"Second try at deleting using the new subject {certsubject}\n\n{retObjDel.get("rc", 200)}\n")
+                # Try again
+                retObj = isamAppliance.invoke_post_files(
+                             "Retry Importing a personal certificate into a certificate database",
+                             f"/isam/ssl_certificates/{kdb_id}/personal_cert",
+                             [
+                                 post_data
+                             ],
+                             json_data,
+                             warnings=warnings
+                         )
+            return retObj
 
     return isamAppliance.create_return_object()
 
@@ -234,8 +270,8 @@ def extract_cert(isamAppliance, kdb_id, cert_id, password, filename, check_mode=
     """
     Extracting a personal certificate from a certificate database
     """
-    if force is True or (_check(isamAppliance, kdb_id, cert_id) is True and os.path.exists(filename) is False):
-        if check_mode is True:
+    if force or (_check(isamAppliance, kdb_id, label=cert_id) and not os.path.exists(filename)):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             ret_obj = isamAppliance.invoke_post(
@@ -253,76 +289,87 @@ def extract_cert(isamAppliance, kdb_id, cert_id, password, filename, check_mode=
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None):
+def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None, simple_check=True):
     """
     Check if personal certificate already exists in certificate database
     This is idempotent now; using the subject of the incoming certificate (if you installed cryptography and dateutils
+    Returns true or false and also the subject (in case of true)
     """
     if label is None:
         logger.debug("No label passed, so return false")
         if not performCertCheck:
-            return False
+            return False, None
+        if simple_check:
+            # This is to cater for current usage where the full idempotency is not requested
+            return False, None
 
-    if performCertCheck and (certificate is not None) and (password is not None):
-        newCert = {}
+    if (not simple_check):
+        if performCertCheck and (certificate is not None) and (password is not None):
+            newCert = {}
 
-        _enc = 'utf-8'
-        with open(certificate, 'rb') as f:
-            c = f.read()
-        password = password.encode()
-        p = cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12(c, password)
+            _enc = 'utf-8'
+            with open(certificate, 'rb') as f:
+                c = f.read()
+            password = password.encode()
+            p = cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12(c, password)
 
-        x509 = p.cert.certificate
+            x509 = p.cert.certificate
 
-        # Define a mapping to fix some OIDs with "MAIL"
-        attr_name_overrides = {
-            ObjectIdentifier("0.9.2342.19200300.100.1.3"): "MAIL", # MAIL
-            ObjectIdentifier("1.2.840.113549.1.9.1"): "MAIL",  # EMAIL_ADDRESS
-            # Add other OIDs as needed
-        }
+            # Define a mapping to fix some OIDs with "MAIL"
+            attr_name_overrides = {
+                ObjectIdentifier("0.9.2342.19200300.100.1.3"): "MAIL", # MAIL
+                ObjectIdentifier("1.2.840.113549.1.9.1"): "MAIL",  # EMAIL_ADDRESS
+                # Add other OIDs as needed
+            }
 
-        try:
-            newCert['subject'] = x509.subject.rfc4514_string(attr_name_overrides=attr_name_overrides)
-            newCert['issuer'] = x509.issuer.rfc4514_string(attr_name_overrides=attr_name_overrides)
-        except:
-            newCert['subject'] = x509.subject.rfc4514_string()
-            newCert['issuer'] = x509.issuer.rfc4514_string()
-            logger.info(
-                'Upgrade cryptography to version 36.0.0.  Install with pip install cryptography')
+            try:
+                newCert['subject'] = x509.subject.rfc4514_string(attr_name_overrides=attr_name_overrides)
+                newCert['issuer'] = x509.issuer.rfc4514_string(attr_name_overrides=attr_name_overrides)
+            except:
+                newCert['subject'] = x509.subject.rfc4514_string()
+                newCert['issuer'] = x509.issuer.rfc4514_string()
+                logger.info(
+                    'Upgrade cryptography to version 36.0.0.  Install with pip install cryptography')
 
-        newCert['notafter'] = x509.not_valid_after_utc.strftime("%Y-%m-%d")
-        newCert['notbefore'] = x509.not_valid_before_utc.strftime("%Y-%m-%d")
-        logger.debug(f"\nLOADING SUBJECT:\n {newCert['subject']}\n")
-        ret_obj = get_all(isamAppliance, kdb_id)
-        currentCert = None
-        for certdb in ret_obj['data']:
-            if certdb['id'] == label:
-                  currentCert = certdb
-            elif certdb['id'] == newCert['subject']:
-                  currentCert = certdb
-            elif certdb['subject'] == newCert['subject']:
-                  currentCert = certdb
-        if currentCert is None:
-            logger.debug(f"\nNo match for:\n {certdb['subject']}\n")
-            return False
-        logger.debug(f"\nCurrent cert:\n {currentCert}\n")
-        # remove values that are not checked
-        currentCert.pop("keysize", None)
-        currentCert.pop("version", None)
+            newCert['notafter'] = x509.not_valid_after_utc.strftime("%Y-%m-%d")
+            newCert['notbefore'] = x509.not_valid_before_utc.strftime("%Y-%m-%d")
+            logger.debug(f"\nLOADING SUBJECT:\n {newCert['subject']}\n")
+            ret_obj = get_all(isamAppliance, kdb_id)
+            currentCert = None
+            for certdb in ret_obj['data']:
+                if certdb['id'] == label:
+                      currentCert = certdb
+                elif certdb['id'] == newCert['subject']:
+                      currentCert = certdb
+                elif certdb['subject'] == newCert['subject']:
+                      currentCert = certdb
+            if currentCert is None:
+                logger.debug(f"\nNo match for:\n {certdb['subject']}\n")
+                return False, newCert['subject']
+            logger.debug(f"\nCurrent cert:\n {currentCert}\n")
+            # remove values that are not checked
+            currentCert.pop("keysize", None)
+            currentCert.pop("version", None)
 
-        # use date only to compare.  this simplifies the logic here, Python is not very strong with comparing dates in different timezones
-        currentCert['notbefore'] = parser.parse(currentCert['notbefore'], ignoretz=True).strftime("%Y-%m-%d")
-        currentCert['notafter'] = parser.parse(currentCert['notafter'], ignoretz=True).strftime("%Y-%m-%d")
+            # use date only to compare.  this simplifies the logic here, Python is not very strong with comparing dates in different timezones
+            currentCert['notbefore'] = parser.parse(currentCert['notbefore'], ignoretz=True).strftime("%Y-%m-%d")
+            currentCert['notafter'] = parser.parse(currentCert['notafter'], ignoretz=True).strftime("%Y-%m-%d")
 
-        if json_equals(currentCert, newCert):
-            # No updates needed
-            return True
+            if json_equals(currentCert, newCert):
+                # No updates needed
+                return True, newCert['subject']
+            else:
+                return False, newCert['subject']
         else:
-            return False
+            logger.info(
+                'Skipping management certificate full idempotency check, probably because cryptography>=36.0.0 is not available.  Install with pip install cryptography')
 
-    else:
-        logger.info('Skipping management certificate idempotency check because cryptography>=36.0.0 not available.  Install with pip install cryptography')
-        return False
+    # Do simple check
+    ret_obj = get_all(isamAppliance, kdb_id)
+    for certdb in ret_obj['data']:
+        if certdb['id'] == label:
+           return True, certdb.get('subject', label)
+    return False, None
 
 
 def _check_default(isamAppliance, kdb_id, cert_id, default):
