@@ -1,9 +1,22 @@
 import logging
 import os.path
 import ibmsecurity.utilities.tools
+from ibmsecurity.utilities.tools import json_equals
 from io import open
 
 logger = logging.getLogger(__name__)
+
+performCertCheck = True
+try:
+    from dateutil import parser
+    #pip install python-dateutil
+    import cryptography.hazmat.primitives.serialization.pkcs12
+    import cryptography.x509
+    from cryptography.x509 import Name, NameAttribute, NameOID
+    from cryptography.x509.oid import ObjectIdentifier
+    # pip install cryptography
+except:
+    performCertCheck = False
 
 
 def get_all(isamAppliance, kdb_id, check_mode=False, force=False):
@@ -179,9 +192,10 @@ def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mo
     """
     Importing a personal certificate into a certificate database
     Remark: you can add a label, but it's only used for a half-hearted check if the certificate already exists for versions < 11
+            so it's NOT used to actually create the certificate !
     """
     warnings = []
-    if force or not _check(isamAppliance, kdb_id, label):
+    if force or not _check(isamAppliance, kdb_id, label=label, certificate=cert, password=password):
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -239,20 +253,76 @@ def extract_cert(isamAppliance, kdb_id, cert_id, password, filename, check_mode=
     return isamAppliance.create_return_object()
 
 
-def _check(isamAppliance, kdb_id, cert_id):
+def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None):
     """
     Check if personal certificate already exists in certificate database
+    This is idempotent now; using the subject of the incoming certificate (if you installed cryptography and dateutils
     """
-    if cert_id is None:
+    if label is None:
         logger.debug("No label passed, so return false")
-        return False
-    else:
-        ret_obj = get_all(isamAppliance, kdb_id)
-        for certdb in ret_obj['data']:
-            if certdb['id'] == cert_id:
-                return True
+        if not performCertCheck:
+            return False
 
-    return False
+    if performCertCheck and (certificate is not None) and (password is not None):
+        newCert = {}
+
+        _enc = 'utf-8'
+        with open(certificate, 'rb') as f:
+            c = f.read()
+        password = password.encode()
+        p = cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12(c, password)
+
+        x509 = p.cert.certificate
+
+        # Define a mapping to fix some OIDs with "MAIL"
+        attr_name_overrides = {
+            ObjectIdentifier("0.9.2342.19200300.100.1.3"): "MAIL", # MAIL
+            ObjectIdentifier("1.2.840.113549.1.9.1"): "MAIL",  # EMAIL_ADDRESS
+            # Add other OIDs as needed
+        }
+
+        try:
+            newCert['subject'] = x509.subject.rfc4514_string(attr_name_overrides=attr_name_overrides)
+            newCert['issuer'] = x509.issuer.rfc4514_string(attr_name_overrides=attr_name_overrides)
+        except:
+            newCert['subject'] = x509.subject.rfc4514_string()
+            newCert['issuer'] = x509.issuer.rfc4514_string()
+            logger.info(
+                'Upgrade cryptography to version 36.0.0.  Install with pip install cryptography')
+
+        newCert['notafter'] = x509.not_valid_after_utc.strftime("%Y-%m-%d")
+        newCert['notbefore'] = x509.not_valid_before_utc.strftime("%Y-%m-%d")
+        logger.debug(f"\nLOADING SUBJECT:\n {newCert['subject']}\n")
+        ret_obj = get_all(isamAppliance, kdb_id)
+        currentCert = None
+        for certdb in ret_obj['data']:
+            if certdb['id'] == label:
+                  currentCert = certdb
+            elif certdb['id'] == newCert['subject']:
+                  currentCert = certdb
+            elif certdb['subject'] == newCert['subject']:
+                  currentCert = certdb
+        if currentCert is None:
+            logger.debug(f"\nNo match for:\n {certdb['subject']}\n")
+            return False
+        logger.debug(f"\nCurrent cert:\n {currentCert}\n")
+        # remove values that are not checked
+        currentCert.pop("keysize", None)
+        currentCert.pop("version", None)
+
+        # use date only to compare.  this simplifies the logic here, Python is not very strong with comparing dates in different timezones
+        currentCert['notbefore'] = parser.parse(currentCert['notbefore'], ignoretz=True).strftime("%Y-%m-%d")
+        currentCert['notafter'] = parser.parse(currentCert['notafter'], ignoretz=True).strftime("%Y-%m-%d")
+
+        if json_equals(currentCert, newCert):
+            # No updates needed
+            return True
+        else:
+            return False
+
+    else:
+        logger.info('Skipping management certificate idempotency check because cryptography>=36.0.0 not available.  Install with pip install cryptography')
+        return False
 
 
 def _check_default(isamAppliance, kdb_id, cert_id, default):
