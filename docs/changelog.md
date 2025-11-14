@@ -1,4 +1,4 @@
-# Manual change log
+# Change log
 
 ## Latest
 
