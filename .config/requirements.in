@@ -1,5 +1,4 @@
 # alphabetically sorted:
-black>=24.3.0 # MIT (security)
 filelock>=3.8.2 # The Unlicense
 importlib-metadata # Apache
 jsonschema>=4.10.0 # MIT, version needed for improved errors
@@ -9,3 +8,5 @@ pyyaml>=6.0.2 # MIT (compilation problems with older versions)
 requests
 jmespath>=1.0.0
 PyYAML
+python-dateutil
+cryptography>=36.0.0
