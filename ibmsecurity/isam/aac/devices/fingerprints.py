@@ -62,7 +62,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         warnings.append("Device {0} had no match, skipping delete.".format(name))
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
-        if check_mode is True:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete a specific Device Fingerprint",
@@ -73,7 +73,7 @@ def delete_set(isamAppliance, devices, check_mode=False, force=False):
     """
     Delete a set of device fingerprints
     """
-    if check_mode is True:
+    if check_mode:
         return isamAppliance.create_return_object(changed=True)
     else:
         return isamAppliance.invoke_delete(description="Delete a set of device fingerprints",
