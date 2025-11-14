@@ -61,7 +61,7 @@ Z1NCCowvpZazNxKccQg7izYwd6HL70WMxCWFU0e70uw9KZqteG7SVcQ=
 
 @pytest.mark.parametrize("items", getTestData())
 def test_import_signer_cert(iviaServer, caplog, items) -> None:
-    """Get all admincfg options."""
+    """Import signer certificates"""
     caplog.set_level(logging.DEBUG)
     logging.log(logging.INFO, items)
     arg = {}
