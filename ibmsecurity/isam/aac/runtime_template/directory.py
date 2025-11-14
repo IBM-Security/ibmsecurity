@@ -80,7 +80,7 @@ def create(isamAppliance, path, name, check_mode=False, force=False):
     id = path + "/" + name
     check_dir = _check(isamAppliance, id)
     if check_dir != None:
-        warnings.append("Directory {0} exists in path {1}. Ignoring create.".format(name, path))
+        warnings.append(f"Directory {name} exists in path {path}. Ignoring create.")
 
     if force is True or check_dir == None:
         if check_mode is True:
@@ -88,7 +88,7 @@ def create(isamAppliance, path, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post(
                 "Creating a directory in the runtime template files directory",
-                "/mga/template_files/{0}".format(path),
+                f"/mga/template_files/{path}",
                 {
                     'dir_name': name,
                     'type': 'dir'
@@ -111,7 +111,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
     warnings = []
     check_dir = _check(isamAppliance, id)
     if check_dir == None:
-        warnings.append("Directory {0} does not exist. Ignoring delete.".format(id))
+        warnings.append(f"Directory {id} does not exist. Ignoring delete.")
 
     if force is True or check_dir != None:
         if check_mode is True:
@@ -119,7 +119,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a directory in the runtime template files directory",
-                "/mga/template_files/{0}".format(id), requires_modules=requires_modules,
+                f"/mga/template_files/{id}", requires_modules=requires_modules,
                 requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -143,14 +143,14 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
         path = split_dir[:-1]
         new_path = '/'.join([str(x) for x in path]) + "/" + new_name
     except:
-        logger.info("New path can't be build from id: {0} and new_name: {1}.".format(id, new_name))
+        logger.info(f"New path can't be build from id: {id} and new_name: {new_name}.")
 
     if force is False:
         new_dir_id = _check(isamAppliance, new_path)
         dir_id = _check(isamAppliance, id)
 
     if new_dir_id != None:
-        warnings.append("Directory {0} does already exist. Ignoring renameing.".format(new_path))
+        warnings.append(f"Directory {new_path} does already exist. Ignoring renameing.")
 
     if force is True or (dir_id != None and new_dir_id == None):
         if check_mode is True:
@@ -158,7 +158,7 @@ def rename(isamAppliance, id, new_name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Renaming a directory in the runtime template files directory",
-                "/mga/template_files/{0}".format(id),
+                f"/mga/template_files/{id}",
                 {
                     'new_name': new_name,
                     'type': 'directory'

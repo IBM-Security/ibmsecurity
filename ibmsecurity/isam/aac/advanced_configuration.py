@@ -29,7 +29,7 @@ def get(isamAppliance, key, check_mode=False, force=False):
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific configuration property",
-                                        "/iam/access/v8/override-configs/{0}".format(id),
+                                        f"/iam/access/v8/override-configs/{id}",
                                         requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -47,7 +47,7 @@ def update(isamAppliance, key, value, sensitive, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Update a configuration property",
-                "/iam/access/v8/override-configs/{0}".format(id),
+                f"/iam/access/v8/override-configs/{id}",
                 {
                     'value': value,
                     'sensitive': sensitive
@@ -87,7 +87,7 @@ def get_files(isamAppliance, path, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration files",
-                                    "{0}/{1}".format(mga_uri, path),
+                                    f"{mga_uri}/{path}",
                                     requires_modules=requires_modules, requires_version="10.0.0")
 
 
@@ -100,7 +100,7 @@ def get_paths(isamAppliance, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration file component paths",
-                                    "{0}".format(mga_uri),
+                                    f"{mga_uri}",
                                     requires_modules=requires_modules, requires_version="10.0.0")
 
 
@@ -113,7 +113,7 @@ def get_contents(isamAppliance, path, filename, check_mode=False, force=False):
     :return:
     """
     return isamAppliance.invoke_get("Retrieving a list of configuration file component paths",
-                                    "{0}/{1}/{2}".format(mga_uri, path, filename),
+                                    f"{mga_uri}/{path}/{filename}",
                                     requires_modules=requires_modules, requires_version="10.0.0")
 
 
@@ -129,11 +129,11 @@ def export_file(isamAppliance, path, filename, file_path, check_mode=False, forc
 
     if force is True or (os.path.exists(file_path) is False):
         return isamAppliance.invoke_get_file("Exporting a configuration file",
-                                             "{0}/{1}/{2}?export=true".format(mga_uri, path, filename),
+                                             f"{mga_uri}/{path}/{filename}?export=true",
                                              file_path,
                                              requires_modules=requires_modules, requires_version="10.0.0")
 
-    return isamAppliance.create_return_object(warnings=["File {0} already exists".format(file_path)])
+    return isamAppliance.create_return_object(warnings=[f"File {file_path} already exists"])
 
 
 def update_file_contents(isamAppliance, path, filename, contents, check_mode=False, force=False):
@@ -148,7 +148,7 @@ def update_file_contents(isamAppliance, path, filename, contents, check_mode=Fal
 
     if force is True or update is True:
         return isamAppliance.invoke_put("Update the contents of a configuration file",
-                                        "{0}/{1}/{2}".format(mga_uri, path, filename),
+                                        f"{mga_uri}/{path}/{filename}",
                                         {
                                             'contents': contents,
                                             'type': 'file'
@@ -169,7 +169,7 @@ def import_file(isamAppliance, path, filename, file_path, check_mode=False, forc
 
     if force is True or update is True:
         return isamAppliance.invoke_put_files("Upload a new configuration file",
-                                              "{0}/{1}/{2}?uiCalled=true".format(mga_uri, path, filename),
+                                              f"{mga_uri}/{path}/{filename}?uiCalled=true",
                                               [
                                                   {
                                                       'file_formfield': 'file',

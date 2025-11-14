@@ -13,7 +13,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of Obligations
     """
     return isamAppliance.invoke_get("Retrieve a list of obligations",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)))
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}")
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -25,11 +25,11 @@ def get(isamAppliance, name, check_mode=False, force=False):
     artifact_id = ret_obj['data']
 
     if artifact_id == {}:
-        logger.info("Obligation {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Obligation {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific obligation",
-                                        "{0}/{1}".format(uri, artifact_id))
+                                        f"{uri}/{artifact_id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -41,7 +41,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found obligation {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found obligation {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -56,11 +56,11 @@ def set(isamAppliance, name, description, obligationURI, parameters=[], type="Ob
     ret_obj = search(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('Adding "{1}" as a new {0}'.format(artifact_type, name))
+        logger.info(f'Adding "{name}" as a new {artifact_type}')
         return add(isamAppliance, name, description, parameters, type, obligationURI, typeId, properties, check_mode,
                    True)
     else:
-        logger.info('Update for {0} "{1}"'.format(artifact_type, name))
+        logger.info(f'Update for {artifact_type} "{name}"')
         return update(isamAppliance, name, description, obligationURI, parameters, type, typeId, properties,
                       new_name, check_mode, force)
 
@@ -100,7 +100,7 @@ def update(isamAppliance, name, description, obligationURI, parameters=[], type=
                                                      typeId, properties, new_name)
     if artifact_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown obligation: {0}".format(name))
+        raise IBMError("999", f"Cannot update data for unknown obligation: {name}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -108,7 +108,7 @@ def update(isamAppliance, name, description, obligationURI, parameters=[], type=
         else:
             return isamAppliance.invoke_put(
                 "Update a specified policy set",
-                "{0}/{1}".format(uri, artifact_id), json_data)
+                f"{uri}/{artifact_id}", json_data)
 
     return isamAppliance.create_return_object()
 
@@ -135,7 +135,7 @@ def _check(isamAppliance, name, description, obligationURI, parameters, type, ty
         logger.warning(" not found, returning no update required.")
         return None, update_required, json_data
     elif ret_obj['data']['predefined']:
-        logger.warning("A predefined {0} cannot be updated, returning no update required.".format(artifact_type))
+        logger.warning(f"A predefined {artifact_type} cannot be updated, returning no update required.")
         return None, update_required, json_data
     else:
         artifact_id = ret_obj['data']['id']
@@ -146,9 +146,9 @@ def _check(isamAppliance, name, description, obligationURI, parameters, type, ty
         del ret_obj['data']['predefined']
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True
@@ -163,17 +163,17 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     ret_obj = get(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('{0} "{1}" not found, skipping delete.'.format(artifact_type, name))
+        logger.info(f'{artifact_type} "{name}" not found, skipping delete.')
     elif ret_obj['data']["predefined"]:
-        logger.info('{0} "{1}" is predefined, skipping delete.'.format(artifact_type, name))
+        logger.info(f'{artifact_type} "{name}" is predefined, skipping delete.')
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            logger.info('Deleting {0} "{1}"'.format(artifact_type, name))
+            logger.info(f'Deleting {artifact_type} "{name}"')
             return isamAppliance.invoke_delete(
                 "Delete a Policy Set",
-                "{0}/{1}".format(uri, ret_obj['data']['id']))
+                f"{uri}/{ret_obj['data']['id']}")
 
     return isamAppliance.create_return_object()
 

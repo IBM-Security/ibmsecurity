@@ -27,7 +27,7 @@ You will then be able to create a pull request from your commit.
 
 ### Local appliance
 
-There is no mock code for testing, unfortunately.
+There is no mock code for testing against, unfortunately.
 So you need a running IBM Verify Access/IBM Identity Verify Access appliance or container to be able to run the tests.
 
 ### Env

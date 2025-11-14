@@ -13,7 +13,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve configuration of SCIM ISAM user settings
     """
     return isamAppliance.invoke_get("Retrieve configuration of SCIM ISAM user settings",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:isam:1.0:User".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:isam:1.0:User",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 

@@ -34,7 +34,7 @@ def get_ent_profile(isamAppliance, check_mode=False, force=False):
     Retrieving the current enterprise user profile SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current enterprise user profile SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -53,7 +53,7 @@ def get_ext_auth_service_config(isamAppliance, check_mode=False, force=False):
     Retrieving the current external authentication service SCIM configuration
     """
     return isamAppliance.invoke_get("Retrieving the current external authentication service SCIM configuration ",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -64,7 +64,7 @@ def get_general_config(isamAppliance, check_mode=False, force=False):
     Retrieving the current general SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current general SCIM configuration settings",
-                                    "{0}/general".format(uri),
+                                    f"{uri}/general",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -75,7 +75,7 @@ def get_group_config(isamAppliance, check_mode=False, force=False):
     Retrieving the current group SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current group SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:core:2.0:Group".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:core:2.0:Group",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -223,7 +223,7 @@ def update_ent_profile(isamAppliance, mappings, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_put("Updating the enterprise user profile SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
                                     mappings,
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
@@ -259,7 +259,7 @@ def update_ext_auth_service_config(isamAppliance, schemas, check_mode=False, for
                     update_required = True
                     exist = True
             if exist is False:
-                warnings = "Did not find connection {0} in the configured server list.".format(obj['connection'])
+                warnings = f"Did not find connection {obj['connection']} in the configured server list."
                 return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     if force is True or update_required is True:
@@ -267,7 +267,7 @@ def update_ext_auth_service_config(isamAppliance, schemas, check_mode=False, for
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put("Updating the external authentication service SCIM configuration settings",
-                                            "{0}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS".format(uri),
+                                            f"{uri}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS",
                                             schemas,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version
@@ -310,10 +310,10 @@ def _check(isamAppliance, settings):
     # e.g. converts python boolean 'True' -> to JSON literal lowercase value 'true'
     cur_json_string = json.dumps(ret_obj['data'])
     cur_sorted_json = json_sort(cur_json_string)
-    logger.debug("Server JSON : {0}".format(cur_sorted_json))
+    logger.debug(f"Server JSON : {cur_sorted_json}")
     given_json_string = json.dumps(settings)
     given_sorted_json = json_sort(given_json_string)
-    logger.debug("Desired JSON: {0}".format(given_sorted_json))
+    logger.debug(f"Desired JSON: {given_sorted_json}")
     if cur_sorted_json != given_sorted_json:
         return False
         logger.debug("Changes detected!")
@@ -350,7 +350,7 @@ def update_group_config(isamAppliance, ldap_object_classes, group_dn, check_mode
             data['group_dn'] = group_dn
             data['ldap_object_classes'] = ldap_object_classes
             return isamAppliance.invoke_put("Updating the group SCIM configuration settings",
-                                            "{0}/urn:ietf:params:scim:schemas:core:2.0:Group".format(uri),
+                                            f"{uri}/urn:ietf:params:scim:schemas:core:2.0:Group",
                                             data,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version

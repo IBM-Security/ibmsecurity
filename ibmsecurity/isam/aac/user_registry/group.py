@@ -12,7 +12,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving a list of all current groups in the registry
     """
     return isamAppliance.invoke_get("Retrieving a list of all current groups in the registry",
-                                    "{0}/v1".format(uri),
+                                    f"{uri}/v1",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -21,7 +21,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     Retrieving details for a particular group in the registry
     """
     return isamAppliance.invoke_get("Retrieving details for a particular group in the registry",
-                                    "{0}/{1}/v1".format(uri, id),
+                                    f"{uri}/{id}/v1",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -39,7 +39,7 @@ def add(isamAppliance, id, users=None, check_mode=False, force=False):
             }
             return isamAppliance.invoke_post(
                 "Creating a new group in the registry",
-                "{0}/v1".format(uri), json_data,
+                f"{uri}/v1", json_data,
                 requires_modules=requires_modules, requires_version="10.0.1")
 
     return isamAppliance.create_return_object()
@@ -55,7 +55,7 @@ def delete(isamAppliance, group_name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a group from the registry",
-                "{0}/{1}/v1".format(uri, group_name),
+                f"{uri}/{group_name}/v1",
                 requires_modules=requires_modules, requires_version="10.0.1")
 
     return isamAppliance.create_return_object()
@@ -71,7 +71,7 @@ def add_user(isamAppliance, user_name, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post(
                 "Adding a user to a group in the registry",
-                "/mga/user_registry/users/{0}/groups/v1".format(user_name),
+                f"/mga/user_registry/users/{user_name}/groups/v1",
                 {
                     'id': id
                 },
@@ -90,7 +90,7 @@ def delete_user(isamAppliance, user_name, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Removing a user from a group in the registry",
-                "/mga/user_registry/users/{0}/groups/{1}/v1".format(user_name, id),
+                f"/mga/user_registry/users/{user_name}/groups/{id}/v1",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()

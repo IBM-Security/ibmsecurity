@@ -37,7 +37,7 @@ def add(isamAppliance, name, properties, attributes, description=None, type="LDA
     id = ret_obj['data']
 
     if id != {}:
-        logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
+        logger.info(f"PIP '{name}' already exists.  Skipping add.")
 
     if force is True or id == {}:
         if check_mode is True:
@@ -46,7 +46,7 @@ def add(isamAppliance, name, properties, attributes, description=None, type="LDA
 
             return isamAppliance.invoke_post(
                 "Create a LDAP policy information point",
-                "{0}".format(uri),
+                f"{uri}",
                 _create_json(name=name, description=description, type=type,
                              attributes=attributes, properties=properties),
                 requires_modules=requires_modules, requires_version=requires_version
@@ -78,19 +78,19 @@ def update(isamAppliance, name, properties, attributes, description=None, type="
 
         sorted_json_data = json_sort(json_data)
 
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
 
         del ret_obj['data']['id']
         del ret_obj['data']['predefined']
         sorted_ret_obj = json_sort(ret_obj['data'])
 
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
 
         if sorted_json_data != sorted_ret_obj:
             update_required = True
     else:
-        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
-        warnings = ["PIP '{0}' does not exists.  Skipping update.".format(name)]
+        logger.info(f"PIP '{name}' does not exists.  Skipping update.")
+        warnings = [f"PIP '{name}' does not exists.  Skipping update."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
@@ -101,12 +101,12 @@ def update(isamAppliance, name, properties, attributes, description=None, type="
 
             return isamAppliance.invoke_put(
                 "Update a specific LDAP policy information point",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
     if update_required is False:
-        logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
+        logger.info(f"Input is the same as current PIP '{name}'.  Skipping update.")
 
     return isamAppliance.create_return_object()

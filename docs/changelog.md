@@ -1,13 +1,18 @@
-# Manual change log
+# Change log
 
 ## Latest
 
 - feature: proxy support (http_proxy and https_proxy only)
-- fix: base/ssl_certificates/signer_certificates.py - don't error if get signer certificate returns nothing
+- fix: base/ssl_certificates/signer_certificate.py - don't error if get signer certificate returns nothing
 - feature: update docker db_configuration with new parameters v10.0.8.0 and v11
 - removed: soliddb as option for docker db_configuration
+- feature: base/ssl_certificates/personal_certificate.py - idempotency
+- fix: base/management_ssl_certificate.py - update cryptography for idempotency, fixes known_issue
+- fix: aac/fido2/metadata_services - ensure integers
+- fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
 
 ### Build & deploy
+- refactor: format to f-strings
 - wip: ordering of pytests
 
 ## 2025.9.26.0

@@ -44,7 +44,7 @@ def delete(isamAppliance, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Unconfigure MMFA endpoint details",
-                "{0}".format(uri),
+                f"{uri}",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 

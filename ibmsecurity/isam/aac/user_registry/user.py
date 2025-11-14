@@ -17,7 +17,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     Retrieving a list of all current users in the registry
     """
     return isamAppliance.invoke_get("Retrieving a list of all current users in the registry",
-                                    "{0}/v1".format(uri),
+                                    f"{uri}/v1",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -26,7 +26,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     Retrieving details for a particular user in the registry
     """
     return isamAppliance.invoke_get("Retrieving details for a particular user in the registry",
-                                    "{0}/{1}/v1".format(uri, id),
+                                    f"{uri}/{id}/v1",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -49,7 +49,7 @@ def add(isamAppliance, id, password, groups=None, check_mode=False, force=False)
                 json_data['groups'] = groups
             return isamAppliance.invoke_post(
                 "Creating a new user in the registry",
-                "{0}/v1".format(uri), json_data,
+                f"{uri}/v1", json_data,
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -65,7 +65,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a user in the registry",
-                "{0}/{1}/v1".format(uri, id),
+                f"{uri}/{id}/v1",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -80,7 +80,7 @@ def set_pw(isamAppliance, id, password, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_put(
             "Changing the password of a user in the registry",
-            "{0}/{1}/v1".format(uri, id),
+            f"{uri}/{id}/v1",
             {
                 'password': password
             },

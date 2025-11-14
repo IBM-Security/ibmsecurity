@@ -28,8 +28,8 @@ def get(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("PIP Type {0} had no match, skipping retrieval.".format(name))
-        warnings = ["PIP Type {0} had no match, skipping retrieval.".format(name)]
+        logger.info(f"PIP Type {name} had no match, skipping retrieval.")
+        warnings = [f"PIP Type {name} had no match, skipping retrieval."]
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, id)
@@ -45,7 +45,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Policy Type {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found Policy Type {name} id: {obj['id']}")
             ret_obj_new['data'] = obj['id']
 
     return ret_obj_new
@@ -53,4 +53,4 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific PIP Type",
-                                    "{0}/{1}".format(uri, id))
+                                    f"{uri}/{id}")

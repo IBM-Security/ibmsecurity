@@ -13,7 +13,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the current enterprise user profile SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current enterprise user profile SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -53,7 +53,7 @@ def set(isamAppliance, mappings, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put("Updating the enterprise user profile SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
                                     mappings,
                                     requires_modules=requires_modules,
                                     requires_version=requires_version

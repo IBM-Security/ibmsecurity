@@ -25,7 +25,7 @@ def get(isamAppliance, url, id=None, check_mode=False, force=False):
         id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata Service {0} had no match, skipping retrieval.".format(url))
+        logger.info(f"FIDO2 Metadata Service {url} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return _get(isamAppliance, id)
@@ -39,7 +39,7 @@ def search(isamAppliance, url, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['url'] == url:
-            logger.info("Found FIDO2 Metadata Service {0} id: {1}".format(url, obj['id']))
+            logger.info(f"Found FIDO2 Metadata Service {url} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -53,14 +53,14 @@ def delete(isamAppliance, url, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata Service {0} not found, skipping delete.".format(url))
+        logger.info(f"FIDO2 Metadata Service {url} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Delete a FIDO2 Metadata Service",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -73,13 +73,13 @@ def set(isamAppliance, url, retryInterval=3600, truststore="", jwsTruststore="",
     """
     if (search(isamAppliance, url=url))['data'] == {}:
         # Force the add - we already know FIDO2 Metadata Service does not exist
-        logger.info("FIDO2 metadata service {0} had no match, requesting to add new one.".format(url))
+        logger.info(f"FIDO2 metadata service {url} had no match, requesting to add new one.")
         return add(isamAppliance, url=url, retryInterval=retryInterval, truststore=truststore, jwsTruststore=jwsTruststore,
                    username=username, password=password, keystore=keystore, certificate=certificate, protocol=protocol,
                    timeout=timeout, proxy=proxy, headers=headers, check_mode=check_mode, force=force)
     else:
         # Update request
-        logger.info("FIDO2 metadata service {0} exists, requesting to update.".format(url))
+        logger.info(f"FIDO2 metadata service {url} exists, requesting to update.")
         return update(isamAppliance, url=url, retryInterval=retryInterval, truststore=truststore, jwsTruststore=jwsTruststore,
                    username=username, password=password, keystore=keystore, certificate=certificate, protocol=protocol,
                    timeout=timeout, proxy=proxy, headers=headers, check_mode=check_mode, force=force)
@@ -128,7 +128,7 @@ def update(isamAppliance, url="", retryInterval=3600, truststore="", jwsTruststo
                                                 timeout, proxy, headers)
     if mds_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown FIDO2 relying party: {0}".format(url))
+        raise IBMError("999", f"Cannot update data for unknown FIDO2 relying party: {url}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -136,7 +136,7 @@ def update(isamAppliance, url="", retryInterval=3600, truststore="", jwsTruststo
         else:
             return isamAppliance.invoke_put(
                 "Update a specific FIDO2 relying party",
-                "{0}/{1}".format(uri, mds_id), json_data,
+                f"{uri}/{mds_id}", json_data,
                 requires_modules=requires_modules,
                 requires_version=requires_version)
 
@@ -168,7 +168,7 @@ def _check(isamAppliance, url, retryInterval, truststore, jwsTruststore, usernam
         del cur_cfg['id']
         cur_json_string = json.dumps(cur_cfg)
         cur_sorted_json = tools.json_sort(cur_json_string)
-        logger.debug("Server JSON : {0}".format(cur_sorted_json))
+        logger.debug(f"Server JSON : {cur_sorted_json}")
 
         new_cfg = {
             'url': url,
@@ -186,7 +186,7 @@ def _check(isamAppliance, url, retryInterval, truststore, jwsTruststore, usernam
         }
         given_json_string = json.dumps(new_cfg)
         given_sorted_json = tools.json_sort(given_json_string)
-        logger.debug("Desired JSON: {0}".format(given_sorted_json))
+        logger.debug(f"Desired JSON: {given_sorted_json}")
 
         if cur_sorted_json != given_sorted_json:
             logger.debug("Changes detected!")

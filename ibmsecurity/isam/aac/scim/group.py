@@ -14,7 +14,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the current group SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current group SCIM configuration settings",
-                                    "{0}/urn:ietf:params:scim:schemas:core:2.0:Group".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:core:2.0:Group",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -47,7 +47,7 @@ def set(isamAppliance, ldap_object_classes, group_dn, check_mode=False, force=Fa
             data['group_dn'] = group_dn
             data['ldap_object_classes'] = ldap_object_classes
             return isamAppliance.invoke_put("Updating the group SCIM configuration settings",
-                                            "{0}/urn:ietf:params:scim:schemas:core:2.0:Group".format(uri),
+                                            f"{uri}/urn:ietf:params:scim:schemas:core:2.0:Group",
                                             data,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version

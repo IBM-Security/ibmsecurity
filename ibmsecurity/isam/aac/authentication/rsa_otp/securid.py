@@ -20,7 +20,7 @@ def import_file(isamAppliance, node, filename, check_mode=False, force=False):
 
         return isamAppliance.invoke_post_files(
             "Import securid file for a node",
-            "{0}/securid/{1}".format(uri, node),
+            f"{uri}/securid/{node}",
             [
                 {
                     'file_formfield': 'file',
@@ -56,7 +56,7 @@ def delete(isamAppliance, node, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete the securid file from a node",
-                "{0}/securid/{1}".format(uri, node),
+                f"{uri}/securid/{node}",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
