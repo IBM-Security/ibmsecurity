@@ -15,7 +15,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
 
     """
     return isamAppliance.invoke_get("Retrieve a list of policy information points (pips)",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -28,8 +28,8 @@ def get(isamAppliance, name=None, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("PIP '{0}' had no match, skipping retrieval.".format(name))
-        warnings = ["PIP '{0}' had no match, skipping retrieval.".format(name)]
+        logger.info(f"PIP '{name}' had no match, skipping retrieval.")
+        warnings = [f"PIP '{name}' had no match, skipping retrieval."]
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, id)
@@ -50,12 +50,12 @@ def delete(isamAppliance, name=None, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete a policy information point",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
     if id == {}:
-        logger.info("PIP '{0}' does not exists, skipping delete.".format(name))
+        logger.info(f"PIP '{name}' does not exists, skipping delete.")
         return isamAppliance.create_return_object()
 
     return isamAppliance.create_return_object()
@@ -86,7 +86,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Policy '{0}' id: '{1}'".format(name, obj['id']))
+            logger.info(f"Found Policy '{name}' id: '{obj['id']}'")
             ret_obj_new['data'] = obj['id']
 
     return ret_obj_new
@@ -94,7 +94,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific PIP",
-                                    "{0}/{1}".format(uri, id))
+                                    f"{uri}/{id}")
 
 
 def _create_json(name, properties, attributes, description, type):

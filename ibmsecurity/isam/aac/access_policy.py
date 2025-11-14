@@ -30,7 +30,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
     warnings = []
     if ret_obj['data'] == {}:
-        return isamAppliance.create_return_object(warnings=["Access policy with name {} not found.".format(name)])
+        return isamAppliance.create_return_object(warnings=[f"Access policy with name {name} not found."])
     else:
         return _get(isamAppliance, ret_obj['data'])
 
@@ -39,7 +39,7 @@ def _get(isamAppliance, access_policy_id):
     """
     Internal function to get data using "id" - used to avoid extra calls
     """
-    return isamAppliance.invoke_get("Retrieve a specific access policy", "{0}{1}".format(uri, access_policy_id),
+    return isamAppliance.invoke_get("Retrieve a specific access policy", f"{uri}{access_policy_id}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -54,7 +54,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
     for obj in ret_obj['data']:
         if obj['name'] == name:
             return_obj['data'] = obj['id']
-            logger.debug("Found id: {0}".format(obj['id']))
+            logger.debug(f"Found id: {obj['id']}")
             return_obj['rc'] = 0
 
     return return_obj
@@ -116,7 +116,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete an access policy",
-                "{}{}".format(uri, ret_obj['data']), requires_modules=requires_modules,
+                f"{uri}{ret_obj['data']}", requires_modules=requires_modules,
                 requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -142,7 +142,7 @@ def update(isamAppliance, name, content, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_put(
                 "Update a specified access policy",
-                "{}{}".format(uri, id),
+                f"{uri}{id}",
                 {
                     'content': content
                 }, requires_modules=requires_modules, requires_version=requires_version)
@@ -163,7 +163,7 @@ def export_file(isamAppliance, name, filename, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_get_file(
                 "Export a specific access policy",
-                "{}{}/file".format(uri, id),
+                f"{uri}{id}/file",
                 filename, requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -216,7 +216,7 @@ def import_file(isamAppliance, name, file, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post_files(
                 "Import a access policy",
-                "{}{}/file".format(uri, ret_obj['data']),
+                f"{uri}{ret_obj['data']}/file",
                 [
                     {
                         'file_formfield': 'file',

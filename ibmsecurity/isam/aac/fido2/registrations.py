@@ -25,7 +25,7 @@ def get(isamAppliance, credentialId, check_mode=False, force=False):
                                     requires_modules=requires_modules, requires_version=requires_version)
 
     if ret_obj['rc'] == 404:
-        logger.info("FIDO2 registration for {0} had no match.".format(credentialId))
+        logger.info(f"FIDO2 registration for {credentialId} had no match.")
         return isamAppliance.create_return_object()
     return ret_obj
 
@@ -43,10 +43,10 @@ def delete(isamAppliance, username=None, credentialId=None, check_mode=False, fo
         if username is not None:
             return isamAppliance.invoke_delete(
                 "Delete all FIDO2 registrations for a user",
-                "{0}/username/{1}".format(uri, username),
+                f"{uri}/username/{username}",
                 requires_modules=requires_modules, requires_version=requires_version)
         elif credentialId is not None:
             return isamAppliance.invoke_delete(
                 "Delete a specific FIDO2 registration for a user",
-                "{0}/credentialId/{1}".format(uri, credentialId),
+                f"{uri}/credentialId/{credentialId}",
                 requires_modules=requires_modules, requires_version=requires_version)

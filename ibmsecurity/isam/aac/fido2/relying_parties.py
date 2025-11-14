@@ -27,7 +27,7 @@ def get(isamAppliance, name, id=None, check_mode=False, force=False):
         id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"FIDO2 Metadata {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return _get(isamAppliance, id)
@@ -41,7 +41,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found FIDO2 relying party {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found FIDO2 relying party {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -55,14 +55,14 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 relying party {0} not found, skipping delete.".format(name))
+        logger.info(f"FIDO2 relying party {name} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Delete a FIDO2 relying party",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -73,12 +73,12 @@ def set(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, id=No
     """
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know FIDO2 Relying Party does not exist
-        logger.info("FIDO2 relying party {0} had no match, requesting to add new one.".format(name))
+        logger.info(f"FIDO2 relying party {name} had no match, requesting to add new one.")
         return add(isamAppliance, name=name, rpId=rpId, fidoServerOptions=fidoServerOptions, relyingPartyOptions=relyingPartyOptions,
                    id=id, check_mode=check_mode, force=True)
     else:
         # Update request
-        logger.info("FIDO2 relying party {0} exists, requesting to update.".format(name))
+        logger.info(f"FIDO2 relying party {name} exists, requesting to update.")
         return update(isamAppliance, name=name, rpId=rpId, fidoServerOptions=fidoServerOptions, relyingPartyOptions=relyingPartyOptions,
                       check_mode=check_mode, force=force)
 
@@ -114,7 +114,7 @@ def update(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, ch
     rp_id, update_required, json_data = _check(isamAppliance, name=name, rpId=rpId, fidoServerOptions=fidoServerOptions, relyingPartyOptions=relyingPartyOptions)
     if rp_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown FIDO2 relying party: {0}".format(name))
+        raise IBMError("999", f"Cannot update data for unknown FIDO2 relying party: {name}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -122,7 +122,7 @@ def update(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions, ch
         else:
             return isamAppliance.invoke_put(
                 "Update a specific FIDO2 relying party",
-                "{0}/{1}".format(uri, rp_id), json_data,
+                f"{uri}/{rp_id}", json_data,
                 requires_modules=requires_modules,
                 requires_version=requires_version)
 
@@ -176,9 +176,9 @@ def _check(isamAppliance, name, rpId, fidoServerOptions, relyingPartyOptions):
 
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True

@@ -16,7 +16,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of risk profiles
     """
     return isamAppliance.invoke_get("Retrieve a list of Risk Profiles",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -29,7 +29,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("Risk Profile {0} had no match, skipping retrieval.".format(name))
+        warnings.append(f"Risk Profile {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         return _get(isamAppliance, id)
@@ -37,7 +37,7 @@ def get(isamAppliance, name, check_mode=False, force=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific Risk Profile",
-                                    "{0}/{1}".format(uri, id))
+                                    f"{uri}/{id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -49,7 +49,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Risk Profile {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found Risk Profile {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -64,11 +64,11 @@ def set(isamAppliance, name, active, description=None, attributes=None, predefin
     warnings = []
     if (search(isamAppliance, name=name))['data'] == {}:
         # Force the add - we already know risk profile does not exist
-        logger.info("Risk Profile {0} had no match, requesting to add new one.".format(name))
+        logger.info(f"Risk Profile {name} had no match, requesting to add new one.")
         return add(isamAppliance, name, active, description, attributes, predefined, check_mode, True)
     else:
         # Update request
-        logger.info("Risk Profile {0} exists, requesting to update.".format(name))
+        logger.info(f"Risk Profile {name} exists, requesting to update.")
         return update(isamAppliance, name, active, description, attributes, predefined, check_mode, force)
 
 
@@ -94,15 +94,15 @@ def add(isamAppliance, name, active, description=None, attributes=None, predefin
                 # add loop through the attributes
                 # find missing attributeID and go look them up
                 for attv in attributes:
-                    logger.debug("Checking {0}".format(attv['name']))
+                    logger.debug(f"Checking {attv['name']}")
                     if 'attributeID' not in attv:
                         # lookup the attributeID from the name
                         logger.info(
-                            "AttributeID for {0} was empty".format( attv['name']))
+                            f"AttributeID for {attv['name']} was empty")
                         ret_obj = attrib.search(isamAppliance, attv['name'])
                         artifact_id = ret_obj['data']
                         if artifact_id == {}:
-                            logger.debug("Attribute {0} had no match, skipping retrieval.".format( attv['name'] ))
+                            logger.debug(f"Attribute {attv['name']} had no match, skipping retrieval.")
                         else:
                             attv['attributeID'] = artifact_id
                 json_data['attributes'] = attributes
@@ -125,18 +125,18 @@ def update(isamAppliance, name, active, description=None, attributes=None, prede
        for attv in attributes:
            if 'attributeID' not in attv:
                # lookup the attributeID from the name
-               logger.debug("AttributeID for {0} was empty".format(attv['name']))
+               logger.debug(f"AttributeID for {attv['name']} was empty")
                ret_obj = attrib.search(isamAppliance, attv['name'])
                artifact_id = ret_obj['data']
                if artifact_id == {}:
-                   logger.debug("Attribute {0} had no match, skipping retrieval.".format(name))
+                   logger.debug(f"Attribute {name} had no match, skipping retrieval.")
                else:
                    attv['attributeID'] = artifact_id
 
     id, update_required, json_data = _check(isamAppliance, name, active, description, attributes, predefined)
     if id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown Risk Profile: {0}".format(name))
+        raise IBMError("999", f"Cannot update data for unknown Risk Profile: {name}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -144,7 +144,7 @@ def update(isamAppliance, name, active, description=None, attributes=None, prede
         else:
             return isamAppliance.invoke_put(
                 "Update a specified Risk Profile",
-                "{0}/{1}".format(uri, id), json_data)
+                f"{uri}/{id}", json_data)
 
     return isamAppliance.create_return_object()
 
@@ -196,17 +196,17 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     prof_id = ret_obj['data']['id']
     predef = ret_obj['data']['predefined']
     if prof_id == {}:
-        logger.info("Risk Profile {0} not found, skipping delete.".format(name))
+        logger.info(f"Risk Profile {name} not found, skipping delete.")
     else:
         if predef is True:
-            logger.info("Risk Profile {0} is predefined, skipping delete.".format(name))
+            logger.info(f"Risk Profile {name} is predefined, skipping delete.")
         else:
             if check_mode is True:
                 return isamAppliance.create_return_object(changed=True)
             else:
                 return isamAppliance.invoke_delete(
                     "Delete a Risk Profile",
-                    "{0}/{1}".format(uri, prof_id))
+                    f"{uri}/{prof_id}")
 
     return isamAppliance.create_return_object()
 

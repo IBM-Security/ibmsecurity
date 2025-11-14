@@ -27,7 +27,7 @@ def search(isamAppliance, userID, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['userID'] == userID:
-            logger.info("Found user {0}".format(userID))
+            logger.info(f"Found user {userID}")
             return_obj['data'] = userID
             return_obj['rc'] = 0
 
@@ -43,11 +43,11 @@ def get(isamAppliance, userID, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("User {0} had no match, skipping retrieval.".format(userID))
+        warnings.append(f"User {userID} had no match, skipping retrieval.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         return isamAppliance.invoke_get("Retrieve a list of device fingerprints for a given user ID",
-                                        "{0}/{1}".format(uri, userID))
+                                        f"{uri}/{userID}")
 
 
 def delete(isamAppliance, userID, check_mode=False, force=False):
@@ -59,11 +59,11 @@ def delete(isamAppliance, userID, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("User {0} had no match, skipping Delete.".format(userID))
+        warnings.append(f"User {userID} had no match, skipping Delete.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete all device fingerprints for the given user ID",
-                                               "{0}/{1}".format(uri, userID))
+                                               f"{uri}/{userID}")

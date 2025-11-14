@@ -14,7 +14,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of devices fingerprints
     """
     return isamAppliance.invoke_get("Retrieve a list of Device Fingerprints",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -27,11 +27,11 @@ def get(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("Device {0} had no match, skipping retrieval.".format(name))
+        warnings.append(f"Device {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         return isamAppliance.invoke_get("Retrieve a specific Device Fingerprint",
-                                        "{0}/{1}".format(uri, id))
+                                        f"{uri}/{id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -43,7 +43,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Device {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found Device {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -59,14 +59,14 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("Device {0} had no match, skipping delete.".format(name))
+        warnings.append(f"Device {name} had no match, skipping delete.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete a specific Device Fingerprint",
-                                               "{0}/{1}".format(uri, id))
+                                               f"{uri}/{id}")
 
 
 def delete_set(isamAppliance, devices, check_mode=False, force=False):

@@ -15,7 +15,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Get the status of the most recent deletion of data that completed",
-                                    "{0}/status".format(uri),
+                                    f"{uri}/status",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -25,7 +25,7 @@ def cancel_all(isamAppliance, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Cancel the deletion of all data",
-                                    "{0}/cancel".format(uri),
+                                    f"{uri}/cancel",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -35,7 +35,7 @@ def cancel_all_user(isamAppliance, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Cancel the deletion of all user data",
-                                    "{0}/userdata/cancel".format(uri),
+                                    f"{uri}/userdata/cancel",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -45,7 +45,7 @@ def cancel_all_devices(isamAppliance, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Cancel the deletion of all user devices",
-                                    "{0}/devices/cancel".format(uri),
+                                    f"{uri}/devices/cancel",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -61,7 +61,7 @@ def clear(isamAppliance, check_mode=False, force=False):
 
         return isamAppliance.invoke_delete(
             "Clear the status of the most recent deletion of data that completed",
-            "{0}/status".format(uri),
+            f"{uri}/status",
             requires_modules=requires_modules, requires_version=requires_version
         )
 
@@ -80,7 +80,7 @@ def delete_all(isamAppliance, check_mode=False, force=False):
 
         return isamAppliance.invoke_delete(
             "Delete all data",
-            "{0}".format(uri),
+            f"{uri}",
             requires_modules=requires_modules, requires_version=requires_version
         )
 
@@ -99,7 +99,7 @@ def delete_user(isamAppliance, userId, check_mode=False, force=False):
 
         return isamAppliance.invoke_delete(
             "Delete all user data for a specific user",
-            "{0}/{1}".format(uri, userId),
+            f"{uri}/{userId}",
             requires_modules=requires_modules, requires_version=requires_version
         )
 
@@ -117,7 +117,7 @@ def delete_all_user(isamAppliance, check_mode=False, force=False):
 
         return isamAppliance.invoke_delete(
             "Delete all user data",
-            "{0}/userdata".format(uri),
+            f"{uri}/userdata",
             requires_modules=requires_modules, requires_version=requires_version
         )
 
@@ -135,7 +135,7 @@ def delete_all_devicces(isamAppliance, check_mode=False, force=False):
 
         return isamAppliance.invoke_delete(
             "Delete all user devices",
-            "{0}/devices".format(uri),
+            f"{uri}/devices",
             requires_modules=requires_modules, requires_version=requires_version
         )
 

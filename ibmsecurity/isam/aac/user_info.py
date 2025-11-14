@@ -17,7 +17,7 @@ def get_all(isamAppliance, count=None, start=None, check_mode=False, force=False
     Retrieve a list of attributes for all users
     """
     return isamAppliance.invoke_get("Retrieve a list of access policies",
-                                    "{0}/{1}".format(uri, tools.create_query_string(count=count, start=start)),
+                                    f"{uri}/{tools.create_query_string(count=count, start=start)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -27,7 +27,7 @@ def get(isamAppliance, userid, check_mode=False, force=False):
     """
 
     return isamAppliance.invoke_get("Retrieve the attributes of a user",
-                                    "{0}/{1}".format(uri, userid),
+                                    f"{uri}/{userid}",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -44,7 +44,7 @@ def delete(isamAppliance, userid, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Delete user attributes",
-                                               "{0}/{1}".format(uri, userid),
+                                               f"{uri}/{userid}",
                                                requires_modules=requires_modules,
                                                requires_version=requires_version)
 

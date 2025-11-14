@@ -27,11 +27,11 @@ def get(isamAppliance, filename, check_mode=False, force=False):
     bundle_id = ret_obj['data']
 
     if bundle_id == {}:
-        logger.info("Bundle {0} had no match, skipping retrieval.".format(filename))
+        logger.info(f"Bundle {filename} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific bundle",
-                                        "{0}/{1}".format(uri, bundle_id))
+                                        f"{uri}/{bundle_id}")
 
 
 def search(isamAppliance, filename, force=False, check_mode=False):
@@ -43,7 +43,7 @@ def search(isamAppliance, filename, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['filename'] == filename:
-            logger.info("Found Bundle {0} id: {1}".format(filename, obj['id']))
+            logger.info(f"Found Bundle {filename} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -77,7 +77,7 @@ def verify(isamAppliance, filename, check_mode=False, force=False):
     (d, f) = os.path.split(filename)
     ret_obj = isamAppliance.invoke_post_files(
         "Verify the contents of a bundle file",
-        "{0}/verify".format(uri),
+        f"{uri}/verify",
         [
             {
                 'file_formfield': 'file',
@@ -105,7 +105,7 @@ def export_bundle(isamAppliance, filename, extract_filename, check_mode=False, f
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a specific bundle",
-                "{0}/{1}/file".format(uri, ret_obj['data']),
+                f"{uri}/{ret_obj['data']}/file",
                 extract_filename)
 
     return isamAppliance.create_return_object()
@@ -134,7 +134,7 @@ def import_bundle(isamAppliance, filename, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post_files(
                 "Import the bundle file for a bundle",
-                "{0}/{1}/file".format(uri, bundle_id),
+                f"{uri}/{bundle_id}/file",
                 [
                     {
                         'file_formfield': 'file',
@@ -203,7 +203,7 @@ def delete(isamAppliance, filename, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a bundle",
-                "{0}/{1}".format(uri, ret_obj['data']))
+                f"{uri}/{ret_obj['data']}")
 
     return isamAppliance.create_return_object()
 

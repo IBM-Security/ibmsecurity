@@ -16,7 +16,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the current general SCIM configuration settings
     """
     return isamAppliance.invoke_get("Retrieving the current general SCIM configuration settings",
-                                    "{0}/general".format(uri),
+                                    f"{uri}/general",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -75,7 +75,7 @@ def set(isamAppliance, enable_header_authentication=None, enable_authz_filter=No
         else:
             return isamAppliance.invoke_put(
                 "Updating the ISAM user SCIM configuration settings",
-                "{0}/general".format(uri),
+                f"{uri}/general",
                 new_obj, requires_modules=requires_modules,
                 requires_version=requires_version)
 

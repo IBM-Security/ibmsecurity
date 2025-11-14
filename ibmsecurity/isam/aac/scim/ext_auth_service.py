@@ -15,7 +15,7 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieving the current external authentication service SCIM configuration
     """
     return isamAppliance.invoke_get("Retrieving the current external authentication service SCIM configuration ",
-                                    "{0}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS".format(uri),
+                                    f"{uri}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version
                                     )
@@ -39,7 +39,7 @@ def set(isamAppliance, connection, schemas, check_mode=False, force=False):
 
 
     if uuid is None:
-        warnings = "Did not find connection {0} in the configured server list.".format(connection)
+        warnings = f"Did not find connection {connection} in the configured server list."
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
 
     for config in current_configs:
@@ -66,7 +66,7 @@ def set(isamAppliance, connection, schemas, check_mode=False, force=False):
             obj1['schemas'] = schemas
             data.append(obj1)
             return isamAppliance.invoke_put("Updating the external authentication service SCIM configuration settings",
-                                            "{0}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS".format(uri),
+                                            f"{uri}/urn:ietf:params:scim:schemas:extension:isam:1.0:MMFA:EAS",
                                             data,
                                             requires_modules=requires_modules,
                                             requires_version=requires_version
