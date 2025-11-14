@@ -42,12 +42,7 @@ exclude = [
 namespaces = false
 
 [tool.pytest]
-env_files = ".env"
-
-[tool.pytest.ini_options]
-addopts = [
-    "--import-mode=importlib",
-]
+env_files = [".env"]
 
 [tool.pylint.MASTER]
 bad-names = [
