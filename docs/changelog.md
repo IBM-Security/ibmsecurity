@@ -12,7 +12,7 @@
 - fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
 
 ### Build & deploy
-
+- refactor: format to f-strings
 - wip: ordering of pytests
 
 ## 2025.9.26.0
