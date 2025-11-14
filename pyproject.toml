@@ -68,7 +68,6 @@ disable = [
   "C0103", # invalid-name
   "C0105", # typevar-name-incorrect-variance
   "C0112", # empty-docstring
-  "C0113", # unneeded-not
   "C0114", # missing-module-docstring
   "C0115", # missing-class-docstring
   "C0116", # missing-function-docstring
@@ -100,7 +99,6 @@ disable = [
   "C2801", # unnecessary-dunder-call
   "C3001", # unnecessary-lambda-assignment
   "C3002", # unnecessary-direct-lambda-call
-  "E0001", # syntax-error
   "E0100", # init-is-generator
   "E0101", # return-in-init
   "E0102", # function-redefined
@@ -148,11 +146,6 @@ disable = [
   "E1520", # singledispatchmethod-function
   "E1700", # yield-inside-async-function
   "E2502", # bidirectional-unicode
-  "E2510", # invalid-character-backspace
-  "E2512", # invalid-character-sub
-  "E2513", # invalid-character-esc
-  "E2514", # invalid-character-nul
-  "E2515", # invalid-character-zero-width-space
   "E4703", # modified-iterating-set
   "R0123", # literal-comparison
   "R0124", # comparison-with-itself
