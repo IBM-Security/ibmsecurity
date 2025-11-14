@@ -17,3 +17,16 @@ Then call the functions needed. Run the code like you would any other Python scr
 e.g.: `python testisam.py`
 
 Note: the code requires PyYAML (for printing output in YAML) and importlib (dynamically load all packages) packages to work.
+
+### Generic test script
+
+For simple tests, a modified version is provided that takes the username, password, hostname, method and options as arguments, with the option to perform a commit or not.
+This makes sense for simple tests but for pytest or unittests, this is not useful.
+
+This avoids having to store credentials in a script and allows easier repeat of tests.
+
+Example:
+
+~~~~
+python testisam_cmd.py --hostname 192.168.1.1 --method "ibmsecurity.isam.web.iag.export.features.get" --commit
+~~~~
