@@ -123,7 +123,7 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
 
             if formatting == 'json':
                  if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
-                     warnings.append(f"Appliance is at version: {isamAppliance.facts["version"]}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
+                     warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
                      formatting = 'xml'
 
 
@@ -179,11 +179,11 @@ def update(isamAppliance, name, policy, uri, description="",
     }
     if formatting == 'json':
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
-            warnings.append(f"Appliance is at version: {isamAppliance.facts["version"]}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
+            warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
             formatting = 'xml'
     if enabled is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
-            warnings.append(f"Appliance is at version: {isamAppliance.facts["version"]}. Enabled parameter not supported unless at least 9.0.2.1. Ignoring value.")
+            warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. Enabled parameter not supported unless at least 9.0.2.1. Ignoring value.")
         else:
             json_data["enabled"] = enabled
     if force is not True:
