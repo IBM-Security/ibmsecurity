@@ -2,7 +2,11 @@
 
 ## Latest
 
+
+## 2025.12.11.0
+
 - refactor: remove reference to test scripts, since these are not in the pypi build
+- fix: nested double quotes
 
 ## 2025.11.14.0
 

@@ -246,11 +246,11 @@ def import_cert(isamAppliance, kdb_id, cert, label=None, password=None, check_mo
                 # Delete the previous certificate and add the new.
                 # The certificate exists with these values; so we want to overwrite it
                 retObjDel = delete(isamAppliance, kdb_id, label, force=True, ignore_error=True)
-                logger.debug(f"First try deleting {label}\n\n{retObjDel.get("rc", 200)}\n")
+                logger.debug(f"First try deleting {label}\n\n{retObjDel.get('rc', 200)}\n")
                 if retObjDel.get("rc", 200) > 400:
                     # Delete using the subject as label
                     retObjDel = delete(isamAppliance, kdb_id, certsubject, force=True, ignore_error=True)
-                    logger.debug(f"Second try at deleting using the new subject {certsubject}\n\n{retObjDel.get("rc", 200)}\n")
+                    logger.debug(f"Second try at deleting using the new subject {certsubject}\n\n{retObjDel.get('rc', 200)}\n")
                 # Try again
                 retObj = isamAppliance.invoke_post_files(
                              "Retry Importing a personal certificate into a certificate database",
@@ -329,7 +329,7 @@ def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None, s
                 newCert['subject'] = x509.subject.rfc4514_string()
                 newCert['issuer'] = x509.issuer.rfc4514_string()
                 logger.info(
-                    'Upgrade cryptography to version 36.0.0.  Install with pip install cryptography')
+                    'Upgrade cryptography to (at least) version 36.0.0.  Install with pip install cryptography')
 
             newCert['notafter'] = x509.not_valid_after_utc.strftime("%Y-%m-%d")
             newCert['notbefore'] = x509.not_valid_before_utc.strftime("%Y-%m-%d")
