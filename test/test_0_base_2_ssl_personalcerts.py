@@ -17,6 +17,7 @@ def getTestData():
     ]
     return testdata
 
+@pytest.mark.order(after="test_0_base_1_ssl_signercerts.py::test_import_signer_cert")
 def test_get_all_personal_certs(iviaServer, caplog) -> None:
     """Get all personal certs protection"""
     caplog.set_level(logging.DEBUG)
@@ -31,6 +32,7 @@ def test_get_all_personal_certs(iviaServer, caplog) -> None:
 
     assert not returnValue.failed()
 
+@pytest.mark.order(after="test_get_all_personal_certs")
 @pytest.mark.parametrize("items", getTestData())
 def test_import_personal_cert(iviaServer, caplog, items) -> None:
     """Import personal certs"""

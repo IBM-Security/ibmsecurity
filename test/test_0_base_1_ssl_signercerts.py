@@ -76,7 +76,7 @@ MIIFCjCCA/KgAwIBAgIBGTANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzE0MDIGA1UEChMrSW50
     ]
     return testdata
 
-
+@pytest.mark.order(after="test_0_base_1_ssl_certificate_databases.py::test_update_certificate_database")
 @pytest.mark.parametrize("items", getTestData())
 def test_import_signer_cert(iviaServer, caplog, items) -> None:
     """Import signer certificates"""
@@ -119,7 +119,7 @@ def getTestDataSigners():
     ]
     return testdata
 
-
+@pytest.mark.order(after="test_import_signer_cert")
 @pytest.mark.parametrize("items", getTestDataSigners())
 def test_get_signer_cert_not_existing(iviaServer, caplog,items) -> None:
     """Get single signer."""
