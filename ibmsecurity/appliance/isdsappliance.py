@@ -442,7 +442,7 @@ See the following URL for more details:
             if ret_obj['data'].get('configured') is True:
                 self.get_activations()
         # Exceptions like those connection related will be ignored
-        except:
+        except Exception as e:
             pass
 
     def get_version(self):
