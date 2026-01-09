@@ -14,12 +14,19 @@ def get_all(isamAppliance, kdb_id, check_mode=False, force=False):
                                     f"/isam/ssl_certificates/{kdb_id}/signer_cert")
 
 
-def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
+def get(isamAppliance, kdb_id, cert_id=None, label=None, check_mode=False, force=False):
     """
     Retrieving a signer certificate from a certificate database
+    use cert_id (legacy) or label , mutually exclusive, label takes precedence
     """
-    retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+    if label is None:
+        retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
                                     f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}",
+                                    ignore_error=True)
+    else:
+        cert_id = label
+        retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{label}",
                                     ignore_error=True)
     if retObj.get('rc', 0) == 404:
         return isamAppliance.create_return_object(rc=404, warnings=[f"{cert_id} does not exist in {kdb_id}"])
@@ -109,11 +116,14 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
     return False
 
 
-def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
+def delete(isamAppliance, kdb_id, cert_id=None, label=None, check_mode=False, force=False):
     """
     Deleting a signer certificate from a certificate database
     """
-    if force is True or _check(isamAppliance, kdb_id, cert_id) is True:
+    if label is not None:
+        cert_id = label
+
+    if force or _check(isamAppliance, kdb_id, cert_id) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -236,6 +246,7 @@ def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
     Checks if certificate on the Appliance  exists and if so, whether it is different from
     the one stored in filename
     This is not a full check; because the certificate could exist under a different label !
+    filename may be a chain, in that case we need to compare a bit more
     """
     with open(filename) as file:
         newcert = file.read()
