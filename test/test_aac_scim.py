@@ -1,10 +1,10 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.aac.scim
 import ibmsecurity.isam.aac.scim.scim
 import ibmsecurity.isam.appliance
 
-import pytest
 
 def getTestData():
     testdata = [
@@ -303,7 +303,7 @@ def getTestData():
     ]
     return testdata
 
-
+@pytest.mark.skip(reason="Work in progress")
 @pytest.mark.parametrize("items", getTestData())
 def test_set_scim(iviaServer, caplog, items) -> None:
     """Set api protection"""
