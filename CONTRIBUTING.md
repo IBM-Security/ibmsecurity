@@ -54,6 +54,16 @@ IVIA_HTTPS_PROXY=http://localhost:3128
 IVIA_HTTP_PROXY=http://127.0.0.1:3128
 ````
 
+### Local tests
+
+Although there is no full test set (yet), you should prepare a test for any changes or new code that is added.
+You can run specific tests, filtered on the name of the test.
+
+For instance, to run all tests against the Webseal configuration, run:
+````bash
+pytest -k _web_ -s -rP
+````
+
 ##  Coding Style
 
 Automated tests will be run against all PRs, to run checks locally before
