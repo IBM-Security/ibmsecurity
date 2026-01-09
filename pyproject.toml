@@ -42,7 +42,9 @@ exclude = [
 namespaces = false
 
 [tool.pytest]
-env_files = [".env"]
+env_files = [
+  ".env"
+]
 
 [tool.pylint.MASTER]
 bad-names = [
