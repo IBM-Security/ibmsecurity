@@ -1,4 +1,5 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.admin
 import ibmsecurity.isam.appliance
