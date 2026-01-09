@@ -1,10 +1,9 @@
 import logging
 import os
+import pytest
 
 import ibmsecurity.isam.base.network.static_routes
 import ibmsecurity.isam.appliance
-
-import pytest
 
 
 def getTestData():

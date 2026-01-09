@@ -1,11 +1,8 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.tracing
 import ibmsecurity.isam.appliance
-
-import pytest
-
-
 
 
 def test_get_tracing(iviaServer, caplog) -> None:

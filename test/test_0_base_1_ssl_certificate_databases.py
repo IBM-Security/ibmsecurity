@@ -1,9 +1,9 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.ssl_certificates.certificate_databases
 import ibmsecurity.isam.appliance
 
-import pytest
 
 def getTestData():
     testdata = [
