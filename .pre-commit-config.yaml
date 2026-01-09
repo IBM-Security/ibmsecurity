@@ -20,7 +20,7 @@ repos:
   #    - id: flake8
   #      args: ["--ignore=E501"]
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.7
+    rev: v4.0.4
     hooks:
       - id: pylint
         args: [
