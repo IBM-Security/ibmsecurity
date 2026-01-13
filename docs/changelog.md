@@ -31,6 +31,7 @@
 - fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
 
 ### Build & deploy
+
 - refactor: format to f-strings
 
 ## 2025.10.9.0
