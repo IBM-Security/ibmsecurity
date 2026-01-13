@@ -337,14 +337,14 @@ def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None, s
             ret_obj = get_all(isamAppliance, kdb_id)
             currentCert = None
             for certdb in ret_obj['data']:
-                if certdb['id'] == label:
+                if certdb.get('id', '') == label:
                       currentCert = certdb
-                elif certdb['id'] == newCert['subject']:
+                elif certdb.get('id', '') == newCert['subject']:
                       currentCert = certdb
-                elif certdb['subject'] == newCert['subject']:
+                elif certdb.get('subject', '') == newCert['subject']:
                       currentCert = certdb
             if currentCert is None:
-                logger.debug(f"\nNo match for:\n {certdb['subject']}\n")
+                logger.debug(f"\nNo match for:\n {certdb.get('subject', '-')}\n")
                 return False, newCert['subject']
             logger.debug(f"\nCurrent cert:\n {currentCert}\n")
             # remove values that are not checked
@@ -367,7 +367,7 @@ def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None, s
     # Do simple check
     ret_obj = get_all(isamAppliance, kdb_id)
     for certdb in ret_obj['data']:
-        if certdb['id'] == label:
+        if certdb.get('id', '') == label:
            return True, certdb.get('subject', label)
     return False, None
 
@@ -379,9 +379,9 @@ def _check_default(isamAppliance, kdb_id, cert_id, default):
     ret_obj = get_all(isamAppliance, kdb_id)
 
     for certdb in ret_obj['data']:
-        if certdb['id'] == cert_id:
-            if (certdb['default'].lower() == 'true' and default.lower() == 'no') or (
-                    certdb['default'].lower() == 'false' and default.lower() == 'yes'):
+        if certdb.get('id', '') == cert_id:
+            if (certdb.get('default', 'false').lower() == 'true' and default.lower() == 'no') or (
+                    certdb.get('default', 'false').lower() == 'false' and default.lower() == 'yes'):
                 return True
 
     return False

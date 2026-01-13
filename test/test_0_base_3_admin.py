@@ -1,4 +1,5 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.admin
 import ibmsecurity.isam.appliance
@@ -13,7 +14,7 @@ def test_get_base_admin(iviaServer, caplog) -> None:
 
     assert not returnValue.failed()
 
-
+@pytest.mark.order(after="test_get_base_admin")
 def test_set_base_admin(iviaServer, caplog) -> None:
     """Set some admincfg options."""
     caplog.set_level(logging.DEBUG)

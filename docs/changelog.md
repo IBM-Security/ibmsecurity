@@ -2,6 +2,17 @@
 
 ## Latest
 
+## 2026.1.9.0
+
+- refactor: add issue templates
+- refactor: add guideline documents
+- feat: (new in 11.0.2) web/user_count.py
+- feat: (new in 11.0.2) new parameter for cluster `dsc_maximum_session_list`
+- feat: (new in 11.0.2) new parameter for Docker dsc `max_session_list`
+- trivial: web/api_access_control/documentation_root.py - minor updates
+- feat: (new in 11.0.2) base/remote_syslog/forwarder.py - id parameter can now be used directly
+- fix: base/ssl_certificates/personal_certificate.py - certid may be empty
+- fix: base/ssl_certificates/signer_certificate.py - don't throw errors when preserve_label = true, simply skip
 
 ## 2025.12.11.0
 
@@ -16,6 +27,7 @@
 - fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
 
 ### Build & deploy
+
 - refactor: format to f-strings
 
 ## 2025.10.9.0

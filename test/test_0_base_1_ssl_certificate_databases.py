@@ -1,9 +1,9 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.ssl_certificates.certificate_databases
 import ibmsecurity.isam.appliance
 
-import pytest
 
 def getTestData():
     testdata = [
@@ -23,7 +23,7 @@ def getTestData():
     ]
     return testdata
 
-@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
+@pytest.mark.order(after="test_0_base_0_firststeps.py::test_setup_complete")
 def test_get_certificate_databases(iviaServer, caplog) -> None:
     """Get sms protection"""
     caplog.set_level(logging.INFO)
@@ -36,7 +36,7 @@ def test_get_certificate_databases(iviaServer, caplog) -> None:
 
     assert not returnValue.failed()
 
-@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
+@pytest.mark.order(after="test_0_base_0_firststeps.py::test_setup_complete")
 @pytest.mark.parametrize("items", getTestData())
 def test_create_certificate_database(iviaServer, caplog, items) -> None:
     """Set admin ssh keys"""
@@ -62,7 +62,7 @@ def test_create_certificate_database(iviaServer, caplog, items) -> None:
     if returnValue is not None:
         assert not returnValue.failed()
 
-@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
+@pytest.mark.order(after="test_0_base_0_firststeps.py::test_setup_complete")
 @pytest.mark.parametrize("items", getTestData())
 def test_update_certificate_database(iviaServer, caplog, items) -> None:
     """Set admin ssh keys"""

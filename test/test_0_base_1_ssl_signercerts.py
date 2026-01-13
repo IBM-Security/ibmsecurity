@@ -1,8 +1,9 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.ssl_certificates.signer_certificate
 import ibmsecurity.isam.appliance
-import pytest
+
 
 def getTestData():
     testdata = [
@@ -62,7 +63,7 @@ Z1NCCowvpZazNxKccQg7izYwd6HL70WMxCWFU0e70uw9KZqteG7SVcQ=
 MIID5TCCAs2gAwIBAgIBFDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzE0MDIGA1UEChMrSW50ZXJuYXRpb25hbCBCdXNpbmVzcyBNYWNoaW5lcyBDb3Jwb3JhdGlvbjEdMBsGA1UEAxMUSUJNIEludGVybmFsIFJvb3QgQ0EwHhcNMTYwMjI0MDUwMDAwWhcNMzUwMTAzMDQ1OTU5WjBiMQswCQYDVQQGEwJVUzE0MDIGA1UEChMrSW50ZXJuYXRpb25hbCBCdXNpbmVzcyBNYWNoaW5lcyBDb3Jwb3JhdGlvbjEdMBsGA1UEAxMUSUJNIEludGVybmFsIFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDUKGuk9Tmri43R3SauS7gY9rQ9DXvRwklnbW+3Ts8/Meb4MPPxezdEcqVJtHVc3kinDpzVMeKJXlB8CABBpxMBSLApmIQywEKoVd0H0w62Yc3rYuhv03iYy6OozBV0BL6tzZE0UbvtLGuAQXMZ7ehzxqIta85JjfFN86AO2u7xrNF0FYyGH+E0Rn6yNhb25VrqxE0OYbSMIGoWdvS11K4SgVDqrJ9OqIk8NHrIJ8Ed24P/YPMeAp3jU409Gev1zGcuLdRr09WckQ145FZVDbPq42gcl7qYICPhZ4/eDUUjFgxpipfMGkMb1X+Y3kFDgb4BO8Xrdda2VQo1iDZs8A8bAgMBAAGjgaUwgaIwPwYJYIZIAYb4QgENBDIWMEdlbmVyYXRlZCBieSB0aGUgU2VjdXJpdHkgU2VydmVyIGZvciB6L09TIChSQUNGKTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU+d4Y5Z4wE2lRp/15hUiMfA5v2OMwHwYDVR0jBBgwFoAU+d4Y5Z4wE2lRp/15hUiMfA5v2OMwDQYJKoZIhvcNAQELBQADggEBAH87Ms8yFyAb9nXesaKjTHksLi1VKe2izESWozYFXnRtOgOW7/0xXcfK+7PW6xwcOqvTk61fqTGxj+iRyZf2e3FNtIB+T/Lg3SZF9sztPM0jEUELWycC8l6WPTvzQjZZBCsF+cWbU1nxvRNQluzCsTDUEIfThJIFcLu0WkoQclUrC3d2tM8jclLPssb6/OV8GaJ+4mx4ri7HbGaUAOtA/TXKR6AuhgkRNPKYhpPU0q/PRlGXdwJP8zXb8+CXMMTnI5Upur7Tc5T3I/x1Gqfz7n1sTRZfsuiQJ5uua4hz4te3oV2tm7LWcNItHD43zttBTTx/m5icg71JE2gcr2oincw=
 -----END CERTIFICATE-----
     """,
-            "preserve_label": "true"
+            "preserve_label": "false"
         },
         {
             "kdb_id": "pdsrv",
@@ -76,7 +77,7 @@ MIIFCjCCA/KgAwIBAgIBGTANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzE0MDIGA1UEChMrSW50
     ]
     return testdata
 
-
+@pytest.mark.order(after="test_0_base_1_ssl_certificate_databases.py::test_update_certificate_database")
 @pytest.mark.parametrize("items", getTestData())
 def test_import_signer_cert(iviaServer, caplog, items) -> None:
     """Import signer certificates"""
@@ -120,6 +121,27 @@ def getTestDataSigners():
     return testdata
 
 
+@pytest.mark.parametrize("items", getTestDataSigners())
+def test_get_all_signer_certs(iviaServer, caplog, items) -> None:
+    """Get single signer."""
+    caplog.set_level(logging.DEBUG)
+    arg = {}
+    kdb_id = None
+    for k, v in items.items():
+        if k == 'kdb_id':
+            kdb_id = v
+            continue
+        if k == 'cert_id':
+            continue
+        arg[k] = v
+    returnValue = ibmsecurity.isam.base.ssl_certificates.signer_certificate.get_all(iviaServer,
+                                                  kdb_id,
+                                                  **arg)
+    logging.log(logging.INFO, returnValue)
+    assert not returnValue.failed()
+
+
+@pytest.mark.order(after="test_get_all_signer_certs")
 @pytest.mark.parametrize("items", getTestDataSigners())
 def test_get_signer_cert_not_existing(iviaServer, caplog,items) -> None:
     """Get single signer."""

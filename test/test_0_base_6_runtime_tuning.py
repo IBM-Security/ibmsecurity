@@ -67,7 +67,7 @@ def getTestData():
     ]
     return testdata
 
-@pytest.mark.order(after="test_base_certificate_databases.py::test_update_certificate_database")
+@pytest.mark.order(after="test_0_base_1_ssl_certificate_databases.py::test_update_certificate_database")
 @pytest.mark.parametrize("items", getTestData())
 def test_set_multiple_tuning_parameters(iviaServer, caplog, items) -> None:
     """Set api protection"""

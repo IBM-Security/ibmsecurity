@@ -19,6 +19,7 @@ def get(isamAppliance, check_mode=False, force=False):
 
 
 def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600,
+        max_session_list=None,
         client_grace=600, servers=[], check_mode=False, force=False):
     """
     Update the current distributed session cache policy
@@ -33,9 +34,18 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         "servers": servers
     }
 
+    # max_session_list
+    if max_session_list is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "11.0.2.0") < 0:
+            warnings.append(
+                f"Appliance at version: {isamAppliance.facts['version']}, max_session_list: {max_session_list} is not supported. Needs 11.0.2.0 or higher. Ignoring max_session_list for this call.")
+        else:
+            # The default limit for a session query is 1024
+            dsc_json["max_session_list"] = max_session_list
+
     obj = _check(isamAppliance, dsc_json)
-    if force is True or obj['value'] is False:
-        if check_mode is True:
+    if force or not obj['value']:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=obj['warnings'])
         else:
             return isamAppliance.invoke_put("Update the current distributed session cache policy", uri, dsc_json,

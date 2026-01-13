@@ -1,11 +1,13 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: detect-private-key
+      - id: fix-byte-order-marker
   # Black does not work for my Python 3.12.5
   - repo: https://github.com/psf/black
     rev: 24.10.0
@@ -18,7 +20,7 @@ repos:
   #    - id: flake8
   #      args: ["--ignore=E501"]
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.7
+    rev: v4.0.4
     hooks:
       - id: pylint
         args: [

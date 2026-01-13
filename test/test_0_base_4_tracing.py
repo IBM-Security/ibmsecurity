@@ -1,15 +1,12 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.tracing
 import ibmsecurity.isam.appliance
 
-import pytest
-
-
-
 
 def test_get_tracing(iviaServer, caplog) -> None:
-    """Get sms protection"""
+    """Get tracing protection"""
     caplog.set_level(logging.DEBUG)
     arg = {}
 

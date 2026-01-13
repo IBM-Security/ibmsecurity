@@ -20,7 +20,8 @@ class ISAMAppliance(IBMAppliance):
     def __init__(self, hostname, user, lmi_port=443, cert=None, verify=None, http_proxy=None, https_proxy=None, debug=True):
         self.logger = logging.getLogger(__name__)
         self.debug = debug
-        if self.debug: self.logger.debug('Creating an ISAMAppliance')
+        if self.debug:
+            self.logger.debug('Creating an ISAMAppliance')
         if isinstance(lmi_port, str):
             self.lmi_port = int(lmi_port)
         else:

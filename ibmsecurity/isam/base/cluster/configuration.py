@@ -37,6 +37,7 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
        cfgdb_db_name=None, cfgdb_db_secure=None, cfgdb_driver_type=None, cfgdb_solid_tc=None, first_port=2020,
        cfgdb_fs=None, dsc_trace_level=None, cfgdb_db_truststore=None,
        dsc_connection_idle_timeout=None, hvdb_failover_servers=None, cfgdb_failover_servers=None, hvdb_db_truststore=None,
+       dsc_maximum_session_list=None,
        ignore_password_for_idempotency=False, check_mode=False, force=False):
     """
     Set cluster configuration
@@ -154,6 +155,13 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
         cluster_json["cfgdb_db_truststore"] = cfgdb_db_truststore
     if dsc_trace_level is not None:
         cluster_json["dsc_trace_level"] = dsc_trace_level
+    if dsc_maximum_session_list is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "11.0.2.0") < 0:
+            warnings.append(
+                f"Appliance at version: {isamAppliance.facts['version']}, dsc_maximum_session_list: {dsc_maximum_session_list} is not supported. Needs 11.0.2.0 or higher. Ignoring dsc_maximum_session_list for this call.")
+        else:
+            # The default limit for a session query is 1024
+            cluster_json["dsc_maximum_session_list"] = dsc_maximum_session_list
 
     check_obj =  _check(isamAppliance, cluster_json, ignore_password_for_idempotency)
     if check_obj['warnings'] != []:

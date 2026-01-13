@@ -37,7 +37,7 @@ def getTestData():
     return testdata
 
 # @pytest.mark.skipIf(iviaServer['facts']['model'] != "Docker")
-@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
+@pytest.mark.order(after="test_0_base_0_firststeps.py::test_setup_complete")
 def test_get_docker_dbconfig(iviaServer, caplog) -> None:
     """Get current config."""
     caplog.set_level(logging.DEBUG)
@@ -47,7 +47,7 @@ def test_get_docker_dbconfig(iviaServer, caplog) -> None:
 
     assert not returnValue.failed()
 
-@pytest.mark.order(after="test_base_firststeps.py::test_setup_complete")
+@pytest.mark.order(after="test_0_base_0_firststeps.py::test_setup_complete")
 @pytest.mark.parametrize("items", getTestData())
 def test_set_docker_dbconfig(iviaServer, caplog, items) -> None:
     """Configure"""
