@@ -2,6 +2,10 @@
 
 ## Latest
 
+## 2026.1.13.0
+
+- fix: base/ssl_certificates/personal_certificate.py - fails to import if the keystore does not contain any personal certificates yet
+
 ## 2026.1.9.0
 
 - refactor: add issue templates
@@ -27,7 +31,6 @@
 - fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
 
 ### Build & deploy
-
 - refactor: format to f-strings
 
 ## 2025.10.9.0
