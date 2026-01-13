@@ -1,6 +1,10 @@
-# Change log
+# Change log ibmsecurity
 
 ## Latest
+
+## 2026.1.13.0
+
+- fix: base/ssl_certificates/personal_certificate.py - fails to import if the keystore does not contain any personal certificates yet
 
 ## 2026.1.9.0
 

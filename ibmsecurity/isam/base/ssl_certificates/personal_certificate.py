@@ -344,7 +344,6 @@ def _check(isamAppliance, kdb_id, label=None, certificate=None, password=None, s
                 elif certdb.get('subject', '') == newCert['subject']:
                       currentCert = certdb
             if currentCert is None:
-                logger.debug(f"\nNo match for:\n {certdb.get('subject', '-')}\n")
                 return False, newCert['subject']
             logger.debug(f"\nCurrent cert:\n {currentCert}\n")
             # remove values that are not checked
