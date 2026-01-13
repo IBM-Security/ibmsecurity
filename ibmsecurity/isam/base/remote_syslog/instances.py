@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # URI for this module
-uri = "/isam/rsyslog_forwarder/source_names/{}/instances"
+uri = "/isam/rsyslog_forwarder/source_names/{0}/instances"
 requires_modules = None
 requires_version = "9.0.2.1"
 

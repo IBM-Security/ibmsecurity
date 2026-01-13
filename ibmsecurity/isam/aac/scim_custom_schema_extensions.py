@@ -97,7 +97,7 @@ def get(isamAppliance, urn, check_mode=False, force=False):
     Retrieving the configuration of a SCIM Custom Schema Extension by urn/id
     """
     return isamAppliance.invoke_get("Retrieve the configuration of a SCIM Custom Schema Extension by urn/id",
-                                       "{0}/{1}".format(uri, urn))
+                                       f"{uri}/{urn}")
 
 
 def set(isamAppliance, urn, name, description='', attributes=None,
@@ -142,7 +142,7 @@ def update(isamAppliance, urn, name, description='', attributes=None, new_name=N
     warnings = ret_obj["warnings"]
 
     if ret_obj["data"] == {}:
-        warnings.append("SCIM Custom Schema Extension {0} not found, skipping update.".format(urn))
+        warnings.append(f"SCIM Custom Schema Extension {urn} not found, skipping update.")
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         id = ret_obj["data"]["id"]
@@ -156,8 +156,8 @@ def update(isamAppliance, urn, name, description='', attributes=None, new_name=N
     if force is not True:
         sorted_ret_obj = tools.json_sort(ret_obj['data'])
         sorted_json_data = tools.json_sort(json_data)
-        logger.debug("Sorted Existing Data:{0}".format(sorted_ret_obj))
-        logger.debug("Sorted Desired  Data:{0}".format(sorted_json_data))
+        logger.debug(f"Sorted Existing Data:{sorted_ret_obj}")
+        logger.debug(f"Sorted Desired  Data:{sorted_json_data}")
 
         if sorted_ret_obj != sorted_json_data:
             needs_update = True
@@ -168,7 +168,7 @@ def update(isamAppliance, urn, name, description='', attributes=None, new_name=N
         else:
             return isamAppliance.invoke_put(
                 "Modifying a SCIM Custom Schema Extension",
-               "{0}/{1}".format(uri, urn), json_data,
+               f"{uri}/{urn}", json_data,
                 requires_modules=requires_modules, requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -188,7 +188,7 @@ def delete(isamAppliance, urn=None, name=None, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Deleting a SCIM Custom Schema Extension",
-                "{0}/{1}".format(uri, urn),
+                f"{uri}/{urn}",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()

@@ -25,7 +25,7 @@ def get(isamAppliance, name, id=None, check_mode=False, force=False):
         id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"FIDO2 Metadata {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return _get(isamAppliance, id)
@@ -39,7 +39,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['filename'] == name:
-            logger.info("Found FIDO2 Metadata {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found FIDO2 Metadata {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -53,14 +53,14 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata {0} not found, skipping delete.".format(name))
+        logger.info(f"FIDO2 Metadata {name} not found, skipping delete.")
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete(
                 "Delete a FIDO2 Metadata file",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
@@ -74,13 +74,13 @@ def export_file(isamAppliance, name, filename, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("FIDO2 Metadata {0} not found, skipping export.".format(name))
+        logger.info(f"FIDO2 Metadata {name} not found, skipping export.")
     else:
         if force is True or (os.path.exists(filename) is False):
             if check_mode is False:  # No point downloading a file if in check_mode
                 return isamAppliance.invoke_get_file(
                     "Export a specific FIDO2 Metadata file",
-                    "{0}/{1}/file".format(uri,id),
+                    f"{uri}/{id}/file",
                     filename,
                     requires_modules=requires_modules, requires_version=requires_version)
 
@@ -114,7 +114,7 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
                 filebasename = _extract_filename(filename)
                 return isamAppliance.invoke_post_files(
                 "Import a new FIDO2 Metadata file",
-                "{0}".format(uri),
+                f"{uri}",
                 [
                     {
                         'file_formfield': 'file',
@@ -130,7 +130,7 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
             else:
                 return isamAppliance.invoke_post_files(
                     "Import a FIDO2 Metadata file (replace)",
-                    "{0}/{1}/file".format(uri,ret_obj['data']),
+                    f"{uri}/{ret_obj['data']}/file",
                     [
                         {
                             'file_formfield': 'file',
@@ -165,10 +165,10 @@ def _check(isamAppliance, fido2_metadata):
     # e.g. converts python boolean 'True' -> to JSON literal lowercase value 'true'
     cur_json_string = json.dumps(ret_obj['data'])
     cur_sorted_json = tools.json_sort(cur_json_string)
-    logger.debug("Server JSON : {0}".format(cur_sorted_json))
+    logger.debug(f"Server JSON : {cur_sorted_json}")
     given_json_string = json.dumps(fido2_metadata)
     given_sorted_json = tools.json_sort(given_json_string)
-    logger.debug("Desired JSON: {0}".format(given_sorted_json))
+    logger.debug(f"Desired JSON: {given_sorted_json}")
     if cur_sorted_json != given_sorted_json:
         return False
         logger.debug("Changes detected!")

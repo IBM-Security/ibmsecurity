@@ -1,6 +1,62 @@
-# Manual change log
+# Change log ibmsecurity
 
 ## Latest
+
+## 2026.1.13.0
+
+- fix: base/ssl_certificates/personal_certificate.py - fails to import if the keystore does not contain any personal certificates yet
+
+## 2026.1.9.0
+
+- refactor: add issue templates
+- refactor: add guideline documents
+- feat: (new in 11.0.2) web/user_count.py
+- feat: (new in 11.0.2) new parameter for cluster `dsc_maximum_session_list`
+- feat: (new in 11.0.2) new parameter for Docker dsc `max_session_list`
+- trivial: web/api_access_control/documentation_root.py - minor updates
+- feat: (new in 11.0.2) base/remote_syslog/forwarder.py - id parameter can now be used directly
+- fix: base/ssl_certificates/personal_certificate.py - certid may be empty
+- fix: base/ssl_certificates/signer_certificate.py - don't throw errors when preserve_label = true, simply skip
+
+## 2025.12.11.0
+
+- refactor: remove reference to test scripts, since these are not in the pypi build
+- fix: nested double quotes
+
+## 2025.11.14.0
+
+- feature: base/ssl_certificates/personal_certificate.py - idempotency
+- fix: base/management_ssl_certificate.py - update cryptography for idempotency, fixes known_issue
+- fix: aac/fido2/metadata_services - ensure integers
+- fix: web/reverse_proxy/configuration/entry.py - change return type to empty dict
+
+### Build & deploy
+
+- refactor: format to f-strings
+
+## 2025.10.9.0
+
+- feature: proxy support (http_proxy and https_proxy only)
+- fix: base/ssl_certificates/signer_certificate.py - don't error if get signer certificate returns nothing
+- feature: update docker db_configuration with new parameters v10.0.8.0 and v11
+- removed: soliddb as option for docker db_configuration
+
+### Build & deploy
+- wip: ordering of pytests
+
+## 2025.9.26.0
+
+- fix: policy attachments application can take 2 formats, /uri or urn:x:y
+- fix: Update scim test
+- fix: fed/federations.py - handle exception when retrieving existing mapping rules (#448)
+- build: exclude test folder from build
+- feature: signer cert support for string (in addition to file)
+
+## 2025.7.14.0
+
+- fix: certificate_databases : python syntax (indentation)
+- fix: policy_attachments.py : idempotency and handle applications correctly
+- build: update python version support (drop 3.7; add 3.11, 3.13)
 
 ## 2025.6.3.0
 

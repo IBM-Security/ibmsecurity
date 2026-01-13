@@ -21,7 +21,7 @@ def import_file(isamAppliance, filename, check_mode=False, force=False):
 
         return isamAppliance.invoke_post_files(
             "Import sdconf.rec",
-            "{0}/sdconf.rec".format(uri),
+            f"{uri}/sdconf.rec",
             [
                 {
                     'file_formfield': 'file',
@@ -57,7 +57,7 @@ def delete(isamAppliance, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete sdconf.rec",
-                "{0}/sdconf.rec".format(uri),
+                f"{uri}/sdconf.rec",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 

@@ -65,7 +65,7 @@ def set(isamAppliance, ldap_connection, search_suffix, user_suffix, ldap_object_
         else:
             return isamAppliance.invoke_put(
                 "Updating the user profile SCIM configuration settings",
-                "{0}/urn:ietf:params:scim:schemas:core:2.0:User".format(uri),
+                f"{uri}/urn:ietf:params:scim:schemas:core:2.0:User",
                 new_obj, requires_modules=requires_modules,
                 requires_version=requires_version)
 

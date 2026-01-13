@@ -46,8 +46,8 @@ def getTestDataSSO():
         ]
     return testdata
 
-@pytest.mark.parametrize("items", getTestData())
-def test_set_base_management_authentication_remote(iviaServer, caplog, items) -> None:
+@pytest.mark.parametrize("items", getTestDataSSO())
+def test_set_base_management_authentication_federation(iviaServer, caplog, items) -> None:
     """Set some admincfg options."""
     caplog.set_level(logging.DEBUG)
 
@@ -70,8 +70,8 @@ def test_set_base_management_authentication_remote(iviaServer, caplog, items) ->
 
     assert not returnValue.failed()
 
-@pytest.mark.parametrize("items", getTestDataSSO())
-def test_set_base_management_authentication_federation(iviaServer, caplog, items) -> None:
+@pytest.mark.parametrize("items", getTestData())
+def test_set_base_management_authentication_remote(iviaServer, caplog, items) -> None:
     """Set some admincfg options."""
     caplog.set_level(logging.DEBUG)
 

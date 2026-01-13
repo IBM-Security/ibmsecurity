@@ -14,7 +14,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of attribute matchers
     """
     return isamAppliance.invoke_get("Retrieve a list of Attribute Matchers",
-                                    "{0}/{1}".format(am_uri, tools.create_query_string(filter=filter, sortBy=sortBy)),
+                                    f"{am_uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -27,7 +27,7 @@ def get(isamAppliance, description, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        warnings.append("Attribute Matcher {0} had no match, skipping retrieval.".format(description))
+        warnings.append(f"Attribute Matcher {description} had no match, skipping retrieval.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         return _get(isamAppliance, id)
@@ -35,7 +35,7 @@ def get(isamAppliance, description, check_mode=False, force=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific Attribute Matcher",
-                                    "{0}/{1}".format(am_uri, id))
+                                    f"{am_uri}/{id}")
 
 
 def search(isamAppliance, description, force=False, check_mode=False):
@@ -47,7 +47,7 @@ def search(isamAppliance, description, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['description'] == description:
-            logger.info("Found Attribute Matcher {0} id: {1}".format(description, obj['id']))
+            logger.info(f"Found Attribute Matcher {description} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -62,7 +62,7 @@ def set(isamAppliance, description, properties, predefined=True, supportedDataty
     warnings = []
     if (search(isamAppliance, description=description))['data'] == {}:
         # Attribute Matcher doesn't exist, Add is not supported
-        warnings.append("Attribute Matcher {0} had no match, Add is not supported.".format(description))
+        warnings.append(f"Attribute Matcher {description} had no match, Add is not supported.")
         return isamAppliance.create_return_object(changed=False, warnings=warnings)
     else:
         if (description == "Exact attribute matcher" or description == "JavascriptPIPMatcher"):
@@ -71,7 +71,7 @@ def set(isamAppliance, description, properties, predefined=True, supportedDataty
             return isamAppliance.create_return_object(changed=False, warnings=warnings)
         else:
             # Update request
-            logger.info("Attribute Matcher {0} exists, requesting to update.".format(description))
+            logger.info(f"Attribute Matcher {description} exists, requesting to update.")
             return update(isamAppliance, description, properties, check_mode, force)
 
 
@@ -82,7 +82,7 @@ def update(isamAppliance, description, properties, check_mode=False, force=False
     id, update_required, json_data = _check(isamAppliance, description, properties)
     if id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
-        raise IBMError("999", "Cannot update data for unknown Attribute Matcher: {0}".format(description))
+        raise IBMError("999", f"Cannot update data for unknown Attribute Matcher: {description}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -90,7 +90,7 @@ def update(isamAppliance, description, properties, check_mode=False, force=False
         else:
             return isamAppliance.invoke_put(
                 "Update a specified Attribute Matcher",
-                "{0}/{1}".format(am_uri, id), json_data)
+                f"{am_uri}/{id}", json_data)
 
     return isamAppliance.create_return_object()
 
@@ -122,9 +122,9 @@ def _check(isamAppliance, description, properties):
             count += 1
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True

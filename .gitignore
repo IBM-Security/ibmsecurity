@@ -79,10 +79,12 @@ celerybeat-schedule
 
 # dotenv
 .env
+*.env
 
 # virtualenv
 venv/
 ENV/
+*.venv/
 
 # Spyder project settings
 .spyderproject
@@ -98,6 +100,14 @@ ENV/
 
 # Test Script
 test.py
+/test/scripts/
 
 # Read the docs
 _readthedocs/
+
+# Ansible
+.ansible
+
+# Certificates, private keys etc
+*.key
+*.csr

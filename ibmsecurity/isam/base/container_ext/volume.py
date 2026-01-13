@@ -66,12 +66,13 @@ def import_zip(isamAppliance, filename, volume_name=None, volume_id=None, check_
     import os.path
     logger.debug(f"\n\nTrying to import {filename}\n\n")
 
+    if volume_id is None and volume_name is None:
+        return isamAppliance.create_return_object(warnings=["Volume name or volume id need to be specified"])
+
     if volume_id is None:
         volume_id = search(isamAppliance, volume_name)
         volume_id = volume_id.get('data', None)
-
-    if volume_id is None and volume_name is None:
-        return isamAppliance.create_return_object(warnings=["Volume name or volume id need to be specified"])
+        logger.debug(f"\n\nVolume id is now set to {volume_id}\n\n")
 
     if force or os.path.exists(filename):
         return isamAppliance.invoke_put_files(
@@ -109,6 +110,7 @@ def search(isamAppliance, volume_name, check_mode=False, force=False):
         if obj["name"] == volume_name:
             return_obj["data"] = obj["id"]
             return_obj["rc"] = 0
+            logger.debug(f"\n\nFound {obj['id']} for {volume_name}\n\n")
             break
 
     return return_obj

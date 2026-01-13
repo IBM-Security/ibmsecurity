@@ -12,5 +12,5 @@ def get(isamAppliance, check_mode=False, force=False):
     Retrieve a list of configuration files for RSA
     """
     return isamAppliance.invoke_get("Retrieve a list of configuration files for RSA",
-                                    "{0}".format(uri),
+                                    uri,
                                     requires_modules=requires_modules, requires_version=requires_version)

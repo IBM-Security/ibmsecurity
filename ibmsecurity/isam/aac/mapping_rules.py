@@ -34,7 +34,7 @@ def _get(isamAppliance, id):
     :return:
     """
     return isamAppliance.invoke_get("Retrieve a specific mapping rule",
-                                    "/iam/access/v8/mapping-rules/{0}".format(id))
+                                    f"/iam/access/v8/mapping-rules/{id}")
 
 
 def search(isamAppliance, name, check_mode=False, force=False):
@@ -54,7 +54,7 @@ def search(isamAppliance, name, check_mode=False, force=False):
     for obj in ret_obj['data']:
         if obj['name'] == name:
             return_obj['data'] = obj['id']
-            logger.debug("Found id: {0}".format(obj['id']))
+            logger.debug(f"Found id: {obj['id']}")
             return_obj['rc'] = 0
 
     return return_obj
@@ -123,7 +123,7 @@ def delete(isamAppliance, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Delete a mapping rule",
-                "/iam/access/v8/mapping-rules/{0}".format(ret_obj['data']))
+                f"/iam/access/v8/mapping-rules/{ret_obj['data']}")
 
     return isamAppliance.create_return_object()
 
@@ -157,7 +157,7 @@ def update(isamAppliance, name, content=None, upload_filename=None, check_mode=F
         else:
             return isamAppliance.invoke_put(
                 "Update a specified mapping rule",
-                "/iam/access/v8/mapping-rules/{0}".format(id),
+                f"/iam/access/v8/mapping-rules/{id}",
                 {
                     'content': content
                 })
@@ -178,7 +178,7 @@ def export_file(isamAppliance, name, filename, check_mode=False, force=False):
             id = ret_obj['data']
             return isamAppliance.invoke_get_file(
                 "Export a specific mapping rule",
-                "/iam/access/v8/mapping-rules/{0}/file/".format(id),
+                f"/iam/access/v8/mapping-rules/{id}/file/",
                 filename)
 
     return isamAppliance.create_return_object()
@@ -242,7 +242,7 @@ def import_file(isamAppliance, name, filename, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post_files(
                 "Import a mapping rule (replace)",
-                "/iam/access/v8/mapping-rules/{0}/file".format(ret_obj['data']),
+                f"/iam/access/v8/mapping-rules/{ret_obj['data']}/file",
                 [
                     {
                         'file_formfield': 'file',

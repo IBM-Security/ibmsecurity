@@ -66,12 +66,14 @@ def _get(isamAppliance, id, formatting='xml'):
             formatting = 'xml'
     if formatting == 'json':
         return isamAppliance.invoke_get("Retrieve a specific authentication policy (JSON)",
-                                    "{0}/{1}".format(module_uri_json, id), requires_modules=requires_modules,
+                                    f"{module_uri_json}/{id}",
+                                    requires_modules=requires_modules,
                                     warnings=warnings,
                                     requires_version=requires_version)
     else:
         return isamAppliance.invoke_get("Retrieve a specific authentication policy",
-                                    "{0}/{1}".format(module_uri, id), requires_modules=requires_modules,
+                                    f"{module_uri}/{id}",
+                                    requires_modules=requires_modules,
                                     warnings=warnings,
                                     requires_version=requires_version)
 
@@ -121,9 +123,7 @@ def add(isamAppliance, name, policy, uri, description="", dialect="urn:ibm:secur
 
             if formatting == 'json':
                  if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
-                     warnings.append(
-                            "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                                isamAppliance.facts["version"]))
+                     warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
                      formatting = 'xml'
 
 
@@ -157,7 +157,7 @@ def delete(isamAppliance, id=None, name=None, check_mode=False, force=False):
                 id = ret_obj['data']['id']
             return isamAppliance.invoke_delete(
                 "Delete an authentication policy",
-                "{0}/{1}".format(module_uri, id), requires_modules=requires_modules, requires_version=requires_version)
+                f"{module_uri}/{id}", requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object()
 
@@ -179,15 +179,11 @@ def update(isamAppliance, name, policy, uri, description="",
     }
     if formatting == 'json':
         if tools.version_compare(isamAppliance.facts["version"], "10.0.6.0") < 0:
-            warnings.append(
-                "Appliance is at version: {0}. JSON format not supported unless at least 10.0.6.0. Setting to xml.".format(
-                    isamAppliance.facts["version"]))
+            warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. JSON format not supported unless at least 10.0.6.0. Setting to xml.")
             formatting = 'xml'
     if enabled is not None:
         if tools.version_compare(isamAppliance.facts["version"], "9.0.2.1") < 0:
-            warnings.append(
-                "Appliance is at version: {0}. Enabled parameter not supported unless at least 9.0.2.1. Ignoring value.".format(
-                    isamAppliance.facts["version"]))
+            warnings.append(f"Appliance is at version: {isamAppliance.facts['version']}. Enabled parameter not supported unless at least 9.0.2.1. Ignoring value.")
         else:
             json_data["enabled"] = enabled
     if force is not True:
@@ -205,8 +201,8 @@ def update(isamAppliance, name, policy, uri, description="",
 
         exist_data = tools.json_sort(ret_obj['data'])
         new_data = tools.json_sort(json_data)
-        logger.debug("\n\nExisting Data: {0}".format(exist_data))
-        logger.debug("\n\nProvided Data: {0}".format(new_data))
+        logger.debug(f"\n\nExisting Data: {exist_data}")
+        logger.debug(f"\n\nProvided Data: {new_data}")
         if exist_data != new_data:
             needs_update = True
 
@@ -217,12 +213,12 @@ def update(isamAppliance, name, policy, uri, description="",
             if formatting == 'json':
                 return isamAppliance.invoke_put(
                     "Update a specified authentication policy (JSON)",
-                    "{0}/{1}".format(module_uri_json, id), json_data, requires_modules=requires_modules,
+                    f"{module_uri_json}/{id}", json_data, requires_modules=requires_modules,
                     requires_version=requires_version, warnings=warnings)
             else:
                 return isamAppliance.invoke_put(
                     "Update a specified authentication policy",
-                    "{0}/{1}".format(module_uri, id), json_data, requires_modules=requires_modules,
+                    f"{module_uri}/{id}", json_data, requires_modules=requires_modules,
                     requires_version=requires_version, warnings=warnings)
 
     return isamAppliance.create_return_object()

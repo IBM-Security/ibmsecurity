@@ -15,7 +15,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of push notification registrations
     """
     return isamAppliance.invoke_get("Retrieve a list of push notification registrations",
-                                    "{0}".format(uri),
+                                    f"{uri}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -27,8 +27,8 @@ def get(isamAppliance, app_id, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("Push notification registration '{0}' had no match, skipping retrieval.".format(app_id))
-        warnings = ["Push notification registration '{0}' had no match, skipping retrieval.".format(app_id)]
+        logger.info(f"Push notification registration '{app_id}' had no match, skipping retrieval.")
+        warnings = [f"Push notification registration '{app_id}' had no match, skipping retrieval."]
         return isamAppliance.create_return_object(warnings=warnings)
     else:
         return _get(isamAppliance, id)
@@ -42,7 +42,7 @@ def add(isamAppliance, app_id, platform, provider, check_mode=False, force=False
     id = ret_obj['data']
 
     if id != {}:
-        logger.info("Push notification registration '{0}' already exists.  Skipping add.".format(app_id))
+        logger.info(f"Push notification registration '{app_id}' already exists.  Skipping add.")
 
     if force is True or id == {}:
         if check_mode is True:
@@ -51,7 +51,7 @@ def add(isamAppliance, app_id, platform, provider, check_mode=False, force=False
 
             return isamAppliance.invoke_post(
                 "Create a push notification registration",
-                "{0}".format(uri),
+                f"{uri}",
                 {
                     'app_id': app_id,
                     'platform': platform,
@@ -86,21 +86,21 @@ def update(isamAppliance, app_id, platform, provider, new_app_id=None, check_mod
 
         sorted_json_data = json_sort(json_data)
 
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
 
         del ret_obj['data']['push_id']
         sorted_ret_obj = json_sort(ret_obj['data'])
 
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
 
         if sorted_json_data != sorted_ret_obj:
             update_required = True
         else:
             logger.info(
-                "Input is the same as current Push notification registration '{0}'.  Skipping update.".format(app_id))
+                f"Input is the same as current Push notification registration '{app_id}'.  Skipping update.")
     else:
-        logger.info("Push notification registration '{0}' does not exists.  Skipping update.".format(app_id))
-        warnings = ["Push notification registration '{0}' does not exists.  Skipping update.".format(app_id)]
+        logger.info(f"Push notification registration '{app_id}' does not exists.  Skipping update.")
+        warnings = [f"Push notification registration '{app_id}' does not exists.  Skipping update."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
@@ -109,7 +109,7 @@ def update(isamAppliance, app_id, platform, provider, new_app_id=None, check_mod
         else:
             return isamAppliance.invoke_put(
                 "Update a push notification registration",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
@@ -149,12 +149,12 @@ def delete(isamAppliance, app_id, check_mode=False, force=False):
 
             return isamAppliance.invoke_delete(
                 "Delete a push notification registration",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
     if id == {}:
-        logger.info("Push notification registration '{0}' does not exists, skipping delete.".format(app_id))
+        logger.info(f"Push notification registration '{app_id}' does not exists, skipping delete.")
 
     return isamAppliance.create_return_object()
 
@@ -185,7 +185,7 @@ def search(isamAppliance, app_id, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['app_id'] == app_id:
-            logger.info("Found Push notification registration '{0}' id: '{1}'".format(app_id, obj['push_id']))
+            logger.info(f"Found Push notification registration '{app_id}' id: '{obj['push_id']}'")
             ret_obj_new['data'] = obj['push_id']
 
     return ret_obj_new
@@ -193,4 +193,4 @@ def search(isamAppliance, app_id, force=False, check_mode=False):
 
 def _get(isamAppliance, id):
     return isamAppliance.invoke_get("Retrieve a specific Push notification registration",
-                                    "{0}/{1}".format(uri, id))
+                                    f"{uri}/{id}")

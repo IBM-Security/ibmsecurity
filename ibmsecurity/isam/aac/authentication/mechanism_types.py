@@ -22,11 +22,11 @@ def get(isamAppliance, name, check_mode=False, force=False):
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("Authentication Mechanism Type {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Authentication Mechanism Type {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific authentication mechanism type",
-                                        "/iam/access/v8/authentication/mechanism/types/{0}".format(id))
+                                        f"/iam/access/v8/authentication/mechanism/types/{id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -38,7 +38,7 @@ def search(isamAppliance, name, force=False, check_mode=False):
 
     for obj in ret_obj['data']:
         if obj['name'] == name:
-            logger.info("Found Authentication Mechanism Type {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found Authentication Mechanism Type {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 

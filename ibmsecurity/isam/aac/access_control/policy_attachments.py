@@ -28,11 +28,11 @@ def get(isamAppliance, server, resourceUri, check_mode=False, force=False):
         check_mode=check_mode,
         force=force,
     )
-    resource_id = ret_obj["data"]
+    resource_id = ret_obj.get("data", {})
 
     if resource_id == {}:
         logger.info(
-            f"Resource {server}/{resourceUri} had no match, skipping retrieval."
+            f"Resource {server}{resourceUri} had no match, skipping retrieval."
         )
         return isamAppliance.create_return_object()
     else:
@@ -57,7 +57,7 @@ def get_attachments(isamAppliance, server, resourceUri, check_mode=False, force=
 
     if resource_id == {}:
         logger.info(
-            f"Resource {server}/{resourceUri} had no match, skipping retrieval."
+            f"Resource {server}{resourceUri} had no match, skipping retrieval."
         )
         return isamAppliance.create_return_object()
     else:
@@ -77,10 +77,11 @@ def search(isamAppliance, server, resourceUri, force=False, check_mode=False):
     for obj in ret_obj["data"]:
         if obj["resourceUri"] == resourceUri and obj["server"] == server:
             logger.info(
-                f"Found server/resourceUri {server}/{resourceUri} id: {obj['id']}"
+                f"Found server/resourceUri {server}{resourceUri} id: {obj['id']}"
             )
             return_obj["data"] = obj["id"]
             return_obj["rc"] = 0
+            return return_obj
 
     return return_obj
 
@@ -144,38 +145,60 @@ def config(
       {'name': '<definition name>', 'type': 'definition'}]
     """
     warnings = []
-    if force is False:
-        ret_obj = search(isamAppliance, server, resourceUri)
+    ret_obj = search(isamAppliance, server, resourceUri)
 
-    if force is True or ret_obj["data"] == {}:
-        json_data = {"server": server, "resourceUri": resourceUri}
-        if policyType is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
-                warnings.append(
-                    f"Appliance at version: {isamAppliance.facts['version']}, policyType: {cache} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call."
-                )
-            else:
-                json_data["type"] = policyType
+    json_data = {"server": server, "resourceUri": resourceUri}
+    if policyType is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.6.0") < 0:
+            warnings.append(
+                f"Appliance at version: {isamAppliance.facts['version']}, policyType: {policyType} is not supported. Needs 9.0.6.0 or higher. Ignoring policyType for this call."
+            )
+        else:
+            json_data["type"] = policyType
 
-        json_data["policies"] = _convert_policy_name_to_id(isamAppliance, policies)
-        if policyCombiningAlgorithm is not None:
+    json_data["policies"] = _convert_policy_name_to_id(isamAppliance, policies)
+    if policyCombiningAlgorithm is not None:
+        if policyType is not None and policyType == "application":
+            warnings.append(
+                "Do not set policy combining algorithm for application type"
+            )
+        else:
             json_data["policyCombiningAlgorithm"] = policyCombiningAlgorithm
-        if cache is not None:
-            if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
-                warnings.append(
-                    f"Appliance at version: {isamAppliance.facts['version']}, cache: {cache} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call."
-                )
-            else:
-                json_data["cache"] = int(cache)
-        if check_mode is True:
+    if cache is not None:
+        if tools.version_compare(isamAppliance.facts["version"], "9.0.3.0") < 0:
+            warnings.append(
+                f"Appliance at version: {isamAppliance.facts['version']}, cache: {cache} is not supported. Needs 9.0.3.0 or higher. Ignoring cache for this call."
+            )
+        else:
+            json_data["cache"] = int(cache)
+
+    if force or ret_obj.get("data", {}) == {}:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post(
                 "Configure a resource", uri, json_data, warnings=warnings
             )
-
-    return isamAppliance.create_return_object()
-
+    else:
+        # Idempotency check
+        logger.debug(f"Idempotency check for {server}{resourceUri}")
+        curConfig = get(isamAppliance, server, resourceUri)
+        curConfig = curConfig.get("data", {})
+        # Need to get rid of lastmodified and name in each policy
+        _policies = list(map(lambda item: item.pop('lastmodified', None), curConfig.get("policies", [])))
+        _policies = list(map(lambda item: item.pop('name', None), curConfig.get("policies", [])))
+        if tools.json_equals(curConfig, json_data):
+            # No updates needed
+            return isamAppliance.create_return_object()
+        else:
+            if check_mode:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                # delete and add again
+                delete(isamAppliance, server, resourceUri)
+                return isamAppliance.invoke_post(
+                    "Reconfigure a resource", uri, json_data, warnings=warnings
+                )
 
 def update(
     isamAppliance,
@@ -306,17 +329,23 @@ def publish(isamAppliance, server, resourceUri, check_mode=False, force=False):
     """
     ret_obj = get(isamAppliance, server, resourceUri)
 
-    if force or (
-        ret_obj["data"] != {} and (
-            ret_obj["data"]["deployrequired"] or not ret_obj["data"]["deployed"]
-        ) and ret_obj["data"]["policies"] != []
-    ):
+    deploy_required = False
+    # skip application type for deployment.
+    if (ret_obj.get("data", {}).get("type", "reverse_proxy") == "reverse_proxy") and (ret_obj.get("data", {}).get("deployrequired", False) or not ret_obj.get("data", {}).get("deployed", False)):
+        deploy_required = True
+
+    logger.debug(f"\n\nDeploy required: {deploy_required}\n\n")
+
+    resource_id = ret_obj.get('data', {}).get('id', None)
+    logger.debug(f"\n\nID: {resource_id}\n\n")
+    # if (force or deploy_required) and ret_obj.get("data", {}).get("policies", []) != []:
+    if (force or deploy_required) and resource_id is not None:
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(
                 "Publish the policy attachments for a resource",
-                f"{uri}/deployment/{ret_obj['data']['id']}",
+                f"{uri}/deployment/{resource_id}",
                 {},
             )
 
@@ -333,7 +362,7 @@ def publish_list(isamAppliance, attachments, check_mode=False, force=False):
     id_list = []
     for attach in attachments:
         ret_obj = get(isamAppliance, attach["server"], attach["resourceUri"])
-        if force is True or ret_obj["data"]["deployrequired"] is True:
+        if force or ret_obj["data"]["deployrequired"]:
             id_list.append(ret_obj["data"]["id"])
     logger.debug(f"Attachments: {id_list}")
 

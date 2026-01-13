@@ -22,7 +22,7 @@ def add(isamAppliance, name, properties, attributes=None, description=None, type
     id = ret_obj['data']
 
     if id != {}:
-        logger.info("PIP '{0}' already exists.  Skipping add.".format(name))
+        logger.info(f"PIP '{name}' already exists.  Skipping add.")
 
     if force is True or id == {}:
         if check_mode is True:
@@ -31,7 +31,7 @@ def add(isamAppliance, name, properties, attributes=None, description=None, type
 
             return isamAppliance.invoke_post(
                 "Create a JavaScript policy information point",
-                "{0}".format(uri),
+                f"{uri}",
                 _create_json(name=name, description=description, type=type,
                              attributes=attributes, properties=properties),
                 requires_modules=requires_modules, requires_version=requires_version
@@ -64,19 +64,19 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
 
         sorted_json_data = json_sort(json_data)
 
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
 
         del ret_obj['data']['id']
         del ret_obj['data']['predefined']
         sorted_ret_obj = json_sort(ret_obj['data'])
 
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
 
         if sorted_json_data != sorted_ret_obj:
             update_required = True
     else:
-        logger.info("PIP '{0}' does not exists.  Skipping update.".format(name))
-        warnings = ["PIP '{0}' does not exists.  Skipping update.".format(name)]
+        logger.info(f"PIP '{name}' does not exists.  Skipping update.")
+        warnings = [f"PIP '{name}' does not exists.  Skipping update."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
@@ -87,13 +87,13 @@ def update(isamAppliance, name, properties, attributes=None, description=None, t
 
             return isamAppliance.invoke_put(
                 "Update a specific JavaScript policy information point",
-                "{0}/{1}".format(uri, id),
+                f"{uri}/{id}",
                 json_data,
                 requires_modules=requires_modules, requires_version=requires_version
             )
 
     if update_required is False:
-        logger.info("Input is the same as current PIP '{0}'.  Skipping update.".format(name))
+        logger.info(f"Input is the same as current PIP '{name}'.  Skipping update.")
 
     return isamAppliance.create_return_object()
 
@@ -123,15 +123,15 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
     """
 
     if os.path.exists(filepath) is True:
-        logger.info("File '{0}' already exists.  Skipping export.".format(filepath))
-        warnings = ["File '{0}' already exists.  Skipping export.".format(filepath)]
+        logger.info(f"File '{filepath}' already exists.  Skipping export.")
+        warnings = [f"File '{filepath}' already exists.  Skipping export."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     ret_obj = search(isamAppliance, name=name)
     id = ret_obj['data']
 
     if id == {}:
-        logger.info("PIP '{0}' does not exists.  Skipping export.".format(name))
+        logger.info(f"PIP '{name}' does not exists.  Skipping export.")
 
     if force is True or id != {}:
         if check_mode is True:
@@ -140,7 +140,7 @@ def export_file(isamAppliance, name, filepath, check_mode=False, force=False):
 
             return isamAppliance.invoke_get_file(
                 "Export a specific policy information point",
-                "{0}/{1}/file".format(uri, id), filepath,
+                f"{uri}/{id}/file", filepath,
                 requires_modules=requires_modules, requires_version=requires_version
             )
     return isamAppliance.create_return_object()
@@ -172,13 +172,13 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
                     if (ret_content != content.strip()):
                         update_required = True
                     else:
-                        logger.info("File content is the same for PIP '{0}'.  Skipping import.".format(name))
+                        logger.info(f"File content is the same for PIP '{name}'.  Skipping import.")
 
             if found_key is False:
                 update_required = True
         else:
-            logger.info("PIP '{0}' does not exists.  Skipping import.".format(name))
-            warnings = ["PIP '{0}' does not exists.  Skipping import.".format(name)]
+            logger.info(f"PIP '{name}' does not exists.  Skipping import.")
+            warnings = [f"PIP '{name}' does not exists.  Skipping import."]
             return isamAppliance.create_return_object(warnings=warnings)
 
     if force is True or update_required is True:
@@ -188,7 +188,7 @@ def import_file(isamAppliance, name, filepath, check_mode=False, force=False):
 
             return isamAppliance.invoke_post_files(
                 "Import a specific policy information point",
-                "{0}/{1}/file".format(uri, id),
+                f"{uri}/{id}/file",
                 [
                     {
                         'file_formfield': 'file',
@@ -210,14 +210,14 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     ret_obj = get(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('Javascript PIP "{0}" not found, skipping delete.'.format(name))
+        logger.info(f'Javascript PIP "{name}" not found, skipping delete.')
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            logger.info('Deleting Javascript PIP "{0}"'.format(name))
+            logger.info(f'Deleting Javascript PIP "{name}"')
             return isamAppliance.invoke_delete(
                 "Delete a Javascript policy information point",
-                "{0}/{1}".format(uri, ret_obj['data']['id']))
+                f"{uri}/{ret_obj['data']['id']}")
 
     return isamAppliance.create_return_object()

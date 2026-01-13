@@ -13,7 +13,7 @@ def get_all(isamAppliance, filter=None, sortBy=None, check_mode=False, force=Fal
     Retrieve a list of Attributes
     """
     return isamAppliance.invoke_get("Retrieve a list of attributes",
-                                    "{0}/{1}".format(uri, tools.create_query_string(filter=filter, sortBy=sortBy)))
+                                    f"{uri}/{tools.create_query_string(filter=filter, sortBy=sortBy)}")
 
 
 def get(isamAppliance, name, check_mode=False, force=False):
@@ -24,11 +24,11 @@ def get(isamAppliance, name, check_mode=False, force=False):
     artifact_id = ret_obj['data']
 
     if artifact_id == {}:
-        logger.info("Attribute {0} had no match, skipping retrieval.".format(name))
+        logger.info(f"Attribute {name} had no match, skipping retrieval.")
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific attribute",
-                                        "{0}/{1}".format(uri, artifact_id))
+                                        f"{uri}/{artifact_id}")
 
 
 def search(isamAppliance, name, force=False, check_mode=False):
@@ -39,9 +39,9 @@ def search(isamAppliance, name, force=False, check_mode=False):
     return_obj = isamAppliance.create_return_object()
 
     for obj in ret_obj['data']:
-        logger.info("Obj is: {0}".format(obj))
+        logger.info(f"Obj is: {obj}")
         if obj['name'] == name:
-            logger.info("Found attribute {0} id: {1}".format(name, obj['id']))
+            logger.info(f"Found attribute {name} id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -57,12 +57,12 @@ def set(isamAppliance, name, description, attributeURI, type, category, datatype
     ret_obj = search(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('Adding "{1}" as a new {0}'.format(artifact_type, name))
+        logger.info(f'Adding "{name}" as a new {artifact_type}')
         return add(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer,
                    matcher, storageDomain,
                    check_mode, True)
     else:
-        logger.info('Update for {0} "{1}"'.format(artifact_type, name))
+        logger.info(f'Update for {artifact_type} "{name}"')
         return update(isamAppliance, name, description, attributeURI, type, category, datatype, predefined, issuer,
                       matcher, storageDomain,
                       new_name, check_mode, force)
@@ -112,7 +112,7 @@ def update(isamAppliance, name, description, attributeURI, type, category, datat
     if update_required is True:
         if artifact_id is None:
             from ibmsecurity.appliance.ibmappliance import IBMError
-            raise IBMError("999", "Cannot update data for unknown attribute: {0}".format(name))
+            raise IBMError("999", f"Cannot update data for unknown attribute: {name}")
 
     if force is True or update_required is True:
         if check_mode is True:
@@ -120,7 +120,7 @@ def update(isamAppliance, name, description, attributeURI, type, category, datat
         else:
             return isamAppliance.invoke_put(
                 "Update a specified attribute",
-                "{0}/{1}".format(uri, artifact_id), json_data)
+                f"{uri}/{artifact_id}", json_data)
 
     return isamAppliance.create_return_object()
 
@@ -145,28 +145,28 @@ def _check(isamAppliance, name, description, attributeURI, type, category, datat
         "matcher": matcher,
         "storageDomain": storageDomain
     }
-    logger.warning(" New Name {0}.".format(new_name))
+    logger.warning(f" New Name {new_name}.")
 
     ret_obj = get(isamAppliance, name);
     if ret_obj['data'] == {}:
         logger.warning(" not found, returning no update required.")
         return None, update_required, json_data
     elif ret_obj['data']['predefined']:
-        logger.warning("A predefined {0} cannot be updated, returning no update required.".format(artifact_type))
+        logger.warning(f"A predefined {artifact_type} cannot be updated, returning no update required.")
         return None, update_required, json_data
     else:
         artifact_id = ret_obj['data']['id']
         if new_name != False:
-            logger.warning(" New Name 1 {0}.".format(new_name))
+            logger.warning(f" New Name 1 {new_name}.")
             json_data['name'] = new_name
 
         del ret_obj['data']['id']
         del ret_obj['data']['tags']
         import ibmsecurity.utilities.tools
         sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug("Sorted input: {0}".format(sorted_json_data))
+        logger.debug(f"Sorted input: {sorted_json_data}")
         sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(ret_obj['data'])
-        logger.debug("Sorted existing data: {0}".format(sorted_ret_obj))
+        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
             update_required = True
@@ -181,17 +181,17 @@ def delete(isamAppliance, name, check_mode=False, force=False):
     ret_obj = get(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('{0} "{1}" not found, skipping delete.'.format(artifact_type, name))
+        logger.info(f'{artifact_type} "{name}" not found, skipping delete.')
     elif ret_obj['data']["predefined"]:
-        logger.info('{0} "{1}" is predefined, skipping delete.'.format(artifact_type, name))
+        logger.info(f'{artifact_type} "{name}" is predefined, skipping delete.')
     else:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
-            logger.info('Deleting {0} "{1}"'.format(artifact_type, name))
+            logger.info(f'Deleting {artifact_type} "{name}"')
             return isamAppliance.invoke_delete(
                 "Delete a Attribute",
-                "{0}/{1}".format(uri, ret_obj['data']['id']))
+                f"{uri}/{ret_obj['data']['id']}")
 
     return isamAppliance.create_return_object()
 

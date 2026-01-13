@@ -17,7 +17,7 @@ def get_all(isamAppliance, instance_name, check_mode=False, force=False):
     """
     instance_exist, warnings = _check_instance_exist(isamAppliance, instance_name)
 
-    if force is True or instance_exist is True:
+    if force or instance_exist:
         return isamAppliance.invoke_get(
             "Retrieving the list of all files in the API Access Control documentation root ",
             "{0}/{1}/documentation/".format(uri, instance_name),
@@ -30,7 +30,7 @@ def get(isamAppliance, instance_name, file_name, check_mode=False, force=False):
     """
     instance_exist, warnings = _check_instance_exist(isamAppliance, instance_name)
 
-    if force is True or instance_exist is True:
+    if force or instance_exist:
         return isamAppliance.invoke_get(
             "Retrieving the list of all files in the API Access Control documentation root ",
             "{0}/{1}/documentation/{2}".format(uri, instance_name, file_name),
@@ -75,8 +75,8 @@ def update(isamAppliance, instance_name, file_name, contents, type='file', check
     """
     same_contents, warnings = _check_contents(isamAppliance, instance_name, file_name, contents)
 
-    if force is True or same_contents is False:
-        if check_mode is True:
+    if force or not same_contents:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             json_data = {
@@ -96,7 +96,7 @@ def update(isamAppliance, instance_name, file_name, contents, type='file', check
 def set(isamAppliance, instance_name, file_name, contents, type='file', check_mode=False, force=False):
     exist, warnings = _check_exist(isamAppliance, instance_name, file_name)
 
-    if exist is True:
+    if exist:
         return update(isamAppliance=isamAppliance, instance_name=instance_name, file_name=file_name, contents=contents,
                       type=type, check_mode=check_mode, force=force)
     else:
@@ -112,8 +112,8 @@ def rename_directory(isamAppliance, instance_name, file_name, new_name, type='di
     """
     exists, warnings = _check_exist(isamAppliance, instance_name, file_name)
 
-    if force is True or exists is True:
-        if check_mode is True:
+    if force or exists:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             json_data = {
@@ -136,8 +136,8 @@ def rename_file(isamAppliance, instance_name, file_name, new_name, type='file', 
     """
     exists, warnings = _check_exist(isamAppliance, instance_name, file_name)
 
-    if force is True or exists is True:
-        if check_mode is True:
+    if force or exists:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             json_data = {

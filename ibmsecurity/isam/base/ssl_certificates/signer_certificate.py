@@ -1,5 +1,7 @@
 import logging
 import os.path
+import re
+
 from ibmsecurity.utilities.tools import files_same, get_random_temp_dir, version_compare
 import shutil
 
@@ -14,13 +16,24 @@ def get_all(isamAppliance, kdb_id, check_mode=False, force=False):
                                     f"/isam/ssl_certificates/{kdb_id}/signer_cert")
 
 
-def get(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
+def get(isamAppliance, kdb_id, cert_id=None, label=None, check_mode=False, force=False):
     """
     Retrieving a signer certificate from a certificate database
+    use cert_id (legacy) or label , mutually exclusive, label takes precedence
     """
-    return isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
-                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}")
-
+    if label is None:
+        retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{cert_id}",
+                                    ignore_error=True)
+    else:
+        cert_id = label
+        retObj = isamAppliance.invoke_get("Retrieving a signer certificate from a certificate database",
+                                    f"/isam/ssl_certificates/{kdb_id}/signer_cert/{label}",
+                                    ignore_error=True)
+    if retObj.get('rc', 0) == 404:
+        return isamAppliance.create_return_object(rc=404, warnings=[f"{cert_id} does not exist in {kdb_id}"])
+    else:
+        return retObj
 
 def load(isamAppliance, kdb_id, label, server, port, check_remote=False, check_mode=False, force=False):
     """
@@ -85,8 +98,7 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
         cert_id = cert_data['id']
         cert_pem = get(isamAppliance, kdb_id, cert_id)['data']['contents']
         if cert_id == label:  # label exists on appliance already
-            logger.debug(f"Comparing certificates: appliance[{cert_pem}] remote[{remote_cert_pem}].")
-            if cert_pem == remote_cert_pem:  # certificate data is the same
+            if cert_pem == remote_cert_pem:
                 logger.debug("The certificate already exits on the appliance with the same label name and same content.")
                 return True  # both the labels and certificates match
             else:
@@ -106,11 +118,14 @@ def _check_load(isamAppliance, kdb_id, label, server, port):
     return False
 
 
-def delete(isamAppliance, kdb_id, cert_id, check_mode=False, force=False):
+def delete(isamAppliance, kdb_id, cert_id=None, label=None, check_mode=False, force=False):
     """
     Deleting a signer certificate from a certificate database
     """
-    if force is True or _check(isamAppliance, kdb_id, cert_id) is True:
+    if label is not None:
+        cert_id = label
+
+    if force or _check(isamAppliance, kdb_id, cert_id) is True:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -136,7 +151,7 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
     """
     import os.path
 
-    if force is True or _check(isamAppliance, kdb_id, cert_id) is True:
+    if force or _check(isamAppliance, kdb_id, cert_id):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Export a certificate database",
@@ -149,36 +164,98 @@ def export_cert(isamAppliance, kdb_id, cert_id, filename, check_mode=False, forc
 def import_cert(isamAppliance, kdb_id, cert, label, preserve_label='false', check_mode=False, force=False):
     """
     Importing a signer certificate into a certificate database
+    cert can be a file or a string
     """
-    if force is True or _check_import(isamAppliance, kdb_id, label, cert, check_mode=check_mode):
-        if check_mode is True:
-            return isamAppliance.create_return_object(changed=True)
-        else:
-            if version_compare(isamAppliance.facts['version'], "10.0.5.0") < 0:
-                return isamAppliance.invoke_post_files(
-                    "Importing a signer certificate into a certificate database",
-                    f"/isam/ssl_certificates/{kdb_id}/signer_cert",
-                    [
-                        {
-                            'file_formfield': 'cert',
-                            'filename': cert,
-                            'mimetype': 'application/octet-stream'
-                        }
-                    ],
-                    {'label': label})
-            else:
-                return isamAppliance.invoke_post_files(
-                    "Importing a signer certificate into a certificate database",
-                    f"/isam/ssl_certificates/{kdb_id}/signer_cert",
-                    [
-                        {
-                            'file_formfield': 'cert',
-                            'filename': cert,
-                            'mimetype': 'application/octet-stream'
-                        }
-                    ],
-                    {'label': label,
-                    'preserve_label': preserve_label})
+    # Let's do some simple check
+    # check if the string begins with -----BEGIN CERTIFICATE-----
+    #
+    if cert.startswith('-----BEGIN CERTIFICATE-----'):
+      if force or _check_import_string(isamAppliance, kdb_id, label, cert, check_mode=check_mode):
+          if check_mode:
+              return isamAppliance.create_return_object(changed=True)
+          else:
+              json_data = {}
+              json_data['label'] = label
+              json_data['cert'] = cert
+              json_data['operation'] = "import" # this is missing from the documentation.
+              if version_compare(isamAppliance.facts['version'], "10.0.5.0") >= 0:
+                  json_data['preserve_label'] = preserve_label.lower()
+              ret_obj = isamAppliance.invoke_post("Create signer cert from certificate string",
+                                               f"/isam/ssl_certificates/{kdb_id}/signer_cert",
+                                               json_data,
+                                               ignore_error=True)
+              if preserve_label.lower() == 'true':
+                  if ret_obj['rc'] == 500:
+                      # this most likely means the certificate exists already (with a different name ?)
+                      if "DPWAP0134E" in ret_obj['data'].get('message', ''):
+                          return isamAppliance.create_return_object(rc=0, warnings=(f"Not updating existing certificate (preserve_label=true): {ret_obj.get('data', {}).get('message', '')}"), changed=False)
+                      # this most likely means the certificate exists already (with a different name ?)
+                      if "duplicate" in ret_obj['data'].get('message', ''):
+                          return isamAppliance.create_return_object(rc=0, warnings=(f"Not updating existing certificate (preserve_label=true): {ret_obj.get('data', {}).get('message', '')}"), changed=False)
+              else:
+                  if ret_obj['rc'] == 500:
+                      # this most likely means the certificate exists already (with a different name ?)
+                      if "DPWAP0134E" in ret_obj['data'].get('message', ''):
+                          return isamAppliance.create_return_object(rc=0, warnings=(f"Not updating existing certificate (preserve_label=false): {ret_obj.get('data', {}).get('message', '')}"), changed=False)
+              if ret_obj['rc'] == 404:
+                  logger.info(f"Not found... which is odd")
+              return ret_obj
+
+    else:
+      if force or _check_import(isamAppliance, kdb_id, label, cert, check_mode=check_mode):
+          if check_mode:
+              return isamAppliance.create_return_object(changed=True)
+          else:
+              if version_compare(isamAppliance.facts['version'], "10.0.5.0") < 0:
+                  return isamAppliance.invoke_post_files(
+                      "Importing a signer certificate into a certificate database",
+                      f"/isam/ssl_certificates/{kdb_id}/signer_cert",
+                      [
+                          {
+                              'file_formfield': 'cert',
+                              'filename': cert,
+                              'mimetype': 'application/octet-stream'
+                          }
+                      ],
+                      {'label': label})
+              else:
+                  # Preserve label true , throws 500 error
+                  ret_obj = isamAppliance.invoke_post_files(
+                      "Importing a signer certificate into a certificate database",
+                      f"/isam/ssl_certificates/{kdb_id}/signer_cert",
+                      [
+                          {
+                              'file_formfield': 'cert',
+                              'filename': cert,
+                              'mimetype': 'application/octet-stream'
+                          }
+                      ],
+                      {'label': label,
+                       'preserve_label': preserve_label.lower()},
+                      ignore_error=True
+                  )
+                  if preserve_label.lower() == 'true':
+                      if ret_obj['rc'] == 500:
+                          # this most likely means the certificate exists already (with a different name ?)
+                          if "DPWAP0134E" in ret_obj['data'].get('message', ''):
+                              return isamAppliance.create_return_object(rc=0, warnings=(
+                                  f"Not updating existing certificate (preserve_label=true): {ret_obj.get('data', {}).get('message', '')}"),
+                                                                        changed=False)
+                          # this most likely means the certificate exists already (with a different name ?)
+                          if "duplicate" in ret_obj['data'].get('message', ''):
+                              return isamAppliance.create_return_object(rc=0, warnings=(
+                                  f"Not updating existing certificate (preserve_label=true): {ret_obj.get('data', {}).get('message', '')}"),
+                                                                        changed=False)
+                  else:
+                      if ret_obj['rc'] == 500:
+                          # this most likely means the certificate exists already (with a different name ?)
+                          if "DPWAP0134E" in ret_obj['data'].get('message', ''):
+                              return isamAppliance.create_return_object(rc=0, warnings=(
+                                  f"Not updating existing certificate (preserve_label=false): {ret_obj.get('data', {}).get('message', '')}"),
+                                                                        changed=False)
+                  if ret_obj['rc'] == 404:
+                      logger.info(f"Not found... which is odd")
+                  return ret_obj
 
     return isamAppliance.create_return_object()
 
@@ -190,36 +267,49 @@ def _check(isamAppliance, kdb_id, cert_id):
     ret_obj = get_all(isamAppliance, kdb_id)
 
     for certdb in ret_obj['data']:
-        if certdb['id'] == cert_id:
+        if certdb.get('id', None) == cert_id:
             return True
 
     return False
+
+
+def _check_import_string(isamAppliance, kdb_id, label, certstring, check_mode=False):
+    cert_pem = get(isamAppliance, kdb_id, label)
+    cert_pem = cert_pem.get("data", {})
+    cert_pem = cert_pem.get("contents", "")
+    if cert_pem == "":
+        # No certificate found.  Fine.
+        return True
+    if cert_pem.replace(" ", "").replace("\n", "").replace("\r", "") == certstring.replace(" ", "").replace("\n", "").replace("\r", ""):
+        logger.debug(f"Certificate already exists with same label {label}")
+        return False
+    return True
 
 
 def _check_import(isamAppliance, kdb_id, cert_id, filename, check_mode=False):
     """
     Checks if certificate on the Appliance  exists and if so, whether it is different from
     the one stored in filename
+    This is not a full check; because the certificate could exist under a different label !
+    filename may be a chain, in that case we need to compare a bit more
     """
-    tmpdir = get_random_temp_dir()
-    orig_filename = f'{cert_id}.cer'
-    tmp_original_file = os.path.join(tmpdir, os.path.basename(orig_filename))
-    if _check(isamAppliance, kdb_id, cert_id):
-        export_cert(isamAppliance, kdb_id, cert_id, tmp_original_file, check_mode=False, force=True)
-        logger.debug("file already exists on appliance")
-        if files_same(tmp_original_file, filename):
-            logger.debug("files are the same, so we don't want to do anything")
-            shutil.rmtree(tmpdir)
-            return False
-        else:
-            logger.debug("files are different, so we delete existing file in preparation for import")
-            delete(isamAppliance, kdb_id, cert_id, check_mode=check_mode, force=True)
-            shutil.rmtree(tmpdir)
-            return True
-    else:
-        logger.debug("file does not exist on appliance, so we'll want to import")
-        shutil.rmtree(tmpdir)
+    with open(filename) as file:
+        newcert = file.read() # tuple
+        # split into separate certs , if it's a chain
+        newcert = re.findall(r'(-----[BEGIN \S\ ]+?-----[\S\s]+?-----[END \S\ ]+?-----)', newcert)
+
+    cert_pem = get(isamAppliance, kdb_id, cert_id)
+    cert_pem = cert_pem.get("data", {})
+    cert_pem = cert_pem.get("contents", "")
+    if cert_pem == "":
+        # No certificate found.  Fine.
         return True
+
+    for nc in newcert:
+        if cert_pem.replace(" ", "").replace("\n", "").replace("\r", "") == nc.replace(" ", "").replace("\n", "").replace("\r", ""):
+            logger.debug(f"Signer Certificate already exists with same label {cert_id}")
+            return False
+    return True
 
 
 def compare(isamAppliance1, isamAppliance2, kdb_id):

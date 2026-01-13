@@ -17,7 +17,7 @@ def search(isamAppliance, name):
 
     for obj in ret_obj["data"]:
         if obj["name"] == name:
-            logger.info('Found {0} "{1}" with id: {2}'.format(artifact_type, name, obj['id']))
+            logger.info(f"Found {artifact_type} \"{name}\" with id: {obj['id']}")
             return_obj['data'] = obj['id']
             return_obj['rc'] = 0
 
@@ -43,8 +43,8 @@ def get(isamAppliance, name, check_mode=False, force=False):
     ret_obj = search(isamAppliance, name)
 
     if ret_obj['data'] == {}:
-        logger.info('{0} "{1}" had no match, skipping retrieval.'.format(artifact_type, name))
+        logger.info(f'{artifact_type} "{name}" had no match, skipping retrieval.')
         return isamAppliance.create_return_object()
     else:
         return isamAppliance.invoke_get("Retrieve a specific obligation",
-                                        "{0}/{1}".format(uri, ret_obj['data']))
+                                        f"{uri}/{ret_obj['data']}")

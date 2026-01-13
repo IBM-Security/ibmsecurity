@@ -230,9 +230,11 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
             new_map_rule_id = configuration['identityMapping']['properties'].get('identityMappingRuleReference', None)
             new_map_rule = configuration['identityMapping']['properties'].get('identityMappingRule', None)
 
-            exist_map_rule_id = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRuleReference', None)
-            exist_map_rule = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRule', None)
-
+            try:
+                exist_map_rule_id = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRuleReference', None)
+                exist_map_rule = ret_obj['data']['configuration']['identityMapping']['properties'].get('identityMappingRule', None)
+            except:
+                pass
             logger.debug("New Mapping data: {0}/{1}".format(new_map_rule_id, new_map_rule))
             logger.debug("Existing Mapping data: {0}/{1}".format(exist_map_rule_id, exist_map_rule))
             if new_map_rule_id is not None:

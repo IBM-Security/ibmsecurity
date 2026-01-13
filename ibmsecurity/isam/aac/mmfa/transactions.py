@@ -11,7 +11,7 @@ def get_all(isamAppliance, check_mode=False, force=False):
     """
     Get information on all existing Transactions
     """
-    return isamAppliance.invoke_get("Retrieving a list of transactions", "{0}".format(module_uri),
+    return isamAppliance.invoke_get("Retrieving a list of transactions", f"{module_uri}",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -19,7 +19,7 @@ def get(isamAppliance, id, check_mode=False, force=False):
     """
     Get information on single transaction
     """
-    return isamAppliance.invoke_get("Retrieving a transaction", "{0}{1}".format(module_uri, id),
+    return isamAppliance.invoke_get("Retrieving a transaction", f"{module_uri}{id}",
                                     requires_version=requires_version,
                                     requires_modules=requires_modules)
 
@@ -33,7 +33,7 @@ def delete(isamAppliance, id, check_mode=False, force=False):
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_delete("Deleting transaction",
-                                               "{0}{1}".format(module_uri, id), requires_modules=requires_modules,
+                                               f"{module_uri}{id}", requires_modules=requires_modules,
                                                requires_version=requires_version)
 
     return isamAppliance.create_return_object()

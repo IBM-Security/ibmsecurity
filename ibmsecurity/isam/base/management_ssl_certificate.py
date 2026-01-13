@@ -9,9 +9,12 @@ try:
     #pip install python-dateutil
     import cryptography.hazmat.primitives.serialization.pkcs12
     import cryptography.x509
+    from cryptography.x509 import Name, NameAttribute, NameOID
+    from cryptography.x509.oid import ObjectIdentifier
     # pip install cryptography
 except:
     performCertCheck = False
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +34,8 @@ def set(isamAppliance, certificate, password, check_mode=False, force=False):
         warnings = ["Idempotency not available. Unable to extract existing certificate to compare with provided one.  Install Python modules python-dateutil and cryptography."]
     else:
         warnings = []
-    if force is True or not _check(isamAppliance, certificate, password):
-        if check_mode is True:
+    if force or not _check(isamAppliance, certificate, password):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post_files(
@@ -80,11 +83,23 @@ def _check(isamAppliance, certificate, password):
         p = cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12(c, password)
 
         x509 = p.cert.certificate
-        newCert['subject'] = x509.subject.rfc4514_string()
 
-        newCert['issuer'] = x509.issuer.rfc4514_string()
-        newCert['notafter'] = x509.not_valid_after.strftime("%Y-%m-%d")
-        newCert['notbefore'] = x509.not_valid_before.strftime("%Y-%m-%d")
+        # Define a mapping to fix some OIDs with "MAIL"
+        attr_name_overrides = {
+            ObjectIdentifier("0.9.2342.19200300.100.1.3"): "MAIL",  # MAIL
+            ObjectIdentifier("1.2.840.113549.1.9.1"): "MAIL",  # EMAIL_ADDRESS
+            # Add other OIDs as needed
+        }
+        try:
+            newCert['subject'] = x509.subject.rfc4514_string(attr_name_overrides=attr_name_overrides)
+            newCert['issuer'] = x509.issuer.rfc4514_string(attr_name_overrides=attr_name_overrides)
+        except:
+            newCert['subject'] = x509.subject.rfc4514_string()
+            newCert['issuer'] = x509.issuer.rfc4514_string()
+            logger.info(
+                'Upgrade cryptography to version 36.0.0.  Install with pip install cryptography')
+        newCert['notafter'] = x509.not_valid_after_utc.strftime("%Y-%m-%d")
+        newCert['notbefore'] = x509.not_valid_before_utc.strftime("%Y-%m-%d")
 
         curc = json.dumps(currentCert, skipkeys=True, sort_keys=True)
         logger.debug(f"\nSorted Current  Management Cert:\n {curc}\n")

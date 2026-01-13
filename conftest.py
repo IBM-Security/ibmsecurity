@@ -17,10 +17,12 @@ def iviaServer():
     _pw = os.getenv('IVIA_PW')
     _host = os.getenv('IVIA_HOST')
     _port = os.getenv('IVIA_PORT') or 443
+    _https_proxy = os.getenv('IVIA_HTTPS_PROXY') or None
+    _http_proxy = os.getenv('IVIA_HTTP_PROXY') or None
     # Create a user credential for ISAM appliance
     u = ApplianceUser(username=_username, password=_pw)
     # Create an ISAM appliance with above credential
-    isam_server = ISAMAppliance(hostname=_host, user=u, lmi_port=_port)
+    isam_server = ISAMAppliance(hostname=_host, user=u, lmi_port=_port, http_proxy=_http_proxy, https_proxy=_https_proxy)
     yield isam_server
     returnValue = ibmsecurity.isam.appliance.commit(isamAppliance=isam_server, publish=True)
     print('\nCommit result and publish')

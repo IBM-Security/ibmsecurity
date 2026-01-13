@@ -1,9 +1,9 @@
 import logging
+import pytest
 
 import ibmsecurity.isam.base.admin_ssh_keys
 import ibmsecurity.isam.appliance
 
-import pytest
 
 def getTestData():
     testdata = [
