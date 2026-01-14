@@ -1,13 +1,13 @@
 [build-system]
 requires = [
-    "setuptools>=61",
+    "setuptools>=65.3.0",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibmsecurity"
-version = "2026.1.13.0"
+version = "2026.1.14.0"
 authors = [
   { name="IBM", email="secorch@wwpdl.vnet.ibm.com" },
 ]
