@@ -2,6 +2,10 @@
 
 ## Latest
 
+## 2026.1.14.0
+
+- fix: base/remote_syslog/forwarder.py - improved idempotency and bugfix
+
 ## 2026.1.13.0
 
 - fix: base/ssl_certificates/personal_certificate.py - fails to import if the keystore does not contain any personal certificates yet
