@@ -56,7 +56,7 @@ def get(isamAppliance, server=None, port=None, protocol=None, id=None, check_mod
         return_obj = isamAppliance.create_return_object()
         return_obj['data'], i = _find_forwarder(ret_obj, server, port, protocol)
         warnings = []
-        if return_obj['data'] == None:
+        if return_obj['data'] is None:
             warnings.append(f"No entry found for server {server} port {port} and protocol {protocol}.")
             return_obj['warnings'] = warnings
 
@@ -117,6 +117,10 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
     Update or create a specific remote syslog forwarder
     """
     warnings = []
+
+    if port and isinstance(port, basestring):
+        port = int(port)
+
     json_data = {
         'server': server,
         'port': port,
@@ -126,9 +130,6 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
     update_required = False
     if id is None:
         ret_obj = get_all(isamAppliance, check_mode, force)
-
-        if isinstance(port, basestring):
-            port = int(port)
 
         existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)
         if existing_forwarder is not None and sources == [] and existing_forwarder['sources'] != sources:
@@ -154,23 +155,19 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
             json_to_post = ret_obj['data']
             json_to_post.append(json_data)
             update_required = True
-            warnings.append("existing_forwarder is None")
+            warnings.append("This is a new forwarder")
         else:
             if format is not None:
                 if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "10.0.2.0") < 0:
                     warnings.append(f"Appliance at version: {isamAppliance.facts['version']}, format requires 10.0.2.0")
                 else:
                     json_data["format"] = format
-            elif 'format' in ret_obj['data'][i]:
-                del ret_obj['data'][i]['format']
-            sorted_json_data = tools.json_sort(json_data)
-            logger.debug(f"Sorted input: {sorted_json_data}")
-            sorted_ret_obj = tools.json_sort(existing_forwarder)
-            logger.debug(f"Sorted existing data: {sorted_ret_obj}")
-            if sorted_ret_obj != sorted_json_data:
-                logger.info("Changes detected, update needed.")
-                ret_obj['data'][i] = json_data
-                json_to_post = ret_obj['data']
+            else:
+                ret_obj['data'][i].pop('format', None)
+            existing_forwarder.pop('id', None)
+            if tools.json_equals(existing_forwarder, json_data, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
+                update_required = False
+            else:
                 update_required = True
 
         if update_required:
