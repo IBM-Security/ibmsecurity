@@ -2,6 +2,14 @@
 
 ## Latest
 
+## 2026.1.16.0
+
+- fix: base/audit/configuration.py - improved idempotency (#288)
+- feat: base/cluster/configuration.py - dsc TLS settings for v11.0.3
+- fix: base/remote_syslog/forwarder.py - bugfix
+- fix: base/audit_configuration.py - improved idempotency (#288)
+- test: update test for audit configuration
+
 ## 2026.1.14.0
 
 - fix: base/remote_syslog/forwarder.py - improved idempotency and bugfix

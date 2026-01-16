@@ -29,7 +29,8 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master_ere=None, tertiary_master=None,
        quaternary_master=None, dsc_external_clients=False, dsc_port=None, dsc_use_ssl=None, dsc_ssl_keyfile=None,
-       dsc_ssl_label=None, dsc_worker_threads=64, dsc_maximum_session_lifetime=3600, dsc_client_grace_period=600,
+       dsc_ssl_label=None, dsc_ssl_ciphers=None, dsc_tls12_cipher_specs=None, dsc_tls13_cipher_specs=None,
+       dsc_worker_threads=64, dsc_maximum_session_lifetime=3600, dsc_client_grace_period=600,
        hvdb_embedded=True, hvdb_max_size=None, hvdb_db_type=None, hvdb_address=None, hvdb_port=None, hvdb_user=None,
        hvdb_password=None, hvdb_db2_alt_address=None, hvdb_db2_alt_port=None, hvdb_db_name=None, hvdb_db_secure=None,
        hvdb_driver_type=None, hvdb_solid_tc=None, cfgdb_embedded=True, cfgdb_db_type=None, cfgdb_address=None,
@@ -42,7 +43,6 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
     """
     Set cluster configuration
     """
-
     warnings = []
     # Create a simple json with just the main client attributes
     cluster_json = {
@@ -162,13 +162,35 @@ def set(isamAppliance, primary_master='127.0.0.1', secondary_master=None, master
         else:
             # The default limit for a session query is 1024
             cluster_json["dsc_maximum_session_list"] = dsc_maximum_session_list
+    # 11.0.3.0 Configurable DSC Ciphers
+    if dsc_ssl_ciphers is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "11.0.3.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, dsc_ssl_ciphers: {1} is not supported. Needs 11.0.3.0 or higher. Ignoring dsc_ssl_ciphers for this call.".format(
+                    isamAppliance.facts["version"], dsc_ssl_ciphers))
+        else:
+            cluster_json["dsc_ssl_ciphers"] = dsc_ssl_ciphers
+    if dsc_tls12_cipher_specs is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "11.0.3.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, dsc_tls12_cipher_specs: {1} is not supported. Needs 11.0.3.0 or higher. Ignoring dsc_tls12_cipher_specs for this call.".format(
+                    isamAppliance.facts["version"], dsc_tls12_cipher_specs))
+        else:
+            cluster_json["dsc_tls12_cipher_specs"] = dsc_tls12_cipher_specs
+    if dsc_tls13_cipher_specs is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts["version"], "11.0.3.0") < 0:
+            warnings.append(
+                "Appliance at version: {0}, dsc_tls13_cipher_specs: {1} is not supported. Needs 11.0.3.0 or higher. Ignoring dsc_tls13_cipher_specs for this call.".format(
+                    isamAppliance.facts["version"], dsc_tls13_cipher_specs))
+        else:
+            cluster_json["dsc_tls13_cipher_specs"] = dsc_tls13_cipher_specs
 
     check_obj =  _check(isamAppliance, cluster_json, ignore_password_for_idempotency)
     if check_obj['warnings'] != []:
         warnings.append(check_obj['warnings'][0])
 
-    if force is True or check_obj['value'] is False:
-        if check_mode is True:
+    if force or not check_obj['value']:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             return isamAppliance.invoke_post("Set cluster configuration", uri, cluster_json,

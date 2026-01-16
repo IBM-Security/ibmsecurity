@@ -1,5 +1,7 @@
 import logging
+from operator import itemgetter
 from ibmsecurity.utilities import tools
+from ibmsecurity.utilities.tools import json_equals
 
 try:
     basestring
@@ -28,7 +30,7 @@ def get(isamAppliance, id=None, check_mode=False, force=False):
                                         requires_version=requires_version)
 
 
-def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, components=None):
+def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, check_mode=False, force=False, use_json=False, useJSONFormat=False, components=None):
     """
     Update Audit Configuration
 
@@ -156,12 +158,15 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
     type: Syslog
     verbose: false
     """
+    if useJSONFormat or use_json:
+        use_json = True
+
     pol_id, update_required, json_data = _check(isamAppliance, id, config, enabled, type, verbose, use_json, components)
     if pol_id is None:
         from ibmsecurity.appliance.ibmappliance import IBMError
         raise IBMError("999", f"Cannot update data for unknown Audit Configuration ID: {id}")
 
-    if force is True or update_required is True:
+    if force or update_required:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
         else:
@@ -179,6 +184,7 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
     """
     update_required = False
     pol_id = None
+    aud_cfg = None
     # convert all values into string - any other type causes issues
     for cfg in config:
         if isinstance(cfg['value'], bool):
@@ -203,7 +209,7 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
             use_json = False
     json_data = {
         "id": id,
-        "config": config,
+        "config": sorted(config, key=itemgetter('key')),
         "enabled": enabled,
         "type": type,
         "verbose": verbose,
@@ -221,15 +227,20 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
         json_data["components"] = components
         update_required = True
     else:
-        import ibmsecurity.utilities.tools
-        sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
-        logger.debug(f"Sorted input: {sorted_json_data}")
-        sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(aud_cfg)
-        logger.debug(f"Sorted existing data: {sorted_ret_obj}")
-        if sorted_ret_obj != sorted_json_data:
-            logger.info("Changes detected, update needed.")
+        #import ibmsecurity.utilities.tools
+        #sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+        #logger.debug(f"Sorted input: {sorted_json_data}")
+        #sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(aud_cfg)
+        #logger.debug(f"Sorted existing data: {sorted_ret_obj}")
+        #if sorted_ret_obj != sorted_json_data:
+        #    logger.info("Changes detected, update needed.")
+        #    update_required = True
+        aud_cfg["config"] = sorted(aud_cfg.get("config", []), key=itemgetter('key'))
+        if json_equals(aud_cfg,  json_data):
+            # No updates needed
+            update_required = False
+        else:
             update_required = True
-
     return pol_id, update_required, json_data
 
 

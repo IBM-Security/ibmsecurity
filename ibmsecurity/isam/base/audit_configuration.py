@@ -20,15 +20,26 @@ def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve audit configuration
     """
-    return isamAppliance.invoke_get("Retrieve audit configuration", uri, requires_modules=requires_modules,
+    return isamAppliance.invoke_get("Retrieve audit configuration", uri,
+                                    requires_modules=requires_modules,
                                     requires_version=requires_version, warnings=warnings)
 
 
 def getComponents(isamAppliance, check_mode=False, force=False):
     """
-    Retrieve audit configuration components
+    Retrieve audit components configurations
     """
-    return isamAppliance.invoke_get("Retrieve audit configuration components", comp_uri, requires_modules=requires_modules,
+    return isamAppliance.invoke_get("Retrieve audit components configurations", comp_uri,
+                                    requires_modules=requires_modules,
+                                    requires_version=requires_version)
+
+def getComponent(isamAppliance, id):
+    """
+    Retrieve audit component configuration
+    """
+    return isamAppliance.invoke_get("Retrieve audit component configuration",
+                                    "{0}/{1}".format(comp_uri, id),
+                                    requires_modules=requires_modules,
                                     requires_version=requires_version)
 
 
@@ -177,6 +188,18 @@ def set(isamAppliance, id, config, enabled=True, type='Syslog', verbose=True, ch
     return isamAppliance.create_return_object()
 
 
+def setComponent(isamAppliance, id, enabled):
+    """
+    Update audit component configuration
+    """
+    json_data = {'enabled': enabled}
+    return isamAppliance.invoke_put(
+        "Update Audit Configuration",
+        "{0}/{1}".format(comp_uri, id),
+        json_data,
+        requires_modules=requires_modules, requires_version=requires_version)
+
+
 def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, components=None):
     """
     Check and return True if update needed
@@ -225,10 +248,10 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
         json_data["components"] = components
         update_required = True
     else:
-        import ibmsecurity.utilities.tools
-        sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+        aud_cfg["config"] = sorted(aud_cfg.get("config", []), key=itemgetter('key'))
+        sorted_json_data = tools.json_sort(json_data)
         logger.debug(f"Sorted input: {sorted_json_data}")
-        sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(aud_cfg)
+        sorted_ret_obj = tools.json_sort(aud_cfg)
         logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")

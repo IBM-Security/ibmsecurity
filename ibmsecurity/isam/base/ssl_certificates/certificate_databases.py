@@ -87,6 +87,7 @@ def create(isamAppliance, kdb_name, type='kdb',
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
+
             json_data = {
                     "kdb_name": kdb_name,
                     "type": type,

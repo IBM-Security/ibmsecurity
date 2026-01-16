@@ -47,11 +47,11 @@ def get(isamAppliance, server=None, port=None, protocol=None, id=None, check_mod
     needs server/port/protocol OR id
     id takes precedence (so server/port/protocol is ignored if id is passed)
     """
+    if port and isinstance(port, basestring):
+        port = int(port)
+
     if id is None:
         ret_obj = get_all(isamAppliance, check_mode, force)
-
-        if isinstance(port, basestring):
-            port = int(port)
 
         return_obj = isamAppliance.create_return_object()
         return_obj['data'], i = _find_forwarder(ret_obj, server, port, protocol)
@@ -76,11 +76,11 @@ def delete(isamAppliance, server=None, port=None, protocol=None, id=None, check_
     """
     Remove a specific remote syslog forwarder
     """
+    if port and isinstance(port, basestring):
+        port = int(port)
+
     if id is None:
         ret_obj = get_all(isamAppliance, check_mode, force)
-
-        if isinstance(port, basestring):
-            port = int(port)
 
         existing_forwarder, i = _find_forwarder(ret_obj, server, port, protocol)
 
@@ -215,7 +215,7 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
                 else:
                     return isamAppliance.invoke_put(
                             "Update the current remote syslog forwarding policy", f"{uri}/{id}",
-                            json_to_post, requires_modules=requires_modules,
+                            json_data, requires_modules=requires_modules,
                             requires_version='11.0.2.0', warnings=warnings)
 
 
