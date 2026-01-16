@@ -9,7 +9,7 @@ Code for ISVG appliance is brand new (tested with 10.0.1.0 and higher only).
 
 ## Requirements
 
-Python v3.11 and above is required for this package.
+Python v3.9 and above is required for this package.
 
 The following Python Packages are required:
 1. requests - for making REST API calls
