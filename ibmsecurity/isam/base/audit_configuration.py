@@ -248,10 +248,10 @@ def _check(isamAppliance, id, config, enabled, type, verbose, use_json=False, co
         json_data["components"] = components
         update_required = True
     else:
-        import ibmsecurity.utilities.tools
-        sorted_json_data = ibmsecurity.utilities.tools.json_sort(json_data)
+        aud_cfg["config"] = sorted(aud_cfg.get("config", []), key=itemgetter('key'))
+        sorted_json_data = tools.json_sort(json_data)
         logger.debug(f"Sorted input: {sorted_json_data}")
-        sorted_ret_obj = ibmsecurity.utilities.tools.json_sort(aud_cfg)
+        sorted_ret_obj = tools.json_sort(aud_cfg)
         logger.debug(f"Sorted existing data: {sorted_ret_obj}")
         if sorted_ret_obj != sorted_json_data:
             logger.info("Changes detected, update needed.")
