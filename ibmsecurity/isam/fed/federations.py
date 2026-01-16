@@ -223,8 +223,6 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
             json_data['configuration'] = configuration
             # Check to see if configuration data contains mapping rule reference id
             # So special logic to see if mapping rule has changed
-            # TODO: WHY ????
-            new_map_rule_id, new_map_rule = None, None
             exist_map_rule_id, exist_map_rule = None, None
 
             new_map_rule_id = configuration['identityMapping']['properties'].get('identityMappingRuleReference', None)
@@ -335,7 +333,7 @@ def _check(isamAppliance, name, role, protocol, configuration, templateName=None
         logger.debug(f"\nSorted Desired:\n\n {sorted_json_data}\n")
         if sorted_ret_obj != sorted_json_data:
             # parameters that are necessary for compare, but not for update
-            json_data.pop('protocol')
+            json_data.pop('protocol', None)
             isamAppliance.logger.info("Changes detected, update needed.")
             update_required = True
 
