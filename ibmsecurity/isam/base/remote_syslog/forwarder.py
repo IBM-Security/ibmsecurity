@@ -215,7 +215,7 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
                 else:
                     return isamAppliance.invoke_put(
                             "Update the current remote syslog forwarding policy", f"{uri}/{id}",
-                            json_to_post, requires_modules=requires_modules,
+                            json_data, requires_modules=requires_modules,
                             requires_version='11.0.2.0', warnings=warnings)
 
 
