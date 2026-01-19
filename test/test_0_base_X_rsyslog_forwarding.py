@@ -8,8 +8,9 @@ def getTestData():
     testdata = [
         {
           "port": "514",
+          "id": "f1cbfee0-f548-11f0-8acc-901057f8428d",
           "protocol": "tcp",
-          "server": "rsyslog",
+          "server": "rsyslog.server.local",
           "sources": [
            {"facility": "local0",
             "name": "WebSEAL:default:msg__webseald-default.log",
@@ -51,6 +52,6 @@ def test_set_remote_syslog_forwarder(iviaServer, caplog, items) -> None:
     returnValue = ibmsecurity.isam.base.remote_syslog.forwarder.set(iviaServer,
                                                      **arg
                                                     )
-    logging.log(logging.INFO, returnValue)
+    logging.log(logging.INFO, f"TOMMIE {returnValue}")
 
     assert not returnValue.failed()
