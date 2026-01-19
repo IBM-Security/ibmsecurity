@@ -2,6 +2,11 @@
 
 ## Latest
 
+## 2026.1.19.0
+
+- fix: base/remote_syslog/forwarder.py - bugfix for v11.0.2
+- fix: base/remote_syslog/forwarder.py - correct usage of id
+
 ## 2026.1.16.0
 
 - fix: base/audit/configuration.py - improved idempotency (#288)
