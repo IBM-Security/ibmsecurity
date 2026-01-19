@@ -49,17 +49,16 @@ def get(isamAppliance, server=None, port=None, protocol=None, id=None, check_mod
     """
     if port and isinstance(port, basestring):
         port = int(port)
+    warnings = []
 
     if id is None:
         ret_obj = get_all(isamAppliance, check_mode, force)
 
         return_obj = isamAppliance.create_return_object()
         return_obj['data'], i = _find_forwarder(ret_obj, server, port, protocol)
-        warnings = []
         if return_obj['data'] is None:
             warnings.append(f"No entry found for server {server} port {port} and protocol {protocol}.")
             return_obj['warnings'] = warnings
-
         return return_obj
     else:
         ret_obj = isamAppliance.invoke_get("Retrieve the current remote syslog forwarding policy based on id", f"{uri}/{id}",
@@ -168,6 +167,8 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
             if tools.json_equals(existing_forwarder, json_data, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
                 update_required = False
             else:
+                ret_obj['data'][i] = json_data
+                json_to_post = ret_obj['data']
                 update_required = True
 
         if update_required:
@@ -175,48 +176,48 @@ def set(isamAppliance, server=None, port=None, protocol='udp', id=None, debug=Fa
                 return isamAppliance.create_return_object(changed=True, warnings=warnings)
             else:
                 return _update_forwarder_policy(isamAppliance, json_to_post, warnings=warnings)
-
-        return isamAppliance.create_return_object(warnings=warnings)
     else:
         existing_forwarder = get(isamAppliance, id=id)
-        if existing_forwarder is None or not existing_forwarder['data']:
-           # new ... not sure this is valid
-           return set(isamAppliance, server=server, port=port, protocol=protocol, id=None, debug=debug,
-               keyfile=keyfile,
-               ca_certificate=ca_certificate,
-               client_certificate=client_certificate,
-               permitted_peers=permitted_peers, sources=sources, format=format, check_mode=check_mode, force=force)
-        else:
-            existing_forwarder = existing_forwarder['data']
-            if existing_forwarder is not None and sources == [] and existing_forwarder['sources'] != sources:
-                sources = existing_forwarder['sources']
-                warnings.append("No sources provided, using existing sources to set forwarder.")
-            if keyfile is not None and keyfile != '':
-                json_data['keyfile'] = keyfile
-            if ca_certificate is not None and ca_certificate != '':
-                json_data['ca_certificate'] = ca_certificate
-            if client_certificate is not None and client_certificate != '':
-                json_data['client_certificate'] = client_certificate
-            if permitted_peers is not None and permitted_peers != '':
-                json_data['permitted_peers'] = permitted_peers
-            if format is not None:
-                json_data["format"] = format
-            json_data["id"] = id
-            json_data["sources"] = sources
-
-            if tools.json_equals(existing_forwarder, json_data, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
-                update_required = False
+        existing_forwarder = existing_forwarder.get('data', {})
+        if existing_forwarder is not None and sources == [] and existing_forwarder.get('sources', 'none') != sources:
+            sources = existing_forwarder.get('sources', [])
+            warnings.append("No sources provided, using existing sources to set forwarder.")
+        if keyfile is not None and keyfile != '':
+            json_data['keyfile'] = keyfile
+        if ca_certificate is not None and ca_certificate != '':
+            json_data['ca_certificate'] = ca_certificate
+        if client_certificate is not None and client_certificate != '':
+            json_data['client_certificate'] = client_certificate
+        if permitted_peers is not None and permitted_peers != '':
+            json_data['permitted_peers'] = permitted_peers
+        if format is not None:
+            json_data["format"] = format
+        json_data["sources"] = sources
+        json_data["id"] = id
+        if existing_forwarder == {}:
+            ret_obj = get_all(isamAppliance, check_mode, force)
+            json_to_post = ret_obj['data']
+            json_to_post.append(json_data)
+            if check_mode:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
             else:
-                update_required = True
+                return _update_forwarder_policy(isamAppliance, json_to_post, warnings=warnings)
 
-            if update_required:
-                if check_mode:
-                    return isamAppliance.create_return_object(changed=True, warnings=warnings)
-                else:
-                    return isamAppliance.invoke_put(
-                            "Update the current remote syslog forwarding policy", f"{uri}/{id}",
-                            json_data, requires_modules=requires_modules,
-                            requires_version='11.0.2.0', warnings=warnings)
+        if tools.json_equals(existing_forwarder, json_data, ignore_keys_not_in_new=True, skipkeys=True, sort_keys=True):
+            update_required = False
+        else:
+            json_data.pop("id")
+            update_required = True
+
+        if update_required:
+            if check_mode:
+                return isamAppliance.create_return_object(changed=True, warnings=warnings)
+            else:
+                return isamAppliance.invoke_put(
+                        "Update the current remote syslog forwarding policy", f"{uri}/{id}",
+                        json_data, requires_modules=requires_modules,
+                        requires_version='11.0.2.0', warnings=warnings)
+    return isamAppliance.create_return_object(warnings=warnings)
 
 
 def _update_forwarder_policy(isamAppliance, json_to_post, warnings=[]):
