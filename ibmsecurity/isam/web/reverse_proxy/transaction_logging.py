@@ -15,7 +15,7 @@ def get(isamAppliance, instance_id, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Retrieving all transaction logging components and their details",
-                                    "{0}/{1}/transaction_logging".format(uri, instance_id),
+                                    f"{uri}/{instance_id}/transaction_logging",
                                     requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
@@ -25,8 +25,7 @@ def get_files(isamAppliance, instance_id, component_id, check_mode=False, force=
 
     """
     return isamAppliance.invoke_get("Retrieving all transaction log files for a component",
-                                    "{0}/{1}/transaction_logging/{2}/translog_files".format(uri, instance_id,
-                                                                                            component_id),
+                                    "{0}/{1}/transaction_logging/{2}/translog_files".format(uri, instance_id, component_id),
                                     requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 
@@ -36,8 +35,8 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filepath, che
     """
 
     if os.path.exists(filepath) is True:
-        logger.info("File '{0}' already exists.  Skipping export.".format(filepath))
-        warnings = ["File '{0}' already exists.  Skipping export.".format(filepath)]
+        logger.info(f"File '{filepath}' already exists.  Skipping export.")
+        warnings = [f"File '{filepath}' already exists.  Skipping export."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     warnings = _check(isamAppliance,instance_id,component_id)
@@ -47,7 +46,7 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filepath, che
     else:
         return isamAppliance.invoke_get_file(
             "Exporting the transaction logging data file or rollover transaction logging data file for a component",
-            "{0}/{1}/transaction_logging/{2}/translog_files/{3}?export".format(uri, instance_id, component_id, file_id),
+            f"{uri}/{instance_id}/transaction_logging/{component_id}/translog_files/{file_id}?export",
             filepath
         ,requires_model=requires_model)
 
@@ -72,7 +71,7 @@ def update(isamAppliance, instance_id, component_id, status, rollover_size, max_
 
             return isamAppliance.invoke_put(
                 "Modifying the status and rollover size for a component",
-                "{0}/{1}/transaction_logging/{2}".format(uri, instance_id, component_id),
+                f"{uri}/{instance_id}/transaction_logging/{component_id}",
                 {
                     'id': component_id,
                     'status': status,
@@ -99,7 +98,7 @@ def rollover(isamAppliance, instance_id, component_id, check_mode=False, force=F
         else:
             return isamAppliance.invoke_put(
                 "Rolling over the transaction logging data file for a component",
-                "{0}/{1}/transaction_logging/{2}".format(uri, instance_id, component_id),
+                f"{uri}/{instance_id}/transaction_logging/{component_id}",
                 {
                     'rollover': "yes"
                 },
@@ -122,7 +121,7 @@ def delete_unused(isamAppliance, instance_id, component_id, check_mode=False, fo
         else:
             return isamAppliance.invoke_delete(
                 "Deleting the unused transaction logging data file and rollover files for a component",
-                "{0}/{1}/transaction_logging/{2}/translog_files".format(uri, instance_id, component_id),requires_model=requires_model)
+                f"{uri}/{instance_id}/transaction_logging/{component_id}/translog_files",requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -139,7 +138,7 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
         else:
             return isamAppliance.invoke_delete(
                 "Deleting the transaction logging data file or rollover file for a component",
-                "{0}/{1}/transaction_logging/{2}/translog_files/{3}".format(uri, instance_id, component_id, file_id),requires_model=requires_model)
+                f"{uri}/{instance_id}/transaction_logging/{component_id}/translog_files/{file_id}",requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -171,7 +170,7 @@ def delete_multiple_files(isamAppliance, instance_id, component_id, files, check
             else:
                 return isamAppliance.invoke_put(
                     "Deleting multiple transaction logging data file and rollover files for a component",
-                    "{0}/{1}/transaction_logging/{2}/translog_files?action=delete".format(uri, instance_id, component_id),
+                    f"{uri}/{instance_id}/transaction_logging/{component_id}/translog_files?action=delete",
                     {
                         'files': files
                     },requires_model=requires_model

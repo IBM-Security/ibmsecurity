@@ -14,7 +14,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
     try:
         return isamAppliance.invoke_get("Retrieving all trace components - Reverse Proxy",
-                                        "{0}/{1}/tracing".format(uri, instance_id), requires_model=requires_model)
+                                        f"{uri}/{instance_id}/tracing", requires_model=requires_model)
     except:
         # Return empty array - exception thrown if list has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -27,9 +27,8 @@ def get_all_logs(isamAppliance, instance_id, component_id, check_mode=False, for
     Retrieving all trace log files for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving all trace log files for a component - Reverse Proxy",
-                                    "{0}/{1}/tracing/{2}/trace_files".format(uri,
-                                                                             instance_id,
-                                                                             component_id),requires_model=requires_model)
+                                    "{0}/{1}/tracing/{2}/trace_files".format(uri, instance_id, component_id),
+                                    requires_model=requires_model)
 
 
 def get(isamAppliance, instance_id, component_id, file_id, options=None, size=None, start=None, check_mode=False,
@@ -38,13 +37,8 @@ def get(isamAppliance, instance_id, component_id, file_id, options=None, size=No
     Retrieving snippet of a trace log file for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving snippet of a trace log file - Reverse Proxy",
-                                    "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,
-                                                                                 instance_id,
-                                                                                 component_id,
-                                                                                 file_id,
-                                                                                 tools.create_query_string(
-                                                                                     options=options, start=start,
-                                                                                     size=size)),requires_model=requires_model)
+                                    "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,instance_id,component_id,file_id,tools.create_query_string(options=options, start=start, size=size)),
+                                    requires_model=requires_model)
 
 
 def export_file(isamAppliance, instance_id, component_id, file_id, filename, check_mode=False, force=False):
@@ -56,10 +50,8 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filename, che
     if force is True or (os.path.exists(filename) is False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file("Exporting a Reverse Proxy trace log file.",
-                                                 "{0}/{1}/tracing/{2}/trace_files/{3}?export".format(uri,
-                                                                                                     instance_id,
-                                                                                                     component_id,
-                                                                                                     file_id), filename,requires_model=requires_model)
+                                                 "{0}/{1}/tracing/{2}/trace_files/{3}?export".format(uri,instance_id,component_id,file_id), filename,
+                                                 requires_model=requires_model)
 
     return isamAppliance.create_return_object()
 
@@ -76,9 +68,7 @@ def set(isamAppliance, instance_id, component_id, level, flush_interval,
     else:
         return isamAppliance.invoke_put(
             "Modify trace settings for a component",
-            "{0}/{1}/tracing/{2}".format(uri,
-                                         instance_id,
-                                         component_id),
+            f"{uri}/{instance_id}/tracing/{component_id}",
             {
                 'level': level,
                 'flush_interval': flush_interval,
@@ -107,10 +97,8 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a trace log file",
-                "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,
-                                                             instance_id,
-                                                             component_id,
-                                                             file_id),requires_model=requires_model)
+                "{0}/{1}/tracing/{2}/trace_files/{3}".format(uri,instance_id,component_id,file_id),
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -134,9 +122,8 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
         else:
             return isamAppliance.invoke_delete(
                 "Deleting all trace log files",
-                "{0}/{1}/tracing/{2}/trace_files".format(uri,
-                                                         instance_id,
-                                                         component_id),requires_model=requires_model)
+                "{0}/{1}/tracing/{2}/trace_files".format(uri,instance_id,component_id),
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -167,7 +154,7 @@ def delete_multiple_files(isamAppliance, instance_id, component_id, files, check
             else:
                 return isamAppliance.invoke_put(
                     "Deleting multiple trace files for a component",
-                    "{0}/{1}/tracing/{2}/trace_files/?action=delete".format(uri, instance_id, component_id),
+                    f"{uri}/{instance_id}/tracing/{component_id}/trace_files/?action=delete",
                     {
                         'files': files_to_delete
                     }
