@@ -2,6 +2,10 @@
 
 ## Latest
 
+## 2026.1.22.0
+
+- fix: base/dsc.py - add missing parameters for Docker DSC config (#468)
+
 ## 2026.1.19.0
 
 - fix: base/remote_syslog/forwarder.py - bugfix for v11.0.2
