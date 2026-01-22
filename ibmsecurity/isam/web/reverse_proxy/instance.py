@@ -25,11 +25,11 @@ def _check(isamAppliance, id):
     """
     ret_obj = get(isamAppliance)
 
-    logger.debug("Looking for existing reverse proxies in: {0}".format(ret_obj['data']))
+    logger.debug(f"Looking for existing reverse proxies in: {ret_obj['data']}")
     if ret_obj['data']:
         for rp in ret_obj['data']:
             if rp['id'] == id:
-                logger.debug("Found reverse proxy: {0}".format(id))
+                logger.debug(f"Found reverse proxy: {id}")
                 return True
 
     return False
@@ -81,7 +81,7 @@ def delete(isamAppliance, id, admin_pwd, admin_id='sec_master', domain='Default'
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_put(description="Remove a reverse proxy",
-                                            uri="{0}/{1}".format(uri, id),
+                                            uri=f"{uri}/{id}",
                                             data={
                                                 "operation": "unconfigure",
                                                 "admin_id": admin_id,
@@ -102,7 +102,7 @@ def import_config(isamAppliance, id, file, overwrite=True, check_mode=False, for
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post_files(description="Import or Migrate reverse proxy",
-                                                   uri="{0}/{1}/migrate".format(uri, id),
+                                                   uri=f"{uri}/{id}/migrate",
                                                    fileinfo=[{
                                                        'file_formfield': 'file',
                                                        'filename': file,
@@ -127,7 +127,7 @@ def export_config(isamAppliance, id, filename, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_get_file(
                 description="Export a Reverse Proxy Configuration",
-                uri="{0}/{1}?action=export".format(uri, id),
+                uri=f"{uri}/{id}?action=export",
                 filename=filename)
 
     return isamAppliance.create_return_object()
@@ -153,7 +153,7 @@ def execute(isamAppliance, id, operation="restart", check_mode=False, force=Fals
                     return isamAppliance.create_return_object(changed=True)
                 else:
                     return isamAppliance.invoke_put(description="Execute an operation on reverse proxy",
-                                                    uri="{0}/{1}".format(uri, id),
+                                                    uri=f"{uri}/{id}",
                                                     data={
                                                         "operation": operation
                                                     },
@@ -189,7 +189,7 @@ def execute_multiples(isamAppliance, instances, operation, check_mode=False, for
             return isamAppliance.create_return_object(changed=True)
         elif len(new_instances) > 1:
             return isamAppliance.invoke_put("Stopping, starting, or restarting multiple instances",
-                                            "{0}".format(uri),
+                                            uri,
                                             {
                                                 "operation": operation,
                                                 "instances": new_instances
@@ -210,7 +210,7 @@ def obfuscating(isamAppliance, id, pwd, check_mode=False, force=False):
     https://www.ibm.com/support/knowledgecenter/SSPREK_9.0.6/com.ibm.isam.doc/wrp_stza_ref/reference/ref_gso_obfuscation_key.html
     """
     return isamAppliance.invoke_post("Obfuscating a GSO password",
-                                     "{0}/{1}?action=obfuscate_gso_pwd".format(uri, id),
+                                     f"{uri}/{id}?action=obfuscate_gso_pwd",
                                      {
                                          "pwd": pwd
                                      },
@@ -222,7 +222,7 @@ def renew_cert(isamAppliance, id, isamUser, check_mode=False, force=False):
     Renew a reverse proxy instance management certificate
     """
     return isamAppliance.invoke_put("Renew a reverse proxy instance management certificate",
-                                    "{0}/{1}".format(uri, id),
+                                    f"{uri}/{id}",
                                     {
                                         "admin_id": isamUser.username,
                                         "admin_pwd": isamUser.password,
