@@ -1,4 +1,5 @@
-from urllib.parse import urlencode
+from urllib.parse import quote_plus
+from urllib.parse import unquote_plus
 
 import logging
 import ibmsecurity.utilities.tools
@@ -18,8 +19,13 @@ def add(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=False
     """
     Adding a configuration stanza name - Reverse Proxy
     """
-    if force is True or _check(isamAppliance, reverseproxy_id, stanza_id) is False:
-        if check_mode is True:
+    try:
+        stanza_id = quote_plus(stanza_id)
+        logger.debug(f"Add/Set Encoded stanza_id {stanza_id}")
+    except Exception:
+        pass
+    if force or not _check(isamAppliance, reverseproxy_id, stanza_id):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return isamAppliance.invoke_post(
@@ -30,18 +36,23 @@ def add(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=False
     return isamAppliance.create_return_object()
 
 
+# Alias to supply set function
+set = add
+
+
 def delete(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=False):
     """
     Deleting a stanza - Reverse Proxy
     """
+    try:
+        stanza_id = quote_plus(stanza_id)
+        logger.debug(f"Delete Encoded stanza_id {stanza_id}")
+    except Exception:
+        pass
     if force or _check(isamAppliance, reverseproxy_id, stanza_id):
         if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
-            try:
-                stanza_id = urlencode(stanza_id)
-            except Exception:
-                pass
             return isamAppliance.invoke_delete(
                 "Deleting a stanza - Reverse Proxy",
                 f"/wga/reverseproxy/{reverseproxy_id}/configuration/stanza/{stanza_id}")
@@ -58,6 +69,9 @@ def _check(isamAppliance, reverseproxy_id, stanza_id):
     for stanza in ret_obj['data']:
         if stanza == stanza_id:
             logger.info("Stanza found in resource: " + reverseproxy_id)
+            return True
+        if stanza == unquote_plus(stanza_id):
+            logger.info("Encoded Stanza found in resource: " + reverseproxy_id)
             return True
 
     logger.info("Stanza *not* found in resource: " + reverseproxy_id)
