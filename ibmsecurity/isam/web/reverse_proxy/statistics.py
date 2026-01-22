@@ -15,7 +15,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     """
     try:
         return isamAppliance.invoke_get("Retrieving all statistics components - Reverse Proxy",
-                                        "{0}/{1}/statistics".format(uri, instance_id),requires_model=requires_model)
+                                        f"{uri}/{instance_id}/statistics",requires_model=requires_model)
     except:
         # Return empty array - exception thrown if list has no entries or does not exist
         ret_obj = isamAppliance.create_return_object()
@@ -28,9 +28,7 @@ def get_all_logs(isamAppliance, instance_id, component_id, check_mode=False, for
     Retrieving all log files for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving all statistics log files for a component - Reverse Proxy",
-                                    "{0}/{1}/statistics/{2}/stats_files".format(uri,
-                                                                                instance_id,
-                                                                                component_id),requires_model=requires_model)
+                                    "{0}/{1}/statistics/{2}/stats_files".format(uri,instance_id,component_id),requires_model=requires_model)
 
 
 def get(isamAppliance, instance_id, component_id, file_id, options=None,
@@ -39,13 +37,8 @@ def get(isamAppliance, instance_id, component_id, file_id, options=None,
     Retrieving snippets of a statistics log file for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving snippet of a statistics log file - Reverse Proxy",
-                                    "{0}/{1}/statistics/{2}/stats_files/{3}".format(uri,
-                                                                                    instance_id,
-                                                                                    component_id,
-                                                                                    file_id,
-                                                                                    tools.create_query_string(
-                                                                                        options=options, start=start,
-                                                                                        size=size)),requires_model=requires_model)
+                                    "{0}/{1}/statistics/{2}/stats_files/{3}".format(uri,instance_id,component_id,file_id,tools.create_query_string(options=options, start=start,size=size)),
+                                    requires_model=requires_model)
 
 
 def export_file(isamAppliance, instance_id, component_id, file_id, filename, check_mode=False, force=False):
@@ -57,11 +50,9 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filename, che
     if force is True or (os.path.exists(filename) is False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file("Exporting a Reverse Proxy statistics log file.",
-                                                 "{0}/{1}/statistics/{2}/stats_files/{3}?export".format(uri,
-                                                                                                        instance_id,
-                                                                                                        component_id,
-                                                                                                        file_id),
-                                                 filename,requires_model=requires_model)
+                                                 "{0}/{1}/statistics/{2}/stats_files/{3}?export".format(uri,instance_id,component_id,file_id),
+                                                 filename,
+                                                 requires_model=requires_model)
     return isamAppliance.create_return_object()
 
 
@@ -78,9 +69,7 @@ def set(isamAppliance, instance_id, component_id, status, hours, mins, secs,
     else:
         return isamAppliance.invoke_put(
             "Modify statistics settings for a component",
-            "{0}/{1}/statistics/{2}".format(uri,
-                                            instance_id,
-                                            component_id),
+            f"{uri}/{instance_id}/statistics/{component_id}",
             {
                 'status': status,
                 'interval_hours': hours,
@@ -115,10 +104,8 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a statistics log file",
-                "{0}/{1}/statistics/{2}/stats_files/{3}".format(uri,
-                                                                instance_id,
-                                                                component_id,
-                                                                file_id),requires_model=requires_model)
+                "{0}/{1}/statistics/{2}/stats_files/{3}".format(uri,instance_id,component_id, file_id),
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -142,9 +129,8 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
         else:
             return isamAppliance.invoke_delete(
                 "Deleting all statistics log files",
-                "{0}/{1}/statistics/{2}/stats_files".format(uri,
-                                                            instance_id,
-                                                            component_id),requires_model=requires_model)
+                "{0}/{1}/statistics/{2}/stats_files".format(uri,instance_id,component_id),
+                requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
