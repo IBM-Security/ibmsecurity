@@ -70,7 +70,7 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     """
     logger = isamAppliance.logger
     ret_obj = isamAppliance.invoke_get("Retrieving the parameters for a single standard or virtual junction",
-                                       "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id, junctionname),
+                                       f"{uri}/{reverseproxy_id}/junctions?junctions_id={junctionname}",
                                        requires_modules=requires_modules,
                                        requires_version=requires_version,
                                        warnings=warnings)
@@ -308,25 +308,25 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if http2_proxy is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(isamAppliance.facts["version"], http2_proxy))
+                        f"Appliance at version: {isamAppliance.facts['version']}, http2_proxy: {http2_proxy} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.")
                 else:
                     jct_json['http2_proxy'] = http2_proxy
             if sni_name is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, sni_name: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.".format(isamAppliance.facts["version"], sni_name))
+                        f"Appliance at version: {isamAppliance.facts['version']}, sni_name: {sni_name} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.")
                 else:
                     jct_json['sni_name'] = sni_name
             if description is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(isamAppliance.facts["version"], description))
+                        f"Appliance at version: {isamAppliance.facts['version']}, description: {description} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.")
                 else:
                     jct_json['description'] = description
             if priority is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(isamAppliance.facts["version"], priority))
+                        f"Appliance at version: {isamAppliance.facts['version']}, priority: {priority} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.")
                 else:
                     jct_json['priority'] = priority
             else:
@@ -340,7 +340,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if server_cn is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(isamAppliance.facts["version"], server_cn))
+                        f"Appliance at version: {isamAppliance.facts['version']}, server_cn: {server_cn} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.")
                 else:
                     jct_json['server_cn'] = server_cn
             if isVirtualJunction and silent:
