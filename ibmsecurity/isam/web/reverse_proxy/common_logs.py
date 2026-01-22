@@ -48,7 +48,7 @@ def delete(isamAppliance, file_id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Clearing a common log file",
-                "{0}/{1}".format(uri, file_id), requires_model=requires_model)
+                f"{uri}/{file_id}", requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
@@ -64,7 +64,7 @@ def export_file(isamAppliance, file_id, filename, check_mode=False, force=False)
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Exporting a common log file",
-                "{0}/{1}?export".format(uri, file_id),
+                f"{uri}/{file_id}?export",
                 filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
