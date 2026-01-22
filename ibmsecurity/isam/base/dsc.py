@@ -20,7 +20,11 @@ def get(isamAppliance, check_mode=False, force=False):
 
 def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64, max_session_lifetime=3600,
         max_session_list=None,
-        client_grace=600, servers=[], check_mode=False, force=False):
+        client_grace=600, servers=[],
+        connection_idle_timeout=None,
+        trace_level=None,
+        ssl_ciphers=None,
+        check_mode=False, force=False):
     """
     Update the current distributed session cache policy
     """
@@ -34,6 +38,12 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         "servers": servers
     }
 
+    # connection_idle_timeout
+    if connection_idle_timeout is not None:
+        dsc_json["connection_idle_timeout"] = connection_idle_timeout
+    # trace_level
+    if trace_level is not None:
+        dsc_json["trace_level"] = trace_level
     # max_session_list
     if max_session_list is not None:
         if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "11.0.2.0") < 0:
@@ -42,6 +52,14 @@ def set(isamAppliance, service_port=443, replication_port=444, worker_threads=64
         else:
             # The default limit for a session query is 1024
             dsc_json["max_session_list"] = max_session_list
+    # ssl_ciphers
+    if ssl_ciphers is not None:
+        if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], "11.0.2.0") < 0:
+            warnings.append(
+                f"Appliance at version: {isamAppliance.facts['version']}, ssl_ciphers: {ssl_ciphers} is not supported. Needs 11.0.2.0 or higher. Ignoring ssl_ciphers for this call.")
+        else:
+            # Comma separated list
+            dsc_json["ssl_ciphers"] = ssl_ciphers
 
     obj = _check(isamAppliance, dsc_json)
     if force or not obj['value']:
