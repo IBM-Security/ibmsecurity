@@ -21,7 +21,7 @@ def get(isamAppliance, instance_id, file_id, options=None, size=None, start=None
     Retrieving a snippet of a common log file
     """
     return isamAppliance.invoke_get("Retrieving a snippet of a common log file",
-                                    "{0}/{1}/{2}{3}".format(uri, instance_id, file_id, tools.create_query_string(options=options, start=start, size=size)),
+                                    f"{uri}/{instance_id}/{file_id}{tools.create_query_string(options=options, start=start, size=size)}",
                                     requires_model=requires_model)
 
 

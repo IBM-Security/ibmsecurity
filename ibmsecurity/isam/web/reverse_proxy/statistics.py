@@ -28,7 +28,7 @@ def get_all_logs(isamAppliance, instance_id, component_id, check_mode=False, for
     Retrieving all log files for a component - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving all statistics log files for a component - Reverse Proxy",
-                                    "{0}/{1}/statistics/{2}/stats_files".format(uri,instance_id,component_id),requires_model=requires_model)
+                                    f"{uri}/{instance_id}/statistics/{component_id}/stats_files",requires_model=requires_model)
 
 
 def get(isamAppliance, instance_id, component_id, file_id, options=None,
@@ -50,7 +50,7 @@ def export_file(isamAppliance, instance_id, component_id, file_id, filename, che
     if force is True or (os.path.exists(filename) is False):
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file("Exporting a Reverse Proxy statistics log file.",
-                                                 "{0}/{1}/statistics/{2}/stats_files/{3}?export".format(uri,instance_id,component_id,file_id),
+                                                 f"{uri}/{instance_id}/statistics/{component_id}/stats_files/{file_id}?export",
                                                  filename,
                                                  requires_model=requires_model)
     return isamAppliance.create_return_object()
@@ -104,7 +104,7 @@ def delete(isamAppliance, instance_id, component_id, file_id, check_mode=False, 
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a statistics log file",
-                "{0}/{1}/statistics/{2}/stats_files/{3}".format(uri,instance_id,component_id, file_id),
+                f"{uri}/{instance_id}/statistics/{component_id}/stats_files/{file_id}",
                 requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)
@@ -129,7 +129,7 @@ def delete_all(isamAppliance, instance_id, component_id, check_mode=False, force
         else:
             return isamAppliance.invoke_delete(
                 "Deleting all statistics log files",
-                "{0}/{1}/statistics/{2}/stats_files".format(uri,instance_id,component_id),
+                f"{uri}/{instance_id}/statistics/{component_id}/stats_files",
                 requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=warnings)

@@ -25,7 +25,7 @@ def get_files(isamAppliance, instance_id, component_id, check_mode=False, force=
 
     """
     return isamAppliance.invoke_get("Retrieving all transaction log files for a component",
-                                    "{0}/{1}/transaction_logging/{2}/translog_files".format(uri, instance_id, component_id),
+                                    f"{uri}/{instance_id}/transaction_logging/{component_id}/translog_files",
                                     requires_modules=requires_modules, requires_version=requires_version,requires_model=requires_model)
 
 

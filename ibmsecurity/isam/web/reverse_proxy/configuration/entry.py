@@ -20,9 +20,7 @@ def get_all(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=F
     """
     try:
         ret_obj = isamAppliance.invoke_get("Retrieving all configuration entries for a stanza - Reverse Proxy",
-                                           "{0}/{1}/configuration/stanza/{2}".format(uri,
-                                                                                     reverseproxy_id,
-                                                                                     stanza_id))
+                                           f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}")
         logger.debug(f"Get All {stanza_id}:\n {ret_obj}")
     except:
         # Return empty array - exception thrown if stanza has no entries or does not exist
@@ -37,8 +35,7 @@ def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, f
     Retrieving a specific configuration entry - Reverse Proxy
     """
     # URL being encoded primarily to handle request-log-format that has "%" values in them
-    f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
-                                                                     stanza_id, entry_id)
+    f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
     # Replace % with %25 if it is not encoded already
     import re
     ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -71,8 +68,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
             exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry[0], entry[1])
             if exists is True:
                 logger.debug(
-                    'Entries exists {0}/{1}/{2}/{3}! Will be ignored.'.format(reverseproxy_id, stanza_id, entry[0],
-                                                                              entry[1]))
+                    f'Entries exists {reverseproxy_id}/{stanza_id}/{entry[0]}/{entry[1]}! Will be ignored.')
             else:
                 add_entries.append(entry)
                 add_required = True
@@ -90,7 +86,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 def _add(isamAppliance, reverseproxy_id, stanza_id, entries):
     return isamAppliance.invoke_post(
         "Adding a configuration entry or entries by stanza - Reverse Proxy",
-        "{0}/{1}/configuration/stanza/{2}/entry_name".format(uri, reverseproxy_id, stanza_id),
+        f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name",
         {"entries": entries})
 
 
@@ -179,8 +175,7 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}/value/{4}".format(uri, reverseproxy_id, stanza_id,
-                                                                                       entry_id, value_id)
+            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}/value/{value_id}"
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -222,7 +217,7 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id, stanza_id, entry_id)
+            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
 
             # Replace % with %25 if it is not encoded already
             import re
@@ -255,8 +250,7 @@ def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = "{0}/{1}/configuration/stanza/{2}/entry_name/{3}".format(uri, reverseproxy_id,
-                                                                             stanza_id, entry_id)
+            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
             # Replace % with %25 if it is not encoded already
             import re
             ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
@@ -295,8 +289,8 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
                                                                                    stanza_id,
                                                                                    entry_id,
                                                                                    value))
-    logger.debug("Existing Value(s): {0}".format(value))
-    logger.debug("Value to update  : {0}".format(value_id))
+    logger.debug(f"Existing Value(s): {value}")
+    logger.debug(f"Value to update  : {value_id}")
 
     if isinstance(value_id, list):
         if value != value_id:  # Comparing list with no sorting... sequence of values is of importance

@@ -13,7 +13,7 @@ def get(isamAppliance, instance_name, check_mode=False, force=False):
     Retrieving the WAF configuration file (modsecurity.conf)
     """
     return isamAppliance.invoke_get("Retrieving the WAF configuration file",
-     "/isam/advanced_configuration/{0}?component=waf".format(instance_name))
+     f"/isam/advanced_configuration/{instance_name}?component=waf")
 
 
 def export_file(isamAppliance, instance_name, filename, check_mode=False, force=False):
@@ -24,7 +24,7 @@ def export_file(isamAppliance, instance_name, filename, check_mode=False, force=
         if check_mode is False:
             return isamAppliance.invoke_get_file(
             "Exporting the WAF configuration file",
-            "/isam/advanced_configuration/{0}?export&component=waf".format(instance_name),
+            f"/isam/advanced_configuration/{instance_name}?export&component=waf",
             filename)
 
     return isamAppliance.create_return_object()
@@ -39,7 +39,7 @@ def revert(isamAppliance, instance_name, check_mode=False, force=False):
     else:
         return isamAppliance.invoke_put(
             "Reverting a previously updated WAF configuration file",
-            "/isam/advanced_configuration/{0}&component=waf".format(instance_name),
+            f"/isam/advanced_configuration/{instance_name}&component=waf",
             {
                 'operation': 'revert'
             })
@@ -54,7 +54,7 @@ def update(isamAppliance, instance_name, file_contents, check_mode=False, force=
     else:
         return isamAppliance.invoke_put(
             "Updating the WAF configuration file",
-            "/isam/advanced_configuration/{0}?component=waf".format(instance_name),
+            f"/isam/advanced_configuration/{instance_name}?component=waf",
             {
                 'file_contents': file_contents
             })

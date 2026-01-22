@@ -16,7 +16,7 @@ def get(isamAppliance, instance_id, check_mode=False, force=False):
 
     """
     return isamAppliance.invoke_get("Retrieving a tracing configuration file",
-                                    "{0}/{1}/tracing_configuration".format(uri, instance_id),
+                                    f"{uri}/{instance_id}/tracing_configuration",
                                     requires_modules=requires_modules, requires_version=requires_version)
 
 
@@ -26,8 +26,8 @@ def export_file(isamAppliance, instance_id, filepath, check_mode=False, force=Fa
     """
 
     if os.path.exists(filepath) is True:
-        logger.info("File '{0}' already exists.  Skipping export.".format(filepath))
-        warnings = ["File '{0}' already exists.  Skipping export.".format(filepath)]
+        logger.info(f"File '{filepath}' already exists.  Skipping export.")
+        warnings = [f"File '{filepath}' already exists.  Skipping export."]
         return isamAppliance.create_return_object(warnings=warnings)
 
     if check_mode is True:
@@ -35,7 +35,7 @@ def export_file(isamAppliance, instance_id, filepath, check_mode=False, force=Fa
     else:
         return isamAppliance.invoke_get_file(
             "Exporting a tracing configuration file",
-            "{0}/{1}/tracing_configuration?export".format(uri, instance_id), filepath
+            f"{uri}/{instance_id}/tracing_configuration?export", filepath
         )
 
     return isamAppliance.create_return_object()
@@ -61,7 +61,7 @@ def update(isamAppliance, instance_id, contents, check_mode=False, force=False):
 
             return isamAppliance.invoke_put(
                 "Updating tracing configuration file data - using contents string",
-                "{0}/{1}/tracing_configuration".format(uri, instance_id),
+                f"{uri}/{instance_id}/tracing_configuration",
                 {
                     'file_contents': contents
                 },
@@ -84,7 +84,7 @@ def import_file(isamAppliance, instance_id, filepath, check_mode=False, force=Fa
 
             return isamAppliance.invoke_put_files(
                 "Updating tracing configuration file data - using a file",
-                "{0}/{1}/tracing_configuration".format(uri, instance_id),
+                f"{uri}/{instance_id}/tracing_configuration",
                 [
                     {
                         'file_formfield': 'file',

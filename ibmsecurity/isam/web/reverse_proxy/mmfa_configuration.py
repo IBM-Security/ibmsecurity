@@ -62,7 +62,7 @@ def _check_config(isamAppliance, instance_id):
         ret_obj = entry.get(isamAppliance, instance_id, "mmfa-config-info", "autoconfig")
         if ret_obj['data']['autoconfig'] == ["mmfa"]:
             logger.info(
-                "WebSEAL entry mmfa-config-info:autoconfig has value {}. 'mmfa' means config already done.".format(ret_obj['data']))
+                f"WebSEAL entry mmfa-config-info:autoconfig has value {ret_obj['data']}. 'mmfa' means config already done.")
             return True
     except:
         pass

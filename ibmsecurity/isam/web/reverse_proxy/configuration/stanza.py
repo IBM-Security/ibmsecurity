@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import logging
 import ibmsecurity.utilities.tools
 
@@ -9,7 +11,7 @@ def get(isamAppliance, reverseproxy_id, check_mode=False, force=False):
     Retrieving a list of stanzas - Reverse Proxy
     """
     return isamAppliance.invoke_get("Retrieving a list of stanzas - Reverse Proxy",
-                                    "/wga/reverseproxy/{0}/configuration/stanza".format(reverseproxy_id))
+                                    f"/wga/reverseproxy/{reverseproxy_id}/configuration/stanza")
 
 
 def add(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=False):
@@ -22,7 +24,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=False
         else:
             return isamAppliance.invoke_post(
                 "Adding a configuration stanza name - Reverse Proxy",
-                "/wga/reverseproxy/{0}/configuration/stanza/{1}".format(reverseproxy_id, stanza_id),
+                f"/wga/reverseproxy/{reverseproxy_id}/configuration/stanza/{stanza_id}",
                 {})
 
     return isamAppliance.create_return_object()
@@ -32,13 +34,17 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=Fa
     """
     Deleting a stanza - Reverse Proxy
     """
-    if force is True or _check(isamAppliance, reverseproxy_id, stanza_id) is True:
-        if check_mode is True:
+    if force or _check(isamAppliance, reverseproxy_id, stanza_id):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
+            try:
+                stanza_id = urlencode(stanza_id)
+            except Exception:
+                pass
             return isamAppliance.invoke_delete(
                 "Deleting a stanza - Reverse Proxy",
-                "/wga/reverseproxy/{0}/configuration/stanza/{1}".format(reverseproxy_id, stanza_id))
+                f"/wga/reverseproxy/{reverseproxy_id}/configuration/stanza/{stanza_id}")
 
     return isamAppliance.create_return_object()
 
