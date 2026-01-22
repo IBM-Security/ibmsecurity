@@ -26,7 +26,7 @@ def export_zip(isamAppliance, instance_id, filename, check_mode=False, force=Fal
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting the contents of the administration pages root as a .zip file",
-                "/wga/reverseproxy/{0}/management_root?index=&name=&enc_name=&type=&browser=".format(instance_id),
+                f"/wga/reverseproxy/{instance_id}/management_root?index=&name=&enc_name=&type=&browser=",
                 filename=filename, no_headers=True)
 
     return isamAppliance.create_return_object()
@@ -58,18 +58,18 @@ def import_zip(isamAppliance, instance_id, filename, delete_missing=False, check
             missing_client_files = [x for x in files_on_server if x not in files_on_client]
 
             if missing_client_files != []:
-                logger.info("list all missing files in {}, which will be deleted on the server: {}.".format(filename, missing_client_files))
+                logger.info(f"list all missing files in {filename}, which will be deleted on the server: {missing_client_files}.")
 
             for x in missing_client_files:
                 if x.endswith('/'):
                     search_dir= os.path.dirname(x[:-1]) + '/'
                     if search_dir not in missing_client_files:
-                        logger.debug("delete directory on the server: {0}.".format(x))
+                        logger.debug(f"delete directory on the server: {x}.")
                         directory.delete(isamAppliance, instance_id, x, check_mode=check_mode)
                 else:
                     search_dir= os.path.dirname(x) + '/'
                     if search_dir not in missing_client_files:
-                        logger.debug("delete file on the server: {0}.".format(x))
+                        logger.debug(f"delete file on the server: {x}.")
                         file.delete(isamAppliance, instance_id, x, check_mode=check_mode)
             shutil.rmtree(tempdir)
 
@@ -78,7 +78,7 @@ def import_zip(isamAppliance, instance_id, filename, delete_missing=False, check
         else:
             return isamAppliance.invoke_post_files(
                 "Importing the contents of a .zip file to the administration pages root",
-                 "/wga/reverseproxy/{0}/management_root".format(instance_id),
+                 f"/wga/reverseproxy/{instance_id}/management_root",
                 [
                     {
                         'file_formfield': 'file',
@@ -101,7 +101,7 @@ def _check_import(isamAppliance, instance_id, filename):
     """
 
     if not instance._check(isamAppliance, instance_id):
-      logger.info("instance {} does not exist on this server. Skip import".format(instance_id))
+      logger.info(f"instance {instance_id} does not exist on this server. Skip import")
       return False
 
     tempdir = get_random_temp_dir()
@@ -113,10 +113,10 @@ def _check_import(isamAppliance, instance_id, filename):
 
     shutil.rmtree(tempdir)
     if identical:
-        logger.info("management_root files {} are identical with the server content. No update necessary.".format(filename))
+        logger.info(f"management_root files {filename} are identical with the server content. No update necessary.")
         return False
     else:
-        logger.info("management_root files {} differ from the server content. Updating management_root files necessary.".format(filename))
+        logger.info(f"management_root files {filename} differ from the server content. Updating management_root files necessary.")
         return True
 
 def check(isamAppliance, instance_id, id, name, type, check_mode=False, force=False):

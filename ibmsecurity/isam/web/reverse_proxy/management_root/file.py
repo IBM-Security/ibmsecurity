@@ -12,7 +12,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     Retrieving the current administration pages root contents
     """
     return isamAppliance.invoke_get("Retrieving the current administration pages root contents",
-                                    "/wga/reverseproxy/{0}/management_root?recursive=yes".format(instance_id))
+                                    f"/wga/reverseproxy/{instance_id}/management_root?recursive=yes")
 
 
 def get(isamAppliance, instance_id, id, check_mode=False, force=False):
@@ -20,7 +20,7 @@ def get(isamAppliance, instance_id, id, check_mode=False, force=False):
     Retrieving the contents of a file in the administration pages root
     """
     return isamAppliance.invoke_get("Retrieving the contents of a file in the administration pages root",
-                                    "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id))
+                                    f"/wga/reverseproxy/{instance_id}/management_root/{id}")
 
 
 def _check(isamAppliance, instance_id, id, name):
@@ -98,7 +98,7 @@ def create(isamAppliance, instance_id, id, name, contents=None, check_mode=False
         else:
             return isamAppliance.invoke_post(
                 "Creating a file in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                 {
                     'file_name': name,
                     'type': 'file',
@@ -128,7 +128,7 @@ def update(isamAppliance, instance_id, id, filename=None, contents=None, check_m
             if filename is not None:
                 return isamAppliance.invoke_put_files(
                     "Update a file in the administration page root",
-                    "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                    f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                     [
                         {
                             'file_formfield': 'file',
@@ -143,7 +143,7 @@ def update(isamAppliance, instance_id, id, filename=None, contents=None, check_m
             elif contents is not None:
                 return isamAppliance.invoke_put_files(
                     "Update a file in the administration page root",
-                    "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                    f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                     {
                         'contents': contents,
                         'type': 'file'
@@ -170,7 +170,7 @@ def delete(isamAppliance, instance_id, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a file in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id))
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}")
 
     return isamAppliance.create_return_object()
 
@@ -197,7 +197,7 @@ def rename(isamAppliance, instance_id, id, new_name, check_mode=False, force=Fal
         else:
             return isamAppliance.invoke_put(
                 "Renaming a file in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                 {
                     'id': file_id,
                     'new_name': new_name,
@@ -223,7 +223,7 @@ def export_file(isamAppliance, instance_id, id, filename, check_mode=False, forc
         if check_mode is False:
             return isamAppliance.invoke_get_file(
                 "Exporting a file in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}?export=true".format(instance_id, id), filename)
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}?export=true", filename)
 
     return isamAppliance.create_return_object()
 
@@ -269,7 +269,7 @@ def import_file(isamAppliance, instance_id, id, filename, check_mode=False, forc
         else:
             return isamAppliance.invoke_post_files(
                 "Importing a file in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                 [
                     {
                         'file_formfield': 'file',
