@@ -28,7 +28,7 @@ def config(isamAppliance, instance_id, junction="/ivg", mmfa=True, check_mode=Fa
     else:
         return isamAppliance.invoke_post(
             "IVG configuration for a reverse proxy instance",
-            "/wga/reverseproxy/{0}/verify_gateway_config".format(instance_id), json_data, warnings=warnings,
+            f"/wga/reverseproxy/{instance_id}/verify_gateway_config", json_data, warnings=warnings,
             requires_modules=requires_modules, requires_version=requires_version)
 
     return isamAppliance.create_return_object(warnings=warnings)
