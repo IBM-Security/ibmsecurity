@@ -13,7 +13,7 @@ def get_all(isamAppliance, instance_id, check_mode=False, force=False):
     Retrieving the names of all common log files and file sizes
     """
     return isamAppliance.invoke_get("Retrieving the names of all common log files and file sizes",
-                                    "{0}/{1}".format(uri, instance_id), requires_model=requires_model)
+                                    f"{uri}/{instance_id}", requires_model=requires_model)
 
 
 def get(isamAppliance, instance_id, file_id, options=None, size=None, start=None, check_mode=False, force=False):
@@ -21,8 +21,8 @@ def get(isamAppliance, instance_id, file_id, options=None, size=None, start=None
     Retrieving a snippet of a common log file
     """
     return isamAppliance.invoke_get("Retrieving a snippet of a common log file",
-                                    "{0}/{1}/{2}{3}".format(uri, instance_id, file_id, tools.create_query_string(
-                                        options=options, start=start, size=size)), requires_model=requires_model)
+                                    f"{uri}/{instance_id}/{file_id}{tools.create_query_string(options=options, start=start, size=size)}",
+                                    requires_model=requires_model)
 
 
 def delete(isamAppliance, instance_id, file_id, check_mode=False, force=False):
@@ -48,7 +48,7 @@ def delete(isamAppliance, instance_id, file_id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Clearing a common log file",
-                "{0}/{1}/{2}".format(uri, instance_id, file_id), requires_model=requires_model)
+                f"{uri}/{instance_id}/{file_id}", requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])
 
@@ -64,7 +64,7 @@ def export_file(isamAppliance, instance_id, file_id, filename, check_mode=False,
         if check_mode is False:  # No point downloading a file if in check_mode
             return isamAppliance.invoke_get_file(
                 "Exporting a common log file",
-                "{0}/{1}/{2}?export=true".format(uri, instance_id, file_id),
+                f"{uri}/{instance_id}/{file_id}?export=true",
                 filename, requires_model=requires_model)
 
     return isamAppliance.create_return_object(warnings=ret_obj['warnings'])

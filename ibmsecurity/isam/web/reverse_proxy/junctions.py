@@ -35,13 +35,13 @@ def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, for
     if detailed and tools.version_compare(isamAppliance.facts["version"], "10.0.4") >= 0:
         try:
             returnValue = isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
-                                        "{0}/{1}/junctions?detailed=true".format(uri, reverseproxy_id),
+                                        f"{uri}/{reverseproxy_id}/junctions?detailed=true",
                                         requires_modules=requires_modules,
                                         requires_version=requires_version)
         except:
             warnings.append("Detailed retrieval of junctions failed unexpectedly.  Falling back to simple version.")
             returnValue = isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions (fallback)",
-                                    "{0}/{1}/junctions".format(uri, reverseproxy_id),
+                                    f"{uri}/{reverseproxy_id}/junctions",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version,
                                     warnings=warnings
@@ -51,7 +51,7 @@ def get_all(isamAppliance, reverseproxy_id, detailed=None, check_mode=False, for
     else:
       #ignore detailed for older versions
       return isamAppliance.invoke_get("Retrieving a list of standard and virtual junctions",
-                                    "{0}/{1}/junctions".format(uri, reverseproxy_id),
+                                    f"{uri}/{reverseproxy_id}/junctions",
                                     requires_modules=requires_modules,
                                     requires_version=requires_version)
 
@@ -70,8 +70,7 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     """
     logger = isamAppliance.logger
     ret_obj = isamAppliance.invoke_get("Retrieving the parameters for a single standard or virtual junction",
-                                       "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id,
-                                                                                   junctionname),
+                                       f"{uri}/{reverseproxy_id}/junctions?junctions_id={junctionname}",
                                        requires_modules=requires_modules,
                                        requires_version=requires_version,
                                        warnings=warnings)
@@ -82,10 +81,10 @@ def get(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force=Fa
     else:
         srv_separator = '&'
     srvs = ret_obj['data']['servers'].split(srv_separator)
-    logger.debug("Servers in raw string: {0}".format(ret_obj['data']['servers']))
-    logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+    logger.debug(f"Servers in raw string: {ret_obj['data']['servers']}")
+    logger.debug(f"Number of servers in junction: {len(srvs)}")
     for srv in srvs:
-        logger.debug("Parsing Server: {0}".format(srv))
+        logger.debug(f"Parsing Server: {srv}")
         server = {}
         for s in srv.split(';'):
             if s != '':
@@ -309,29 +308,25 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if http2_proxy is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, http2_proxy: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.".format(
-                            isamAppliance.facts["version"], http2_proxy))
+                        f"Appliance at version: {isamAppliance.facts['version']}, http2_proxy: {http2_proxy} is not supported. Needs 9.0.4.0 or higher. Ignoring http2_proxy for this call.")
                 else:
                     jct_json['http2_proxy'] = http2_proxy
             if sni_name is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.4.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, sni_name: {1} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.".format(
-                            isamAppliance.facts["version"], sni_name))
+                        f"Appliance at version: {isamAppliance.facts['version']}, sni_name: {sni_name} is not supported. Needs 9.0.4.0 or higher. Ignoring sni_name for this call.")
                 else:
                     jct_json['sni_name'] = sni_name
             if description is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "9.0.7.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, description: {1} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.".format(
-                            isamAppliance.facts["version"], description))
+                        f"Appliance at version: {isamAppliance.facts['version']}, description: {description} is not supported. Needs 9.0.7.0 or higher. Ignoring description for this call.")
                 else:
                     jct_json['description'] = description
             if priority is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, priority: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.".format(
-                            isamAppliance.facts["version"], priority))
+                        f"Appliance at version: {isamAppliance.facts['version']}, priority: {priority} is not supported. Needs 10.0.2.0 or higher. Ignoring priority for this call.")
                 else:
                     jct_json['priority'] = priority
             else:
@@ -345,15 +340,14 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
             if server_cn is not None:
                 if tools.version_compare(isamAppliance.facts["version"], "10.0.2.0") < 0:
                     warnings.append(
-                        "Appliance at version: {0}, server_cn: {1} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.".format(
-                            isamAppliance.facts["version"], server_cn))
+                        f"Appliance at version: {isamAppliance.facts['version']}, server_cn: {server_cn} is not supported. Needs 10.0.2.0 or higher. Ignoring server_cn for this call.")
                 else:
                     jct_json['server_cn'] = server_cn
             if isVirtualJunction and silent:
                 jct_json['silent'] = silent
             return isamAppliance.invoke_post(
                 "Creating a standard or virtual junction",
-                "{0}/{1}/junctions".format(uri, reverseproxy_id), jct_json,
+                f"{uri}/{reverseproxy_id}/junctions", jct_json,
                 requires_modules=requires_modules,
                 requires_version=requires_version, warnings=warnings)
 
@@ -377,7 +371,7 @@ def delete(isamAppliance, reverseproxy_id, junctionname, check_mode=False, force
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a standard or virtual junction",
-                "{0}/{1}/junctions?junctions_id={2}".format(uri, reverseproxy_id, junctionname),
+                f"{uri}/{reverseproxy_id}/junctions?junctions_id={junctionname}",
                 requires_modules=requires_modules,
                 requires_version=requires_version)
 
@@ -405,7 +399,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     isVirtualJunction = True
     if junction_point[:1] == '/':
         isVirtualJunction = False
-        logger.debug("Junction: {0} is a standard junction".format(junction_point))
+        logger.debug(f"Junction: {junction_point} is a standard junction")
     if force is False:
         # Check if record exists
         logger.debug("Check if the junction exists.")
@@ -468,7 +462,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['client_ip_http'] = client_ip_http
                 if not isVirtualJunction:
-                  logger.debug("Only for standard junctions - {0}.".format(virtual_hostname))
+                  logger.debug(f"Only for standard junctions - {virtual_hostname}.")
                   if cookie_include_path is None:
                       jct_json['cookie_include_path'] = 'no'
                   else:
@@ -535,7 +529,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                 else:
                     jct_json['transparent_path_junction'] = transparent_path_junction
                 if isVirtualJunction:
-                   logger.debug("Only for virtual junctions - virtual hostname {0}.".format(virtual_hostname))
+                   logger.debug(f"Only for virtual junctions - virtual hostname {virtual_hostname}.")
 
                    if virtual_hostname:
                        jct_json['virtual_junction_hostname'] = virtual_hostname
@@ -761,10 +755,10 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                 if c.get('servers', None) is not None:
                     if type(c.get('servers', [])) is str:
                         srvs = c['servers'].split(srv_separator)
-                        logger.debug("Servers in raw string: {0}".format(c['servers']))
-                        logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+                        logger.debug(f"Servers in raw string: {c['servers']}")
+                        logger.debug(f"Number of servers in junction: {len(srvs)}")
                         for srv in srvs:
-                            logger.debug("Parsing Server: {0}".format(srv))
+                            logger.debug(f"Parsing Server: {srv}")
                             server = {}
                             for s in srv.split(';'):
                                 if s != '':
@@ -786,10 +780,10 @@ def set_all(isamAppliance, reverseproxy_id: str, junctions: list=[], check_mode=
                 if _checkUpdate.get('servers', None) is not None:
                     if type(_checkUpdate.get('servers', [])) is str:
                         srvs = _checkUpdate['servers'].split(srv_separator)
-                        logger.debug("Servers in raw string: {0}".format(_checkUpdate['servers']))
-                        logger.debug("Number of servers in junction: {0}".format(len(srvs)))
+                        logger.debug(f"Servers in raw string: {_checkUpdate['servers']}")
+                        logger.debug(f"Number of servers in junction: {len(srvs)}")
                         for srv in srvs:
-                            logger.debug("Parsing Server: {0}".format(srv))
+                            logger.debug(f"Parsing Server: {srv}")
                             server = {}
                             for s in srv.split(';'):
                                 if s != '':
@@ -866,7 +860,7 @@ def junction_server_exists(isamAppliance, srvs, server_hostname: str, server_por
   server_found = False
   for srv in srvs:
     if srv['server_hostname'] == server_hostname and str(srv['server_port']) == str(server_port):
-        logger.debug("Matched a server - {0}.".format(srv))
+        logger.debug(f"Matched a server - {srv}.")
         server_found = True
         server_json = {
             'server_hostname': server_hostname,
@@ -911,7 +905,7 @@ def junction_server_exists(isamAppliance, srvs, server_hostname: str, server_por
             srv.pop('server_uuid', None)
         if not isVirtualJunction:
             if virtual_hostname is not None:
-                logger.debug("Only for standard junctions - {0}.".format(virtual_hostname))
+                logger.debug(f"Only for standard junctions - {virtual_hostname}.")
                 server_json['virtual_junction_hostname'] = virtual_hostname
             else:
                 if server_json['server_port'] in ['80', 80]:

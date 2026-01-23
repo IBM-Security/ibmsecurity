@@ -2,15 +2,14 @@ import logging
 import ibmsecurity.utilities.tools
 
 logger = logging.getLogger(__name__)
-requires_model = "Appliance"
+
 
 def get(isamAppliance, check_mode=False, force=False):
     """
     Retrieve runtime component status
     """
-    requires_model = None
     return isamAppliance.invoke_get("Retrieving web runtime component status",
-                                    "/isam/runtime_components/",requires_model=requires_model)
+                                    "/isam/runtime_components/")
 
 
 def _check(isamAppliance):
@@ -20,17 +19,14 @@ def _check(isamAppliance):
     :return:
     """
     ret_obj = get(isamAppliance)
-    check_value, warnings=False, ret_obj['warnings']
-
-    if warnings == []:
-        if ret_obj['data']['modecode'] == '-1':
-            check_value = False
-            return check_value, warnings
-        else:
-            check_value = True
-            return check_value, warnings
+    check_value = True
+    warnings = ret_obj.get("warnings", [])
+    if ret_obj['data'].get('modecode', '99') == '-1':
+        check_value = False
+        return check_value, warnings
     else:
         return check_value, warnings
+
 
 def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", ldap_host=None, ldap_port=None,
            ldap_dn=None, ldap_pwd=None, ldap_ssl_db=None, ldap_ssl_label=None, ldap_suffix=None, clean_ldap=False,
@@ -42,11 +38,10 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
     :param isamAppliance:
     :return:
     """
-    requires_model = None
     check_value, warnings = _check(isamAppliance)
 
-    if (force is True or check_value is False):
-        if check_mode is True:
+    if (force or not check_value):
+        if check_mode:
             return isamAppliance.create_return_object(changed=True, warnings=warnings)
         else:
             json_data = {
@@ -76,7 +71,8 @@ def config(isamAppliance, admin_pwd, ps_mode="local", user_registry="local", lda
                     json_data["local_interface_only"] = local_interface_only
 
             return isamAppliance.invoke_post("Configure web runtime Component", "/isam/runtime_components/",
-                                             json_data, requires_model=requires_model)
+                                             json_data,
+                                             warnings=warnings)
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -100,7 +96,7 @@ def unconfig(isamAppliance, clean=False, ldap_dn=None, ldap_pwd=None, check_mode
                                                 "clean": clean,
                                                 "ldap_dn": ldap_dn,
                                                 "ldap_pwd": ldap_pwd
-                                            },requires_model=requires_model)
+                                            })
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -141,7 +137,7 @@ def import_config(isamAppliance, migrate_file, check_mode=False, force=False):
                                                        'filename': migrate_file,
                                                        'mimetype': 'application/octet-stream'
                                                    }],
-                                                   {},requires_model=requires_model)
+                                                   {})
 
     return isamAppliance.create_return_object(warnings=warnings)
 
@@ -178,7 +174,7 @@ def execute(isamAppliance, operation='restart', check_mode=False, force=False):
                                         "/isam/runtime_components/",
                                         {
                                             "operation": operation
-                                        },requires_model=requires_model)
+                                        })
 
 
 def compare(isamAppliance1, isamAppliance2):

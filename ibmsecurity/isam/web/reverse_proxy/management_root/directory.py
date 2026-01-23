@@ -72,7 +72,7 @@ def create(isamAppliance, instance_id, id, name, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_post(
                 "Creating a directory in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                 {
                     'dir_name': name,
                     'type': 'dir'
@@ -99,7 +99,7 @@ def delete(isamAppliance, instance_id, id, check_mode=False, force=False):
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a directory in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id))
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}")
 
     return isamAppliance.create_return_object()
 
@@ -126,7 +126,7 @@ def rename(isamAppliance, instance_id, id, new_name, check_mode=False, force=Fal
         else:
             return isamAppliance.invoke_put(
                 "Renaming a directory in the administration pages root",
-                "/wga/reverseproxy/{0}/management_root/{1}".format(instance_id, id),
+                f"/wga/reverseproxy/{instance_id}/management_root/{id}",
                 {
                     'id': dir_id,
                     'new_name': new_name,

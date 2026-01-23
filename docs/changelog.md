@@ -2,6 +2,13 @@
 
 ## Latest
 
+## 2026.1.23.0
+
+- fix: web/reverse_proxy/configuration/stanza.py - urlencode stanza id names (specifically to handle junction stanzas, eg [jwt:/])
+- fix: web/reverse_proxy/configuration/entry.py - urlencode stanza ids, entry names and some values (specifically to handle junction stanzas, eg [jwt:/],
+  and values that contain url unsafe characters eg. request-log-format)
+- fix: web/runtime/process.py - remove unnecessary `requires_model` (applicable to all current models)
+
 ## 2026.1.22.0
 
 - fix: base/dsc.py - add missing parameters for Docker DSC config (#468)

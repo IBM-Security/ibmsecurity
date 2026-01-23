@@ -30,6 +30,7 @@ def iviaServer():
     print('\n')
     return returnValue
 
+
 # ibmsecurity
 def pytest_runtest_setup(item):
     print("setting up function:", item.name)

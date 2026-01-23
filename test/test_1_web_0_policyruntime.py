@@ -22,6 +22,7 @@ def getTestData():
     ]
     return testdata
 
+
 @pytest.mark.order(after="test_0_base_2_ssl_personalcerts.py::test_import_personal_cert")
 @pytest.mark.parametrize("items", getTestData())
 def test_configure_policy_runtime(iviaServer, caplog, items) -> None:

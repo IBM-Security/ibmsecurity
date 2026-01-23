@@ -66,7 +66,7 @@ def config(
         else:
             return isamAppliance.invoke_post(
                 " Authentication and Context based access configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{}/authsvc_config".format(instance_id),
+                f"/wga/reverseproxy/{instance_id}/authsvc_config",
                 json_data,
                 warnings=warnings,
                 requires_modules=requires_modules,
@@ -90,9 +90,7 @@ def _check_config(isamAppliance, instance_id, junction):
     for j in ret_obj["data"]:
         if j["id"] == junction:
             logger.info(
-                "Junction {} was found - hence aac config must have already executed.".format(
-                    junction
-                )
+                f"Junction {junction} was found - hence aac config must have already executed."
             )
             return True
 

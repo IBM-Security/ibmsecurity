@@ -15,7 +15,7 @@ def search(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
     ret_obj_new = isamAppliance.create_return_object()
     ret_obj = ibmsecurity.isam.web.reverse_proxy.junctions.get(isamAppliance, reverseproxy_id, junction_point)
     for s in ret_obj['data']['servers']:
-        logger.debug("Servers in Junction server: {0} port: {1}".format(s['server_hostname'], s['server_port']))
+        logger.debug(f"Servers in Junction server: {s['server_hostname']} port: {s['server_port']}")
         if str(server_hostname) == str(s['server_hostname']) and str(server_port) == str(s['server_port']):
             ret_obj_new['data'] = s['server_uuid']
             break
@@ -26,7 +26,7 @@ def get(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
     ret_obj_new = isamAppliance.create_return_object()
     ret_obj = ibmsecurity.isam.web.reverse_proxy.junctions.get(isamAppliance, reverseproxy_id, junction_point)
     for s in ret_obj['data']['servers']:
-        logger.debug("Servers in Junction server: {0} port: {1}".format(s['server_hostname'], s['server_port']))
+        logger.debug(f"Servers in Junction server: {s['server_hostname']} port: {s['server_port']}")
         if str(server_hostname) == str(s['server_hostname']) and str(server_port) == str(s['server_port']):
             ret_obj_new['data'] = s
             break
@@ -121,7 +121,7 @@ def add(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
                     jct_srv_json['priority'] = "9"
             return isamAppliance.invoke_put(
                 "Adding a back-end server to an existing standard or virtual junctions",
-                "{0}/{1}/junctions".format(uri, reverseproxy_id), jct_srv_json)
+                f"{uri}/{reverseproxy_id}/junctions", jct_srv_json)
 
     return isamAppliance.create_return_object()
 
@@ -222,7 +222,7 @@ def set(isamAppliance, reverseproxy_id, junction_point, server_hostname, server_
         else:
             return isamAppliance.invoke_put(
                 "Adding a back-end server to an existing standard or virtual junctions",
-                "{0}/{1}/junctions".format(uri, reverseproxy_id), data=jct_srv_json, warnings=warnings)
+                f"{uri}/{reverseproxy_id}/junctions", data=jct_srv_json, warnings=warnings)
     else:
         logger.debug("Servers are the same")
         return isamAppliance.create_return_object(warnings=warnings)
@@ -249,7 +249,6 @@ def delete(isamAppliance, reverseproxy_id, junction_point, server_hostname, serv
         else:
             return isamAppliance.invoke_delete(
                 "Deleting a standard or virtual junction's server",
-                "{0}/{1}/junctions?junctions_id={2}&servers_id={3}".format(uri, reverseproxy_id, junction_point,
-                                                                           ret_obj['data']))
+                f"{uri}/{reverseproxy_id}/junctions?junctions_id={junction_point}&servers_id={ret_obj['data']}")
 
     return isamAppliance.create_return_object()

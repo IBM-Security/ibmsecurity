@@ -37,7 +37,7 @@ def config(isamAppliance, instance_id, federation_id=None, federation_name=None,
         federation_id = ret_obj['data']
 
         if federation_id == {}:
-            logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
+            logger.info(f"Federation {federation_name}, not found. Skipping config.")
             return isamAppliance.create_return_object()
 
     if federation_id is None:
@@ -50,7 +50,7 @@ def config(isamAppliance, instance_id, federation_id=None, federation_name=None,
         else:
             return isamAppliance.invoke_post(
                 "Federation configuration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/fed_config".format(instance_id),
+                f"/wga/reverseproxy/{instance_id}/fed_config",
                 {
                     "runtime": {
                         "hostname": hostname,
@@ -85,7 +85,7 @@ def unconfig(isamAppliance, instance_id, federation_id=None, federation_name=Non
         federation_id = ret_obj['data']
 
         if federation_id == {}:
-            logger.info("Federation {0}, not found. Skipping config.".format(federation_name))
+            logger.info(f"Federation {federation_name}, not found. Skipping config.")
             return isamAppliance.create_return_object()
 
     if federation_id is None:
@@ -98,7 +98,7 @@ def unconfig(isamAppliance, instance_id, federation_id=None, federation_name=Non
         else:
             return isamAppliance.invoke_delete(
                 "Federation unconfiguration for a reverse proxy instance",
-                "/wga/reverseproxy/{0}/fed_config/{1}".format(instance_id, federation_id))
+                f"/wga/reverseproxy/{instance_id}/fed_config/{federation_id}")
 
     return isamAppliance.create_return_object()
 
@@ -111,7 +111,7 @@ def _check(isamappliance, instance_id, federation_id):
     # IF there is any exception - i.e. stanza not found return False
     try:
         if federation_id in ret_obj['data']:
-            logger.info("federation_id {0} found in reverse_proxy stanza isam-fed-autocfg.".format(federation_id))
+            logger.info(f"federation_id {federation_id} found in reverse_proxy stanza isam-fed-autocfg.")
             return True
     except:
         pass
