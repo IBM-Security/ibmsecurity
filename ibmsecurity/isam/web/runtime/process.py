@@ -19,15 +19,11 @@ def _check(isamAppliance):
     :return:
     """
     ret_obj = get(isamAppliance)
-    check_value, warnings=False, ret_obj['warnings']
-
-    if warnings == []:
-        if ret_obj['data']['modecode'] == '-1':
-            check_value = False
-            return check_value, warnings
-        else:
-            check_value = True
-            return check_value, warnings
+    check_value = True
+    warnings = ret_obj.get("warnings", [])
+    if ret_obj['data'].get('modecode', '99') == '-1':
+        check_value = False
+        return check_value, warnings
     else:
         return check_value, warnings
 
