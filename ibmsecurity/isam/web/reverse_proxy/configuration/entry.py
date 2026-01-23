@@ -1,3 +1,6 @@
+from urllib.parse import quote_plus
+from urllib.parse import unquote_plus
+
 import logging
 import ibmsecurity.utilities.tools
 from ibmsecurity.utilities.tools import jsonSortedListEncoder
@@ -18,6 +21,7 @@ def get_all(isamAppliance, reverseproxy_id, stanza_id, check_mode=False, force=F
     """
     Retrieving all configuration entries for a stanza - Reverse Proxy
     """
+    stanza_id = quote_plus(stanza_id)
     try:
         ret_obj = isamAppliance.invoke_get("Retrieving all configuration entries for a stanza - Reverse Proxy",
                                            f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}")
@@ -35,19 +39,10 @@ def get(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=False, f
     Retrieving a specific configuration entry - Reverse Proxy
     """
     # URL being encoded primarily to handle request-log-format that has "%" values in them
-    f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
-    # Replace % with %25 if it is not encoded already
-    import re
-    ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
-    # URL encode
-    try:
-        # Assume Python3 and import package
-        from urllib.parse import quote
-    except ImportError:
-        # Now try to import Python2 package
-        from urllib import quote
+    stanza_id = quote_plus(stanza_id)
+    entry_id = quote_plus(entry_id)
+    full_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
 
-    full_uri = quote(ruri)
     return isamAppliance.invoke_get("Retrieving a specific configuration entry - Reverse Proxy",
                                     full_uri)
 
@@ -62,11 +57,11 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 
     add_required = False
 
-    if force is False:
+    if not force:
         add_entries = []
         for entry in entries:
             exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry[0], entry[1])
-            if exists is True:
+            if exists:
                 logger.debug(
                     f'Entries exists {reverseproxy_id}/{stanza_id}/{entry[0]}/{entry[1]}! Will be ignored.')
             else:
@@ -74,8 +69,8 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
                 add_required = True
         entries = add_entries
 
-    if force is True or add_required is True:
-        if check_mode is True:
+    if force or add_required:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return _add(isamAppliance, reverseproxy_id, stanza_id, entries)
@@ -84,6 +79,7 @@ def add(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
 
 
 def _add(isamAppliance, reverseproxy_id, stanza_id, entries):
+    stanza_id = quote_plus(stanza_id)
     return isamAppliance.invoke_post(
         "Adding a configuration entry or entries by stanza - Reverse Proxy",
         f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name",
@@ -120,8 +116,9 @@ def set(isamAppliance, reverseproxy_id, stanza_id, entries, check_mode=False, fo
     if force or (newEntriesJSON != currentEntriesJSON):
         for entry in entries:
             logger.info(f"Deleting entry, will be re-added: {reverseproxy_id}/{stanza_id}/{entry[0]}")
-            delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
-        if check_mode is True:
+            if not check_mode:
+               delete_all(isamAppliance, reverseproxy_id, stanza_id, entry[0], check_mode, True)
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             return _add(isamAppliance, reverseproxy_id, stanza_id, entries)
@@ -171,28 +168,20 @@ def delete(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id='', che
         exists, update_required, value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
     if force or exists:
-        if check_mode is True:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}/value/{value_id}"
-            # Replace % with %25 if it is not encoded already
-            import re
-            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
-            # URL encode
-            try:
-                # Assume Python3 and import package
-                from urllib.parse import quote
-            except ImportError:
-                # Now try to import Python2 package
-                from urllib import quote
+            stanza_id = quote_plus(stanza_id)
+            entry_id = quote_plus(entry_id)
+            value_id = quote_plus(value_id)
+            full_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}/value/{value_id}"
 
-            full_uri = quote(ruri)
             # Workaround for value_id encoding in 9.0.7.1
-            if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], '9.0.7.1') >= 0:
-                uri_parts = full_uri.split('/value/')
-                uri_parts[1] = uri_parts[1].replace('/', '%2F')
-                full_uri = '/value/'.join(uri_parts)
+            #if ibmsecurity.utilities.tools.version_compare(isamAppliance.facts['version'], '9.0.7.1') >= 0:
+            #    uri_parts = full_uri.split('/value/')
+            #    uri_parts[1] = uri_parts[1].replace('/', '%2F')
+            #    full_uri = '/value/'.join(uri_parts)
             return isamAppliance.invoke_delete(
                 "Deleting a value from a configuration entry - Reverse Proxy", full_uri)
 
@@ -204,34 +193,22 @@ def delete_all(isamAppliance, reverseproxy_id, stanza_id, entry_id, check_mode=F
     Deleting all values from a configuration entry - Reverse Proxy
     """
     delete_required = False
-    if force is False:
+    if not force:
         try:
             ret_obj = get(isamAppliance, reverseproxy_id, stanza_id, entry_id)
             if ret_obj['data'] != {}:
                 delete_required = True
-        except:
+        except Exception:
             pass
 
-    if force is True or delete_required is True:
-        if check_mode is True:
+    if force or delete_required:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
-
-            # Replace % with %25 if it is not encoded already
-            import re
-            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
-            # URL encode
-            try:
-                # Assume Python3 and import package
-                from urllib.parse import quote
-            except ImportError:
-                # Now try to import Python2 package
-                from urllib import quote
-
-            full_uri = quote(ruri)
-
+            stanza_id = quote_plus(stanza_id)
+            entry_id = quote_plus(entry_id)
+            full_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
             return isamAppliance.invoke_delete(
                 "Deleting all values from a configuration entry - Reverse Proxy", full_uri)
 
@@ -242,27 +219,19 @@ def update(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id, check_
     """
     Updating a configuration entry or entries by stanza - Reverse Proxy
     """
-    if force is False:
+    if not force:
         exists, update_required, cur_value = _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id)
 
-    if force is True or update_required is True:
-        if check_mode is True:
+    if force or update_required:
+        if check_mode:
             return isamAppliance.create_return_object(changed=True)
         else:
             # URL being encoded primarily to handle request-log-format that has "%" values in them
-            f_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
-            # Replace % with %25 if it is not encoded already
-            import re
-            ruri = re.sub("%(?![0-9a-fA-F]{2})", "%25", f_uri)
-            # URL encode
-            try:
-                # Assume Python3 and import package
-                from urllib.parse import quote
-            except ImportError:
-                # Now try to import Python2 package
-                from urllib import quote
+            # make sure stanza_id and entry_id are url safe
+            stanza_id = quote_plus(stanza_id)
+            entry_id = quote_plus(entry_id)
+            full_uri = f"{uri}/{reverseproxy_id}/configuration/stanza/{stanza_id}/entry_name/{entry_id}"
 
-            full_uri = quote(ruri)
             return isamAppliance.invoke_put(
                 "Updating a configuration entry or entries by stanza - Reverse Proxy",
                 full_uri,
@@ -285,10 +254,7 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
     except:
         return False, True, None  # Exception means entry / stanza not found
 
-    logger.info("Entry found in rp:{0}, stanza:{1}, entryid:{2}, value:{3}".format(reverseproxy_id,
-                                                                                   stanza_id,
-                                                                                   entry_id,
-                                                                                   value))
+    logger.info(f"Entry found in rp:{reverseproxy_id}, stanza:{stanza_id}, entryid:{entry_id}, value:{value}")
     logger.debug(f"Existing Value(s): {value}")
     logger.debug(f"Value to update  : {value_id}")
 
@@ -299,7 +265,7 @@ def _check(isamAppliance, reverseproxy_id, stanza_id, entry_id, value_id):
     else:  # assuming base string provided for value_id
         if len(value) == 1:
             if str(value_id) != str(value[0]):
-                logger.debug("Single value do not match!")
+                logger.debug("Single value does not match!")
                 update_required = True
                 exists = False  # to satisfy delete call
         else:  # base string will not match a zero length array or multiple values in it
