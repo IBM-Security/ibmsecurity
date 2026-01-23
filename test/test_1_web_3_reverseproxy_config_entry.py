@@ -97,3 +97,31 @@ def test_set_stanza_entries(iviaServer, caplog, items) -> None:
 #
 #    if returnValue is not None:
 #        assert not returnValue.failed()
+
+
+def test_reverseproxy_entries_commit_before_restart(iviaServer, caplog) -> None:
+    caplog.set_level(logging.DEBUG)
+    returnValue = ibmsecurity.isam.appliance.commit(iviaServer, publish=True)
+    if returnValue is not None:
+        assert not returnValue.failed()
+
+
+@pytest.mark.parametrize("items", getTestData())
+def test_reverseproxy_restart_entries(iviaServer, caplog, items) -> None:
+    caplog.set_level(logging.DEBUG)
+    arg = {}
+    inst_name = None
+    for k, v in items.items():
+        if k == 'inst_name':
+             inst_name = v
+             continue
+        if k == 'stanza_id':
+             stanza_id = v
+             continue
+        #if k == 'key':
+        #    key = v
+        #    continue
+        arg[k] = v
+    returnValue = ibmsecurity.isam.web.reverse_proxy.instance.execute(iviaServer, id=inst_name)
+    if returnValue is not None:
+        assert not returnValue.failed()

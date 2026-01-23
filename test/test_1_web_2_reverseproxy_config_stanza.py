@@ -1,6 +1,7 @@
 import logging
 
 import ibmsecurity.isam.web.reverse_proxy.configuration.stanza
+import ibmsecurity.isam.web.reverse_proxy.instance
 import ibmsecurity.isam.appliance
 
 import pytest
@@ -75,5 +76,33 @@ def test_delete_stanza(iviaServer, caplog, items) -> None:
     returnValue = ibmsecurity.isam.web.reverse_proxy.configuration.stanza.delete(iviaServer, inst_name, stanza_id, **arg)
     logging.log(logging.INFO, returnValue)
 
+    if returnValue is not None:
+        assert not returnValue.failed()
+
+
+def test_reverseproxy_commit_before_restart(iviaServer, caplog) -> None:
+    caplog.set_level(logging.DEBUG)
+    returnValue = ibmsecurity.isam.appliance.commit(iviaServer, publish=True)
+    if returnValue is not None:
+        assert not returnValue.failed()
+
+
+@pytest.mark.parametrize("items", getTestData())
+def test_reverseproxy_restart_stanza(iviaServer, caplog, items) -> None:
+    caplog.set_level(logging.DEBUG)
+    arg = {}
+    inst_name = None
+    for k, v in items.items():
+        if k == 'inst_name':
+             inst_name = v
+             continue
+        if k == 'stanza_id':
+             stanza_id = v
+             continue
+        #if k == 'key':
+        #    key = v
+        #    continue
+        arg[k] = v
+    returnValue = ibmsecurity.isam.web.reverse_proxy.instance.execute(iviaServer, id=inst_name)
     if returnValue is not None:
         assert not returnValue.failed()
