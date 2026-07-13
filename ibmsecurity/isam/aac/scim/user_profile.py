@@ -1,5 +1,5 @@
 import logging
-from ibmsecurity.utilities.tools import json_sort
+from ibmsecurity.utilities.tools import compare_json_objects
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ def get(isamAppliance, check_mode=False, force=False):
                                     requires_version=requires_version)
 
 
-def set(isamAppliance, ldap_connection, search_suffix, user_suffix, ldap_object_classes, mappings, user_dn=None, connection_type=None, attrs_dir=None, enforce_password_policy=None, check_mode=False, force=False):
+def set(isamAppliance, ldap_connection, search_suffix, user_suffix, ldap_object_classes, mappings, user_dn=None, user_id=None, connection_type=None, attrs_dir=None, enforce_password_policy=None, check_mode=False, force=False):
     """
     Updating the user profile SCIM configuration settings
     """
@@ -37,6 +37,11 @@ def set(isamAppliance, ldap_connection, search_suffix, user_suffix, ldap_object_
     else:
         new_obj['user_dn'] = ret_obj['user_dn']
 
+    if user_id is not None:
+        new_obj['user_id'] = user_id
+    else:
+        new_obj['user_id'] = ret_obj['user_id']
+
     if connection_type is not None:
         new_obj['connection_type'] = connection_type
     else:
@@ -52,12 +57,12 @@ def set(isamAppliance, ldap_connection, search_suffix, user_suffix, ldap_object_
     else:
         new_obj['enforce_password_policy'] = ret_obj['enforce_password_policy']
 
-    obj1 = json_sort(ret_obj)
-    obj2 = json_sort(new_obj)
-
-    update_required = False
-    if obj1 != obj2:
-        update_required = True
+    update_required = not compare_json_objects(ret_obj, new_obj, unordered_list_paths=[
+        "ldap_object_classes",
+        "mappings",
+        "mappings[].mapping",
+        "mappings[].mapping[].extended_scim_attributes"
+    ])
 
     if force is True or update_required is True:
         if check_mode is True:

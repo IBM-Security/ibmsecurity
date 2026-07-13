@@ -11,6 +11,7 @@ import zipfile
 import json
 import os
 import tempfile
+from typing import Any, Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,56 @@ def json_sort(json_data):
     else:
         return json_data
 
+def compare_json_objects(
+    left: Any,
+    right: Any,
+    *,
+    unordered_list_paths: Iterable[str] | None = None,
+) -> bool:
+    """
+    Deep-compare JSON-like objects (dict/list/scalars).
+
+    Args:
+        left: First object.
+        right: Second object.
+        unordered_list_paths:
+            Optional iterable of dotted paths where list order should be ignored.
+            Examples:
+              - "" (root list)
+              - "mappings"
+              - "mappings[].mapping"
+              - "mappings[].mapping[].extended_scim_attributes"
+
+    Returns:
+        True if equivalent under the chosen comparison rules, else False.
+    """
+    unordered = set(unordered_list_paths or ())
+
+    def normalize(value: Any, path: str) -> Any:
+        if isinstance(value, dict):
+            # Sort keys deterministically and normalize values recursively.
+            return {
+                k: normalize(value[k], f"{path}.{k}" if path else k)
+                for k in sorted(value.keys())
+            }
+
+        if isinstance(value, list):
+            item_path = f"{path}[]" if path else "[]"
+            norm_items = [normalize(item, item_path) for item in value]
+
+            # If this list path is configured as unordered, sort by a stable JSON key.
+            if path in unordered or item_path in unordered:
+                return sorted(
+                    norm_items,
+                    key=lambda x: json.dumps(x, sort_keys=True, separators=(",", ":")),
+                )
+
+            return norm_items
+
+        # JSON scalar (str/int/float/bool/None)
+        return value
+
+    return normalize(left, "") == normalize(right, "")
 
 class jsonSortedListEncoder(json.JSONEncoder):
    """
