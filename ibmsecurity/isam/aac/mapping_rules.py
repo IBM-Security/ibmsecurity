@@ -67,7 +67,13 @@ def set(isamAppliance, name, category, filename=None, content=None, upload_filen
     """
 
     if _check(isamAppliance, name=name) is False:
-        # Force the add - we already know connection does not exist
+        # Force the add - we already know Mapping Rule does not exist
+        if upload_filename is not None:
+            # Check if another Mapping Rule with the same js exists
+            another_name = _get_name_by_jsname(isamAppliance,upload_filename)
+            if another_name is not None:
+                #Another Mapping rule with the same js exists -> delete existing rule before adding
+                delete(isamAppliance,another_name)
         return add(isamAppliance, name=name, filename=filename, content=content, category=category, upload_filename=upload_filename,
                    check_mode=check_mode, force=True)
     else:
@@ -261,12 +267,23 @@ def _check(isamAppliance, name):
     """
     ret_obj = get_all(isamAppliance)
 
-    for obj in ret_obj['data']:
+    for obj in ret_obj['data']:        
         if obj['name'] == name:
             return True
 
     return False
 
+def _get_name_by_jsname(isamAppliance, js_name):
+    """
+    Check if Mapping Rules with given filename already exists
+    Return Mapping Rule name if found
+    """
+    js_name = _extract_filename(js_name)
+    ret_obj = get_all(isamAppliance)
+    for obj in ret_obj['data']:        
+        if obj['fileName'] == js_name:
+            return obj['name']
+    return None
 
 def compare(isamAppliance1, isamAppliance2):
     """

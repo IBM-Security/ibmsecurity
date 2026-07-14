@@ -22,7 +22,7 @@ def get(isamAppliance, instance_id, dir_name='', recursive='yes', check_mode=Fal
 def _check(isamAppliance, instance_id, id, name):
     ret_obj = get(isamAppliance, instance_id)
 
-    dir_name = os.path.join(id, name)
+    dir_name = id +"/" + name
 
     return _parse_id(ret_obj['data'], dir_name)
 
